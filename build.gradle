@@ -2,10 +2,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 buildscript {
   repositories {
+    google()
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:1.1.1'
+    classpath 'com.android.tools.build:gradle:3.4.2'
   }
 }
 
