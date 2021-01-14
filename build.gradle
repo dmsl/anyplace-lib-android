@@ -5,14 +5,10 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-//    classpath 'com.android.tools.build:gradle:6.1.1'
+    classpath 'com.android.tools.build:gradle:1.1.1'
   }
 }
 
-repositories {
-  google()
-  jcenter()
-}
 //def githubProperties = new Properties()
 //githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
