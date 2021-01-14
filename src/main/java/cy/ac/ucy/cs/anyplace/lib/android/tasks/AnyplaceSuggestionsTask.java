@@ -84,15 +84,17 @@ public class AnyplaceSuggestionsTask extends AsyncTask<Void, Void, String> {
 	private GeoPoint position;
 	private String query;
 	private List<? extends IPoisClass> pois;
+	private String API_KEY;
 
 	private AnyplaceCache mAnyplaceCache = null;
 
-	public AnyplaceSuggestionsTask(AnyplaceSuggestionsListener l, Context ctx, SearchTypes searchType, GeoPoint position, String query) {
+	public AnyplaceSuggestionsTask(AnyplaceSuggestionsListener l, Context ctx, SearchTypes searchType, GeoPoint position, String query, String key) {
 		this.mListener = l;
 		this.searchType = searchType;
 		this.position = position;
 		this.query = query;
 		this.ctx = ctx;
+		API_KEY = key;
 		mAnyplaceCache = AnyplaceCache.getInstance(ctx);
 	}
 
@@ -186,7 +188,8 @@ public class AnyplaceSuggestionsTask extends AsyncTask<Void, Void, String> {
 
 				// cursor = AnyplacePOIProvider.queryStatic(query,
 				// AnyplacePOIProvider.POI_GOOGLE_PLACES, position);
-				PlacesList places = GooglePlaces.queryStaticGoogle(query, position);
+
+				PlacesList places = GooglePlaces.queryStaticGoogle(query, position, API_KEY);
 				if (isCancelled())
 					return "Cancelled!";
 

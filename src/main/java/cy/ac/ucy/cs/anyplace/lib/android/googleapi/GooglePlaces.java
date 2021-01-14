@@ -40,8 +40,10 @@ import java.io.IOException;
 
 import org.apache.http.client.HttpResponseException;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
+import cy.ac.ucy.cs.anyplace.lib.R;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 import com.google.api.client.http.GenericUrl;
@@ -63,7 +65,7 @@ public class GooglePlaces {
 	private static final String TAG = GooglePlaces.class.getSimpleName();
 
 	// Google API Key
-	private static final String API_KEY = "AIzaSyBhOx9L_6sIo8s771SGKyMvPeJo9e7Kq4k";
+	private static final String API_KEY = "" ;
 
 	// Google Places serach url's
 	private static final String PLACES_AUTOCOMPLETE_URL = "https://maps.googleapis.com/maps/api/place/autocomplete/json?";
@@ -104,10 +106,10 @@ public class GooglePlaces {
 
 	}
 
-	public static PlacesList queryStaticGoogle(String query, GeoPoint position) throws IOException {
+	public static PlacesList queryStaticGoogle(String query, GeoPoint position, String key) throws IOException {
 
 	    LOG.i(TAG, "Creating places");
-		PlacesList placesList = GooglePlaces.search(position.dlat, position.dlon, -1, query);
+		PlacesList placesList = GooglePlaces.search(position.dlat, position.dlon, -1, query, key);
 		return placesList;
 	}
 
@@ -124,13 +126,16 @@ public class GooglePlaces {
 	 * @return list of places
 	 * @throws IOException
 	 * */
-	public static PlacesList search(double latitude, double longitude, double radius, String query_text) throws IOException {
+	public static PlacesList search(double latitude, double longitude, double radius, String query_text, String api_key) throws IOException {
+
+
+
 
 		try {
 
 			HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
 			HttpRequest request = httpRequestFactory.buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
-			request.getUrl().put("key", API_KEY);
+			request.getUrl().put("key", api_key);
 			request.getUrl().put("location", latitude + "," + longitude);
 			request.getUrl().put("rankby", "distance"); // in meters
 			request.getUrl().put("sensor", "false");

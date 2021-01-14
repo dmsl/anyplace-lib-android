@@ -48,6 +48,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import cy.ac.ucy.cs.anyplace.lib.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisNav;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
@@ -120,6 +121,7 @@ public class NavIndoorTask extends AsyncTask<Void, Void, String> {
           String access_token = pref.getString("server_access_token", "need an access token");
 			// String response = NetworkUtils.downloadHttpClientJsonPost(AnyplaceAPI.getNavRouteXYUrl(mCtx), json_req);
 			String response = client.navigationXY(access_token, pois_to,buid, flr, lat,lon);
+
 			JSONObject json = new JSONObject(response);
 
 			if (json.has("status") && json.getString("status").equalsIgnoreCase("error")) {

@@ -36,7 +36,13 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.tasks;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
@@ -167,9 +173,20 @@ public class UploadRSSLogTask extends AsyncTask<Void, Integer, String> {
 
           response = client.uploadRssLog(token,file);
 
+          FileInputStream is = new FileInputStream(file);
+          BufferedReader br = new BufferedReader(new InputStreamReader(is));
+          StringBuilder sb = new StringBuilder();
+          String line;
+          while(( line = br.readLine()) != null ) {
+            sb.append( line );
+            sb.append( '\n' );
+          }
+          Log.d(TAG, sb.toString());
+
           //TODO fix uploadRSS
 
 			Log.d("radio upload", "response: " + response);
+
 
 
 			j = new JSONObject(response);
@@ -186,8 +203,12 @@ public class UploadRSSLogTask extends AsyncTask<Void, Integer, String> {
           exceptionOccured = true;
           Log.d("upload rss log", e.getMessage());
           return "Cannot upload RSS log. ParseException occurred[ " + e.getMessage() + " ]";
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
-		// } catch (IOException e) {
+      // } catch (IOException e) {
 		// 	exceptionOccured = true;
 		// 	Log.d("upload rss log", e.getMessage());
         //

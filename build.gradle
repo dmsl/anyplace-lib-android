@@ -1,12 +1,25 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:1.1.1'
+  }
+}
+
+
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
 android {
-    compileSdkVersion 'Google Inc.:Google APIs:24'
-    buildToolsVersion "30.0.1"
+  compileSdkVersion 29
+  buildToolsVersion "30.0.1"
 
     defaultConfig {
-        minSdkVersion 24
-        targetSdkVersion 26
+        minSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
 
@@ -23,18 +36,53 @@ android {
 
 }
 
+def getVersionName = { ->
+  return "1.0"
+}
+
+def getArtificatId = { ->
+  return "anyplace-lib-android"
+}
+publishing {
+  publications {
+    bar(MavenPublication) {
+      groupId 'com.github.dmsl'
+      artifactId getArtificatId()
+      version getVersionName()
+      artifact("$buildDir/outputs/aar/lib-release.aar")
+    }
+  }
+
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      /** Configure path of your package repository on Github
+       ** Replace GITHUB_USERID with your/organisation Github userID
+       ** and REPOSITORY with the repository name on GitHub
+       */
+      url = uri("https://maven.pkg.github.com/dmsl/anyplace-lib-android")
+      credentials {
+        /** Create github.properties in root project folder file with
+         ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
+         ** Set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
+
+        username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
+        password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+      }
+    }
+  }
+}
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
 
 
-    implementation 'com.github.dmsl:anyplace-lib-core:v4.0.1'
+//    implementation 'com.github.dmsl:anyplace-lib-core:v4.0.1'
     // INFO: To include the module locally
     // (This requires pulling the submodules from our github - see README
-    // implementation project(path: ':lib-core')
+     implementation project(path: ':lib-core')
 
   implementation group: 'gov.nist.math', name: 'jama', version: '1.0.3'
   implementation group: 'com.google.api-client', name: 'google-api-client', version: '1.30.10'
