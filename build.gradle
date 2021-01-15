@@ -17,6 +17,9 @@ repositories {
   mavenCentral()
   google()
   jcenter()
+  maven {
+    url 'https://jitpack.io'
+  }
 }
 //task wrapper(type: Wrapper) {
 //  gradleVersion = '6.5.1' //version required
