@@ -6,11 +6,11 @@ buildscript {
     jcenter()
   }
   dependencies {
-//    classpath 'com.android.tools.build:gradle:4.0.2'
+    classpath 'com.android.tools.build:gradle:4.0.2'
   }
 }
 task wrapper(type: Wrapper) {
-  gradleVersion = '4.0.2' //version required
+  gradleVersion = '6.5.1' //version required
 }
 //def githubProperties = new Properties()
 //githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
