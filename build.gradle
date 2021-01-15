@@ -81,7 +81,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
 
 
-    implementation 'com.github.dmsl:anyplace-lib-core:v4.0.2'
+    implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
     // INFO: To include the module locally
     // (This requires pulling the submodules from our github - see README
 //     implementation project(path: ':lib-core')
