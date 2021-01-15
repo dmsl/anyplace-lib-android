@@ -3,13 +3,15 @@ apply plugin: 'maven-publish'
 buildscript {
   repositories {
     google()
-    mavenCentral()
+    jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.4.2'
+//    classpath 'com.android.tools.build:gradle:4.0.2'
   }
 }
-
+task wrapper(type: Wrapper) {
+  gradleVersion = '4.0.2' //version required
+}
 //def githubProperties = new Properties()
 //githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
