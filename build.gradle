@@ -63,7 +63,7 @@ publishing {
       groupId 'com.github.dmsl'
       artifactId getArtificatId()
       version getVersionName()
-      artifact("$buildDir/outputs/aar/lib-debug.aar")
+      artifact("$buildDir/outputs/aar/lib-release.aar")
     }
   }
 
