@@ -55,7 +55,7 @@ def getVersionName = { ->
 }
 
 def getArtificatId = { ->
-  return "lib"
+  return "anyplace-lib-android"
 }
 publishing {
   publications {
@@ -63,7 +63,7 @@ publishing {
       groupId 'com.github.dmsl'
       artifactId getArtificatId()
       version getVersionName()
-      artifact("$buildDir/outputs/aar/$artifactId-release.aar")
+      artifact("$buildDir/outputs/aar/lib-release.aar")
     }
   }
 
