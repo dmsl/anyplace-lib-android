@@ -12,6 +12,7 @@ buildscript {
   dependencies {
     classpath 'com.android.tools.build:gradle:4.0.2'
     classpath 'com.google.gms:google-services:4.3.4'
+
   }
 }
 repositories {
@@ -94,6 +95,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
 
+  androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 
     implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
     // INFO: To include the module locally
