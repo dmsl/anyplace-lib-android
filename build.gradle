@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+group = 'com.github.dmsl'
 
 buildscript {
   repositories {
@@ -65,37 +66,47 @@ def getArtificatId = { ->
 
   return "anyplace-lib-android"
 }
-publishing {
-  publications {
-    bar(MavenPublication) {
-      groupId 'com.github.dmsl'
-      artifactId getArtificatId()
-      version getVersionName()
-      artifact("$buildDir/outputs/aar/lib-release.aar")
-    }
-  }
-
-
-//  repositories {
-//    maven {
-//      name = "GitHubPackages"
-//      /** Configure path of your package repository on Github
-//       ** Replace GITHUB_USERID with your/organisation Github userID
-//       ** and REPOSITORY with the repository name on GitHub
-//       */
-//      url = uri("https://maven.pkg.github.com/dmsl/anyplace-lib-android")
-//      credentials {
-//        /** Create github.properties in root project folder file with
-//         ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
-//         ** Set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
-//
-//        username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
-//        password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
-//      }
+//publishing {
+//  publications {
+//    bar(MavenPublication) {
+//      groupId 'com.github.dmsl'
+//      artifactId getArtificatId()
+//      version getVersionName()
+////      artifact("$buildDir/outputs/aar/lib-release.aar")
+//      from components.variant
 //    }
 //  }
-}
+//}
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
 
+
+afterEvaluate {
+  publishing {
+    publications {
+      // Creates a Maven publication called "release".
+      release(MavenPublication) {
+        // Applies the component for the release build variant.
+        from components.release
+
+        // You can then customize attributes of the publication as shown below.
+        groupId 'com.github.dmsl'
+        artifactId = getArtificatId()
+        version = getVersionName()
+      }
+      // Creates a Maven publication called “debug”.
+      debug(MavenPublication) {
+        // Applies the component for the debug build variant.
+        from components.debug
+
+        groupId 'com.github.dmsl'
+        artifactId = getArtificatId()
+        version = getVersionName()
+
+      }
+    }
+  }
+}
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
