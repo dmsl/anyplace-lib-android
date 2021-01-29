@@ -62,6 +62,7 @@ def getVersionName = { ->
 }
 
 def getArtificatId = { ->
+
   return "anyplace-lib-android"
 }
 publishing {
