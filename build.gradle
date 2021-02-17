@@ -1,6 +1,10 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
-group = 'com.github.dmsl'
+
+def GROUP = 'com.github.dmsl'
+def ARTIFACT_ID="anyplace-lib-android"
+def VERSION_NAME="4.0.2"
+//group = 'com.github.dmsl' // CLR
 
 buildscript {
   repositories {
@@ -11,11 +15,9 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:4.0.2'
-    classpath 'com.google.gms:google-services:4.3.4'
+    classpath 'com.android.tools.build:gradle:4.1.2'
+    classpath 'com.google.gms:google-services:4.3.5'
     //classpath 'androidx.test.uiautomator:uiautomator:2.2.0'
-
-
   }
 }
 repositories {
@@ -26,107 +28,91 @@ repositories {
     url 'https://jitpack.io'
   }
 }
-//task wrapper(type: Wrapper) {
-//  gradleVersion = '6.5.1' //version required
-//}
-//def githubProperties = new Properties()
-//githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
 android {
   compileSdkVersion 29
-  buildToolsVersion "30.0.1"
+  buildToolsVersion "30.0.2"
 
-    defaultConfig {
-        minSdkVersion 28
-        targetSdkVersion 29
-        versionCode 1
-        versionName "1.1"
+  defaultConfig {
+    minSdkVersion 28
+    targetSdkVersion 29
+    versionCode 1
+    versionName "1.1"
 
-        //testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        consumerProguardFiles 'consumer-rules.pro'
+    //testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    consumerProguardFiles 'consumer-rules.pro'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
+  }
   packagingOptions {
     exclude 'META-INF/DEPENDENCIES'
-
   }
 }
 
-def getVersionName = { ->
-  return "1.1"
+
+dependencies {
+  implementation 'androidx.appcompat:appcompat:1.2.0'
+  implementation 'com.google.android.gms:play-services-maps:17.0.0'
+
+  // Anyplace Core Java library
+  implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
+  // local include requires pulling the submodules - see README
+  // implementation project(path: ':lib-core') // local
+
+  implementation group: 'gov.nist.math', name: 'jama', version: '1.0.3'
+  implementation group: 'com.google.api-client', name: 'google-api-client', version: '1.30.10'
+  implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
+  implementation 'org.apache.httpcomponents:httpmime:4.5.12'
+
+  // TODO UPDATE MAPS API: issues with clustering
+  implementation 'com.google.maps.android:android-maps-utils:0.3+'
+  //implementation 'com.google.maps.android:android-maps-utils:2.2.0'
+  // TODO UPDATE MAPS API: issues with clustering
+
+  // Testing
+  //testImplementation 'junit:junit:4.12'
+  //androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+  //androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }
 
-def getArtificatId = { ->
 
-  return "anyplace-lib-android"
-}
-//publishing {
-//  publications {
-//    bar(MavenPublication) {
-//      groupId 'com.github.dmsl'
-//      artifactId getArtificatId()
-//      version getVersionName()
-////      artifact("$buildDir/outputs/aar/lib-release.aar")
-//      from components.variant
-//    }
-//  }
-//}
-// Because the components are created only during the afterEvaluate phase, you must
-// configure your publications using the afterEvaluate() lifecycle method.
+// CLR
+//def getVersionName = { -> return "1.1" }
+//def getArtificatId = { -> return "anyplace-lib-android" }
 
 
+
+/** JitPack Publishing: **/
+// Because the components are created only during the afterEvaluate phase,
+// publications must use the afterEvaluate() lifecycle method.
 afterEvaluate {
   publishing {
     publications {
+
       // Creates a Maven publication called "release".
       release(MavenPublication) {
         // Applies the component for the release build variant.
         from components.release
 
         // You can then customize attributes of the publication as shown below.
-        groupId 'com.github.dmsl'
-        artifactId = getArtificatId()
-        version = getVersionName()
+        groupId = GROUP
+        artifactId = ARTIFACT_ID
+        version = VERSION_NAME
       }
       // Creates a Maven publication called “debug”.
       debug(MavenPublication) {
         // Applies the component for the debug build variant.
         from components.debug
 
-        groupId 'com.github.dmsl'
-        artifactId = getArtificatId()
-        version = getVersionName()
-
+        groupId = GROUP
+        artifactId = ARTIFACT_ID
+        version = VERSION_NAME
       }
     }
   }
-}
-dependencies {
-
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
-
-    implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
-    // INFO: To include the module locally
-    // (This requires pulling the submodules from our github - see README
-//     implementation project(path: ':lib-core')
-
-  implementation group: 'gov.nist.math', name: 'jama', version: '1.0.3'
-  implementation group: 'com.google.api-client', name: 'google-api-client', version: '1.30.10'
-
-  
-    implementation 'org.apache.httpcomponents:httpmime:4.5.12'
-
-    implementation 'com.google.maps.android:android-maps-utils:0.3+'
-    //testImplementation 'junit:junit:4.12'
-    //androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    //androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
-
 }
