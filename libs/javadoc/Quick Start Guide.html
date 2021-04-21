@@ -1,0 +1,167 @@
+<h1 id="flirthermalsdkquickstartguide">FLIR Thermal SDK Quick Start Guide</h1>
+
+<h2 id="overview">Overview</h2>
+
+<p>FLIR Thermal SDK's purpose is to provide a simple and reliable API for interacting with FLIR files, cameras and measurement tools.</p>
+
+<p>The SDK is partitioned into "parts" corresponding to specific functionally e.g.:</p>
+
+<ul>
+<li>The "Image" part has all of the APIs for interacting with a file</li>
+
+<li>The "Discovery" part has all of the APIs for preforming camera discovery e.g. over USB or NETWORK</li>
+</ul>
+
+<h2 id="supportedplatforms">Supported platforms</h2>
+
+<ul>
+<li>iOS, minimum OS version: 11.0</li>
+
+<li>Android, minimum API level: 21 (Android version 5.0)</li>
+
+<li>Java, Java 8</li>
+</ul>
+
+<h2 id="functionalitycurrentlysupportedbyflirthermalsdk">Functionality currently supported by FLIR Thermal SDK:</h2>
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+  <tr>
+    <th class="tg-0pky"><b>device</b></th>
+    <th class="tg-0pky"><b>discover</b></th>
+    <th class="tg-0pky"><b>connect</b></th>
+    <th class="tg-0pky"><b>import images</b></th>
+    <th class="tg-0pky"><b>live stream</b></th>
+    <th class="tg-0pky"><b>live measurements</b></th>
+    <th class="tg-0pky"><b>remote control</b></th>
+  </tr>
+  <tr>
+    <td class="tg-0pky">FLIR ONE</b></td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">N/A</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V**</td>
+    <td class="tg-c3ow">V***</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">WiFi Camera</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">no*</td>
+    <td class="tg-c3ow">V**</td>
+    <td class="tg-c3ow">no*</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">Meterlink</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">V</td>
+    <td class="tg-c3ow">N/A</td>
+    <td class="tg-c3ow">V**</td>
+    <td class="tg-c3ow">N/A</td>
+  </tr>
+</table>
+*will be supported in future release <br />
+**for cameras (FLIR ONE or network) live measurement means temperature tools (spot, rectangle, etc.), for Meterlinks it depends on the device type, i.e. voltage levels <br />
+***allows to control FLIR ONE shutter, get battery status, etc. <br />
+
+<h3 id="flirfilesthesdkcanreadwritedatafromtoflirimagesstoredasfilesafewexamplesoftheinformationthatcanbeaccessedfromafile">FLIR files - the SDK can read / write data from / to FLIR images stored as files, a <em>few</em> examples of the information that can be accessed from a file:</h3>
+
+<ul>
+<li>get temperature in a user specified position</li>
+
+<li>get lines, spots, boxes measurements</li>
+
+<li>get visual image colorized using IR information with user specified palette</li>
+
+<li>get visual image without IR information</li>
+
+<li>get &amp; set fusion modes
+i.e. <code>fusion = mThermalImage.getFusion(); fusion.setMsx(1.5); fusion.setFusionMode(FusionMode.MSX);</code></li>
+
+<li>get image parameters and statistics (i.e. average/min/max temperature, GPS data, compass data)
+i.e. <code>mThermalImageFile.getStatistics().average;</code></li>
+
+<li>get text annotations</li>
+</ul>
+
+<h3 id="emulators">Emulators</h3>
+
+<p>There a are two emulators that can be used without FLIR hardware to scan and get live images.
+See code in sample applications (in particular "AndroidSampleKotlin") and the usage of <code>CommunicationInterface.EMULATOR</code>.</p>
+
+<h4 id="flironeemulator">FLIR ONE emulator</h4>
+
+<p>The FLIR ONE emulator can be used during development for FLIR ONE applications without the need of a real FLIR ONE dongle, the emulator provides pre-recorded sequence of images.
+The name presented by the emulator is "EMULATED FLIR ONE".</p>
+
+<h4 id="genericemulator">Generic emulator</h4>
+
+<p>The generic emulator provides a more generic form of streaming data.
+The name presented by the emulator is "C++ EmulatorId: YYY" where YYY is a number.</p>
+
+<h2 id="gettingstarted">Getting started</h2>
+
+<p>Add the provided release packages into your project (i.e. AAR on Android).
+See specific instructions in the documentation provided for each platform.</p>
+
+<h3 id="flowforopeningandreadinganimagefromaflirfile">Flow for opening and reading an image from a FLIR file</h3>
+
+<ol>
+<li>Initialize the SDK, example in Android <br />
+<code>ThermalSdkAndroid.init(android.content.Context context);</code></li>
+
+<li>Creating a ThermalImageFile object <br />
+<code>ThermalImageFile image = (ThermalImageFile) ImageFactory.createImage("&lt;external_storage&gt;/FLIR/images/ir.jpg");</code></li>
+
+<li>Get a Android Bitmap from the ThermalImageFile - it represents colorized pixels according to selected FusionMode and Palette <br />
+<code>android.graphics.Bitmap bitmap = BitmapAndroid.createBitmap(image.getImage()).getBitMap();</code></li>
+</ol>
+
+<h3 id="flowforimportingimagesfromaflirnetworkcamera">Flow for importing images from a FLIR network camera</h3>
+
+<ol>
+<li>Initialize the SDK <br />
+<code>ThermalSdkAndroid.init(android.content.Context context);</code></li>
+
+<li>Activate discovery over Network (WiFi) <br />
+<code>DiscoveryFactory.getInstance().scan(aDiscoveryEventListener, CommunicationInterface.NETWORK);</code></li>
+
+<li>Found FLIR network cameras are described by "Identity". In order to connect to them you need to use "Camera" class API <br />
+<code>camera.connect(identity, aConnectionStatusListener);</code><br />
+Note that <code>Camera.connect()</code> method is blocking and it is mandatory to call this function from a background thread.</li>
+
+<li>When a camera connection has been established <br />
+4.1 use the <code>camera.getImporter();</code> to get a "Importer" to import images from a network camera <br />
+4.2 use <code>importer.listImages(...);</code> to list files on the network camera <br />
+4.3 use <code>importer.importFiles(...);</code> to import a list of files from the network camera</li>
+</ol>
+
+<h3 id="flowforgettingalivestreamfromaflironecamera">Flow for getting a live stream from a FLIR ONE camera</h3>
+
+<ol>
+<li>Initialize the SDK <br />
+<code>ThermalSdkAndroid.init(android.content.Context context);</code></li>
+
+<li>Activate discovery over USB <br />
+<code>DiscoveryManager.getInstance().scan(aDiscoveryEventListener, CommunicationInterface.USB);</code></li>
+
+<li>Similar to network cameras, the found FLIR USB cameras are described by "Identity". In order to connect to them you need to use "Camera" class API <br />
+<code>camera.connect(identity, aConnectionStatusListener);</code><br />
+Note that <code>Camera.connect()</code> method is blocking and it is mandatory to call this function from a background thread.</li>
+
+<li>When a camera connection has been established <br />
+4.1 use the <code>camera.subscribeStream(aThermalImageStreamListener);</code> to get a stream of images, these images can then be shown as the live stream on the UI</li>
+</ol>
+
+<p><b>For more information please see the included Java / Android / iOS documentation and sample applications in each release package.</b></p>
+<br />
+<br />

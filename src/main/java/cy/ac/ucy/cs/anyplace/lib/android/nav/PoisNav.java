@@ -33,20 +33,16 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
+package cy.ac.ucy.cs.anyplace.lib.android.nav
 
-package cy.ac.ucy.cs.anyplace.lib.android.nav;
-
-public class PoisNav {
-
-	public String lat;
-	public String lon;
-	public String puid;
-
-	public String buid;
-	public String floor_number;
-
-	public String toString() {
-		return "puid";
-	}
-
+// TODO data class
+class PoisNav {
+  var lat: String? = null
+  var lon: String? = null
+  var puid: String? = null
+  var buid: String? = null
+  var floor_number: String? = null
+  override fun toString(): String {
+    return "puid"
+  }
 }
