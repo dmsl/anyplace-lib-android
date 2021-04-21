@@ -156,9 +156,6 @@ public class AnyUserData {
 	}
 
 	public GeoPoint getLocationGPSorIP() {
-
-
-
 		GeoPoint result = null;
 
 		if (positionGPS != null) {

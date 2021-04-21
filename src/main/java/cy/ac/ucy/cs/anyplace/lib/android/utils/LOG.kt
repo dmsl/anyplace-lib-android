@@ -4,7 +4,7 @@ import android.util.Log
 
 class DBG {
   companion object {
-    const val LEVEL = 2
+    const val LEVEL = 3
 
     const val D1 = LEVEL >= 1
     const val D2 = LEVEL >= 2
@@ -29,6 +29,10 @@ class LOG {
     @JvmStatic fun E(message: String) = E(TAG, message)
     @JvmStatic fun E(lvl: Int, message: String): () -> Unit = { if (lvl == DBG.LEVEL) Log.e(TAG, message) }
     @JvmStatic fun E(tag: String, message: String) = Log.e(tag, message)
+
+    @JvmStatic fun E(e: Exception) = E(TAG, "ERROR:" + e.javaClass + ": " + e.cause + ": " + e.message)
+    @JvmStatic fun E(tag: String, e: Exception) = E(tag, "ERROR:" + e.javaClass + ": " + e.cause + ": " + e.message)
+    @JvmStatic fun E(tag: String, msg: String, e: Exception) = E(tag, "ERROR:"  + msg + ": " + e.javaClass + ": " + e.cause + ": " + e.message)
 
     @JvmStatic fun W(tag: String, message: String) = Log.w(tag, message)
     @JvmStatic fun W(message: String) = W(TAG, message)

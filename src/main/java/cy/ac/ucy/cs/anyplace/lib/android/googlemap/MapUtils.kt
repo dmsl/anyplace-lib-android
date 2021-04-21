@@ -6,6 +6,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.nav.AnyPlaceSeachingHelper.SearchTypes
 
 class MapUtils     // private void initListeners() {
 (private val mMap: GoogleMap, private val searchType: SearchTypes) {
+
+
   private val searchView: SearchView? = null
   private val visiblePois: VisibleObject<*>? = null
   private val pathLineInside: Any? = null

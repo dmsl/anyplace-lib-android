@@ -1,0 +1,18 @@
+<resources>
+
+  <style name="Theme.AnyplaceTheme" parent="Theme.AppCompat">
+<!--    <item name="actionBarStyle">@style/Widget.AnyplaceTheme.ActionBar</item>-->
+    <!--    <item name="android:windowActionBarOverlay">true</item>-->
+<!--    <item name="android:actionBarStyle">@style/Widget.AnyplaceTheme.ActionBar</item>-->
+    <!--    <item name="windowActionBarOverlay">true</item>-->
+  </style>
+
+<!--  <style name="Theme.Anyplace.NoActionBar">-->
+<!--    <item name="windowActionBar">false</item>-->
+<!--    <item name="windowNoTitle">true</item>-->
+<!--  </style>-->
+
+  <style name="Theme.Anyplace.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+  <style name="Theme.Anyplace.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+</resources>

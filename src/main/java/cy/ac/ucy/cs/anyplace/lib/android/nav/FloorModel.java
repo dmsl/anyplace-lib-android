@@ -36,9 +36,12 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.nav;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
+// TODO:PM drop Serializable
+// @SuppressWarnings("serial")
 public class FloorModel implements Comparable<FloorModel>, Serializable {
 
 	public String buid;
@@ -51,7 +54,8 @@ public class FloorModel implements Comparable<FloorModel>, Serializable {
 	public String top_right_lat;
 	public String top_right_lng;
 
-	public String toString() {
+	@NotNull
+    public String toString() {
 		return floor_number + " - [" + floor_name + "]";
 	}
 

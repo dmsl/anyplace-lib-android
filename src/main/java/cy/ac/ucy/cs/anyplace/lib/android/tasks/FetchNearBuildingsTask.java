@@ -92,7 +92,7 @@ public class FetchNearBuildingsTask {
 
 		BuildingModelDistance(BuildingModel bm, double lat, double lon) {
 			this.bm = bm;
-			distance = GeoPoint.getDistanceBetweenPoints(bm.longitude, bm.latitude, lon, lat, "");
+			distance = GeoPoint.getDistanceBetweenPoints(bm.getLon(), bm.getLat(), lon, lat, "");
 		}
 
 		@Override

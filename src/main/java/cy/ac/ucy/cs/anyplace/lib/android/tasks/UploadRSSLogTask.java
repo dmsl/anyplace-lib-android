@@ -53,6 +53,7 @@ import org.json.JSONObject;
 
 
 import cy.ac.ucy.cs.anyplace.lib.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -86,12 +87,14 @@ public class UploadRSSLogTask extends AsyncTask<Void, Integer, String> {
 	private boolean exceptionOccured = false;
 
 	public UploadRSSLogTask(UploadRSSLogTaskListener l, Context ctx, String file, String username, String password){
-
 		this.context = ctx;
 		this.mListener = l;
 		this.file = file;
 		this.username = username;
 		this.password = password;
+
+		LOG.E("UploadRSS: user: " + username);
+		LOG.E("UploadRSS: pass: " + password);
 	}
 
 	@Override

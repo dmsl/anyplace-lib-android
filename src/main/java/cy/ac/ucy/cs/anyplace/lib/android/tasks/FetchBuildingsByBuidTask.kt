@@ -38,17 +38,18 @@ package cy.ac.ucy.cs.anyplace.lib.android.tasks
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.AsyncTask
+import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.Anyplace
+import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
 import org.json.JSONException
 import org.json.JSONObject
 
-class FetchBuildingsByBuidTask(private val mListener: FetchBuildingsByBuidTaskListener, private val ctx: Context, private val mbuid: String?) : AsyncTask<Void?, Void?, String>() {
-  interface FetchBuildingsByBuidTaskListener {
-    fun onErrorOrCancel(result: String?)
-    fun onSuccess(result: String?, building: BuildingModel?)
-  }
+class FetchBuildingsByBuidTask(
+        private val mListener: FetchBuildingsByBuidTaskListener,
+        private val ctx: Context,
+        private val mbuid: String?) : AsyncTask<Void?, Void?, String>() {
 
   private var building: BuildingModel? = null
   private var success = false
@@ -56,8 +57,29 @@ class FetchBuildingsByBuidTask(private val mListener: FetchBuildingsByBuidTaskLi
   private var showDialog = true
   private var json_req: String? = null
 
-  constructor(fetchBuildingsTaskListener: FetchBuildingsByBuidTaskListener, ctx: Context, buid: String?, showDialog: Boolean) : this(fetchBuildingsTaskListener, ctx, buid) {
+  // CHECK: never used.
+  constructor(fetchBuildingsTaskListener: FetchBuildingsByBuidTaskListener,
+              ctx: Context, buid: String?, showDialog: Boolean)
+          : this(fetchBuildingsTaskListener, ctx, buid) {
     this.showDialog = showDialog
+  }
+
+  init {
+    // create the JSON object for the navigation API call
+    val j = JSONObject()
+    try {
+      // j.put("username", "username") // CLR
+      // j.put("password", "pass")   // CLR
+      // insert the destination POI and the user's coordinates
+      j.put("buid", mbuid)
+      json_req = j.toString()
+    } catch (e: JSONException) {
+    }
+  }
+
+  interface FetchBuildingsByBuidTaskListener {
+    fun onErrorOrCancel(result: String?)
+    fun onSuccess(result: String?, building: BuildingModel?)
   }
 
   override fun onPreExecute() {
@@ -73,12 +95,13 @@ class FetchBuildingsByBuidTask(private val mListener: FetchBuildingsByBuidTaskLi
     }
   }
 
-  protected override fun doInBackground(vararg params: Void): String {
+  override fun doInBackground(vararg params: Void?): String {
     return if (!NetworkUtils.isOnline(ctx)) {
-      "No connection available!"
+      MSG.WARN_NO_NETWORK
     } else try {
-      if (json_req == null) return "Error creating the request!"
+      if (json_req == null) return MSG.ERR_NULL_JSON_REQ
       val response: String
+      // TODO:PM pass Anyplace and use it.
       val pref = ctx.getSharedPreferences("LoggerPreferences", Context.MODE_PRIVATE)
       val host = pref.getString("server_ip_address", "ap.cs.ucy.ac.cy")
       val port = pref.getString("server_port", "443")
@@ -90,12 +113,17 @@ class FetchBuildingsByBuidTask(private val mListener: FetchBuildingsByBuidTaskLi
       }
 
       // process the buildings received
-      val b: BuildingModel
-      val latLng: `val` = LatLng(json.getString("coordinates_lat"), json.getString("coordinates_lon"))
-      b = BuildingModel()
+      // val b: BuildingModel
+      val sLat=json.getString("coordinates_lat")
+      val sLon=json.getString("coordinates_lon")
+      val name=json.getString("name")
+      val desc=json.getString("description")
+      val buid=json.getString("buid")
+      val latLng = LatLng(sLat.toDouble(), sLon.toDouble())
+      val b = BuildingModel(latLng, name, desc, buid)
       // b.setPosition(json.getString("coordinates_lat"), json.getString("coordinates_lon"));
-      b.buid = json.getString("buid")
-      b.name = json.getString("name")
+      // b.buid = json.getString("buid")
+      // b.name = json.getString("name")
       building = b
       success = true
       "Successfully fetched buildings"
@@ -122,18 +150,5 @@ class FetchBuildingsByBuidTask(private val mListener: FetchBuildingsByBuidTaskLi
   override fun onCancelled() { // just for < API 11
     if (showDialog) dialog!!.dismiss()
     mListener.onErrorOrCancel("Buildings Fetch cancelled...")
-  }
-
-  init {
-    // create the JSON object for the navigation API call
-    val j = JSONObject()
-    try {
-      j.put("username", "username")
-      j.put("password", "pass")
-      // insert the destination POI and the user's coordinates
-      j.put("buid", mbuid)
-      json_req = j.toString()
-    } catch (e: JSONException) {
-    }
   }
 }

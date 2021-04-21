@@ -1,0 +1,2 @@
+libs/flir/androidsdk-release.aar filter=lfs diff=lfs merge=lfs -text
+libs/flir/thermalsdk-release.aar filter=lfs diff=lfs merge=lfs -text

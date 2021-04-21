@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
 import android.content.Context;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ import com.dmsl.anyplace.utils.NetworkUtils;
 */
 
 
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.DBG;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
@@ -73,83 +75,90 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
 
 
 /**
- * TODO rename ObjectCache
+ * TODO:PM deprecate and eventually remove this.
+ * This should become a BaseModel from ViewModel
+ *
+ * Share cache between different apps?
+ * https://medium.com/androidsrc/share-cache-files-with-other-android-apps-using-fileprovider-897fe5705e45
  *
  * This class should provide the last fetched Buildings, Floors and POIs. At the
  * moment it's just static data structures but they should be implemented as a
  * local database and being retrieved as a ContentProvider.
  */
 @SuppressWarnings("serial")
-public class AnyplaceCache implements Serializable {
+@Deprecated()
+public class ObjectCache implements Serializable {
   private static final String TAG = "obj_cache";
-  private static AnyplaceCache mInstance = null;
+  private static ObjectCache mInstance = null;
 
   private transient BackgroundFetch bf = null;
 
   private int selectedBuilding = 0;
   // last fetched Buildings
   private List<BuildingModel> mSpinnerBuildings; //= new ArrayList<>(0);
-  private List<BuildingModel> mWorldBuildings;// = new ArrayList<>(0);
+  private List<BuildingModel> buildingsAll;// = new ArrayList<>(0);
 
   // last fetched pois
   private Map<String, PoisModel> mLoadedPoisMap;
   private String poisBUID;
 
-  public static AnyplaceCache getInstance(Context ctx) {
+  private AnyplaceApp app;
+
+  public static ObjectCache getInstance(AnyplaceApp app) {
     if (mInstance == null) {
-      synchronized (ctx) {
-        if (mInstance == null) { mInstance = getObject(ctx); }
+      synchronized (app) {
+        if (mInstance == null) { mInstance = getObject(app); }
         if (mInstance == null) {
-          mInstance = new AnyplaceCache();
-          LOG.D(TAG, "Initialized cache: " + GetCacheFile(ctx).getAbsolutePath());
+          mInstance = new ObjectCache();
+          mInstance.app = app;
+          LOG.D(TAG, "Initialized cache: " + GetCacheFile(app).getAbsolutePath());
         }
       }
     }
     return mInstance;
   }
 
-  public static void saveInstance(Context ctx) {
-    saveObject(ctx);
-  }
+  public static void saveInstance(AnyplaceApp app) { saveObject(app); }
 
-  private AnyplaceCache() {
+  private ObjectCache() {
     this.mSpinnerBuildings = new ArrayList<>(); // last fetched Buildings
     this.mLoadedPoisMap = new HashMap<>(); // last fetched pois
-    this.mWorldBuildings = new ArrayList<>();
+    this.buildingsAll = new ArrayList<>();
   }
 
   // All Buildings
   public List<BuildingModel> loadWorldBuildings(
-          final FetchBuildingsTask.FetchBuildingsTaskListener fetchBuildingsTaskListener,
-          final Context ctx, Boolean forceReload) {
-    if ((forceReload && NetworkUtils.isOnline(ctx)) || mWorldBuildings.isEmpty()) {
-      new FetchBuildingsTask(new FetchBuildingsTask.FetchBuildingsTaskListener() {
+          final Activity activity,
+          final FetchBuildingsTask.FetchBuildingsTaskListener listener,
+          Boolean forceReload) {
+    if ((forceReload && NetworkUtils.isOnline(activity)) || buildingsAll.isEmpty()) {
+      new FetchBuildingsTask(activity, new FetchBuildingsTask.FetchBuildingsTaskListener() {
 
         @Override
         public void onSuccess(String result, List<BuildingModel> buildings) {
-          LOG.D2("loadWorldBuildings: downloaded. storing to cache..");
-          mWorldBuildings = buildings;
-          AnyplaceCache.saveInstance(ctx);
-          fetchBuildingsTaskListener.onSuccess(result, buildings);
+          buildingsAll = buildings;
+          LOG.D2("loadWorldBuildings: file-cached");
+          // ObjectCache.saveInstance(ctx); // CLR:PM
+          // this will load the buildings on the map
+          listener.onSuccess(result, buildings);
         }
 
         @Override
         public void onErrorOrCancel(String result) {
-          fetchBuildingsTaskListener.onErrorOrCancel(result);
+          listener.onErrorOrCancel(result);
         }
-
-      }, ctx).execute();
+      }, forceReload).execute();
     } else {
-      LOG.D2("loadWorldBuildings: read from cache");
-      fetchBuildingsTaskListener.onSuccess("Successfully read from cache", mWorldBuildings);
+      // these reside in memory now...
+      LOG.D2("loadWorldBuildings: read from live-cache");
+      listener.onSuccess("Successfully read from cache", buildingsAll);
     }
-    return mWorldBuildings;
+    return buildingsAll;
   }
 
-  public void loadBuilding(final String buid, final BuildingModel.FetchBuildingTaskListener l, Context ctx) {
+  public void loadBuilding(Activity activity, final String buid, final BuildingModel.FetchBuildingTaskListener l) {
 
-    loadWorldBuildings(new FetchBuildingsTask.FetchBuildingsTaskListener() {
-
+    loadWorldBuildings(activity, new FetchBuildingsTask.FetchBuildingsTaskListener() {
       @Override
       public void onSuccess(String result, List<BuildingModel> buildings) {
         BuildingModel fcb = null;
@@ -171,7 +180,7 @@ public class AnyplaceCache implements Serializable {
       public void onErrorOrCancel(String result) {
         l.onErrorOrCancel(result);
       }
-    }, ctx, false);
+    }, false);
   }
 
   // Buildings Spinner in Select Building Activity
@@ -179,13 +188,10 @@ public class AnyplaceCache implements Serializable {
     return mSpinnerBuildings;
   }
 
-  /**
-   * @param ctx Context
-   * @param mLoadedBuildings Loaded buildings
-   */
-  public void setSpinnerBuildings(Context ctx, List<BuildingModel> mLoadedBuildings) {
+  public void setSpinnerBuildings(AnyplaceApp app, List<BuildingModel> mLoadedBuildings) {
     this.mSpinnerBuildings = mLoadedBuildings;
-    AnyplaceCache.saveInstance(ctx);
+    // LOG.D(TAG, "ObjectCache: saving spinner buildings");
+    // ObjectCache.saveInstance(app);
   }
 
   // Use nav/AnyUserData for the loaded building in Navigator
@@ -219,10 +225,11 @@ public class AnyplaceCache implements Serializable {
     return this.mLoadedPoisMap;
   }
 
-  public void setPois(Context ctx,Map<String, PoisModel> lpID, String poisBUID) {
+  public void setPois(AnyplaceApp app, Map<String, PoisModel> lpID, String poisBUID) {
     this.mLoadedPoisMap = lpID;
     this.poisBUID = poisBUID;
-    AnyplaceCache.saveInstance(ctx);
+    LOG.D(TAG, "ObjectCache: saving pois");
+    ObjectCache.saveInstance(app);
   }
 
   // Check the loaded pois if match the Building ID
@@ -235,16 +242,16 @@ public class AnyplaceCache implements Serializable {
 
 
   // Fetch all Floor and Radiomaps of the current building
-  public void fetchAllFloorsRadiomapsRun(Context ctx, BackgroundFetchListener l, final BuildingModel build) {
+  public void fetchAllFloorsRadiomapsRun(Activity activity, BackgroundFetchListener l, final BuildingModel build) {
     if (bf == null) {
       l.onPrepareLongExecute();
-      bf = new BackgroundFetch(ctx, l, build);
+      bf = new BackgroundFetch(activity, l, build);
       bf.run();
-    } else if (!bf.build.buid.equals(build.buid)) {
+    } else if (!bf.getBuilding().buid.equals(build.buid)) {
       // Navigated to another building
       bf.cancel();
       l.onPrepareLongExecute();
-      bf = new BackgroundFetch(ctx, l, build);
+      bf = new BackgroundFetch(activity, l, build);
       bf.run();
     } else if (bf.status == BackgroundFetchListener.Status.SUCCESS) {
       // Previously finished for the current building
@@ -268,10 +275,10 @@ public class AnyplaceCache implements Serializable {
 
 
   // SAVE CACHE
-  public static boolean saveObject(Context ctx) {  // , ctx.getCacheDir(), getInstance(ctx)
+  public static boolean saveObject(AnyplaceApp app) {  // , ctx.getCacheDir(), getInstance(ctx)
     // saveObject(ctx, ctx.getCacheDir(), getInstance(ctx));
-    final File fcache = GetCacheFile(ctx);
-    AnyplaceCache obj = getInstance(ctx);
+    final File fcache = GetCacheFile(app);
+    ObjectCache obj = getInstance(app);
 
     FileOutputStream fos;
     ObjectOutputStream oos;
@@ -288,7 +295,7 @@ public class AnyplaceCache implements Serializable {
       String msg = "ERROR: saveObject:" + e.getClass() + ": cause: " + e.getCause() + ": " + e.getMessage();
       LOG.E(TAG, msg);
       // e.printStackTrace();
-      if (DBG.D1) Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+      if (DBG.D1) Toast.makeText(app, msg, Toast.LENGTH_LONG).show();
       fcache.delete();
       return false;
     }// finally {
@@ -312,7 +319,7 @@ public class AnyplaceCache implements Serializable {
     return new File(ctx.getCacheDir(), TAG);
   }
 
-  private static AnyplaceCache getObject(Context ctx) {
+  private static ObjectCache getObject(Context ctx) {
     File fcache = GetCacheFile(ctx);
     if(!fcache.exists()) return null;
 
@@ -321,12 +328,12 @@ public class AnyplaceCache implements Serializable {
     // LOG.D("getObject: suspend_f: " + suspend_f);
     FileInputStream fis;
     ObjectInputStream is;
-    AnyplaceCache cache;
+    ObjectCache cache;
     try {
 
       fis = new FileInputStream(fcache);
       is = new ObjectInputStream(fis);
-      cache = (AnyplaceCache) is.readObject();
+      cache = (ObjectCache) is.readObject();
       return cache;
 
       // } catch (Exception e) {

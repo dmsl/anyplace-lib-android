@@ -36,16 +36,8 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.googleapi;
 
-import java.io.IOException;
-
-import org.apache.http.client.HttpResponseException;
-
-import android.content.SharedPreferences;
 import android.util.Log;
 
-import cy.ac.ucy.cs.anyplace.lib.R;
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
@@ -56,14 +48,21 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
+import org.apache.http.client.HttpResponseException;
+
+import java.io.IOException;
+
+import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
 
 public class GooglePlaces {
 
 	/** Global instance of the HTTP transport. */
 	private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-	private static final String TAG = GooglePlaces.class.getSimpleName();
+	private static final String TAG = "ap_gplaces";
 
+	// TODO google plays api key?
 	// Google API Key
 	private static final String API_KEY = "" ;
 
@@ -108,7 +107,7 @@ public class GooglePlaces {
 
 	public static PlacesList queryStaticGoogle(String query, GeoPoint position, String key) throws IOException {
 
-	    LOG.i(TAG, "Creating places");
+	    LOG.I(TAG, "Creating places");
 		PlacesList placesList = GooglePlaces.search(position.dlat, position.dlon, -1, query, key);
 		return placesList;
 	}
@@ -127,12 +126,12 @@ public class GooglePlaces {
 	 * @throws IOException
 	 * */
 	public static PlacesList search(double latitude, double longitude, double radius, String query_text, String api_key) throws IOException {
-
-
-
+      if(api_key.length()==0) {
+        LOG.E(TAG,"GooglePlaces: Empty api key. returning null.");
+        return null;
+      }
 
 		try {
-
 			HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
 			HttpRequest request = httpRequestFactory.buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
 			request.getUrl().put("key", api_key);
@@ -141,7 +140,7 @@ public class GooglePlaces {
 			request.getUrl().put("sensor", "false");
 			request.getUrl().put("keyword", query_text);
 
-			Log.d("Places status", "url: " + request.getUrl().toString());
+			LOG.E("ap_gplaces", "url: " + request.getUrl().toString());
 
 			PlacesList list = request.execute().parseAs(PlacesList.class);
 			// Check log cat for places response status
@@ -149,7 +148,7 @@ public class GooglePlaces {
 			return list;
 
 		} catch (HttpResponseException e) {
-			Log.e("GooglePlaces:", e.getMessage());
+			LOG.E("GooglePlaces:", e.getMessage());
 			return null;
 		}
 
@@ -163,8 +162,8 @@ public class GooglePlaces {
 	 *            request
 	 * */
 	public static PlaceDetails getPlaceDetails(String reference) throws Exception {
-		try {
-
+      if(API_KEY.length()==0) return null;
+      try {
 			HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
 			HttpRequest request = httpRequestFactory.buildGetRequest(new GenericUrl(PLACES_DETAILS_URL));
 			request.getUrl().put("key", API_KEY);
@@ -172,11 +171,10 @@ public class GooglePlaces {
 			request.getUrl().put("sensor", "false");
 
 			PlaceDetails place = request.execute().parseAs(PlaceDetails.class);
-
 			return place;
 
 		} catch (HttpResponseException e) {
-			Log.e("GooglePlaces", e.getMessage());
+			Log.e(TAG, "GooglePlaces: Error: " + e.getMessage());
 			throw e;
 		}
 	}

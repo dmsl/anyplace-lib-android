@@ -35,16 +35,11 @@
 */
 package cy.ac.ucy.cs.anyplace.lib.android.cache
 
-import android.content.Context
-import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel.isFloorsLoaded
-import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel.loadFloors
-import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel.loadedFloors
-import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel.latitudeString
-import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel.longitudeString
-import cy.ac.ucy.cs.anyplace.lib.android.cache.BackgroundFetchListener
+import android.app.Activity
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
 import android.os.AsyncTask
 import android.os.Build
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask.FetchFloorsByBuidTaskListener
 import cy.ac.ucy.cs.anyplace.lib.android.nav.FloorModel
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorPlanTask
@@ -55,14 +50,17 @@ import java.io.File
 import java.io.Serializable
 
 // @SuppressWarnings("serial")
-internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListener, build: BuildingModel?) : Serializable, Runnable {
-  var build: BuildingModel? = null
+internal class BackgroundFetch(
+        private val activity: Activity,
+        private val l: BackgroundFetchListener,
+        val building: BuildingModel) : Serializable, Runnable {
+
+  @JvmField
   var status = BackgroundFetchListener.Status.RUNNING
   private var error = BackgroundFetchListener.ErrorType.EXCEPTION
   private var progress_total = 0
   private var progress_current = 0
 
-  // private Context ctx;
   private var currentTask: AsyncTask<Void, Void, String>? = null
   override fun run() {
     fetchFloors()
@@ -70,11 +68,11 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
 
   // Fetch Building Floors Details
   private fun fetchFloors() {
-    if (!build!!.isFloorsLoaded) {
-      build!!.loadFloors(app,
+    if (!building.isFloorsLoaded) {
+      building.loadFloors(activity,
               object : FetchFloorsByBuidTaskListener {
-                fun onSuccess(result: String?, floors: List<FloorModel?>?) {
-                  progress_total = build!!.loadedFloors.size * 2
+                override fun onSuccess(result: String?, floors: List<FloorModel>?) {
+                  progress_total = building.loadedFloors.size * 2
                   fetchAllFloorPlans(0)
                 }
 
@@ -84,19 +82,20 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
                 }
               }, false, false)
     } else {
-      progress_total = build!!.loadedFloors.size * 2
+      progress_total = building.loadedFloors.size * 2
       fetchAllFloorPlans(0)
     }
   }
 
   // Fetch Floor Maps
   private fun fetchAllFloorPlans(index: Int) {
-    if (build!!.isFloorsLoaded) {
-      if (index < build!!.loadedFloors.size) {
-        val f = build!!.loadedFloors[index]
-        currentTask = FetchFloorPlanTask(ctx, build!!.buid, f.floor_number)
+    if (building.isFloorsLoaded) {
+      if (index < building.loadedFloors.size) {
+        val f = building.loadedFloors[index]
+        currentTask = FetchFloorPlanTask(activity, building.buid, f.floor_number)
         (currentTask as FetchFloorPlanTask).setCallbackInterface(object : FetchFloorPlanTaskListener {
           override fun onSuccess(result: String, floor_plan_file: File) {
+
             l.onProgressUpdate(++progress_current, progress_total)
             fetchAllFloorPlans(index + 1)
           }
@@ -108,7 +107,7 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
 
           override fun onPrepareLongExecute() {}
         })
-        currentTask.execute()
+        (currentTask as FetchFloorPlanTask).execute()
       } else {
         fetchAllRadioMaps(0)
       }
@@ -120,9 +119,9 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
 
   // fetch All Radio Maps except from current floor(floor_number)
   private fun fetchAllRadioMaps(index: Int) {
-    if (build!!.loadedFloors.size > 0) {
-      if (index < build!!.loadedFloors.size) {
-        val f = build!!.loadedFloors[index]
+    if (building.loadedFloors.isNotEmpty()) {
+      if (index < building.loadedFloors.size) {
+        val f = building.loadedFloors[index]
         val task: AsyncTask<Void, Void, String> = DownloadRadioMapTaskBuid(object : DownloadRadioMapListener {
           override fun onSuccess(result: String) {
             l.onProgressUpdate(progress_current++, progress_total)
@@ -135,7 +134,7 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
           }
 
           override fun onPrepareLongExecute() {}
-        }, ctx, build!!.latitudeString, build!!.longitudeString, build!!.buid, f.floor_number, false)
+        }, activity, building.latitudeString, building.longitudeString, building.buid, f.floor_number, false)
         val currentApiVersion = Build.VERSION.SDK_INT
         currentTask = if (currentApiVersion >= Build.VERSION_CODES.HONEYCOMB) {
           // Execute task parallel with others
@@ -157,10 +156,5 @@ internal class BackgroundFetch(ctx: Context, private val l: BackgroundFetchListe
     if (currentTask != null) {
       currentTask!!.cancel(true)
     }
-  }
-
-  init {
-    this.build = build
-    ctx = ctx
   }
 }

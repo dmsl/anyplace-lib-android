@@ -60,15 +60,13 @@ public class AnyplaceDebug {
     public static final boolean DEBUG_LOCATION = false ;
 
 
-	private static String getServerIPAddress(Context ctx){
-
-
-		if (!DEBUG_URL) {
-			Context c = ctx;
-			SharedPreferences preferences = c.getSharedPreferences("Anyplace_Preferences", c.MODE_PRIVATE);
-			return preferences.getString("server_ip_address", "ap.cs.ucy.ac.cy" ).trim();
-		} else {
-			return "http://192.168.1.2:9000";
-		}
-	}
+	// private static String getServerIPAddress(Context ctx){ // CLR:PM
+	// 	if (!DEBUG_URL) {
+	// 		Context c = ctx;
+	// 		SharedPreferences preferences = c.getSharedPreferences("Anyplace_Preferences", c.MODE_PRIVATE);
+	// 		return preferences.getString("server_ip_address", "ap.cs.ucy.ac.cy" ).trim();
+	// 	} else {
+	// 		return "http://192.168.1.2:9000";
+	// 	}
+	// }
 }

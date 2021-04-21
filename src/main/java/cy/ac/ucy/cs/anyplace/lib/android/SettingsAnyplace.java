@@ -5,9 +5,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import cy.ac.ucy.cs.anyplace.lib.R;
-//TODO: Add port and the rest from preferences. Logger data will also be accessed from here. This class is currently unnecessary.
 
-
+//TODO: Make this for preferneces
+// Logger data will also be accessed from here. This class is currently unused.
 
 public class SettingsAnyplace {
 

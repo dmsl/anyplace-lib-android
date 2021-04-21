@@ -40,24 +40,33 @@ import java.io.File;
 
 import android.content.Context;
 
-public class AnyplaceUtils {
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
+import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 
-	public static File getFolderRootFolder(Context ctx, String folder) throws Exception {
-		if (!AndroidUtils.checkExternalStorageState()) {
-			throw new Exception("Error: It seems that we cannot write on your sdcard!");
-		}
+/**
+ * TODO:PM merge with FileCache ?
+ * also this: https://developer.android.com/about/versions/11/privacy/storage
+ *
+ * CHECK:PM how to share downloaded data between navigator, and logger
+ */
+public class AnyplaceUtilsOLD {
 
-		File sdcard_root = ctx.getExternalFilesDir(null);
-		if (sdcard_root == null) {
-			throw new Exception("Error: It seems we cannot access the sdcard!");
-		}
-		File root = new File(sdcard_root, folder);
-		root.mkdirs();
-		if (root.isDirectory() == false) {
-			throw new Exception("Error: It seems we cannot write on the sdcard!");
-		}
-		return root;
-	}
+	// public static File getFolderRootFolder(Context ctx, String folder) throws Exception {
+	// 	if (!AndroidUtils.checkExternalStorageState()) {
+	// 		throw new Exception("Error: It seems that we cannot write on your sdcard!");
+	// 	}
+    //
+	// 	File sdcard_root = ctx.getExternalFilesDir(null);
+	// 	if (sdcard_root == null) {
+	// 		throw new Exception("Error: It seems we cannot access the sdcard!");
+	// 	}
+	// 	File root = new File(sdcard_root, folder);
+	// 	root.mkdirs();
+	// 	if (root.isDirectory() == false) {
+	// 		throw new Exception("Error: It seems we cannot write on the sdcard!");
+	// 	}
+	// 	return root;
+	// }
 
 	/**
 	 * Returns the File to the root folder where floor plans are stored on the
@@ -77,9 +86,13 @@ public class AnyplaceUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static File getRadioMapsRootFolder(Context ctx) throws Exception {
-		return getFolderRootFolder(ctx, "radiomaps");
-	}
+	public static File getRadioMapsRootFolder(AnyplaceApp app) throws Exception {
+	  // TODO replace this with cache..
+      File dir = new File(app.prefs.getCacheDir());
+      // File dir =getFolderRootFolder(ctx, "radiomaps") ; // CLR
+      LOG.E("getRadioMapsRootFolder: " + dir);
+      return dir;
+    }
 
 	/**
 	 * Returns the filename for the radiomap to be used according to the floor

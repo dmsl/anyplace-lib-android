@@ -10,14 +10,10 @@ import java.util.*
 
 //TODO: Request permissions then call from onStart and onConnected.
 //TODO: Move all fake gps here.
-class GPSUtils {
+class LocationUtils {
   companion object {
-    fun IsLocationEnabled(ctx: Context) : Boolean {
-      val locationManager = ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-      return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-    }
 
-    fun PrettyLocation(loc: Location, ctx: Context) : String {
+    fun prettyLocation(loc: Location, ctx: Context) : String {
       val addresses: List<Address>?
       val geoCoder = Geocoder(ctx, Locale.getDefault())
       addresses = geoCoder.getFromLocation(
@@ -29,12 +25,14 @@ class GPSUtils {
         val city: String = addresses[0].locality
         val state: String = addresses[0].adminArea
         val country: String = addresses[0].countryName
-        val postalCode: String = addresses[0].postalCode
+        // sometimes is null
+        // var postalCode: String = addresses[0].postalCode
+        // if(postalCode==null) postalCode="po:null"
         val knownName: String = addresses[0].featureName
-        return "location: $address $city $state $postalCode $country $knownName"
+        return "$address $city $state $country $knownName"
       }
 
-     return "location: <empty>"
+     return "<empty>"
     }
   }
 }

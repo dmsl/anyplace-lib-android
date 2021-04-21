@@ -52,7 +52,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 
 public class MyBuildingsRenderer extends DefaultClusterRenderer <BuildingModel>{
 
-    private Context ctx;
+    private final Context ctx;
 
 	public MyBuildingsRenderer(Context context, GoogleMap map, ClusterManager<BuildingModel> clusterManager) {
 		super(context, map, clusterManager);
@@ -63,16 +63,19 @@ public class MyBuildingsRenderer extends DefaultClusterRenderer <BuildingModel>{
     protected void onBeforeClusterItemRendered(BuildingModel bm, MarkerOptions markerOptions) {
 
        // markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin2));
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.building));
 
+       // TODO this is slow?
        // markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.building_icon));
-       markerOptions.icon(BitmapDescriptorFactory.fromBitmap(resizeBuildingIcon(128,128)));
-
-      // markerOptions.icon(BitmapDescriptorFactory.fromFile("pin2.png"));
+       // markerOptions.icon(BitmapDescriptorFactory.fromBitmap(resizeBuildingIcon(128,128)));
+       // markerOptions.icon(BitmapDescriptorFactory.fromFile("pin2.png"));
     }
 
   public Bitmap resizeBuildingIcon( int width, int height){
-    // Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(),getResources().getIdentifier(iconName, "drawable", getPackageName()));
-    Bitmap imageBitmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.building_icon);
+    // Bitmap imageBitmap = BitmapFactory.decodeResource(
+    // getResources(),getResources().getIdentifier(iconName, "drawable", getPackageName()));
+    // Bitmap imageBitmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.building_icon);
+    Bitmap imageBitmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.pin2);
     Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
     return resizedBitmap;
   }

@@ -4,14 +4,14 @@
  * Anyplace is a first-of-a-kind indoor information service offering GPS-less
  * localization, navigation and search inside buildings using ordinary smartphones.
  *
- * Author(s): Timotheos Constambeys
+ * Author(s): Paschalis Mpeis
  *
  * Supervisor: Demetrios Zeinalipour-Yazti
  *
  * URL: http://anyplace.cs.ucy.ac.cy
  * Contact: anyplace@cs.ucy.ac.cy
  *
- * Copyright (c) 2015, Data Management Systems Lab (DMSL), University of Cyprus.
+ * Copyright (c) 2021, Data Management Systems Lab (DMSL), University of Cyprus.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -35,114 +35,27 @@
  */
 package cy.ac.ucy.cs.anyplace.lib.android.tasks
 
+import android.app.Activity
 import android.app.ProgressDialog
-import android.content.Context
 import android.os.AsyncTask
-import cy.ac.ucy.cs.anyplace.lib.Anyplace
-import cy.ac.ucy.cs.anyplace.lib.android.consts.DEFAULT.Companion.IP
-import cy.ac.ucy.cs.anyplace.lib.android.consts.DEFAULT.Companion.PORT
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.app
+import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.FloorModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 
-class FetchFloorsByBuidTask(private val anyplace: Anyplace, private val mListener: FetchFloorsByBuidTaskListener,
-                            private val ctx: Context, private val buid: String, showDialog: Boolean) : AsyncTask<Void?, Void?, String>() {
+class FetchFloorsByBuidTask(private val activity: Activity,
+                            private val mListener: FetchFloorsByBuidTaskListener,
+                            private val buid: String,
+                            showDialog: Boolean) : AsyncTask<Void?, Void?, String>() {
+  private val TAG = FetchFloorsByBuidTask::class.java.simpleName
+
   interface FetchFloorsByBuidTaskListener {
     fun onErrorOrCancel(result: String?)
     fun onSuccess(result: String?, floors: List<FloorModel>?)
-  }
-
-  private val floors: MutableList<FloorModel> = ArrayList()
-  private var success = false
-  private var dialog: ProgressDialog? = null
-  private val showDialog = true
-  override fun onPreExecute() {
-    if (showDialog) {
-      dialog = ProgressDialog(ctx)
-      dialog!!.isIndeterminate = true
-      dialog!!.setTitle("Fetching floors")
-      dialog!!.setMessage("Please be patient...")
-      dialog!!.setCancelable(true)
-      dialog!!.setCanceledOnTouchOutside(false)
-      dialog!!.setOnCancelListener { // finishJob();
-        cancel(true)
-      }
-      dialog!!.show()
-    }
-  }
-
-  protected override fun doInBackground(vararg params: Void): String {
-    return if (!NetworkUtils.isOnline(ctx)) {
-      "No connection available!"
-    } else try {
-      //Uses GZIP encoding
-      // String response = NetworkUtils.downloadHttpClientJsonPost(AnyplaceAPI.getFetchFloorsByBuidUrl(ctx), j.toString()); // CLR?
-      // TODO:PM prefs class TODO PM: anyplace lib is used here...
-      val pref = ctx.getSharedPreferences("LoggerPreferences", Context.MODE_PRIVATE)
-      val host = pref.getString("server_ip_address", IP)
-      val port = pref.getString("server_port", PORT)
-      val client = Anyplace(host, port, ctx.cacheDir.absolutePath)
-      val response = client.allBuildingFloors(buid)
-      val json = JSONObject(response)
-      if (json.has("status") && json.getString("status").equals("error", ignoreCase = true)) {
-        return "Error Message: " + json.getString("message")
-      }
-
-      // process the buildings received
-      var b: FloorModel
-      val buids_json = JSONArray(json.getString("floors"))
-      if (buids_json.length() == 0) {
-        return "Error: 0 Floors found"
-      }
-      var i = 0
-      val sz = buids_json.length()
-      while (i < sz) {
-        val cp = buids_json[i] as JSONObject
-        b = FloorModel()
-        b.buid = cp.getString("buid")
-        b.floor_name = cp.getString("floor_name")
-        b.floor_number = cp.getString("floor_number")
-        b.description = cp.getString("description")
-
-        // use optString() because these values might not exist of a
-        // floor plan has not been set for this floor
-        b.bottom_left_lat = cp.optString("bottom_left_lat")
-        b.bottom_left_lng = cp.optString("bottom_left_lng")
-        b.top_right_lat = cp.optString("top_right_lat")
-        b.top_right_lng = cp.optString("top_right_lng")
-        floors.add(b)
-        i++
-      }
-      Collections.sort(floors)
-      success = true
-      "Successfully fetched floors"
-    } catch (e: Exception) {
-      // Log.d("fetching floors task", e.getMessage());
-      "Error fetching floors. [ " + e.message + " ]"
-    }
-  }
-
-  override fun onPostExecute(result: String) {
-    // removes the progress dialog
-    if (showDialog) dialog!!.dismiss()
-    if (success) {
-      mListener.onSuccess(result, floors)
-    } else {
-      // there was an error during the process
-      mListener.onErrorOrCancel(result)
-    }
-  }
-
-  override fun onCancelled(result: String) {
-    if (showDialog) dialog!!.dismiss()
-    mListener.onErrorOrCancel("Floor fetching cancelled...")
-  }
-
-  override fun onCancelled() { // just for < API 11
-    if (showDialog) dialog!!.dismiss()
-    mListener.onErrorOrCancel("Floor fetching cancelled...")
   }
 
   // public FetchFloorsByBuidTask(FetchFloorsByBuidTaskListener fetchFloorsByBuidTaskListener, Context ctx, String buid) {
@@ -150,7 +63,98 @@ class FetchFloorsByBuidTask(private val anyplace: Anyplace, private val mListene
   //   this.ctx = ctx;
   //   this.buid = buid;
   // }
-  init {
-    this.showDialog = showDialog
+  // init { // CLR? CHECK:PM
+  //   this.showDialog = showDialog
+  // }
+
+  private val floors: MutableList<FloorModel> = ArrayList()
+  private var success = false
+  private lateinit var dialog: ProgressDialog
+  private val showDialog = true
+
+  override fun onPreExecute() {
+    if (showDialog) {
+      dialog = ProgressDialog(activity)
+      dialog.isIndeterminate = true
+      dialog.setTitle("Fetching floors..")
+      // dialog.setMessage("Please be patient...")
+      dialog.setCancelable(true)
+      dialog.setCanceledOnTouchOutside(false)
+      dialog.setOnCancelListener { // finishJob();
+        cancel(true)
+      }
+      dialog.show()
+    }
   }
+
+  override fun doInBackground(vararg params: Void?): String {
+    return if (!NetworkUtils.isOnline(activity)) {
+      MSG.WARN_NO_NETWORK
+    } else try {
+      val json: JSONObject
+      if(activity.app.fileCache.hasBuildingsFloors(buid)) {
+        LOG.D2(TAG, "Fetch building floors: using file-cache. buid: $buid")
+        json = activity.app.fileCache.readBuildingFloors(buid)
+      } else {
+        LOG.D2(TAG, "Fetch building floors: downloading for buid: $buid")
+        val jsonStr = activity.app.api.allBuildingFloors(buid)
+        json = JSONObject(jsonStr)
+        if (json.has("status") && json.getString("status").equals("error", ignoreCase = true)) {
+          return "ERROR: " + json.getString("message")
+        }
+
+        if(!activity.app.fileCache.storeBuildingFloors(buid, jsonStr)) {
+          LOG.E(TAG, "ERROR: file-cache failed to store floors. buid: $buid")
+        }
+      }
+
+      // process the buildings received
+      var floor: FloorModel
+      val buids_json = JSONArray(json.getString("floors"))
+      if (buids_json.length() == 0) {
+        return MSG.ERR_NO_FLOORS
+      }
+      var i = 0
+      val sz = buids_json.length()
+      while (i < sz) {
+        val cp = buids_json[i] as JSONObject
+        floor = FloorModel()
+        floor.buid = cp.getString("buid")
+        floor.floor_name = cp.getString("floor_name")
+        floor.floor_number = cp.getString("floor_number")
+        floor.description = cp.getString("description")
+
+        // use optString() because these values might not exist of a
+        // floor plan has not been set for this floor
+        floor.bottom_left_lat = cp.optString("bottom_left_lat")
+        floor.bottom_left_lng = cp.optString("bottom_left_lng")
+        floor.top_right_lat = cp.optString("top_right_lat")
+        floor.top_right_lng = cp.optString("top_right_lng")
+        floors.add(floor)
+        i++
+      }
+      floors.sort()
+      success = true
+      MSG.SUCC_FETCHED_FLOORS
+    } catch (e: Exception) {
+      activity.app.fileCache.deleteBuildingFloors(buid)
+      LOG.E(TAG, e)
+      "ERROR Fetch floors: " + e.message
+    }
+  }
+
+  override fun onPostExecute(result: String) {
+    if (showDialog) dialog.dismiss()   // hide progress dialog
+    if (success) {
+      mListener.onSuccess(result, floors)
+    } else {  // there was an error during the process
+      mListener.onErrorOrCancel(result)
+    }
+  }
+
+  override fun onCancelled(result: String) {
+    if (showDialog) dialog.dismiss()
+    mListener.onErrorOrCancel(MSG.WARN_FLOOR_FETCH_CANCELLED)
+  }
+
 }

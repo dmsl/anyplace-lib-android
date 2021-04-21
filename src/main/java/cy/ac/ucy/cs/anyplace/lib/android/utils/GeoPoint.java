@@ -39,6 +39,8 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils;
 
 import android.location.Location;
 
+import org.jetbrains.annotations.NotNull;
+
 import cy.ac.ucy.cs.anyplace.lib.android.googleapi.Place;
 
 public class GeoPoint {
@@ -48,9 +50,7 @@ public class GeoPoint {
 	public double dlat;
 	public double dlon;
 
-	public GeoPoint() {
-
-	}
+	public GeoPoint() { }
 
 	public GeoPoint(double lat, double lon) {
 		this.lat = Double.toString(lat);
@@ -78,7 +78,8 @@ public class GeoPoint {
 		this.lng = lon;
 	}
 
-	public String toString() {
+	@NotNull
+    public String toString() {
 		return "lat[" + lat + "] lon[" + lng + "]";
 	}
 

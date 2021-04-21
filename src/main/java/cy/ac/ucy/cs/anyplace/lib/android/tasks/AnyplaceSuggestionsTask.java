@@ -50,7 +50,8 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Handler;
 
-import cy.ac.ucy.cs.anyplace.lib.android.cache.AnyplaceCache;
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
+import cy.ac.ucy.cs.anyplace.lib.android.cache.ObjectCache;
 import cy.ac.ucy.cs.anyplace.lib.android.googleapi.GooglePlaces;
 import cy.ac.ucy.cs.anyplace.lib.android.googleapi.PlacesList;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.AnyPlaceSeachingHelper;
@@ -58,8 +59,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.nav.IPoisClass;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.AnyPlaceSeachingHelper.SearchTypes;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
-
-import cy.ac.ucy.cs.anyplace.lib.android.nav.AnyPlaceSeachingHelper;
 
 /**
  * The task that provides the Suggestions according to the zoom level and the position.
@@ -86,16 +85,20 @@ public class AnyplaceSuggestionsTask extends AsyncTask<Void, Void, String> {
 	private List<? extends IPoisClass> pois;
 	private String API_KEY;
 
-	private AnyplaceCache mAnyplaceCache = null;
+	private ObjectCache mAnyplaceCache = null;
 
-	public AnyplaceSuggestionsTask(AnyplaceSuggestionsListener l, Context ctx, SearchTypes searchType, GeoPoint position, String query, String key) {
+	public AnyplaceSuggestionsTask(AnyplaceApp app,
+                                   AnyplaceSuggestionsListener l,
+                                   SearchTypes searchType,
+                                   GeoPoint position,
+                                   String query, String key) {
 		this.mListener = l;
 		this.searchType = searchType;
 		this.position = position;
 		this.query = query;
 		this.ctx = ctx;
 		API_KEY = key;
-		mAnyplaceCache = AnyplaceCache.getInstance(ctx);
+		mAnyplaceCache = ObjectCache.getInstance(app);
 	}
 
 	public static boolean matchQueryPoi(String query, String poi) {
@@ -188,7 +191,6 @@ public class AnyplaceSuggestionsTask extends AsyncTask<Void, Void, String> {
 
 				// cursor = AnyplacePOIProvider.queryStatic(query,
 				// AnyplacePOIProvider.POI_GOOGLE_PLACES, position);
-
 				PlacesList places = GooglePlaces.queryStaticGoogle(query, position, API_KEY);
 				if (isCancelled())
 					return "Cancelled!";

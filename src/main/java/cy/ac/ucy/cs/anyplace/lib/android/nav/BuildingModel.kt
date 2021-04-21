@@ -4,14 +4,14 @@
 * Anyplace is a first-of-a-kind indoor information service offering GPS-less
 * localization, navigation and search inside buildings using ordinary smartphones.
 *
-* Author(s): Timotheos Constambeys
+* Author(s): Paschalis Mpeis, Timotheos Constambeys
 * 
 * Supervisor: Demetrios Zeinalipour-Yazti
 *
 * URL: http://anyplace.cs.ucy.ac.cy
 * Contact: anyplace@cs.ucy.ac.cy
 *
-* Copyright (c) 2015, Data Management Systems Lab (DMSL), University of Cyprus.
+* Copyright (c) 2021, Data Management Systems Lab (DMSL), University of Cyprus.
 * All rights reserved.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -35,76 +35,101 @@
 */
 package cy.ac.ucy.cs.anyplace.lib.android.nav
 
-import android.content.Context
+import android.app.Activity
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
-import cy.ac.ucy.cs.anyplace.lib.android.cache.AnyplaceCache
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.app
+import cy.ac.ucy.cs.anyplace.lib.android.cache.ObjectCache
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask.FetchFloorsByBuidTaskListener
 import java.io.Serializable
 import java.util.*
 
-class BuildingModel : Comparable<BuildingModel>, ClusterItem, Serializable {
+class BuildingModel(
+        // init inherited fields
+        private val position: LatLng,  // XXX:PM BUG:PM this is not parcelable/serializable
+        private val title: String,
+        private val snippet: String,
+        // extra fields (local to BuildingModel)
+        @JvmField
+        var buid: String): ClusterItem,
+        Comparable<BuildingModel>, Serializable {
+
+  val TAG = BuildingModel::class.java.simpleName
+
   interface FetchBuildingTaskListener {
     fun onErrorOrCancel(result: String?)
     fun onSuccess(result: String?, building: BuildingModel?)
   }
 
-  var buid = ""
-  var name: String? = null
+  // @JvmField
+  // val buid: String // CLR
+  // @JvmField
+  // var name: String = "" CLR ??
+  // @JvmField
+  // var latitude = 0.0
+  // @JvmField
+  // var longitude = 0.0
 
   // public String description;
   // public String address;
   // public String url;
-  var latitude = 0.0
-  var longitude = 0.0
 
   // last fetched floors
-  var floors: List<FloorModel> = ArrayList(0)
+  var loadedFloors: List<FloorModel> = ArrayList(0)
     private set
 
   // List index Used in SelectBuilding Activity
   var selectedFloorIndex = 0
     private set
 
-  fun loadFloors(l: FetchFloorsByBuidTaskListener, ctx: Context, forceReload: Boolean, showDialog: Boolean) {
+  override fun getPosition(): LatLng { return position }
+  override fun getTitle(): String { return title }
+  override fun getSnippet(): String { return snippet }
+  val description: String get() { return snippet }
+  val name : String get() { return title }
+
+  fun loadFloors(activity: Activity, l: FetchFloorsByBuidTaskListener, forceReload: Boolean, showDialog: Boolean) {
     if (!forceReload && isFloorsLoaded) {
-      l.onSuccess("Successfully read from cache", floors)
+      l.onSuccess("Successfully read from cache", loadedFloors)
     } else {
-      FetchFloorsByBuidTask(object : FetchFloorsByBuidTaskListener {
-        override fun onSuccess(result: String, floors: List<FloorModel>) {
-          this.floors = floors
-          AnyplaceCache.saveInstance(ctx.applicationContext)
+      FetchFloorsByBuidTask(activity, object : FetchFloorsByBuidTaskListener {
+        override fun onSuccess(result: String?, floors: List<FloorModel>?) {
+          this@BuildingModel.loadedFloors= floors!!
+          // LOG.D(TAG, "ObjectCache: saving fetched floors")
+          // ObjectCache.saveInstance(activity.app)
           l.onSuccess(result, floors)
         }
 
-        override fun onErrorOrCancel(result: String) {
+        override fun onErrorOrCancel(result: String?) {
           l.onErrorOrCancel(result)
         }
-      }, ctx, buid, showDialog).execute()
+      }, buid, showDialog).execute()
     }
   }
 
-  val isFloorsLoaded: Boolean
-    get() = if (floors.size == 0) false else true
+  val isFloorsLoaded = (loadedFloors.isNotEmpty())
+
+  /** Custom getter (computed) */
   val selectedFloor: FloorModel?
     get() {
-      var f: FloorModel? = null
-      try {
-        f = floors[selectedFloorIndex]
+      return try {
+        loadedFloors[selectedFloorIndex]
       } catch (ex: IndexOutOfBoundsException) {
+        null
       }
-      return f
     }
 
-  fun getFloorFromNumber(floor_number: String): FloorModel? {
-    val index = checkFloorIndex(floor_number) ?: return null
-    return floors[index]
+  fun getFloorFromNumber(floorNum: String): FloorModel? {
+    val index = checkFloorIndex(floorNum) ?: return null
+    return loadedFloors[index]
   }
 
-  // Set Currently Selected floor number
-  fun setSelectedFloor(floor_number: String): Boolean {
-    val floor_index = checkFloorIndex(floor_number)
+  /** Set Currently Selected floor number */
+  fun setSelectedFloor(floorNum: String): Boolean {
+    val floor_index = checkFloorIndex(floorNum)
     return if (floor_index != null) {
       selectedFloorIndex = floor_index
       true
@@ -113,20 +138,13 @@ class BuildingModel : Comparable<BuildingModel>, ClusterItem, Serializable {
     }
   }
 
-  // Set Currently Selected floor number (array index)
-  fun checkIndex(floor_index: Int): Boolean {
-    return if (floor_index >= 0 && floor_index < floors.size) {
-      true
-    } else {
-      false
-    }
-  }
+  fun checkIndex(floorIdx: Int): Boolean = floorIdx >= 0 && floorIdx < loadedFloors.size
 
-  fun checkFloorIndex(floor_number: String): Int? {
+  fun checkFloorIndex(floorNum: String): Int? {
     var index: Int? = null
-    for (i in floors.indices) {
-      val floorModel = floors[i]
-      if (floorModel.floor_number == floor_number) {
+    for (i in loadedFloors.indices) {
+      val floorModel = loadedFloors[i]
+      if (floorModel.floor_number == floorNum) {
         index = i
         break
       }
@@ -134,50 +152,33 @@ class BuildingModel : Comparable<BuildingModel>, ClusterItem, Serializable {
     return index
   }
 
-  override fun toString(): String {
-    // return name + " [" + description + "]";
-    return name!!
-  }
+  val lat: Double get() = position.latitude
+  val lon: Double get() = position.longitude
+  val latitudeString: String get() = java.lang.Double.toString(position.latitude)
+  val longitudeString: String get() = java.lang.Double.toString(position.longitude)
 
-  override fun equals(object2: Any?): Boolean {
-    return object2 is BuildingModel && buid == object2.buid
-  }
+  // return name + " [" + description + "]"; (OLD CLR?)
+  // override fun toString(): String = name
+  override fun toString(): String = title
 
-  val latitudeString: String
-    get() = java.lang.Double.toString(latitude)
-  val longitudeString: String
-    get() = java.lang.Double.toString(longitude)
+  override fun equals(obj: Any?): Boolean = obj is BuildingModel && buid == obj.buid
 
-  override fun getPosition(): LatLng {
-    return LatLng(latitude, longitude)
-  }
+  // val latitudeString: String
+  //   get() = java.lang.Double.toString(latitude)
+  // val longitudeString: String
+  //   get() = java.lang.Double.toString(longitude)
 
-  override fun getTitle(): String? {
-    return null
-  }
-
-  override fun getSnippet(): String? {
-    return null
-  }
-
-  // TODO: UPDATE MAPS CLUSTER API
-  // @Nullable
-  // @Override
-  // public String getTitle() {
-  // 	return null;
+  // override fun compareTo(other: BuildingModel): Int {
+  //   TODO("Not yet implemented")
   // }
-  // @Nullable
-  // @Override
-  // public String getSnippet() {
-  // 	return null;
-  // }
-  fun setPosition(latitude: String, longitude: String) {
-    this.latitude = latitude.toDouble()
-    this.longitude = longitude.toDouble()
-  }
 
-  override fun compareTo(arg0: BuildingModel): Int {
+  // fun setPosition(latitude: String, longitude: String) {
+  //   position = LatLng(latitude.toDouble(), longitude.toDouble())
+  // }
+
+  override fun compareTo(other: BuildingModel): Int {
     // ascending order
-    return name!!.compareTo(arg0.name!!)
+    // return name.compareTo(bm.name) CHECK:PM CLR:PM
+    return title.compareTo(other.title)
   }
 }

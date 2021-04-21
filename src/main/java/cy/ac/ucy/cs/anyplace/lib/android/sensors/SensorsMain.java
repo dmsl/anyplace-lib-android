@@ -46,6 +46,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+
 /**
  * The Positioning class handles the sensor data reception from sensor fusion
  * and the pedometer step detection. It uses the re-implemented dead-reckoning
@@ -55,14 +57,14 @@ import android.util.Log;
  * @author Jens Nitzschke, Beyonav, Lambros Petrou (UCY)
  */
 public class SensorsMain implements SensorEventListener {
-	private static final String TAG = "Positioning";
+	private static final String TAG = "ap_sensors_main";
 
 	// Orientation
 	public interface IOrientationListener {
-		public void onNewOrientation(float[] values);
+		void onNewOrientation(float[] values);
 	}
 
-	private List<IOrientationListener> olisteners = new ArrayList<IOrientationListener>(2);
+	private final List<IOrientationListener> olisteners = new ArrayList<IOrientationListener>(2);
 
 	public void addListener(IOrientationListener list) {
 		if (!olisteners.contains(list))
@@ -182,7 +184,7 @@ public class SensorsMain implements SensorEventListener {
 		Sensor acc = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		if (acc != null) {
 			mSensorManager.registerListener(this, acc, SensorManager.SENSOR_DELAY_FASTEST);
-			Log.i(TAG, "Accelerometer: " + acc.getName());
+			LOG.D3(TAG, "Accelerometer: " + acc.getName());
 		}
 
 		/*Sensor mag = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);

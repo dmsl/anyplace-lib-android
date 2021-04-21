@@ -36,6 +36,8 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 public class LogRecord {
 
 	private String bssid;
@@ -55,7 +57,8 @@ public class LogRecord {
 		return rss;
 	}
 	
-	public String toString() {
+	@NotNull
+    public String toString() {
 		String str = new String();
 		str = String.valueOf(bssid) + " " + String.valueOf(rss) + "\n";
 		return str;
