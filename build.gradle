@@ -92,7 +92,6 @@ dependencies {
   //// UI NAVIGATION
   implementation "androidx.navigation:navigation-fragment-ktx:$ver_nav_ui"
   implementation "androidx.navigation:navigation-ui-ktx:$ver_nav_ui"
-
   //// COROUTINES
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$ver_coroutines"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$ver_coroutines"
@@ -115,9 +114,9 @@ dependencies {
 
   /////////////////
   // ANYPLACE CORE (java lib)
-  implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
+//  implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
   // local include requires pulling the submodules (see README)
-  // implementation project(path: ':lib-core') // local
+   implementation project(path: ':lib-core') // local
 
   implementation 'gov.nist.math:jama:1.0.3'
 

@@ -39,7 +39,7 @@
 <resources>
 
   <string name="default_server_ip_address">ap.cs.ucy.ac.cy</string>
-  <string name="default_server_access_token">Insert Access Token</string>
+  <string name="default_server_access_token">ACCESS_TOKEN</string>
   <string name="default_server_port">443</string>
 
   <string name="app_name">Anyplace</string>
@@ -48,7 +48,7 @@
   <string name="action_settings">Settings</string>
 
   <!-- Required by AndroidFileBrowser -->
-  <string name="prefs_name_logger">Anyplace Logger Preferences</string>
+  <string name="prefs_name_logger">Preferences:Logger</string>
   <string name="app_choose_folder">Choose folder</string>
   <string name="parentDir">..</string>
   <string name="homeDir">.</string>
@@ -71,7 +71,7 @@
   <string name="logger_add_building_summary">Open Anyplace Architect</string>
 
   <string name="walk_bar_max">30</string>
-  <string name="prefs_name_anyplace">Anyplace Preferences</string>
+  <string name="prefs_name_anyplace">Preferences</string>
 
   <string name="algorithms_title">Positioning Algorithms</string>
   <string name="algorithms_summary">Choose one of the following algorithms to estimate
@@ -82,8 +82,6 @@
   <string name="second_fragment_label">Second Fragment</string>
   <string name="next">Next</string>
   <string name="previous">Previous</string>
-  <string name="hello_first_fragment">Hello first fragment</string>
-  <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
   <!-- Strings used for fragments for navigation -->
   <string-array name="intervalArray">
     <item>0.5 sec</item>
@@ -96,7 +94,6 @@
     <item>2000</item>
   </string-array>
   <string-array name="AlgorithmsFullNames">
-
     <!-- <item>Radial Basis Function (RBF) C Library </item> -->
     <item>K Nearest Neighbor (KNN) Algorithm</item>
     <item>Weighted K Nearest Neighbor (WKNN) Algorithm</item>
@@ -104,7 +101,6 @@
     <item>Probabilistic Minimum Mean Square Error (MMSE) Algorithm</item>
   </string-array>
   <string-array name="AlgorithmsValues">
-
     <!-- <item>RBF</item> -->
     <item>KNN</item>
     <item>WKNN</item>
@@ -113,7 +109,6 @@
   </string-array>
 
   <string-array name="AlgorithmsDescriptions">
-
     <!-- <item>The RBF is is an artificial neural network that uses radial basis functions as activation functions. The output of the network is a linear combination of radial basis functions  </item> -->
     <item>The KNN algorithm estimates the unknown user location as the average of K locations which have the shortest Euclidean distances between the currently observed RSS fingerprint and the respective mean value fingerprints in the radiomap.</item>
     <item>The WKNN algorithm is a variant of KNN and estimates the unknown user location as the weighted average of K locations which have the shortest Euclidean distances between the currently observed RSS fingerprint and the respective mean value fingerprints in the radiomap. The weight of each location is set equal to the inverse of the distance.</item>
@@ -121,7 +116,6 @@
     <item>The MMSE algorithm is a probabilistic approach that estimates the unknown user location by calculating the expected value of the location, which is equivalent to the weighted sum of the loations in the radiomap while the weights are set equal to the conditional probability of each location in the radiomap given the currently observed fingerprint (posterior).</item>
   </string-array>
   <string-array name="AlgorithmsNames">
-
     <!-- <item> Radial Basis Function (RBF)</item> -->
     <item> K Nearest Neighbor (KNN)</item>
     <item> Weighted K Nearest Neighbor (WKNN)</item>
