@@ -59,7 +59,7 @@ class BuildingModel(
 
   val TAG = BuildingModel::class.java.simpleName
 
-  interface FetchBuildingTaskListener {
+  interface Callback {
     fun onErrorOrCancel(result: String?)
     fun onSuccess(result: String?, building: BuildingModel?)
   }
@@ -92,6 +92,7 @@ class BuildingModel(
   val name : String get() { return title }
 
   fun loadFloors(activity: Activity, l: FetchFloorsByBuidTaskListener, forceReload: Boolean, showDialog: Boolean) {
+    LOG.D2(TAG, "loadFloors")
     if (!forceReload && isFloorsLoaded) {
       l.onSuccess("Successfully read from cache", loadedFloors)
     } else {

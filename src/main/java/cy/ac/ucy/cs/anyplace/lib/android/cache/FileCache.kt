@@ -8,8 +8,9 @@ import java.io.File
 class FileCache(private val prefs: Preferences) {
   companion object {
     val TAG = "ap_fileCache"
-    const val JS_BUILDINGS_ALL = "buildings.all.json"
-    const val JS_BUILDING_FLOORS = "building.floors.json"
+    const val JS_BUILDINGS_ALL = "buildings.json"
+    const val JS_BUILDING_FLOORS = "floors.json"
+    const val JS_BUILDING_POI = "poi.json"
   }
 
   fun initDirs() {
@@ -20,6 +21,38 @@ class FileCache(private val prefs: Preferences) {
     val dir = prefs.cacheJsonDir
     LOG.W(TAG, "Deleting the whole json cache: $dir")
     File(dir).deleteRecursively()
+  }
+
+  fun radiomapsFolder() = File(prefs.radiomapsDir)
+  fun floorplansFolder() = File(prefs.floorplansDir)
+  fun jsonFolder() = File(prefs.cacheJsonDir)
+
+  fun radiomapsFolder(buid: String, floorNum: String?) : File {
+    // INFO:PM i think buid is NOT nullable (CLR:PM)
+    val fl= floorNum ?: ""
+    val path = "${prefs.radiomapsDir}/$buid/fl$fl"
+    LOG.D2(TAG, "radiomapsFolder: $path")
+    val file = File(path)
+    file.mkdirs()
+    return file
+  }
+  // public static File getRadioMapFolder(Context ctx, String buid, String floor) throws Exception { // CLR:PM
+  // 	File root = getRadioMapsRootFolder(ctx);
+  // 	File file = new File(root, (buid == null ? "-" : buid) + "fl_" + (floor == null ? "-" : floor));
+  // 	file.mkdirs();
+  //
+  // 	// if (file.isDirectory() == false) {
+  // 	// 	throw new Exception("Error: It seems we cannot write on the sdcard!");
+  // 	// }
+  // 	return file;
+  // }
+
+  // public static String getRadioMapFileName(String floor) { // CLR:PM
+  //   return "fl_" + (floor == null ? "-" : floor) + "_indoor-radiomap.txt";
+  // }
+  fun radiomapFilename(floorNum: String?) : String {
+    val fl= floorNum ?: ""
+    return "${prefs.radiomapsDir}/fl$fl-indoor-radiomap.txt"
   }
 
   private fun getJsonFilename(name: String) = "${prefs.cacheJsonDir}/$name"
@@ -56,6 +89,39 @@ class FileCache(private val prefs: Preferences) {
   fun deleteBuildingFloors(buid: String) = deleteJsonBuildingFile(buid, JS_BUILDING_FLOORS)
   fun storeBuildingFloors(buid: String, jsString: String) = storeJsonBuilding(jsString, buid, JS_BUILDING_FLOORS)
   fun readBuildingFloors(buid: String): JSONObject = readJsonBuilding(buid, JS_BUILDING_FLOORS)
+
+  // building/floor/pois (floor==null -> fetch all pois)
+  fun hasBuildingsPOIs(buid: String, floorNum: String?) : Boolean {
+    return if(floorNum!=null) {
+      hasJsonBuildingFile("$buid/$floorNum", JS_BUILDING_POI)
+    } else {
+      hasJsonBuildingFile(buid, JS_BUILDING_POI)
+    }
+  }
+
+  fun deleteBuildingPOIs(buid: String, floorNum: String?) : Boolean {
+    return if(floorNum!=null) {
+      deleteJsonBuildingFile("$buid/$floorNum", JS_BUILDING_POI)
+    } else {
+      deleteJsonBuildingFile(buid, JS_BUILDING_POI)
+    }
+  }
+
+  fun storeBuildingPOIs(buid: String, floorNum: String?, jsString: String) : Boolean {
+    return if(floorNum!=null) {
+      storeJsonBuilding(jsString, "$buid/$floorNum", JS_BUILDING_POI)
+    } else {
+      storeJsonBuilding(jsString, buid, JS_BUILDING_POI)
+    }
+  }
+
+  fun readJsonPOIs(buid: String, floorNum: String?) : JSONObject {
+    return if(floorNum!=null) {
+      readJsonBuilding("$buid/$floorNum", JS_BUILDING_POI)
+    } else {
+      readJsonBuilding(buid, JS_BUILDING_POI)
+    }
+  }
 
   fun storeJsonBuilding(jsString: String, buid: String, name: String): Boolean {
     File(getJsonFilename(buid)).mkdirs() // create subfolder

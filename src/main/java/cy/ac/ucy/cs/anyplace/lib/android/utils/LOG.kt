@@ -4,7 +4,7 @@ import android.util.Log
 
 class DBG {
   companion object {
-    const val LEVEL = 3
+    const val LEVEL = 2
 
     const val D1 = LEVEL >= 1
     const val D2 = LEVEL >= 2

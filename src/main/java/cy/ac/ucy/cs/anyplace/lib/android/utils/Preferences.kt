@@ -11,6 +11,7 @@ class Preferences(private val ctx: Context) {
   companion object {
     const val SERVER_IP = "server_ip_address"
     const val SERVER_PORT = "server_port"
+    const val ACCESS_TOKEN= "server_access_token"
   }
 
   // CHECK:PM where is this stored? why not merged in lib?
@@ -21,7 +22,10 @@ class Preferences(private val ctx: Context) {
 
   val ip: String? get() { return pref.getString(SERVER_IP, DEFAULT.IP) }
   val port: String? get() { return pref.getString(SERVER_PORT, DEFAULT.PORT) }
+  val access_token: String? get() { return pref.getString(ACCESS_TOKEN, DEFAULT.ACCESS_TOKEN) }
+
   val cacheDir: String get() { return ctx.filesDir.absolutePath + "/app" } // TODO:PM rename
-  val cacheJsonDir: String get() { return "$cacheDir/json"
-  }
+  val cacheJsonDir: String get() { return "$cacheDir/json" }
+  val radiomapsDir: String get() { return "$cacheDir/radiomaps" }
+  val floorplansDir: String get() { return "$cacheDir/floorplans" }
 }

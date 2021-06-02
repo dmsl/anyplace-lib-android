@@ -48,13 +48,12 @@ import java.util.List;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
+// CHECK:PM why not a BG task?
 public class FetchNearBuildingsTask {
 	public List<Double> distances;
 	public List<BuildingModel> buildings;
 
-	public FetchNearBuildingsTask() {
-
-	}
+	public FetchNearBuildingsTask() { }
 
 	public void run(Iterator<BuildingModel> buildings, String lat, String lon, int max_distance) {
 		double dlat = Double.parseDouble(lat);
@@ -67,12 +66,8 @@ public class FetchNearBuildingsTask {
 
 		while (loadBuildings.hasNext()) {
 			BuildingModel b = loadBuildings.next();
-
 			BuildingModelDistance bmd = new BuildingModelDistance(b, lat, lon);
-
-			if (bmd.distance < max_distance) {
-				sorted.add(bmd);
-			}
+			if (bmd.distance < max_distance) { sorted.add(bmd); }
 		}
 
 		Collections.sort(sorted);

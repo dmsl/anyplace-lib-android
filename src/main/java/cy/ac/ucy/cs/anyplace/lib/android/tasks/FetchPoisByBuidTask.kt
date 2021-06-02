@@ -37,142 +37,136 @@ package cy.ac.ucy.cs.anyplace.lib.android.tasks
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.Context
 import android.os.AsyncTask
-import cy.ac.ucy.cs.anyplace.lib.Anyplace
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.app
+import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
 /**
  * Returns the POIs according to a given Building and Floor
- *
  */
-class FetchPoisByBuidTask : AsyncTask<Void?, Void?, String> {
-  interface FetchPoisListener {
-    fun onErrorOrCancel(result: String?)
-    fun onSuccess(result: String?, poisMap: Map<String, PoisModel>?)
+class FetchPoisByBuidTask: AsyncTask<Void?, Void?, String> {
+  private val TAG = FetchPoisByBuidTask::class.java.simpleName
+
+  interface Callback {
+    fun onErrorOrCancel(result: String)
+    fun onSuccess(result: String, poisMap: Map<String, PoisModel>)
   }
 
-  private var mListener: FetchPoisListener
-  private var mCtx: Context
+  private var activity: Activity
+  private var callback: Callback
+  // private var mCtx: Context
   private val poisMap: MutableMap<String, PoisModel> = HashMap()
   private var buid: String
-  private var floor_number: String? = null
+  private var floorNum: String? = null
   private var dialog: ProgressDialog? = null
   private var success = false
 
-  constructor(l: FetchPoisListener, ctx: Context, buid: String, floor_number: String?) {
-    mCtx = ctx
-    mListener = l
-    this.buid = buid
-    this.floor_number = floor_number
-  }
+  // constructor(activity: Activity, l: Callback, buid: String, floorNum: String?) {
+  //   this.activity=activity
+  //   callback = l
+  //   this.buid = buid
+  //   this.floorNum= floorNum
+  // }
 
-  constructor(activity: Activity?, l: FetchPoisListener, buid: String) {
-    mCtx = ctx
-    mListener = l
+  constructor(activity: Activity, l: Callback, buid: String) {
+    this.activity = activity
+    callback = l
     this.buid = buid
   }
 
   override fun onPreExecute() {
-    dialog = ProgressDialog(mCtx)
+    dialog = ProgressDialog(activity)
     dialog!!.isIndeterminate = true
     dialog!!.setTitle("Fetching POIs")
-    dialog!!.setMessage("Please be patient...")
+    // dialog!!.setMessage("Please be patient...") CLR:PM
     dialog!!.setCancelable(true)
     dialog!!.setCanceledOnTouchOutside(false)
     dialog!!.setOnCancelListener { cancel(true) }
     dialog!!.show()
   }
 
-  protected override fun doInBackground(vararg params: Void): String {
-    return if (!NetworkUtils.isOnline(mCtx)) {
-      "No connection available!"
+  override fun doInBackground(vararg params: Void?): String {
+    return if (!NetworkUtils.isOnline(activity)) {
+      MSG.WARN_NO_NETWORK
     } else try {
-      val j = JSONObject()
-      try {
-        j.put("username", "username")
-        j.put("password", "pass")
-        j.put("buid", buid)
-        j.put("floor_number", floor_number)
-      } catch (e: JSONException) {
-        return "Error Message: Could not create the request for the POIs!"
-      }
-      val response: String
-      val pref = mCtx.getSharedPreferences("LoggerPreferences", Context.MODE_PRIVATE)
-      val host = pref.getString("server_ip_address", "ap.cs.ucy.ac.cy")
-      val port = pref.getString("server_port", "443")
-      val client = Anyplace(host, port, mCtx.cacheDir.absolutePath)
-      response = if (floor_number != null) {
-        // fetch the pois of this floor
-        //response = NetworkUtils.downloadHttpClientJsonPost(AnyplaceAPI.getFetchPoisByBuidFloorUrl(), j.toString());
-        client.allBuildingFloorPOIs(buid, floor_number)
+      val fetchType = if (floorNum!=null) "floor" else "all"
+      var json : JSONObject?
+      if(activity.app.fileCache.hasBuildingsPOIs(buid, floorNum)) {
+        LOG.D2(TAG, "Fetch pois ($fetchType): using file-cache. buid: $buid")
+        json = activity.app.fileCache.readBuildingFloors(buid)
       } else {
-        // fetch the pois for the whole building
-        //response = NetworkUtils.downloadHttpClientJsonPost(AnyplaceAPI.getFetchPoisByBuidUrl(), j.toString());
-        client.allBuildingPOIs(buid)
-      }
-      val json_all = JSONObject(response)
-      if (json_all.has("status") && json_all.getString("status").equals("error", ignoreCase = true)) {
-        return "Error Message: " + json_all.getString("message")
-      }
-      // process the buildings received
-      val buids_json = JSONArray(json_all.getString("pois"))
-      var i = 0
-      val sz = buids_json.length()
-      while (i < sz) {
-        val json = buids_json[i] as JSONObject
+        val jsonStr: String = if (floorNum != null) { // fetch floor POIS
+          activity.app.api.allBuildingFloorPOIs(buid, floorNum)
+        } else {  // fetch all building POIs
+          activity.app.api.allBuildingPOIs(buid)
+        }
+        json = JSONObject(jsonStr)
+        // TODO:PM Handle request error method (make a method..)
+        if (json.has("status") && json.getString("status").equals("error", ignoreCase = true)) {
+          return "ERROR: " + json.getString("message")
+        }
 
-        // skip POIS without meaning
-        if (json.getString("pois_type") == "None") {
+        if(!activity.app.fileCache.storeBuildingPOIs(buid, floorNum, jsonStr)) {
+          LOG.E(TAG, "ERROR: file-cache failed to store pois ($fetchType). buid: $buid")
+        }
+      }
+
+      // process the buildings received
+      val poisJson = JSONArray(json.getString("pois"))
+      var i = 0
+      val sz = poisJson.length()
+      while (i < sz) {
+        val poiJs= poisJson[i] as JSONObject
+
+        // skip POIs without meaning. CHECK:PM What?!
+        if (poiJs.getString("pois_type") == "None") {
           i++
           continue
         }
         val poi = PoisModel()
-        poi.lat = json.getString("coordinates_lat")
-        poi.lng = json.getString("coordinates_lon")
-        poi.buid = json.getString("buid")
-        poi.floor_name = json.getString("floor_name")
-        poi.floor_number = json.getString("floor_number")
-        poi.description = json.getString("description")
-        poi.name = json.getString("name")
-        poi.pois_type = json.getString("pois_type")
-        poi.puid = json.getString("puid")
-        if (json.has("is_building_entrance")) {
+        poi.lat = poiJs.getString("coordinates_lat")
+        poi.lng = poiJs.getString("coordinates_lon")
+        poi.buid = poiJs.getString("buid")
+        poi.floor_name = poiJs.getString("floor_name")
+        poi.floor_number = poiJs.getString("floor_number")
+        poi.description = poiJs.getString("description")
+        poi.name = poiJs.getString("name")
+        poi.pois_type = poiJs.getString("pois_type")
+        poi.puid = poiJs.getString("puid")
+        if (poiJs.has("is_building_entrance")) {
           poi.is_building_entrance = json.getBoolean("is_building_entrance")
         }
         poisMap[poi.puid] = poi // add the POI to the hashmap
         i++
       }
       success = true
-      "Successfully fetched Points of Interest"
-    } catch (e: JSONException) {
-      "Not valid response from the server! Contact the admin."
+      MSG.OK_FETCHED_POIS
     } catch (e: Exception) {
-      "Error fetching Points of Interest. Exception[ " + e.message + " ]"
+      LOG.E(TAG, e)
+      activity.app.fileCache.deleteBuildingPOIs(buid, floorNum)
+      "ERROR: $TAG: ${e.javaClass}: ${e.cause}: ${e.message}"
     }
   }
 
   override fun onPostExecute(result: String) {
     dialog!!.dismiss()
-    if (success) {
-      mListener.onSuccess(result, poisMap)
-    } else {
-      mListener.onErrorOrCancel(result)
-    }
+    if (success) { callback.onSuccess(result, poisMap)
+    } else { callback.onErrorOrCancel(result) }
   }
 
   override fun onCancelled(result: String) {
     dialog!!.dismiss()
-    mListener.onErrorOrCancel(result)
+    activity.app.fileCache.deleteBuildingPOIs(buid, floorNum)
   }
 
   override fun onCancelled() {
     dialog!!.dismiss()
-    mListener.onErrorOrCancel("Fetching POIs was cancelled!")
+    activity.app.fileCache.deleteBuildingPOIs(buid, floorNum)
   }
-} // end of fetch POIS by building and floor
+}

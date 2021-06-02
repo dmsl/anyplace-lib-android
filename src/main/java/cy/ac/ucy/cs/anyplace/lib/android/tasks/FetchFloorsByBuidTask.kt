@@ -135,7 +135,7 @@ class FetchFloorsByBuidTask(private val activity: Activity,
       }
       floors.sort()
       success = true
-      MSG.SUCC_FETCHED_FLOORS
+      MSG.OK_FETCHED_FLOORS
     } catch (e: Exception) {
       activity.app.fileCache.deleteBuildingFloors(buid)
       LOG.E(TAG, e)
@@ -154,7 +154,7 @@ class FetchFloorsByBuidTask(private val activity: Activity,
 
   override fun onCancelled(result: String) {
     if (showDialog) dialog.dismiss()
-    mListener.onErrorOrCancel(MSG.WARN_FLOOR_FETCH_CANCELLED)
+    mListener.onErrorOrCancel(MSG.CANCELLED_FLOOR_FETCH)
   }
 
 }

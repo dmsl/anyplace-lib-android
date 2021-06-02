@@ -39,13 +39,10 @@ import android.app.Activity
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
 import android.os.AsyncTask
 import android.os.Build
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask.FetchFloorsByBuidTaskListener
 import cy.ac.ucy.cs.anyplace.lib.android.nav.FloorModel
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorPlanTask
-import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorPlanTask.FetchFloorPlanTaskListener
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.DownloadRadioMapTaskBuid
-import cy.ac.ucy.cs.anyplace.lib.android.tasks.DownloadRadioMapTaskBuid.DownloadRadioMapListener
 import java.io.File
 import java.io.Serializable
 
@@ -61,7 +58,8 @@ internal class BackgroundFetch(
   private var progress_total = 0
   private var progress_current = 0
 
-  private var currentTask: AsyncTask<Void, Void, String>? = null
+  // private var currentTask: AsyncTask<Void, Void, String>? = null
+  private var currentTask: FetchFloorPlanTask? = null
   override fun run() {
     fetchFloors()
   }
@@ -93,14 +91,15 @@ internal class BackgroundFetch(
       if (index < building.loadedFloors.size) {
         val f = building.loadedFloors[index]
         currentTask = FetchFloorPlanTask(activity, building.buid, f.floor_number)
-        (currentTask as FetchFloorPlanTask).setCallbackInterface(object : FetchFloorPlanTaskListener {
-          override fun onSuccess(result: String, floor_plan_file: File) {
+        (currentTask as FetchFloorPlanTask).setCallbackInterface(object :
+                FetchFloorPlanTask.Callback {
+          override fun onSuccess(result: String?, floor_plan_file: File?) {
 
             l.onProgressUpdate(++progress_current, progress_total)
             fetchAllFloorPlans(index + 1)
           }
 
-          override fun onErrorOrCancel(result: String) {
+          override fun onErrorOrCancel(result: String?) {
             status = BackgroundFetchListener.Status.STOPPED
             l.onErrorOrCancel(result, error)
           }
@@ -113,7 +112,7 @@ internal class BackgroundFetch(
       }
     } else {
       status = BackgroundFetchListener.Status.STOPPED
-      l.onErrorOrCancel("Fetch Floor Plans Error", error)
+      l.onErrorOrCancel("ERROR: Fetch floorplan", error)
     }
   }
 
@@ -122,26 +121,28 @@ internal class BackgroundFetch(
     if (building.loadedFloors.isNotEmpty()) {
       if (index < building.loadedFloors.size) {
         val f = building.loadedFloors[index]
-        val task: AsyncTask<Void, Void, String> = DownloadRadioMapTaskBuid(object : DownloadRadioMapListener {
-          override fun onSuccess(result: String) {
+        val task = DownloadRadioMapTaskBuid(activity, object : DownloadRadioMapTaskBuid.Callback {
+          override fun onSuccess(result: String?) {
             l.onProgressUpdate(progress_current++, progress_total)
             fetchAllRadioMaps(index + 1)
           }
 
-          override fun onErrorOrCancel(result: String) {
+          override fun onErrorOrCancel(result: String?) {
             status = BackgroundFetchListener.Status.STOPPED
             l.onErrorOrCancel(result, BackgroundFetchListener.ErrorType.EXCEPTION)
           }
 
           override fun onPrepareLongExecute() {}
-        }, activity, building.latitudeString, building.longitudeString, building.buid, f.floor_number, false)
+        }, // building.latitudeString, building.longitudeString,
+                building.buid, f.floor_number, false)
         val currentApiVersion = Build.VERSION.SDK_INT
-        currentTask = if (currentApiVersion >= Build.VERSION_CODES.HONEYCOMB) {
+        currentTask = if (currentApiVersion >= Build.VERSION_CODES.HONEYCOMB) ({
           // Execute task parallel with others
+          // XXX:PM something is weird here (FetchFloorPlanTask)
           task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-        } else {
+        }) as FetchFloorPlanTask? else ({
           task.execute()
-        }
+        }) as FetchFloorPlanTask?
       } else {
         status = BackgroundFetchListener.Status.SUCCESS
         l.onSuccess("Finished loading building")

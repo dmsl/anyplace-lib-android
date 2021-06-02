@@ -7,20 +7,23 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 
 /**
- *  Anyplace applications inherit from this class which initializes:
+ *  Anyplace applications should inherit from this class, which initializes:
  *  - the Anyplace API (anyplace-core)
  *  - Preferences
  *  - the FileCache
  *
  *  TODO:
- *  - control toast messages from her
+ *  - control toast messages from here
  */
-open class AnyplaceApp: Application() {
+abstract class AnyplaceApp: Application() {
   private val TAG = AnyplaceApp::class.java.simpleName
 
   lateinit var api: Anyplace
   lateinit var prefs: Preferences
   lateinit var fileCache: FileCache
+
+  abstract val navigator: Boolean
+  abstract val logger: Boolean
 
   override fun onCreate() {
     super.onCreate()
@@ -32,6 +35,7 @@ open class AnyplaceApp: Application() {
     fileCache = FileCache(prefs)
     fileCache.initDirs()
   }
+
 }
 
 // EXTENSION FUNCTIONS

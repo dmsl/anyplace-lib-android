@@ -59,7 +59,7 @@
   <item
       android:id="@+id/main_menu_preferences"
       android:icon="@android:drawable/ic_menu_preferences"
-      android:title="Preferences"/>
+      android:title="Preferences Anyplace"/>
 <!--    <item-->
 <!--        android:id="@+id/main_menu_exit"-->
 <!--        android:icon="@android:drawable/ic_menu_close_clear_cancel"-->

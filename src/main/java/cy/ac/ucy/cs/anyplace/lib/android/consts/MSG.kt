@@ -1,10 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.consts
 
 object MSG {
-  val SUCC_FETCHED_FLOORS = "Successfully fetched floors"
+  val OK_FETCHED_FLOORS = "Successfully fetched floors"
+  val OK_FETCHED_POIS = "Successfully fetched POIs"
 
-  val WARN_NO_NETWORK = "No connection available!"
-  val WARN_FLOOR_FETCH_CANCELLED = "Cancelled floor fetching."
+  val WARN_NO_NETWORK = "Network unavailable!"
+  val CANCELLED_FLOOR_FETCH = "Cancelled floor fetching."
+  val CANCELLED_FLOORPLAN_FETCH = "Cancelled floorplan fetching."
+  val CANCELLED_POI_FETCH = "Cancelled POIs fetching."
   val WARN_SELECT_BUILDING_DOOR = "Must select building and floor."
 
   val ERR_NO_FLOORS = "ERROR: No floors found."

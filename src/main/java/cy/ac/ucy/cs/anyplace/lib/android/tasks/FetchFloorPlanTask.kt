@@ -35,16 +35,23 @@
 */
 package cy.ac.ucy.cs.anyplace.lib.android.tasks
 
-import android.content.Context
+import android.app.Activity
 import android.os.AsyncTask
 import android.os.Handler
-import cy.ac.ucy.cs.anyplace.lib.android.LOG.Companion.D2
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.app
+import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AndroidUtils
-import org.json.JSONException
 import java.io.*
 import java.net.SocketTimeoutException
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
-class FetchFloorPlanTask(private val ctx: Context, private val buid: String, private val floor_number: String) : AsyncTask<Void?, Void?, String>() {
+class FetchFloorPlanTask(private val activity: Activity,
+                         private val buid: String,
+                         private val floorNum: String?) : AsyncTask<Void?, Void?, String>() {
+  private val TAG = FetchFloorPlanTask::class.java.simpleName
+
   interface Callback {
     fun onPrepareLongExecute()
     fun onErrorOrCancel(result: String?)
@@ -52,11 +59,16 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
   }
 
   private var callback: Callback? = null
-  private var floor_plan_file: File? = null
+  private var floorplanFile: File? = null
   private var success = false
 
   // Sync/Run PreExecute Listener on UI Thread
-  val syncListener = Any()
+  // val syncListener = Any() CLR
+  private val lockCallback = ReentrantLock()
+  private val condCallback = lockCallback.newCondition()
+  private val lockMain= ReentrantLock()
+  private val condMain= lockMain.newCondition()
+
   var run = false
   fun setCallbackInterface(callback: Callback?) {
     this.callback = callback
@@ -64,51 +76,54 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
 
   @Throws(IOException::class)
   fun copy(src: File?, dst: File?) {
-    var `in`: InputStream? = null
+    var input: InputStream? = null
     var out: OutputStream? = null
     try {
-      `in` = FileInputStream(src)
+      input = FileInputStream(src)
       out = FileOutputStream(dst)
-      // Transfer bytes from in to out
-      val buf = ByteArray(1024)
+      val buf = ByteArray(1024)  // Transfer bytes from in to out
       var len: Int
-      while (`in`.read(buf).also { len = it } > 0) {
+      while (input.read(buf).also { len = it } > 0) {
         out.write(buf, 0, len)
       }
     } finally {
-      `in`?.close()
+      input?.close()
       out?.close()
     }
   }
 
-  protected override fun doInBackground(vararg params: Void): String {
+  override fun doInBackground(vararg params: Void?): String {
     var output: OutputStream? = null
-    val `is`: InputStream? = null
+    val ins: InputStream? = null
     var tempFile: File? = null
     return try {
 
-      // check sdcard state
-      if (!AndroidUtils.checkExternalStorageState()) {
-        // we cannot download the floor plan on the sdcard
-        return "ERROR: It seems that we cannot write on your sdcard!"
-      }
-      val sdcard_root = ctx.getExternalFilesDir(null)
-              ?: return "ERROR: It seems we cannot save the floorplan on sdcard!"
-      val root = File(sdcard_root, "floor_plans" + File.separatorChar + buid + File.separatorChar + floor_number)
-      root.mkdirs()
-      val dest_path = File(root, "tiles_archive.zip")
-      val okfile = File(root, "ok.txt")
+      // // check sdcard state // CLR:PM using file cahcle
+      // if (!AndroidUtils.checkExternalStorageState()) {
+      //   // we cannot download the floor plan on the sdcard
+      //   return "ERROR: It seems that we cannot write on your sdcard!"
+      // }
+      // val sdcard_root = ctx.getExternalFilesDir(null)
+      //         ?: return "ERROR: It seems we cannot save the floorplan on sdcard!"
+
+      val SEP=File.separatorChar
+      val dir= File(activity.app.prefs.cacheDir, "floorplans$SEP$buid$SEP$floorNum")
+      LOG.E(TAG, "Floorplan dir: $dir")
+      dir.mkdirs()
+      val dest_path = File(dir, "tiles_archive.zip")
+      val okFile = File(dir, "ok.txt")
 
       // check if the file already exists and if yes return immediately
-      if (dest_path.exists() && dest_path.canRead() && dest_path.isFile && okfile.exists()) {
-        floor_plan_file = dest_path
+      if (dest_path.exists() && dest_path.canRead() && dest_path.isFile && okFile.exists()) {
+        floorplanFile = dest_path
         success = true
-        return "Successfully read floor plan from cache!"
+        LOG.D("Floorplan in file-cache.")
+        return "Read floorplan from cache."
       }
       runPreExecuteOnUI()
-      okfile.delete()
-      tempFile = File(ctx.cacheDir, "FloorPlan" + Integer.toString((Math.random() * 100).toInt()))
-      if (tempFile.exists()) throw Exception("Temp File already in use")
+      okFile.delete()
+      tempFile = File(activity.app.cacheDir, "tmp.floorplan." + Integer.toString((Math.random() * 100).toInt()))
+      if (tempFile.exists()) throw Exception("$TAG: Temporary file already in use!")
 
       // SharedPreferences pref = ctx.getSharedPreferences("LoggerPreferences", MODE_PRIVATE);
       // String host = pref.getString("server_ip_address", "ap.cs.ucy.ac.cy");
@@ -116,9 +131,10 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
       // //Anyplace client = new Anyplace("ap.cs.ucy.ac.cy", "443", "");
       // Anyplace client = new Anyplace(host, port, ctx.getCacheDir().getAbsolutePath());
       //String access_token = "TOKEN_REMOVED";
-      val access_token: String = pref.getString("server_access_token", "need an access token")
-      val response: ByteArray = client.floortilesByte(access_token, buid, floor_number)
-      // LOG.i(TAG, response );
+
+      // val access_token: String = pref.getString("server_access_token", "need an access token")
+      val response: ByteArray = activity.app.api.floortilesByte(activity.app.prefs.access_token, buid, floorNum)
+      LOG.D2(TAG, "response byteArray.size: ${response.size}")
       output = FileOutputStream(tempFile)
 
       // byte[] buffer = new byte[4096];
@@ -130,35 +146,33 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
       output.close()
 
       // Critical Block - Added for safety
-      synchronized(sync) {
+      lockMain.withLock {
         copy(tempFile, dest_path)
         // unzip the tiles_archive
         AndroidUtils.unzip(dest_path.absolutePath)
-        val out = FileWriter(okfile)
+        val out = FileWriter(okFile)
         out.write("ok;version:0;")
         out.close()
       }
-      floor_plan_file = dest_path
-      D2(TAG, "Downloaded floor tiles: " + floor_plan_file!!.absolutePath)
+      floorplanFile = dest_path
+      LOG.D2(TAG, "Downloaded floor tiles: " + floorplanFile!!.absolutePath)
       waitPreExecute()
       success = true
       "Successfully fetched floor plan"
-      // } catch (ConnectTimeoutException e) {
+      // } catch (ConnectTimeoutException e) { // CLR:PM
       // 	return "Cannot connect to Anyplace service!";
     } catch (e: SocketTimeoutException) {
-      "Communication with the server is taking too long!"
-    } catch (e: JSONException) {
-      "JSONException: " + e.message
+      "ERROR: connection timeout."
+    // } catch (e: JSONException) {
+      // "JSONException: " + e.message
     } catch (e: Exception) {
-      "Error fetching floor plan. [ " + e.message + " ]"
+      "ERROR: fetch floor plan:${e.javaClass}:${e.cause}: ${e.message}"
     } finally {
-      if (`is` != null) try {
-        `is`.close()
+      if (ins != null) try {
+        ins.close()
+        output!!.close()
       } catch (e: IOException) {
-      }
-      if (output != null) try {
-        output.close()
-      } catch (e: IOException) {
+        LOG.E(e)
       }
       tempFile?.delete()
     }
@@ -166,7 +180,7 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
 
   override fun onPostExecute(result: String) {
     if (success) {
-      callback!!.onSuccess(result, floor_plan_file)
+      callback!!.onSuccess(result, floorplanFile)
     } else {
       // there was an error during the process
       callback!!.onErrorOrCancel(result)
@@ -175,14 +189,14 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
 
   private fun runPreExecuteOnUI() {
     // Get a handler that can be used to post to the main thread
-    val mainHandler = Handler(ctx.mainLooper)
+    val mainHandler = Handler(activity.mainLooper)
     val myRunnable = Runnable {
       try {
         callback!!.onPrepareLongExecute()
       } finally {
-        synchronized(syncListener) {
+        lockCallback.withLock {
           run = true
-          syncListener.notifyAll()
+          condCallback.signalAll()
         }
       }
     }
@@ -191,23 +205,16 @@ class FetchFloorPlanTask(private val ctx: Context, private val buid: String, pri
 
   @Throws(InterruptedException::class)
   private fun waitPreExecute() {
-    synchronized(syncListener) {
-      while (run == false) {
-        syncListener.wait()
-      }
+    lockCallback.withLock {
+      while (!run) { condCallback.await() }
     }
   }
 
   override fun onCancelled(result: String) {
-    callback!!.onErrorOrCancel("Floor plan loading cancelled...")
+    callback!!.onErrorOrCancel(MSG.CANCELLED_FLOORPLAN_FETCH)
   }
 
   override fun onCancelled() { // just for < API 11
-    callback!!.onErrorOrCancel("Floor plan loading cancelled...")
-  }
-
-  companion object {
-    private val TAG = FetchFloorPlanTask::class.java.simpleName
-    private val sync = Any()
+    callback!!.onErrorOrCancel(MSG.CANCELLED_FLOORPLAN_FETCH)
   }
 }

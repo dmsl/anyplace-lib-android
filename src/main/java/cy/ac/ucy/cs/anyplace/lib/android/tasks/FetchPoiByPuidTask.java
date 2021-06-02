@@ -46,14 +46,15 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import cy.ac.ucy.cs.anyplace.lib.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
 
 import static android.content.Context.MODE_PRIVATE;
 
 /**
- * Returns the POIs according to a given Building and Floor
- *
+ * TODO:PM Coroutines/new Async
+ * Fetch the POIs of a Building's Floor
  */
 public class FetchPoiByPuidTask extends AsyncTask<Void, Void, String> {
 
@@ -101,7 +102,7 @@ public class FetchPoiByPuidTask extends AsyncTask<Void, Void, String> {
 	@Override
 	protected String doInBackground(Void... params) {
 		if (!NetworkUtils.isOnline(mCtx)) {
-			return "No connection available!";
+			return MSG.INSTANCE.getWARN_NO_NETWORK();
 		}
 
 		try {

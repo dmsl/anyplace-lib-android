@@ -156,7 +156,7 @@ public class ObjectCache implements Serializable {
     return buildingsAll;
   }
 
-  public void loadBuilding(Activity activity, final String buid, final BuildingModel.FetchBuildingTaskListener l) {
+  public void loadBuilding(Activity activity, final String buid, final BuildingModel.Callback l) {
 
     loadWorldBuildings(activity, new FetchBuildingsTask.FetchBuildingsTaskListener() {
       @Override
@@ -228,7 +228,7 @@ public class ObjectCache implements Serializable {
   public void setPois(AnyplaceApp app, Map<String, PoisModel> lpID, String poisBUID) {
     this.mLoadedPoisMap = lpID;
     this.poisBUID = poisBUID;
-    LOG.D(TAG, "ObjectCache: saving pois");
+    LOG.E(TAG, "ObjectCache: saving pois");
     ObjectCache.saveInstance(app);
   }
 

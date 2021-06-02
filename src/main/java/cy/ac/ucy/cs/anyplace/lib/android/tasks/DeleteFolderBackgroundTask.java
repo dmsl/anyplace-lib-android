@@ -85,7 +85,6 @@ public class DeleteFolderBackgroundTask extends AsyncTask<Void, Void, Void> {
 			dialog.setCancelable(false);
 			dialog.setIndeterminate(true);
 			dialog.setTitle("Deleting");
-			dialog.setMessage("Please be patient...");
 			dialog.show();
 		}
 	}
@@ -95,13 +94,15 @@ public class DeleteFolderBackgroundTask extends AsyncTask<Void, Void, Void> {
 		if (mParams != null) {
 			for (File f : mParams) {
 				deleteDirRecursively(f);
+				f.delete();
 			}
 		}
 
 		if (mParams2 != null) {
 			for (String f : mParams2) {
-				deleteDirRecursively(new File(f));
-			}
+              deleteDirRecursively(new File(f));
+              new File(f).delete();
+            }
 		}
 		return null;
 	}

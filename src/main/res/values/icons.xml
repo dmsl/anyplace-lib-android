@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
   <!-- icons that can be used with type="solid" -->
   <string name="fas_bars" translatable="false">&#xf0c9;</string>
   <string name="fas_home" translatable="false">&#xf015;</string>
@@ -19,4 +20,8 @@
   <string name="fa_check_square" translatable="false">&#xf14a;</string>
   <string name="fa_star" translatable="false">&#xf005;</string>
   <string name="fa_clipboard" translatable="false">&#xf328;</string>
+
+  <string name="fas_building" translatable="false">&#xf1ad;</string>
+  <string name="fas_arrow_circle_up" translatable="false">&#xf0aa;</string>
+
 </resources>

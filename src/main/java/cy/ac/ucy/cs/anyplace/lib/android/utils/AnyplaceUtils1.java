@@ -49,7 +49,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG;
  *
  * CHECK:PM how to share downloaded data between navigator, and logger
  */
-public class AnyplaceUtilsOLD {
+public class AnyplaceUtils1 {
 
 	// public static File getFolderRootFolder(Context ctx, String folder) throws Exception {
 	// 	if (!AndroidUtils.checkExternalStorageState()) {
@@ -73,11 +73,11 @@ public class AnyplaceUtilsOLD {
 	 * device external memory
 	 * 
 	 * @return
-	 * @throws Exception
-	 */
-	public static File getFloorPlansRootFolder(Context ctx) throws Exception {
-		return getFolderRootFolder(ctx, "floor_plans");
-	}
+	//  * @throws Exception
+	//  */
+	// public static File getFloorPlansRootFolder(Context ctx) throws Exception {
+	// 	return getFolderRootFolder(ctx, "floor_plans");
+	// }
 
 	/**
 	 * Returns the File to the root folder where radio maps are stored on the
@@ -86,34 +86,33 @@ public class AnyplaceUtilsOLD {
 	 * @return
 	 * @throws Exception
 	 */
-	public static File getRadioMapsRootFolder(AnyplaceApp app) throws Exception {
-	  // TODO replace this with cache..
-      File dir = new File(app.prefs.getCacheDir());
-      // File dir =getFolderRootFolder(ctx, "radiomaps") ; // CLR
-      LOG.E("getRadioMapsRootFolder: " + dir);
-      return dir;
-    }
+	// public static File getRadioMapsRootFolder(AnyplaceApp app) throws Exception {
+	//   // TODO replace this with cache..
+    //   File dir = new File(app.prefs.getCacheDir());
+    //   // File dir =getFolderRootFolder(ctx, "radiomaps") ; // CLR
+    //   LOG.E("getRadioMapsRootFolder: " + dir);
+    //   return dir;
+    // }
 
-	/**
-	 * Returns the filename for the radiomap to be used according to the floor
-	 * selected
-	 * 
-	 * @return
-	 */
-	public static String getRadioMapFileName(String floor) {
-		return "fl_" + (floor == null ? "-" : floor) + "_indoor-radiomap.txt";
-	}
+	// /**
+	//  * Returns the filename for the radiomap to be used according to the floor
+	//  * selected
+	//  *
+	//  * @return
+	//  */
+	// public static String getRadioMapFileName(String floor) {
+	// 	return "fl_" + (floor == null ? "-" : floor) + "_indoor-radiomap.txt";
+	// }
 
-	public static File getRadioMapFolder(Context ctx, String buid, String floor) throws Exception {
-		File root = getRadioMapsRootFolder(ctx);
-		File file = new File(root, (buid == null ? "-" : buid) + "fl_" + (floor == null ? "-" : floor));
-		file.mkdirs();
-
-		if (file.isDirectory() == false) {
-			throw new Exception("Error: It seems we cannot write on the sdcard!");
-		}
-
-		return file;
-	}
+	// public static File getRadioMapFolder(Context ctx, String buid, String floor) throws Exception {
+	// 	File root = getRadioMapsRootFolder(ctx);
+	// 	File file = new File(root, (buid == null ? "-" : buid) + "fl_" + (floor == null ? "-" : floor));
+	// 	file.mkdirs();
+    //
+	// 	// if (file.isDirectory() == false) {
+	// 	// 	throw new Exception("Error: It seems we cannot write on the sdcard!");
+	// 	// }
+	// 	return file;
+	// }
 
 }

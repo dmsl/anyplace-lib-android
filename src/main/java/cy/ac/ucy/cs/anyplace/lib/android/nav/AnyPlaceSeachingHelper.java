@@ -59,7 +59,7 @@ import com.google.gson.GsonBuilder;
 public class AnyPlaceSeachingHelper {
 
 	public enum SearchTypes {
-		INDOOR_MODE, OUTDOOR_MODE
+		INDOOR_MODE, OUTDOOR_MODE, UNKNOWN
 	}
 
 	public static SearchTypes getSearchType(float zoomLevel) {
