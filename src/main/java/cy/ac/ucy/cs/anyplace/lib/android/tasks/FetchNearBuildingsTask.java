@@ -49,6 +49,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
 // CHECK:PM why not a BG task?
+
+@Deprecated
 public class FetchNearBuildingsTask {
 	public List<Double> distances;
 	public List<BuildingModel> buildings;

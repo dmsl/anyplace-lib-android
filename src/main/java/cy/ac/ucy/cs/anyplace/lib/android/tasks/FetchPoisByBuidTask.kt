@@ -39,10 +39,10 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.os.AsyncTask
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.app
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
@@ -92,7 +92,7 @@ class FetchPoisByBuidTask: AsyncTask<Void?, Void?, String> {
   }
 
   override fun doInBackground(vararg params: Void?): String {
-    return if (!NetworkUtils.isOnline(activity)) {
+    return if (!OLDNetworkUtils.isOnline(activity)) {
       MSG.WARN_NO_NETWORK
     } else try {
       val fetchType = if (floorNum!=null) "floor" else "all"
@@ -102,9 +102,9 @@ class FetchPoisByBuidTask: AsyncTask<Void?, Void?, String> {
         json = activity.app.fileCache.readBuildingFloors(buid)
       } else {
         val jsonStr: String = if (floorNum != null) { // fetch floor POIS
-          activity.app.api.allBuildingFloorPOIs(buid, floorNum)
+          activity.app.apiOld.allBuildingFloorPOIs(buid, floorNum)
         } else {  // fetch all building POIs
-          activity.app.api.allBuildingPOIs(buid)
+          activity.app.apiOld.allBuildingPOIs(buid)
         }
         json = JSONObject(jsonStr)
         // TODO:PM Handle request error method (make a method..)

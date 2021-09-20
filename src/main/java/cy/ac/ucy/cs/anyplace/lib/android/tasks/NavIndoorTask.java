@@ -54,6 +54,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
 import static android.content.Context.MODE_PRIVATE;
 
+@Deprecated
 public class NavIndoorTask extends AsyncTask<Void, Void, String> {
 
 	public interface NavRouteListener {

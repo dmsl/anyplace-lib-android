@@ -54,10 +54,10 @@ import com.google.android.gms.maps.model.LatLng;
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
-import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
 
+@Deprecated
 public class FetchBuildingsTask extends AsyncTask<Void, Void, String> {
   private static final String TAG = FetchNearBuildingsTask.class.getSimpleName();
 
@@ -117,7 +117,7 @@ public class FetchBuildingsTask extends AsyncTask<Void, Void, String> {
 
   @Override
   protected String doInBackground(Void... params) {
-    if (!NetworkUtils.isOnline(app)) { return "ERROR: FetchBuildings: No network connection!"; }
+    if (!OLDNetworkUtils.isOnline(app)) { return "ERROR: FetchBuildings: No network connection!"; }
 
     try {
       // TODO:PM make this in a modern way: kotlin coroutines + something else...
@@ -140,7 +140,7 @@ public class FetchBuildingsTask extends AsyncTask<Void, Void, String> {
         LOG.D2(TAG, "Fetch buildings: downloading..");
 
         // Anyplace anyplace = new Anyplace(prefs.getIp(), prefs.getPort(), prefs.getCacheDir());
-        String response =  app.api.buildingAll(); // CHECK:PM get only nearby buildings..
+        String response =  app.apiOld.buildingAll(); // CHECK:PM get only nearby buildings..
         if(!app.fileCache.storeBuildingsAll(response)) {
           LOG.E(TAG, "ERROR: Failed to store buildings in file cache.");
         }

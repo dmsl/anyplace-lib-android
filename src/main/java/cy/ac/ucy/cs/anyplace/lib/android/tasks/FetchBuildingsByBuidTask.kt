@@ -42,10 +42,11 @@ import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
 import org.json.JSONException
 import org.json.JSONObject
 
+@Deprecated("must replace")
 class FetchBuildingsByBuidTask(
         private val mListener: FetchBuildingsByBuidTaskListener,
         private val ctx: Context,
@@ -96,7 +97,7 @@ class FetchBuildingsByBuidTask(
   }
 
   override fun doInBackground(vararg params: Void?): String {
-    return if (!NetworkUtils.isOnline(ctx)) {
+    return if (!OLDNetworkUtils.isOnline(ctx)) {
       MSG.WARN_NO_NETWORK
     } else try {
       if (json_req == null) return MSG.ERR_NULL_JSON_REQ

@@ -47,6 +47,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import android.os.AsyncTask;
 
+@Deprecated
 public class NavOutdoorTask extends AsyncTask<Void, Void, String> {
 
 	public interface NavDirectionsListener {

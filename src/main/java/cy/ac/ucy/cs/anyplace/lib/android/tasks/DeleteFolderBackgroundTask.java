@@ -46,7 +46,7 @@ import org.jetbrains.annotations.NotNull;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
-
+@Deprecated
 public class DeleteFolderBackgroundTask extends AsyncTask<Void, Void, Void> {
 
   public interface DeleteFolderBackgroundTaskListener {

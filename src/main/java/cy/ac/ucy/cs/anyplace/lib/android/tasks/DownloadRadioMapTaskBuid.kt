@@ -39,7 +39,7 @@ import android.app.Activity
 import android.os.AsyncTask
 import android.os.Handler
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ResponseUtils
 import org.json.JSONObject
 import java.io.File
@@ -56,6 +56,7 @@ import kotlin.concurrent.withLock
  * INFO there was another constructor here with lat/long these values where not used.
  *
  */
+@Deprecated("must replace")
 class DownloadRadioMapTaskBuid(private var activity: Activity,
                                private var callback: Callback,
                                private var buid: String,
@@ -143,7 +144,7 @@ class DownloadRadioMapTaskBuid(private var activity: Activity,
       okfile.delete()
       // TODO:PM CHANGE THIS
       val accessToken = activity.app.prefs.access_token
-      val response = activity.app.api.radiomapMeanByBuildingFloor(accessToken, buid, floorNum)
+      val response = activity.app.apiOld.radiomapMeanByBuildingFloor(accessToken, buid, floorNum)
       LOG.D2(TAG, "response: $response")
       ResponseUtils.process(activity, response)
 

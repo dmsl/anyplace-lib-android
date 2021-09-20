@@ -22,6 +22,8 @@ interface PreviousRunningTask {
  *
  * used only by logger
  */
+
+@Deprecated("must replace")
 class HeatmapTask(private val activity: Activity,
                   private var tileProvider: HeatmapTileProvider?,
                   private var gmap: GoogleMap?)

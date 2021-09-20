@@ -63,6 +63,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 /**
  * The task that provides the Suggestions according to the zoom level and the position.
  */
+@Deprecated
 public class AnyplaceSuggestionsTask extends AsyncTask<Void, Void, String> {
 
 	public interface AnyplaceSuggestionsListener {

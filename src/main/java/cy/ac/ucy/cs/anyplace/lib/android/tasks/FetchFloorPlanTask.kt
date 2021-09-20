@@ -39,14 +39,15 @@ import android.app.Activity
 import android.os.AsyncTask
 import android.os.Handler
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.app
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AndroidUtils
 import java.io.*
 import java.net.SocketTimeoutException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+@Deprecated("must replace")
 class FetchFloorPlanTask(private val activity: Activity,
                          private val buid: String,
                          private val floorNum: String?) : AsyncTask<Void?, Void?, String>() {
@@ -133,7 +134,7 @@ class FetchFloorPlanTask(private val activity: Activity,
       //String access_token = "TOKEN_REMOVED";
 
       // val access_token: String = pref.getString("server_access_token", "need an access token")
-      val response: ByteArray = activity.app.api.floortilesByte(activity.app.prefs.access_token, buid, floorNum)
+      val response: ByteArray = activity.app.apiOld.floortilesByte(activity.app.prefs.access_token, buid, floorNum)
       LOG.D2(TAG, "response byteArray.size: ${response.size}")
       output = FileOutputStream(tempFile)
 

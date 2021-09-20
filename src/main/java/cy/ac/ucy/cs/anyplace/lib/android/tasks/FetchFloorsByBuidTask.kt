@@ -39,14 +39,15 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.os.AsyncTask
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.app
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.nav.FloorModel
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 
+@Deprecated("must replace")
 class FetchFloorsByBuidTask(private val activity: Activity,
                             private val mListener: FetchFloorsByBuidTaskListener,
                             private val buid: String,
@@ -88,7 +89,7 @@ class FetchFloorsByBuidTask(private val activity: Activity,
   }
 
   override fun doInBackground(vararg params: Void?): String {
-    return if (!NetworkUtils.isOnline(activity)) {
+    return if (!OLDNetworkUtils.isOnline(activity)) {
       MSG.WARN_NO_NETWORK
     } else try {
       val json: JSONObject
@@ -97,7 +98,7 @@ class FetchFloorsByBuidTask(private val activity: Activity,
         json = activity.app.fileCache.readBuildingFloors(buid)
       } else {
         LOG.D2(TAG, "Fetch building floors: downloading for buid: $buid")
-        val jsonStr = activity.app.api.allBuildingFloors(buid)
+        val jsonStr = activity.app.apiOld.allBuildingFloors(buid)
         json = JSONObject(jsonStr)
         if (json.has("status") && json.getString("status").equals("error", ignoreCase = true)) {
           return "ERROR: " + json.getString("message")

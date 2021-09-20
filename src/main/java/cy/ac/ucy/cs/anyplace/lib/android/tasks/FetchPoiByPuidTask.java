@@ -48,7 +48,7 @@ import android.os.AsyncTask;
 import cy.ac.ucy.cs.anyplace.lib.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -56,6 +56,7 @@ import static android.content.Context.MODE_PRIVATE;
  * TODO:PM Coroutines/new Async
  * Fetch the POIs of a Building's Floor
  */
+@Deprecated
 public class FetchPoiByPuidTask extends AsyncTask<Void, Void, String> {
 
 	public interface FetchPoiListener {
@@ -101,7 +102,7 @@ public class FetchPoiByPuidTask extends AsyncTask<Void, Void, String> {
 
 	@Override
 	protected String doInBackground(Void... params) {
-		if (!NetworkUtils.isOnline(mCtx)) {
+		if (!OLDNetworkUtils.isOnline(mCtx)) {
 			return MSG.INSTANCE.getWARN_NO_NETWORK();
 		}
 

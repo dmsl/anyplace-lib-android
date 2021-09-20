@@ -64,7 +64,7 @@ import android.util.Log;
 
 import static android.content.Context.MODE_PRIVATE;
 
-
+@Deprecated
 public class UploadRSSLogTask extends AsyncTask<Void, Integer, String> {
   private final static String RADIO_UPLOAD_URL_API = "/anyplace/position/radio_upload";
     private static String TAG = UploadRSSLogTask.class.getSimpleName();
