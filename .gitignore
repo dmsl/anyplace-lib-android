@@ -288,3 +288,6 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,linux,android,androidstudio,gradle,java
+
+# Ignore any tflite models
+src/main/assets/models/

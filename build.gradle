@@ -1,40 +1,16 @@
-//buildscript { // CLR:PM
-//  repositories {
-//    maven {
-//      url "https://maven.google.com"
-//    }
-//    google()
-//    jcenter()
-//  }
-//  dependencies {
-//    classpath 'com.android.tools.build:gradle:4.2.0-rc01'
-//    classpath 'com.google.gms:google-services:4.3.5'
-//    // classpath 'androidx.test.uiautomator:uiautomator:2.2.0'
-//  }
-//}
-
-plugins {
-  id 'com.android.library'
-  id 'kotlin-android'
-
-//  id 'androidx.navigation.safeargs.kotlin'
-  id 'androidx.navigation.safeargs'
-  id 'kotlin-parcelize'  // to send safeArgs between different fragments we must parcelize
-//  id 'kotlin-kapt'  // annotation processor // CLR:PM
-//  id 'dagger.hilt.android.plugin' // dependency injection
-
-  id 'maven-publish' // CHECK:PM needed for jitpack.io?
-}
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-parcelize'  // to send safeArgs between different fragments we must parcelize
+apply plugin: "androidx.navigation.safeargs.kotlin"  //id 'androidx.navigation.safeargs'
+apply plugin: 'dagger.hilt.android.plugin'
+apply plugin: 'maven-publish'  // CHECK:PM needed for jitpack.io?
 
 repositories {
   mavenCentral()
   google()
-//  maven {
-//    url 'https://jitpack.io'
-//  } // CLR? is publishing ok?
+  maven { url 'https://jitpack.io' } // for publishing
   mavenCentral()
-  // TODO once easypermissions is migrated to mavenCentral remove the below
-  jcenter()
 }
 
 android {
@@ -45,11 +21,19 @@ android {
     minSdkVersion 28
     //noinspection OldTargetApi,ExpiredTargetSdkVersion
     targetSdkVersion 30
-    versionCode 1
-    versionName "1.1"
 
-    // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+      // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
+
+    // Read the API key from ./secure.properties into R.string.maps_api_key
+    def secureProps = new Properties()
+    if (file("../secure.properties").exists()) {
+      file("../secure.properties")?.withInputStream { secureProps.load(it) }
+    }
+    resValue "string", "maps_api_key", (secureProps.getProperty("MAPS_API_KEY") ?: "")
+    resValue "string", "server_google_oauth_client_id", (
+            secureProps.getProperty("SERVER_GOOGLE_OAUTH_CLIENT_ID") ?: "")
+
   }
 
   buildTypes {
@@ -61,95 +45,132 @@ android {
   packagingOptions {
     exclude 'META-INF/DEPENDENCIES'
   }
-  buildFeatures {
-    // dataBinding true
-    viewBinding true
-  }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
   kotlinOptions {
-    jvmTarget = '1.8'
+    jvmTarget = '11'
+  }
+  buildFeatures {
+    dataBinding true
+    viewBinding true
+  }
+  aaptOptions {
+    noCompress "tflite"  // needed for AP-CV
   }
 }
 
 
 
 dependencies {
+  implementation fileTree(dir: "libs", include: ["*.jar"])
+
   // CORE
   //// KOTLIN
   //  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$ver_kotlin" CLR
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$ver_kotlin"
-  implementation "androidx.core:core-ktx:1.3.2"
+//  implementation "org.jetbrains.kotlin:kotlin-stdlib:$ver_kotlin"
+  implementation "androidx.core:core-ktx:1.6.0"
   //// UI/Compatibility
-  implementation 'androidx.appcompat:appcompat:1.2.0'
-  implementation 'com.google.android.material:material:1.3.0'
+  implementation 'androidx.appcompat:appcompat:1.3.1'
+  implementation 'com.google.android.material:material:1.4.0'
   implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
   //// LIFECYCLE (without ViewModel or LiveData)
   implementation "androidx.lifecycle:lifecycle-runtime-ktx:$ver_lifecycle"
   implementation "androidx.lifecycle:lifecycle-service:$ver_lifecycle"
   //// UI NAVIGATION
-  implementation "androidx.navigation:navigation-fragment-ktx:$ver_nav_ui"
-  implementation "androidx.navigation:navigation-ui-ktx:$ver_nav_ui"
+  implementation "androidx.navigation:navigation-fragment-ktx:$ver_nav"
+  implementation "androidx.navigation:navigation-ui-ktx:$ver_nav"
+  //// Coordinator Layout
+  implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
   //// COROUTINES
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$ver_coroutines"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$ver_coroutines"
-  //// DEPENDENCY INJECTION (dagger/hilt) CHECK:PM remove hilt/dagger
-//  implementation "com.google.dagger:hilt-android:$hilt_version"
-//  kapt "com.google.dagger:hilt-compiler:$hilt_version"
-  /////// this were recently updated/released
-//  implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
-//  kapt "androidx.hilt:hilt-compiler:1.0.0-beta01"
+  ////// Lifecycle
+  implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.3.1"
+  implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+  implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
+
+
+  //// DEPENDENCY INJECTION (dagger/hilt)
+  implementation "com.google.dagger:hilt-android:2.35"
+  implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    kapt "com.google.dagger:hilt-android-compiler:2.35"
 
   // GOOGLE SERVICES
   //// FusedLocation (coarse/fine grain)
   implementation 'com.google.android.gms:play-services-location:18.0.0'
   //// GOOGLE MAPS & UTILS
-  implementation 'com.google.android.gms:play-services-maps:17.0.0'
+  implementation 'com.google.android.gms:play-services-maps:17.0.1'
   implementation 'com.google.maps.android:android-maps-utils:2.2.2' // updated from 0.3 !
 
+  // Material Components
+  implementation 'com.google.android.material:material:1.4.0-rc01'
+
+  // Room components
+  implementation "androidx.room:room-runtime:2.3.0"
+  kapt "androidx.room:room-compiler:2.3.0"
+  implementation "androidx.room:room-ktx:2.3.0"
+  androidTestImplementation "androidx.room:room-testing:2.3.0"
+
+  // Data binding
+  kapt "com.android.databinding:compiler:3.2.0-alpha10"
+  kapt "androidx.databinding:databinding-common:7.0.0"
+
+  // DataStore (new preferences)
+  implementation "androidx.datastore:datastore-preferences:1.0.0-rc02"
+
+  // Recyclerview
+  implementation 'androidx.recyclerview:recyclerview:1.2.1'
+
+  // Retrofit
+  implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+  implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
   // MISC
-   implementation 'com.vmadalin:easypermissions-ktx:0.1.0'
+  implementation 'pub.devrel:easypermissions:3.0.0'
 
   /////////////////
   // ANYPLACE CORE (java lib)
-//  implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
+  //  implementation 'com.github.dmsl:anyplace-lib-core:4.0.2'
   // local include requires pulling the submodules (see README)
-   implementation project(path: ':lib-core') // local
+  implementation project(path: ':lib-core') // local
 
   implementation 'gov.nist.math:jama:1.0.3'
 
-//  implementation 'com.google.api-client:google-api-client:1.31.4'
-//  implementation 'com.google.http-client:google-http-client:1.39.2'
-//  implementation 'google-http-client-jackson2'
+  // implementation 'com.google.api-client:google-api-client:1.31.4'
+  // implementation 'com.google.http-client:google-http-client:1.39.2'
+  // implementation 'google-http-client-jackson2'
   implementation 'com.google.http-client:google-http-client-jackson2:1.39.2'
-//  implementation 'com.google.http-client:google-http-client:1.39.2'
+  // implementation 'com.google.http-client:google-http-client:1.39.2'
 
-//  implementation 'com.google.http-client:google-http-client:1.39.2'
+  // implementation 'com.google.http-client:google-http-client:1.39.2'
 
   implementation 'com.google.code.gson:gson:2.8.6'
   implementation 'org.apache.httpcomponents:httpmime:4.5.13'
-  // implementation group: 'gov.nist.math', name: 'jama', version: '1.0.3' CLR
-  // implementation group: 'com.google.api-client', name: 'google-api-client', version: '1.30.10'
-  // implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.6'
 
+  // Shimmer
+  implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
-  // TODO Google Sign-In
-  // implementation 'com.google.android.gms:play-services-auth:19.0.0'
+  // Google Sign-In
+  implementation 'com.google.android.gms:play-services-auth:19.2.0'
 
-  // FLIR
-  // TODO:PM move on LASH app?
+  // AP-CV (Computer Vision)
+  //// CameraV2
+  implementation "androidx.camera:camera-camera2:1.0.1"
+  implementation "androidx.camera:camera-lifecycle:1.0.1"
+  implementation "androidx.camera:camera-view:1.0.0-alpha28"
+
+  ////  Deep-Learning engine
+  implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+  implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
+  // FLIR: TODO move on LASH app
   implementation files('libs/flir/androidsdk-release.aar')
   implementation files('libs/flir/thermalsdk-release.aar')
-//  implementation(name: 'flir-androidsdk-release', ext: 'aar')
-//  implementation(name: 'flir-thermalsdk-release', ext: 'aar')
-  //  api fileTree(include: ['*.aar'], dir: 'libs')
-  //  implementation files('libs/flir-thermalsdk-release.aar')
-  //  implementation files('libs/flir-androidsdk-release.aar')
-  //  implementation fileTree(dir: "libs", include: // CLR?
-  //          ["flir-androidsdk-release.aar"],
-  //          ["flir-thermalsdk-release.aar"])
 
   // TESTING
   // testImplementation 'junit:junit:4.12'
