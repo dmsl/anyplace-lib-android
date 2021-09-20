@@ -1,18 +1,26 @@
 <resources>
 
-  <style name="Theme.AnyplaceTheme" parent="Theme.AppCompat">
-<!--    <item name="actionBarStyle">@style/Widget.AnyplaceTheme.ActionBar</item>-->
-    <!--    <item name="android:windowActionBarOverlay">true</item>-->
-<!--    <item name="android:actionBarStyle">@style/Widget.AnyplaceTheme.ActionBar</item>-->
-    <!--    <item name="windowActionBarOverlay">true</item>-->
+  <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <!-- Customize your theme here. -->
+    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    <item name="colorAccent">@color/colorAccent</item>
+    <item name="actionModeBackground">@color/contextualActionBarColor</item>
+    <item name="android:statusBarColor">@color/statusBarColor</item>
+    <item name="actionBarStyle">@style/CustomActionBarStyle</item>
+    <item name="bottomNavigationStyle">@style/CustomBottomNavigationViewStyle</item>
   </style>
 
-<!--  <style name="Theme.Anyplace.NoActionBar">-->
-<!--    <item name="windowActionBar">false</item>-->
-<!--    <item name="windowNoTitle">true</item>-->
-<!--  </style>-->
+  <style name="CustomActionBarStyle" parent="Widget.MaterialComponents.ActionBar.Primary">
+    <item name="background">@color/actionBarBackgroundColor</item>
+  </style>
 
-  <style name="Theme.Anyplace.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+  <style name="CustomBottomNavigationViewStyle" parent="Widget.MaterialComponents.BottomNavigationView">
+    <item name="backgroundTint">@color/bottomNavBackground</item>
+    <item name="itemIconTint">@color/bottom_nav_view_item_color</item>
+    <item name="itemTextColor">@color/bottom_nav_view_item_color</item>
+  </style>
 
-  <style name="Theme.Anyplace.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+  <style name="Theme.AnyplaceClients" parent="Theme.MaterialComponents.Light" />
+
 </resources>
