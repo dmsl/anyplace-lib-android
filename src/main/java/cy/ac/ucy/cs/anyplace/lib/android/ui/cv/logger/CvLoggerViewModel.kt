@@ -13,6 +13,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.DetectionProcessor
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.DetectorFactory
@@ -33,6 +34,7 @@ class CvLoggerViewModel : ViewModel() {
         * Use Surface.ROTATION_0 for portrait and Surface.ROTATION_270 for landscape
         */
         const val CAMERA_ROTATION: Int = Surface.ROTATION_0
+        var usePadding = false
     }
 
     private var detectionProcessor: DetectionProcessor? = null
@@ -90,14 +92,16 @@ class CvLoggerViewModel : ViewModel() {
                 bitmap = rotateImage(bitmap, 90.0f)
             }
         }
-        Log.v(TAG, "Conversion time : $conversionTime ms")
+        LOG.V3(TAG, "Conversion time : $conversionTime ms")
 
-
+        // LEFTHERE .. modify image earlier..
+        // LEFTHERE .. modify image earlier..
+        // LEFTHERE .. modify image earlier..
         val detectionTime: Long = detectionProcessor!!.processImage(bitmap)
-        Log.v(TAG, "Detection time : $detectionTime ms")
+        LOG.V1(TAG, "Detection time : $detectionTime ms")
 
         val processingTime = conversionTime + detectionTime
-        Log.v(TAG, "Analysis time : $processingTime ms")
+        LOG.V2(TAG, "Analysis time : $processingTime ms")
         return detectionTime
     }
 

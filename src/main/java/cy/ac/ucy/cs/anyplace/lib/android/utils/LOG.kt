@@ -50,10 +50,22 @@ class LOG {
     @JvmStatic fun D4(tag: String, message: String) { if (DBG.D4) Log.d(_tag(tag), message) }
     @JvmStatic fun D5(tag: String, message: String) { if (DBG.D5) Log.d(_tag(tag), message) }
 
+    @JvmStatic fun V1(tag: String, message: String) { if (DBG.D1) Log.v(_tag(tag), message) }
+    @JvmStatic fun V2(tag: String, message: String) { if (DBG.D2) Log.v(_tag(tag), message) }
+    @JvmStatic fun V3(tag: String, message: String) { if (DBG.D3) Log.v(_tag(tag), message) }
+    @JvmStatic fun V4(tag: String, message: String) { if (DBG.D4) Log.v(_tag(tag), message) }
+    @JvmStatic fun V5(tag: String, message: String) { if (DBG.D5) Log.v(_tag(tag), message) }
+
     @JvmStatic fun D1(message: String) = D1(TAG, message)
     @JvmStatic fun D2(message: String) = D2(TAG, message)
     @JvmStatic fun D3(message: String) = D3(TAG, message)
     @JvmStatic fun D4(message: String) = D4(TAG, message)
     @JvmStatic fun D5(message: String) = D5(TAG, message)
+
+    @JvmStatic fun V1(message: String) = V1(TAG, message)
+    @JvmStatic fun V2(message: String) = V2(TAG, message)
+    @JvmStatic fun V3(message: String) = V3(TAG, message)
+    @JvmStatic fun V4(message: String) = V4(TAG, message)
+    @JvmStatic fun V5(message: String) = V5(TAG, message)
   }
 }

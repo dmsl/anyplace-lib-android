@@ -37,3 +37,7 @@ val Activity.dataStoreUser: DataStoreUser get() = this.app.dataStoreUser
 
 val DialogFragment.app: AnyplaceApp get() = this.activity?.application as AnyplaceApp
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
+
+// Extending Any (Java Object): name convention for loggin: ap_<className>
+val Any.TAG : String
+    get() = "ap_${this::class.java.simpleName}"

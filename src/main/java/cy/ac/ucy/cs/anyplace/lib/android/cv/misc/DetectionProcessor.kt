@@ -3,10 +3,12 @@ package cy.ac.ucy.cs.anyplace.lib.android.cv.misc
 import android.graphics.*
 import android.util.DisplayMetrics
 import android.util.Log
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.MultiBoxTracker
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import kotlin.system.measureTimeMillis
 
 class DetectionProcessor(
@@ -15,8 +17,6 @@ class DetectionProcessor(
     private var trackingOverlay: TrackingOverlayView
 ) {
     private companion object {
-        const val TAG: String = "DetectionProcessor"
-
         const val SHOW_SCORE: Boolean = true
     }
 
@@ -36,8 +36,8 @@ class DetectionProcessor(
         cropSize: Int,
         rotation: Int
     ) {
-        Log.i(TAG, "Camera orientation relative to screen canvas : $rotation")
-        Log.i(TAG, "Initializing with size ${previewWidth}x${previewHeight}")
+        LOG.I(TAG, "Camera orientation relative to screen canvas : $rotation")
+        LOG.I(TAG, "Initializing with size ${previewWidth}x${previewHeight}")
 
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
 

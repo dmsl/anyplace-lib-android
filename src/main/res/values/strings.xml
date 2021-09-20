@@ -38,6 +38,12 @@
 
 <resources>
 
+  <string name="bottom_sheet_frame_text">Frame</string>
+  <string name="bottom_sheet_crop_text">Crop</string>
+  <string name="bottom_sheet_time_text">Detection Time</string>
+  <string name="bottom_sheet_resolution_placeholder">000*000</string>
+  <string name="bottom_sheet_time_placeholder">000 ms</string>
+
   <string name="default_server_ip_address">ap.cs.ucy.ac.cy</string>
   <string name="default_server_access_token">ACCESS_TOKEN</string>
   <string name="default_server_port">443</string>

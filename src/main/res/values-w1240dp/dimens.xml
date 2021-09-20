@@ -1,3 +1,6 @@
 <resources>
   <dimen name="activity_horizontal_margin">200dp</dimen>
+
+  <dimen name="bottom_sheet_cv_logging_corner_radius">15dp</dimen>
+  <dimen name="bottom_sheet_cv_logging_top_padding">8dp</dimen>
 </resources>

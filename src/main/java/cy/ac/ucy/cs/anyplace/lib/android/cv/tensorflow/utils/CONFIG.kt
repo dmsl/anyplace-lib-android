@@ -1,4 +1,4 @@
-package org.tensorflow.lite.examples.detector.utils
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils
 
 class CONFIG {
 

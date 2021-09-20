@@ -2,12 +2,15 @@ package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow
 
 import android.content.res.AssetManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.RectF
 import android.os.SystemClock
-import android.util.Log
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import org.tensorflow.lite.Interpreter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector.Detection
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerViewModel
 import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -19,17 +22,16 @@ import kotlin.math.min
 
 @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
 internal class YoloV4Detector(
-  assetManager: AssetManager,
-  private val detectionModel: DetectionModel,
-  private val minimumScore: Float,
+    assetManager: AssetManager,
+    private val detectionModel: DetectionModel,
+    private val minimumScore: Float,
 ) : Detector {
 
     private companion object {
-        const val TAG = "YoloV4Detector"
+        // TODO:PM options
         const val NUM_THREADS = 4
         const val IS_GPU: Boolean = false
         const val IS_NNAPI: Boolean = false
-
     }
 
     private val inputSize: Int = detectionModel.inputSize
@@ -78,11 +80,13 @@ internal class YoloV4Detector(
         return detectionModel
     }
 
-    override fun runDetection(bitmap: Bitmap): List<Detection> {
-        convertBitmapToByteBuffer(bitmap)
-        val results = getDetections(bitmap.width, bitmap.height)
+    private var usePadding : Boolean = false
 
-        return nms(results)
+    override fun runDetection(bitmap: Bitmap): List<Detection> {
+        usePadding = CvLoggerViewModel.usePadding
+        convertBitmapToByteBuffer(bitmap)
+        val result = getDetections(bitmap.width, bitmap.height)
+        return nms(result)
     }
 
     private fun initializeInterpreter(assetManager: AssetManager): Interpreter {
@@ -118,10 +122,17 @@ internal class YoloV4Detector(
      */
     private fun convertBitmapToByteBuffer(bitmap: Bitmap) {
         val startTime = SystemClock.uptimeMillis()
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
+        var scaledBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
+        if (usePadding && bitmap.height > bitmap.width) { // add a white padding, left and right
+            val padding : Float = (bitmap.height-bitmap.width)/2f
+            val paddedBitmap = bitmap.pad(padding)
+            scaledBitmap = Bitmap.createScaledBitmap(paddedBitmap, inputSize, inputSize, true)
+            LOG.D1("Bitmap: ${bitmap.width}x${bitmap.height}  scaled: ${scaledBitmap.width}x${scaledBitmap.height}" )
+        }
 
         scaledBitmap.getPixels(intValues, 0, inputSize, 0, 0, inputSize, inputSize)
         scaledBitmap.recycle()
+        // 416 x 416 (from: 480 x 864
 
         byteBuffer[0].clear()
         for (pixel in intValues) {
@@ -133,11 +144,36 @@ internal class YoloV4Detector(
             byteBuffer[0].putFloat(g)
             byteBuffer[0].putFloat(b)
         }
-        Log.v(TAG, "ByteBuffer conversion time : ${SystemClock.uptimeMillis() - startTime} ms")
+        LOG.V3(TAG, "ByteBuffer conversion time : ${SystemClock.uptimeMillis() - startTime}ms")
     }
 
+    fun Bitmap.pad(left: Float): Bitmap {
+        val outputimage = Bitmap.createBitmap(
+            (width + left).toInt(), height, Bitmap.Config.ARGB_8888)
+        val can = Canvas(outputimage)
+        can.drawBitmap(this, left, 0f, null)
+
+        val output = Bitmap.createBitmap((outputimage.width +left).toInt(),
+            (outputimage.height).toInt(), Bitmap.Config.ARGB_8888)
+        var canvas = Canvas(output)
+        canvas.drawBitmap(outputimage, 0f, 0f, null)
+        return output
+    }
+
+    /**
+     * Yolo operates on normalized coordinates (positions and dimensions are expressed in percent's).
+     * This method translates YOLO bounding boxes to Android Rect
+     */
     private fun getDetections(imageWidth: Int, imageHeight: Int): List<Detection> {
         interpreter.runForMultipleInputsOutputs(byteBuffer, outputMap as Map<Int, Any>)
+
+        var ratio = 0f
+        var ratioQ= 0f
+        if (usePadding && imageHeight>imageWidth) {
+            ratio= (imageHeight.toFloat()/imageWidth)
+            ratioQ = 1+((ratio-1)/8f)
+            LOG.V5("ratioQ: $ratioQ")
+        }
 
         val boundingBoxes = outputMap[0]!![0]
         val outScore = outputMap[1]!![0]
@@ -151,20 +187,29 @@ internal class YoloV4Detector(
                     return@mapIndexedNotNull null
                 }
 
-                val xPos = boundingBoxes[0]
+                var xPos = boundingBoxes[0]
                 val yPos = boundingBoxes[1]
-                val width = boundingBoxes[2]
+                var width = boundingBoxes[2]
                 val height = boundingBoxes[3]
-                val rectF = RectF(
-                    max(0f, xPos - width / 2),
-                    max(0f, yPos - height / 2),
-                    min(imageWidth - 1.toFloat(), xPos + width / 2),
-                    min(imageHeight - 1.toFloat(), yPos + height / 2)
-                )
+
+                if (usePadding && ratio > 1.0f) {
+                    width*= ratio
+                    xPos*=ratioQ
+                }
+
+                val left = max(0f, xPos - width / 2)
+                val top = max(0f, yPos - (height / 2))
+                val right = min(imageWidth - 1.toFloat(), (xPos + width / 2))
+                val bottom = min(imageHeight - 1.toFloat(), yPos + height / 2)
+
+                val rectF = RectF(left, top, right, bottom)
+
+                var label =labels[bestClassIndex]
+                if(usePadding) {  label+="_PAD" }
 
                 return@mapIndexedNotNull Detection(
                     id = index.toString(),
-                    className = labels[bestClassIndex],
+                    className = label,
                     detectedClass = bestClassIndex,
                     score = bestScore,
                     boundingBox = rectF
@@ -172,6 +217,10 @@ internal class YoloV4Detector(
             }
     }
 
+    /**
+     * Non-maximum Suppression. Removes overlapping bboxes, which is a
+     * side-effect of YOLO's operation.
+     */
     private fun nms(detections: List<Detection>): List<Detection> {
         val nmsList: MutableList<Detection> = mutableListOf()
 

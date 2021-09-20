@@ -13,54 +13,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--<androidx.appcompat.widget.Toolbar-->
-    <!--    android:id="@+id/toolbar"-->
-    <!--    android:layout_width="match_parent"-->
-    <!--    android:layout_height="?attr/actionBarSize"-->
-    <!--    android:layout_alignParentTop="true"-->
-    <!--    android:background="@color/tfe_semi_transparent"-->
-    <!--    android:elevation="6dp"-->
-    <!--    app:layout_constraintEnd_toEndOf="parent"-->
-    <!--    app:layout_constraintStart_toStartOf="parent"-->
-    <!--    app:layout_constraintTop_toTopOf="parent">-->
-
-    <!--    <ImageView-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:contentDescription="@string/activity_camera_tfl_logo_desc"-->
-    <!--        android:src="@drawable/tfl2_logo"-->
-    <!--        tools:layout_editor_absoluteX="16dp"-->
-    <!--        tools:layout_editor_absoluteY="6dp" />-->
-    <!--</androidx.appcompat.widget.Toolbar>-->
-
-
-    <Button
+    <com.google.android.material.button.MaterialButton
       android:id="@+id/button_settings"
-      android:layout_width="42dp"
-      android:layout_height="42dp"
-      android:layout_marginTop="2dp"
-      android:layout_marginEnd="2dp"
-      android:background="@drawable/ic_settings"
+      android:layout_alignParentEnd="true"
+      android:layout_gravity="end"
+      android:layout_marginTop="8dp"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
+      app:layout_constraintTop_toTopOf="parent"
 
-    <!--android:maxWidth="420px"-->
-    <!--android:maxHeight="640px"-->
+      android:layout_width="52dp"
+      android:layout_height="52dp"
+      android:layout_margin="6dp"
+      android:insetLeft="0dp"
+      android:insetTop="0dp"
+      android:insetRight="0dp"
+      android:insetBottom="0dp"
+      app:cornerRadius="50dp"
+      app:icon="@drawable/ic_settings_dark"
+      app:iconGravity="textStart"
+      app:iconPadding="0dp"
+      app:iconSize="35dp"
+      />
+
+    <!--android:background="@android:color/transparent"-->
     <androidx.camera.view.PreviewView
       android:id="@+id/pv_camera"
+
+      android:background="@color/black"
       android:layout_width="0dp"
       android:layout_height="0dp"
-      android:background="@android:color/transparent"
-      android:maxWidth="0dp"
-      android:maxHeight="0dp"
-      app:cardCornerRadius="75dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintDimensionRatio="4:6"
+
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintHorizontal_bias="0.0"
       app:layout_constraintTop_toTopOf="parent"
-      app:scaleType="fitStart">
+      app:layout_constraintBottom_toBottomOf="parent"
+
+    app:cardCornerRadius="75dp"
+    android:scaleType="fitStart"
+      app:layout_constraintVertical_bias="0.0"
+      >
 
     </androidx.camera.view.PreviewView>
+      <!--android:layout_height="0dp"-->
+
+      <cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
+        android:id="@+id/tov_camera"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="4:6"
+        app:layout_constraintVertical_bias="0.0"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <!--android:layout_height="0dp"-->
 
     <!--TODO -->
     <!--android:alpha="0.5"-->
@@ -74,24 +85,23 @@
     <!--android:maxWidth="420px"-->
     <!--android:maxHeight="640px"-->
 
-    <cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
-      android:id="@+id/tov_camera"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
+    <!--TODO move in bottom sheet-->
+    <!--<Switch-->
+    <!--  android:id="@+id/switchPadding"-->
+    <!--  app:layout_constraintTop_toBottomOf="@id/pv_camera"-->
+    <!--  android:background="@color/white"-->
+    <!--  app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--  android:layout_width="wrap_content"-->
+    <!--  android:layout_height="wrap_content"-->
+    <!--  android:text="Padding" />-->
 
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.0"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintVertical_bias="0.0" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
-  <!--<include-->
-  <!--  android:id="@+id/bottom_sheet"-->
-  <!--  layout="@layout/tfe_od_layout_bottom_sheet"-->
-  <!--  android:elevation="6dp"-->
-  <!--  tools:layout_editor_absoluteY="591dp" />-->
+  <include
+    android:id="@+id/bottom_sheet"
+    layout="@layout/bottom_sheet_cv_logging"
+    android:elevation="30dp"
+    tools:layout_editor_absoluteY="591dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

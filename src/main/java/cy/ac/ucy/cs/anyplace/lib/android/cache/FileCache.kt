@@ -1,13 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.cache
 
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import org.json.JSONObject
 import java.io.File
 
 class FileCache(private val prefs: Preferences) {
   companion object {
-    val TAG = "ap_fileCache"
     const val JS_BUILDINGS_ALL = "buildings.json"
     const val JS_BUILDING_FLOORS = "floors.json"
     const val JS_BUILDING_POI = "poi.json"

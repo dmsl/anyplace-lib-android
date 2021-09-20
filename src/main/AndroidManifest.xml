@@ -5,11 +5,13 @@
 
   <application
     tools:ignore="LockedOrientationActivity">
+    <!--              The API key for Google Maps-based APIs must be safely stored at ProjectRoot:secure.properties -->
     <activity
       android:name=".android.ui.cv.logger.CvLoggerActivity"
+      android:theme="@style/AppTheme.Compat.ObjectDetection"
       android:screenOrientation="portrait"
       android:exported="true" />
-    <!--              The API key for Google Maps-based APIs must be safely stored at ProjectRoot:secure.properties -->
+    <!-- TODO CLR this -->
     <activity
       android:name=".android.ui.cv.MapsActivity"
       android:exported="true"

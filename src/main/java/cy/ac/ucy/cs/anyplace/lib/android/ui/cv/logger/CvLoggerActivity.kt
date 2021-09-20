@@ -12,22 +12,25 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.getViewModelFactory
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
 class CvLoggerActivity : AppCompatActivity() {
   private companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
-    const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_16_9
+    const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
   }
 
   private lateinit var binding: ActivityCvLoggerBinding
-
   private val viewModel by viewModels<CvLoggerViewModel> { getViewModelFactory() }
   private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
 
@@ -36,12 +39,11 @@ class CvLoggerActivity : AppCompatActivity() {
     binding = ActivityCvLoggerBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
-    // setUpBottomSheet() // CLR:PM
+    setUpBottomSheet()
 
-    // TODO:PM CLR:PM
-    // @SuppressLint("SetTextI18n")
-    // binding.bottomSheet.cropInfo.text =
-    //   "${Constants.DETECTION_MODEL.inputSize}x${Constants.DETECTION_MODEL.inputSize}"
+    @SuppressLint("SetTextI18n")
+    binding.bottomSheet.cropInfo.text =
+      "${Constants.DETECTION_MODEL.inputSize}x${Constants.DETECTION_MODEL.inputSize}"
 
     cameraProviderFuture = ProcessCameraProvider.getInstance(baseContext)
     requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
@@ -52,7 +54,34 @@ class CvLoggerActivity : AppCompatActivity() {
       binding.tovCamera,
       binding.pvCamera
     )
+    // TODO:PM make this a setting..
+    // binding.switchPadding.setOnCheckedChangeListener { _, isChecked ->
+    //   CvLoggerViewModel.usePadding= isChecked
+    // }
   }
+
+  private fun setUpBottomSheet() {
+    val sheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.root)
+    sheetBehavior.isHideable = false
+
+    val callback = CvLoggerBottomSheetCallback(binding.bottomSheet.bottomSheetArrow)
+    sheetBehavior.addBottomSheetCallback(callback)
+
+    val gestureLayout = binding.bottomSheet.gestureLayout
+    gestureLayout.viewTreeObserver.addOnGlobalLayoutListener {
+      val height: Int = gestureLayout.measuredHeight
+      sheetBehavior.peekHeight = (height/3f).roundToInt()
+    }
+
+
+    lifecycleScope.launch {
+      delay(200)
+
+      // binding.bottomSheet.
+      //   .translationYBy(bottomSheetBehavior.getPeekHeight());
+    }
+  }
+
 
   override fun onRequestPermissionsResult(
     requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -122,21 +151,21 @@ class CvLoggerActivity : AppCompatActivity() {
         val detectionTime = viewModel.detectObjectsOnImage(image)
 
         withContext(Dispatchers.Main) {
-          // TODO:PM
-          LOG.D2("Inference time: ${detectionTime}ms")
-          // @SuppressLint("SetTextI18n")
-          // binding.bottomSheet.timeInfo.text = "$detectionTime ms"
+          @SuppressLint("SetTextI18n")
+          binding.bottomSheet.timeInfo.text = "${detectionTime}ms"
         }
       }
     }
   }
 
-
   private suspend fun setUpImageConverter(image: ImageProxy){
-    // withContext(Dispatchers.Main){
-    //   // @SuppressLint("SetTextI18n")
-    //   // binding.bottomSheet.frameInfo.text = "${image.width}x${image.height}"
-    // }
+    withContext(Dispatchers.Main){
+      @SuppressLint("SetTextI18n")
+      binding.bottomSheet.frameInfo.text = "${image.width}x${image.height}"
+    }
+
+    LOG.E("FRAME: ${image.width}x${image.height}")
     viewModel.setUpImageConverter(baseContext, image)
+
   }
 }

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/bottom_sheet"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_gravity="center_horizontal"
+  android:background="@drawable/bottom_sheet_cv_logging_bg"
+  android:gravity="center_horizontal"
+  android:orientation="vertical"
+  android:padding="8dp"
+  android:paddingTop="0dp"
+  app:behavior_hideable="true"
+  app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/gesture_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="0dp"
+    android:paddingBottom="20dp">
+
+    <Button
+      android:id="@+id/button_startLogging"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="22dp"
+      android:layout_marginRight="22dp"
+      android:padding="18dp"
+      android:text="Start Logging"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/bottom_sheet_arrow" />
+
+
+    <ImageView
+      android:id="@+id/bottom_sheet_arrow"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:src="@drawable/ic_icon_up"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:tint="@color/white" />
+
+
+
+    <TextView
+      android:id="@+id/tv_titleCvSettings"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:gravity="center"
+      android:text="Settings"
+      android:textColor="@android:color/white"
+      android:textSize="20sp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/divider_beforeSettings" />
+
+    <TextView
+      android:id="@+id/tv_titleSlidingWindow"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Sliding Window:"
+      android:layout_marginTop="20dp"
+      android:textColor="@color/white"
+      android:textStyle="bold"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toLeftOf="@id/seekBar_slidingWindow"
+      app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettings" />
+
+
+    <SeekBar
+      android:id="@+id/seekBar_slidingWindow"
+      style="@style/Widget.AppCompat.SeekBar.Discrete"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:max="10"
+      android:min="1"
+      android:progress="1"
+      app:layout_constraintLeft_toRightOf="@id/tv_titleSlidingWindow"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettings"
+      tools:layout_editor_absoluteX="168dp"
+      tools:layout_editor_absoluteY="111dp" />
+
+
+    <View
+      android:id="@+id/divider_beforeStats"
+      android:layout_width="393dp"
+      android:layout_height="2dp"
+      android:layout_marginTop="20dp"
+      android:background="@color/mediumGray"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/seekBar_slidingWindow"
+      tools:layout_editor_absoluteX="1dp"
+      tools:layout_editor_absoluteY="87dp" />
+
+
+    <TextView
+      android:id="@+id/frame"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/bottom_sheet_frame_text"
+      android:textColor="@android:color/white"
+      android:layout_marginTop="20dp"
+      android:textStyle="bold"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/divider_beforeStats" />
+
+
+    <TextView
+      android:id="@+id/frame_info"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:text="@string/bottom_sheet_resolution_placeholder"
+      android:textColor="@android:color/white"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/divider_beforeStats" />
+
+    <TextView
+      android:id="@+id/crop"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/bottom_sheet_crop_text"
+      android:textColor="@android:color/white"
+      android:textStyle="bold"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/frame_info" />
+
+
+    <TextView
+      android:id="@+id/crop_info"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:gravity="right"
+      android:text="@string/bottom_sheet_resolution_placeholder"
+      android:textColor="@android:color/white"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/frame_info" />
+
+
+    <TextView
+      android:id="@+id/time"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/bottom_sheet_time_text"
+      android:textColor="@android:color/white"
+      android:textStyle="bold"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/crop_info" />
+
+    <TextView
+      android:id="@+id/time_info"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:text="@string/bottom_sheet_time_placeholder"
+      android:textColor="@android:color/white"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/crop_info" />
+
+    <View
+      android:id="@+id/divider_beforeSettings"
+      android:layout_width="393dp"
+      android:layout_height="2dp"
+      android:layout_marginTop="20dp"
+      android:background="@color/mediumGray"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/button_startLogging"
+      tools:layout_editor_absoluteX="1dp"
+      tools:layout_editor_absoluteY="87dp" />
+
+
+
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

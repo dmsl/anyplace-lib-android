@@ -8,10 +8,10 @@ import com.flir.thermalsdk.live.Identity
 import com.flir.thermalsdk.live.discovery.DiscoveryEventListener
 import com.flir.thermalsdk.live.discovery.DiscoveryFactory
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 
 class FlirUtils {
   companion object {
-    val TAG = "ap_flir"
     fun initialize(ctx: Context) {
       ThermalSdkAndroid.init(ctx)
       //^(?!.*(Accessing hidden method|[socket][connection]))
