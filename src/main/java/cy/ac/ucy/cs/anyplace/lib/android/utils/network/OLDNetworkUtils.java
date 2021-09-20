@@ -34,7 +34,7 @@
 *
 */
 
-package cy.ac.ucy.cs.anyplace.lib.android.utils;
+package cy.ac.ucy.cs.anyplace.lib.android.utils.network;
 
 import android.app.Activity;
 import android.content.Context;
