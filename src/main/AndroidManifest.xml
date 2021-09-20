@@ -3,24 +3,18 @@
   xmlns:tools="http://schemas.android.com/tools"
   package="cy.ac.ucy.cs.anyplace.lib">
 
-  <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
-         location permissions for the "MyLocation" functionality.
-    -->
-  <application>
-
-    <!--
-             The API key for Google Maps-based APIs must be safely stored at ProjectRoot:secure.properties
-     -->
+  <application
+    tools:ignore="LockedOrientationActivity">
+    <activity
+      android:name=".android.ui.cv.logger.CvLoggerActivity"
+      android:screenOrientation="portrait"
+      android:exported="true" />
+    <!--              The API key for Google Maps-based APIs must be safely stored at ProjectRoot:secure.properties -->
     <activity
       android:name=".android.ui.cv.MapsActivity"
       android:exported="true"
       android:label="@string/title_activity_maps"
-      tools:ignore="LockedOrientationActivity"
-      />
-    <!-- LockedOrientationActivity: stay always in portrait mode.-->
-
+     /> <!-- LockedOrientationActivity: stay always in portrait mode. -->
     <activity
       android:name=".android.ui.login.LoginActivity"
       android:exported="true"
@@ -30,14 +24,19 @@
       android:exported="true"
       android:label="@string/title_activity_settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
+
     <meta-data
       android:name="com.google.android.geo.API_KEY"
       android:value="@string/maps_api_key" />
   </application>
-  <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+  <uses-permission android:name="android.permission.INTERNET" />
+
+  <!-- AP-CV -->
+  <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>
