@@ -36,11 +36,7 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import java.io.File;
-
+@Deprecated
 public class AnyplaceDebug {
 
 	public final static Boolean FLOOR_SELECTOR = true;

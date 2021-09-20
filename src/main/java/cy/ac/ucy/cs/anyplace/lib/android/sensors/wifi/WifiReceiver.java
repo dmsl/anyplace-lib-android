@@ -34,7 +34,7 @@
 *
 */
 
-package cy.ac.ucy.cs.anyplace.lib.android.wifi;
+package cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

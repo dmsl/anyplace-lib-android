@@ -1,17 +1,16 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.os.Bundle
-import android.widget.Toast
+import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
-import cy.ac.ucy.cs.anyplace.lib.android.dataStoreServer
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
@@ -21,10 +20,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsBaseActivity: BaseActivity() {
-  private val TAG = SettingsBaseActivity::class.java.simpleName
+class SettingsServerActivity: BaseActivity() {
+  private val TAG = SettingsServerActivity::class.java.simpleName
   private lateinit var mainViewModel: MainViewModel
-  private lateinit var settingsFragment: SettingsFragment
+  private lateinit var settingsFragment: SettingsServerFragment
 
   @Inject
   lateinit var retrofitHolder: RetrofitHolder
@@ -39,8 +38,7 @@ class SettingsBaseActivity: BaseActivity() {
     setContentView(R.layout.settings_activity)
 
     mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-
-    settingsFragment = SettingsFragment(mainViewModel, retrofitHolder, dataStoreServer)
+    settingsFragment = SettingsServerFragment(mainViewModel, retrofitHolder, dataStoreServer)
 
     // applicationContext.dataStoreServer
     if (savedInstanceState == null) {
@@ -49,16 +47,24 @@ class SettingsBaseActivity: BaseActivity() {
           .replace(R.id.settings, settingsFragment)
           .commit()
     }
-
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
   }
 
-  class SettingsFragment(
+  override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    val id = item.itemId
+    if (id==android.R.id.home) {
+      finish()
+      return true
+    }
+
+    return false
+  }
+
+  class SettingsServerFragment(
     private val mainViewModel: MainViewModel,
     private val retrofitHolder: RetrofitHolder,
     private val dataStoreServer: DataStoreServer) : PreferenceFragmentCompat() {
-    private val TAG  = SettingsBaseActivity::class.java.simpleName+"."+SettingsFragment::class.java.simpleName
+    private val TAG  = SettingsServerActivity::class.java.simpleName+"."+SettingsServerFragment::class.java.simpleName
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       preferenceManager.preferenceDataStore = dataStoreServer

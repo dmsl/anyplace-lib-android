@@ -47,19 +47,17 @@ import java.util.zip.ZipFile;
 
 import org.json.JSONObject;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextPaint;
 
 import androidx.core.app.ActivityCompat;
+
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
 
 public class AndroidUtils {
 
@@ -290,7 +288,7 @@ public class AndroidUtils {
 
 	public static GeoPoint getIPLocation() throws Exception {
 		// http://ip-api.com/docs/api:json
-		String response = NetworkUtils.downloadUrlAsStringHttp("http://ip-api.com/json");
+		String response = OLDNetworkUtils.downloadUrlAsStringHttp("http://ip-api.com/json");
 
 		JSONObject json = new JSONObject(response);
 

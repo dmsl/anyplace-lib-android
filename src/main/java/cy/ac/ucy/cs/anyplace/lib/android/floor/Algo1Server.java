@@ -39,16 +39,11 @@ package cy.ac.ucy.cs.anyplace.lib.android.floor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
-import cy.ac.ucy.cs.anyplace.lib.LogRecord;
-
-import static android.content.Context.MODE_PRIVATE;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
 
 public class Algo1Server extends FloorSelector {
   private final String TAG = Algo1Server.class.getSimpleName();
@@ -87,11 +82,12 @@ public class Algo1Server extends FloorSelector {
 
     String response;
 
-    if (NetworkUtils.isOnline(app)) {
+    if (OLDNetworkUtils.isOnline(app)) {
       LOG.E(TAG, "TODO: implement this through the app.api");
       // SharedPreferences pref = app.getSharedPreferences("LoggerPreferences", MODE_PRIVATE); // CLR
       // String host = pref.getString("server_ip_address", "ap.cs.ucy.ac.cy");
-      response = NetworkUtils.downloadHttpClientJsonPost(app.prefs.getIp()+ PREDICT_FLOOR_ALGO1, request.toString());
+      response = OLDNetworkUtils
+          .downloadHttpClientJsonPost(app.prefs.getIp() + PREDICT_FLOOR_ALGO1, request.toString());
       JSONObject json = new JSONObject(response);
 
       if (json.getString("status").equalsIgnoreCase("error")) {

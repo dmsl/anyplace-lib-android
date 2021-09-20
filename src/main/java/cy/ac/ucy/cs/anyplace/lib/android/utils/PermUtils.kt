@@ -59,9 +59,6 @@ class PermUtils {
       )
     }
 
-    // LEFTHERE FILTER
-    // ^(?!.*(Adreno|artvv|libEGL|chatty|DynamiteModule))
-
     private fun requestPermission(ctx: Context, perm: String, title: String, msg: String, code: Int) {
       AlertDialog.Builder(ctx)
               .setTitle(title).setMessage(msg)

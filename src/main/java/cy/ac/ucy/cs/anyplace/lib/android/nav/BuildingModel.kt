@@ -38,10 +38,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.nav
 import android.app.Activity
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.app
-import cy.ac.ucy.cs.anyplace.lib.android.cache.ObjectCache
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchFloorsByBuidTask.FetchFloorsByBuidTaskListener
 import java.io.Serializable
@@ -56,6 +53,18 @@ class BuildingModel(
         @JvmField
         var buid: String): ClusterItem,
         Comparable<BuildingModel>, Serializable {
+        // Comparable<BuildingModel>, Serializable {
+
+  // }  CHECK:PM this is a mess.. CLR?
+  // class BuildingModel(
+  //         // init inherited fields
+  //         private val position: LatLng,  // XXX:PM BUG:PM this is not parcelable/serializable
+  //         private val title: String,
+  //         private val snippet: String,
+  //         // extra fields (local to BuildingModel)
+  //         @JvmField
+  //         var buid: String)
+
 
   val TAG = BuildingModel::class.java.simpleName
 

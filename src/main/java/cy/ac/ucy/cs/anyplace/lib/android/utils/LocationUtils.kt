@@ -4,39 +4,46 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
-import android.location.LocationManager
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import java.util.*
 
-//TODO: Request permissions then call from onStart and onConnected.
-//TODO: Move all fake gps here.
+// TODO:PM Request permissions then call from onStart and onConnected.
+// TODO:PM Move all fake gps here?
 class LocationUtils {
   companion object {
 
-    fun prettyLocation(loc: Location, ctx: Context) : String {
+    /**
+     * Returns an address (nullable) given a location
+     */
+    private fun getAddress(loc: Location, ctx: Context) : Address? {
       val addresses: List<Address>?
       val geoCoder = Geocoder(ctx, Locale.getDefault())
       try {
         addresses = geoCoder.getFromLocation(
-                loc.latitude,
-                loc.longitude,
-                1)
+          loc.latitude,
+          loc.longitude,
+          1)
         if (addresses != null && addresses.isNotEmpty()) {
-          val address: String = addresses[0].getAddressLine(0)
-          val city: String = addresses[0].locality
-          val state: String = addresses[0].adminArea
-          val country: String = addresses[0].countryName
-          // sometimes is null
-          // var postalCode: String = addresses[0].postalCode
-          // if(postalCode==null) postalCode="po:null"
-          val knownName: String = addresses[0].featureName
-          return "$address $city $state $country $knownName"
+          return addresses[0]
         }
       } catch (e: Exception) {
-        return "<exception>"
       }
+      return null
+    }
 
-     return "<empty>"
+    fun prettyLocation(loc: Location, ctx: Context) : String {
+      val address = getAddress(loc, ctx)
+      address?.let {
+        val addressLine: String = address.getAddressLine(0)
+        val city: String = address.locality
+        val state: String = address.adminArea
+        val country: String = address.countryName
+        // sometimes is null
+        // var postalCode: String = addresses[0].postalCode
+        // if(postalCode==null) postalCode="po:null"
+        val knownName: String = address.featureName
+        return "$address $city $state $country $knownName"
+      }
+      return "<empty>"
     }
   }
 }

@@ -38,7 +38,7 @@ class FontAwesomeIcon
     }
 
     // Useful if you want to change between a regular and solid icon (example: star)
-    fun setIconType(iconType : String){
+    private fun setIconType(iconType : String){
         type = iconType
 
         typeface = when (type) {

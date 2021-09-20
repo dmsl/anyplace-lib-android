@@ -44,7 +44,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 
 /**
- * TODO:PM merge with FileCache ?
+ * CHECK:PM merge with FileCache ?
  * also this: https://developer.android.com/about/versions/11/privacy/storage
  *
  * CHECK:PM how to share downloaded data between navigator, and logger

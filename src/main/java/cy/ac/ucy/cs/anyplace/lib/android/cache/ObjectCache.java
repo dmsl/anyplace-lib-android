@@ -71,7 +71,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchBuildingsTask;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
 
 
 /**
@@ -131,7 +131,7 @@ public class ObjectCache implements Serializable {
           final Activity activity,
           final FetchBuildingsTask.FetchBuildingsTaskListener listener,
           Boolean forceReload) {
-    if ((forceReload && NetworkUtils.isOnline(activity)) || buildingsAll.isEmpty()) {
+    if ((forceReload && OLDNetworkUtils.isOnline(activity)) || buildingsAll.isEmpty()) {
       new FetchBuildingsTask(activity, new FetchBuildingsTask.FetchBuildingsTaskListener() {
 
         @Override

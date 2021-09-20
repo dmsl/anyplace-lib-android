@@ -42,7 +42,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import android.util.Log;
-import cy.ac.ucy.cs.anyplace.lib.LogRecord;
+import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 

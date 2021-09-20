@@ -62,7 +62,7 @@ import javax.net.ssl.HttpsURLConnection;
  *
  * @author Lambros Petrou
  */
-public class NetworkUtils {
+public class OLDNetworkUtils {
 
     public static String encodeURL(String urlStr) throws URISyntaxException, MalformedURLException {
         URL url = new URL(urlStr);

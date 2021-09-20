@@ -34,7 +34,7 @@
 *
 */
 
-package cy.ac.ucy.cs.anyplace.lib.android.wifi;
+package cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi;
 
 import java.util.List;
 import java.util.Timer;

@@ -52,11 +52,12 @@ import android.net.wifi.WifiManager;
 import com.google.android.gms.maps.model.LatLng;
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceDebug;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.SensorsMain;
-import cy.ac.ucy.cs.anyplace.lib.android.wifi.SimpleWifiManager;
-import cy.ac.ucy.cs.anyplace.lib.android.wifi.WifiReceiver;
-import cy.ac.ucy.cs.anyplace.lib.LogRecord;
+import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.SimpleWifiManager;
+import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.WifiReceiver;
+import cy.ac.ucy.cs.anyplace.lib.core.Algorithms;
+import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
 //import cy.ac.ucy.cs.anyplace.lib.android.utils.LogRecord;
-import cy.ac.ucy.cs.anyplace.lib.RadioMap;
+import cy.ac.ucy.cs.anyplace.lib.core.RadioMap;
 
 /**
  * The main tracker component of Anyplace Navigator. Detects changes in WiFi
@@ -339,7 +340,7 @@ public class AnyplaceTracker {
 			// return false;
 			// }
 			// } else {
-			String calculatedLocation = cy.ac.ucy.cs.anyplace.lib.Algorithms.ProcessingAlgorithms(latestScanList, rm, algoChoice);
+			String calculatedLocation = Algorithms.ProcessingAlgorithms(latestScanList, rm, algoChoice);
 
 			if (calculatedLocation == null) {
 				triggerErrorListeners("Can't find location. Check that radio map file refers to the same area.");
