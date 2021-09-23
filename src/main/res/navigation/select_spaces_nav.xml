@@ -9,10 +9,27 @@
     android:id="@+id/spacesListFragment"
     android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.fragments.SpaceListFragment"
     android:label="Select space"
-    tools:layout="@layout/fragment_spaces_list" />
+    tools:layout="@layout/fragment_spaces_list" >
+    <action
+      android:id="@+id/action_spacesListFragment_to_spaceFilterBottomSheet"
+      app:destination="@id/spaceFilterBottomSheet" />
+    <argument
+      android:name="backFromBottomSheet"
+      app:argType="boolean"
+      android:defaultValue="false" />
+  </fragment>
   <fragment
     android:id="@+id/spacesMapFragment"
     android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.fragments.SpaceMapFragment"
     android:label="Select space"
     tools:layout="@layout/fragment_spaces_map" />
+  <dialog
+    android:id="@+id/spaceFilterBottomSheet"
+    android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.fragments.SpaceFilterBottomSheet"
+    android:label="space_filter_bottom_sheet"
+    tools:layout="@layout/bottom_sheet_space_filter" >
+    <action
+      android:id="@+id/action_spaceFilterBottomSheet_to_spacesListFragment"
+      app:destination="@id/spacesListFragment" />
+  </dialog>
 </navigation>

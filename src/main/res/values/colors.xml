@@ -105,9 +105,9 @@
   <color name="itemColor">@color/darker</color>
 
   // Custom Chip Style
-  <color name="checkedChipBackgroundColor">#206200EA</color>
+  <color name="checkedChipBackgroundColor">@color/colorPrimary</color>
   <color name="chipBackgroundColor">@color/lightGray</color>
-  <color name="checkedChipTextColor">@color/colorPrimary</color>
+  <!--<color name="checkedChipTextColor">@color/colorPrimary</color>-->
   <color name="chipTextColor">@color/darkGray</color>
 
   // Custom CardView Style

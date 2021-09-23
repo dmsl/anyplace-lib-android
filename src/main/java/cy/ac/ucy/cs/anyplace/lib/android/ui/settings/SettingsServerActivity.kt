@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreServer
-import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.BaseActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +21,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsServerActivity: BaseActivity() {
-  private val TAG = SettingsServerActivity::class.java.simpleName
   private lateinit var mainViewModel: MainViewModel
   private lateinit var settingsFragment: SettingsServerFragment
 

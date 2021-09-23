@@ -4,15 +4,10 @@ import android.app.Application
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Toast
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
-import androidx.preference.EditTextPreference
+import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_HTTP_FORBIDEN
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_NPE
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ONLY_SSL
@@ -20,6 +15,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AnyplaceUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GenUtils
@@ -37,6 +37,9 @@ import java.net.ConnectException
 import java.net.UnknownServiceException
 import javax.inject.Inject
 
+// TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
+//  (e.g. SpaceViewModel, Login)
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
   app: Application,
@@ -46,11 +49,31 @@ class MainViewModel @Inject constructor(
   private val dataStoreMisc: DataStoreMisc,
   private val dataStoreUser: DataStoreUser,
   ): AndroidViewModel(app) {
-  var loadedApiData = false
-  val TAG = MainViewModel::class.java.simpleName
+  var loadedApiData = false // TODO move in SpaceVM
+
+  private lateinit var spacesQueryType: QuerySelectSpace
 
   // PREFERENCES
   val serverPreferences = dataStoreServer.readServerPrefs
+
+  //// ROOM
+  val readSpaces: LiveData<List<SpaceEntity>> = repository.local.readSpaces().asLiveData()
+  val querySpaces: LiveData<List<SpaceEntity>> = repository.local.querySpaces().asLiveData()
+
+  // will be collected when applying a space query
+  val readSpaceQueryType = dataStoreMisc.readQuerySpace
+
+  private fun insertSpaces(spaces: Spaces, ownership: UserOwnership) =
+    viewModelScope.launch(Dispatchers.IO) {
+      LOG.D(TAG, "insertSpaces: total: " + spaces.spaces.size)
+      spaces.spaces.forEach { space ->
+        repository.local.insertSpace(space, ownership)
+      }
+    }
+
+  fun applyQueries() : Map<String, String> {
+    TODO("Apply ROOM queries")
+  }
 
   //// RETROFIT
   ////// Mutable Data
@@ -127,20 +150,18 @@ class MainViewModel @Inject constructor(
     versionPreferences?.summary = spannableMsg
   }
 
+  // TODO modify this call for u
   private suspend fun getSpacesSafeCall() {
     spacesResponse.value = NetworkResult.Loading()
     if (app.hasInternetConnection()) {
       try {
-        val response = repository.remote.getSpaces()
+        val response = repository.remote.getSpacesPublic()
         LOG.D2(TAG, "Spaces msg: ${response.message()}" )
         spacesResponse.value = handleSpacesResponse(response)
         // LOG.E(TAG, "getSpaces: aft: handleSpacesResponse")
 
         val spaces = spacesResponse.value!!.data
-        if (spaces != null) {
-          LOG.W("TODO: cache to DB the spaces")
-          //  offlineCacheSpaces(spaces) TODO:PM
-        }
+        if (spaces != null) { offlineCacheSpaces(spaces, UserOwnership.PUBLIC) }
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${retrofitHolder.retrofit.baseUrl()}"
         handleSafecallError(msg, ce)
@@ -151,6 +172,11 @@ class MainViewModel @Inject constructor(
     } else {
       spacesResponse.value = NetworkResult.Error("No Internet Connection.")
     }
+  }
+
+  private fun offlineCacheSpaces(spaces: Spaces, ownership: UserOwnership) {
+    LOG.D2("offlineCacheSpaces: $ownership")
+    insertSpaces(spaces, ownership)
   }
 
   private fun handleSafecallError(msg:String, e: Exception) {
@@ -205,5 +231,23 @@ class MainViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
       dataStoreMisc.saveBackFromSettings(value)
     }
+
+
+  /**
+   * Persistently saves the query (in Misc DataStore)
+   */
+  fun saveQueryTypeDataStore() =
+    viewModelScope.launch(Dispatchers.IO) {
+      dataStoreMisc.saveQuerySpace(spacesQueryType)
+    }
+
+  /**
+   * Saves the query in the ViewModel (not persistent).
+   */
+  fun saveQueryTypeTemp(userOwnership: UserOwnership, ownershipId: Int,
+                        spaceType: SpaceType, spaceTypeId: Int) {
+    LOG.D(TAG, "Saving query type: $userOwnership $spaceType")
+    spacesQueryType = QuerySelectSpace(userOwnership, ownershipId, spaceType, spaceTypeId)
+  }
 
 }

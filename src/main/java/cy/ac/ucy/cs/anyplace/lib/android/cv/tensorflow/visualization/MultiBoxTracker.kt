@@ -7,6 +7,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Pair
 import android.util.TypedValue
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector.Detection
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.ImageUtils.getTransformationMatrix
 import java.util.concurrent.locks.Lock
@@ -42,7 +43,6 @@ class MultiBoxTracker(
 
     private val screenRectangles: MutableList<Pair<Float, RectF>> = mutableListOf()
     private val trackedDetections: MutableList<TrackedDetection> = mutableListOf()
-
     private var frameToCanvasMatrix: Matrix? = null
 
     private val borderedText: BorderedText = BorderedText(
@@ -64,21 +64,17 @@ class MultiBoxTracker(
             val detectionFrameRect: RectF = detection.boundingBox
             val detectionScreenRect = RectF()
             rgbFrameToScreen.mapRect(detectionScreenRect, detectionFrameRect)
-            Log.d(
-                TAG,
-                "Result! Frame: ${detection.boundingBox} mapped to screen:$detectionScreenRect"
+            LOG.V3(TAG, "Result! Frame: ${detection.boundingBox} mapped to screen:$detectionScreenRect"
             )
             screenRectangles.add(Pair(detection.score, detectionScreenRect))
             if (detectionFrameRect.width() < MIN_SIZE || detectionFrameRect.height() < MIN_SIZE) {
-                Log.w(TAG, "Degenerate rectangle : $detectionFrameRect")
+                LOG.W(TAG, "Degenerate rectangle : $detectionFrameRect")
                 return@mapNotNull null
             }
             return@mapNotNull Pair(detection.score, detection)
         }
 
-        if (detectionToTrack.isEmpty()) {
-            Log.v(TAG, "Nothing to track.")
-        }
+        if (detectionToTrack.isEmpty()) {  LOG.V2(TAG, "Nothing to track.") }
 
         lock.withLock {
             trackedDetections.clear()

@@ -7,14 +7,15 @@ import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(private val retrofitHolder: RetrofitHolder) {
 
-  suspend fun getSpaces() : Response<Spaces> = retrofitHolder.api.getSpaces()
-
   // USER
   suspend fun userLoginLocal(obj: UserLoginLocalForm) : Response<UserLoginResponse>
       = retrofitHolder.api.userLoginLocal(obj)
 
   suspend fun userLoginGoogle(obj: UserLoginGoogleData) : Response<UserLoginResponse>
       = retrofitHolder.api.userLoginGoogle(obj)
+
+  // SPACES
+  suspend fun getSpacesPublic() : Response<Spaces> = retrofitHolder.api.getSpacesPublic()
 
   // MISC
   suspend fun getVersion(): Response<Version>  = retrofitHolder.api.getVersion()

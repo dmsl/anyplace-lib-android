@@ -25,10 +25,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsDialog
-import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.BaseActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.LoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityLoginBinding

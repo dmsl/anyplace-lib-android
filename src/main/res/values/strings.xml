@@ -129,6 +129,14 @@
   <string name="login_failed">"Login failed"</string>
   <string name="anyplace">Anyplace</string>
   <string name="title_activity_maps">MapsActivity</string>
+  <string name="Public">Public</string>
+  <string name="Accessible">Accessible</string>
+  <string name="Owned">Owned</string>
+  <string name="Apply">Apply</string>
+  <string name="space_ownership">Space ownership</string>
+  <string name="space_type">Type</string>
+  <string name="Building">Building</string>
+  <string name="Vessel">Vessel</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>

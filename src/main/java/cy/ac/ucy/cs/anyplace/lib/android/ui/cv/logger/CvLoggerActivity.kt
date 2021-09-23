@@ -12,10 +12,18 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import cy.ac.ucy.cs.anyplace.lib.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.getViewModelFactory
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import kotlinx.coroutines.Dispatchers
@@ -24,15 +32,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-class CvLoggerActivity : AppCompatActivity() {
+class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
   private companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
-    const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
+    const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9 // TODO:PM setting
   }
 
   private lateinit var binding: ActivityCvLoggerBinding
   private val viewModel by viewModels<CvLoggerViewModel> { getViewModelFactory() }
   private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+  private lateinit var gMap: GoogleMap
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -54,10 +63,18 @@ class CvLoggerActivity : AppCompatActivity() {
       binding.tovCamera,
       binding.pvCamera
     )
-    // TODO:PM make this a setting..
+    // TODO:PM make this a setting?
     // binding.switchPadding.setOnCheckedChangeListener { _, isChecked ->
     //   CvLoggerViewModel.usePadding= isChecked
     // }
+
+    // add a map dynamically
+    val mapFragment = SupportMapFragment.newInstance()
+    supportFragmentManager
+        .beginTransaction()
+        .add(R.id.mapView, mapFragment)
+        .commit()
+    mapFragment.getMapAsync(this)
   }
 
   private fun setUpBottomSheet() {
@@ -167,5 +184,14 @@ class CvLoggerActivity : AppCompatActivity() {
     LOG.E("FRAME: ${image.width}x${image.height}")
     viewModel.setUpImageConverter(baseContext, image)
 
+  }
+  override fun onMapReady(googleMap: GoogleMap) {
+    gMap = googleMap
+    LOG.V2(TAG, "map ready")
+
+    // Add a marker in Sydney and move the camera
+    val sydney = LatLng(-34.0, 151.0)
+    gMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
+    gMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
   }
 }

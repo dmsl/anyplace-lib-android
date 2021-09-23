@@ -44,9 +44,7 @@
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="parent"
-      app:tint="@color/white" />
-
-
+      app:tint="@color/darkGray" />
 
     <TextView
       android:id="@+id/tv_titleCvSettings"
@@ -55,7 +53,7 @@
       android:layout_marginTop="20dp"
       android:gravity="center"
       android:text="Settings"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       android:textSize="20sp"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
@@ -67,7 +65,7 @@
       android:layout_height="wrap_content"
       android:text="Sliding Window:"
       android:layout_marginTop="20dp"
-      android:textColor="@color/white"
+      android:textColor="@color/black"
       android:textStyle="bold"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toLeftOf="@id/seekBar_slidingWindow"
@@ -108,7 +106,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:text="@string/bottom_sheet_frame_text"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       android:layout_marginTop="20dp"
       android:textStyle="bold"
       app:layout_constraintLeft_toLeftOf="parent"
@@ -121,7 +119,7 @@
       android:layout_height="wrap_content"
       android:layout_marginTop="20dp"
       android:text="@string/bottom_sheet_resolution_placeholder"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@id/divider_beforeStats" />
 
@@ -130,7 +128,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:text="@string/bottom_sheet_crop_text"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       android:textStyle="bold"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintTop_toBottomOf="@id/frame_info" />
@@ -142,7 +140,7 @@
       android:layout_height="wrap_content"
       android:gravity="right"
       android:text="@string/bottom_sheet_resolution_placeholder"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@id/frame_info" />
 
@@ -152,7 +150,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:text="@string/bottom_sheet_time_text"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       android:textStyle="bold"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintTop_toBottomOf="@id/crop_info" />
@@ -162,7 +160,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:text="@string/bottom_sheet_time_placeholder"
-      android:textColor="@android:color/white"
+      android:textColor="@android:color/black"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@id/crop_info" />
 

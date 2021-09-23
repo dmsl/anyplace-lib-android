@@ -11,12 +11,6 @@
       android:theme="@style/AppTheme.Compat.ObjectDetection"
       android:screenOrientation="portrait"
       android:exported="true" />
-    <!-- TODO CLR this -->
-    <activity
-      android:name=".android.ui.cv.MapsActivity"
-      android:exported="true"
-      android:label="@string/title_activity_maps"
-     /> <!-- LockedOrientationActivity: stay always in portrait mode. -->
     <activity
       android:name=".android.ui.login.LoginActivity"
       android:exported="true"

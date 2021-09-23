@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space
+package cy.ac.ucy.cs.anyplace.lib.android.ui
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo

@@ -73,7 +73,7 @@
 
     <com.google.android.gms.maps.MapView
       android:id="@+id/mapView"
-      android:alpha="0.7"
+      android:alpha="0"
 
       android:layout_width="0dp"
       android:layout_height="0dp"

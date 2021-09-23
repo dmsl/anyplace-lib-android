@@ -5,6 +5,6 @@
     android:topLeftRadius="@dimen/bottom_sheet_cv_logging_corner_radius"
     android:topRightRadius="@dimen/bottom_sheet_cv_logging_corner_radius" />
   <padding android:top="@dimen/bottom_sheet_cv_logging_top_padding" />
-  <solid android:color="@color/colorPrimaryDark" />
+  <solid android:color="@color/lighterGray" />
   <stroke android:color="@color/darkGray" android:width="2dp"/>
 </shape>

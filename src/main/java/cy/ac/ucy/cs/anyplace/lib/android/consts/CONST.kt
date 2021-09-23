@@ -1,5 +1,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.consts
 
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
+
 class CONST {
   companion object
   {
@@ -36,9 +39,25 @@ class CONST {
     const val PREF_USER_ID= "pref_user_id"
     const val PREF_USER_USERNAME= "pref_user_username"
 
+    //// ROOM
+    const val DB_NAME = "anyplace_db"
+    const val DB_TBL_SPACES = "spaces"
+
     //// MISC
     const val PREF_MISC_NAME = "pref_misc"
     const val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
     const val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
+
+    // public, accessible, owned
+    const val PREF_MISC_QUERY_SPACE_OWNERSHIP= "pref_misc_queryType_space_ownership"
+    const val PREF_MISC_QUERY_SPACE_OWNERSHIP_ID= "pref_misc_queryType_space_ownershipId"
+    // building or vessel
+    const val PREF_MISC_QUERY_SPACE_TYPE= "pref_misc_queryType_space_type"
+    const val PREF_MISC_QUERY_SPACE_TYPE_ID="pref_misc_queryType_space_typeId"
+
+
+    ///// QUERY TYPES
+    val DEFAULT_QUERY_SPACE_OWNERSHIP = UserOwnership.PUBLIC.toString().uppercase()
+    val DEFAULT_QUERY_SPACE_TYPE = SpaceType.BUILDING.toString().uppercase()
   }
 }

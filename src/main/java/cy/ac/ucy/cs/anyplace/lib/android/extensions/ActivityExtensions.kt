@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.ViewModelFactory
@@ -19,6 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
 fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
     return ViewModelFactory(this)
 }
+
 
 fun ComponentActivity.registerForActivityResult(
     callback: ActivityResultCallback<ActivityResult>
