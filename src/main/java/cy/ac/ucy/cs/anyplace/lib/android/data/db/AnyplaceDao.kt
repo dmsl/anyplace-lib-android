@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.db
 import androidx.room.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.models.Space
@@ -19,7 +20,17 @@ interface AnyplaceDao {
   @Query("SELECT * FROM spaces ORDER BY name ASC")
   fun readSpaces(): Flow<List<SpaceEntity>>
 
-  @Query("SELECT * FROM spaces WHERE name LIKE '%Computer%' ORDER BY name ASC")
-  fun querySpaces(): Flow<List<SpaceEntity>>
+  @Query("SELECT * FROM spaces WHERE name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
+  fun querySpaces(spaceName: String): Flow<List<SpaceEntity>>
+
+  // TODO
+  // @Query("SELECT * FROM spaces WHERE name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
+  // fun querySpacesOwnerType(ownership: String, spaceType: String, spaceName: String): Flow<List<SpaceEntity>>
+
+  @Query("SELECT * FROM spaces WHERE type == :spaceType AND name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
+  fun querySpacesType(spaceType: String, spaceName: String): Flow<List<SpaceEntity>>
+
+  @Query("SELECT * FROM spaces WHERE ownerShip == :ownership AND name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
+  fun querySpaceOwner(ownership: String, spaceName: String): Flow<List<SpaceEntity>>
 
 }

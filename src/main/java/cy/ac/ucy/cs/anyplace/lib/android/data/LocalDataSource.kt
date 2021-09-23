@@ -1,9 +1,14 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data
 
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.AnyplaceDao
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.SpaceTypeConverter.Companion.spaceToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
+import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -16,12 +21,33 @@ class LocalDataSource @Inject constructor(
     return anyplaceDao.readSpaces()
   }
 
-  fun querySpaces(): Flow<List<SpaceEntity>> {
-    return anyplaceDao.querySpaces() // TODO
+  fun querySpaces(query: QuerySelectSpace): Flow<List<SpaceEntity>> {
+    LOG.D3(TAG, "querySpaces: name'${query.spaceName}'")
+
+    // val name = query.spaceName.isNotEmpty()
+    val ownership = query.ownership != UserOwnership.PUBLIC
+    val type = query.spaceType != SpaceType.ALL
+
+    var ownershipStr = query.ownership.toString().uppercase()
+    val typeStr = query.spaceType.toString().uppercase()
+    if (ownership && type) {
+      // return anyplaceDao.querySpaces(
+      //   query.ownership.toString().uppercase(),
+      //   query.spaceType.toString().uppercase(),
+      //   query.spaceName)
+    } else if (ownership) {
+      LOG.D("QUERY: ownership: $ownershipStr")
+      return anyplaceDao.querySpaceOwner(ownershipStr, query.spaceName)
+    } else if (type) {
+      LOG.D("QUERY: space type: $typeStr")
+      return anyplaceDao.querySpacesType(typeStr, query.spaceName)
+    }
+
+    return anyplaceDao.querySpaces(query.spaceName)  // spaceName
   }
 
   suspend fun insertSpace(space: Space, ownership: UserOwnership) {
+    LOG.V5("insert: ${space.name} : ${space.type}")
     anyplaceDao.insertSpace(spaceToEntity(space, ownership))
   }
-
 }

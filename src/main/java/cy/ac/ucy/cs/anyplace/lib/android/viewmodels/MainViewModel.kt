@@ -45,39 +45,16 @@ class MainViewModel @Inject constructor(
   app: Application,
   private val repository: Repository,
   private val retrofitHolder: RetrofitHolder,
-  dataStoreServer: DataStoreServer,
+  private val dataStoreServer: DataStoreServer,
   private val dataStoreMisc: DataStoreMisc,
   private val dataStoreUser: DataStoreUser,
   ): AndroidViewModel(app) {
-  var loadedApiData = false // TODO move in SpaceVM
-
-  private lateinit var spacesQueryType: QuerySelectSpace
 
   // PREFERENCES
   val serverPreferences = dataStoreServer.readServerPrefs
 
-  //// ROOM
-  val readSpaces: LiveData<List<SpaceEntity>> = repository.local.readSpaces().asLiveData()
-  val querySpaces: LiveData<List<SpaceEntity>> = repository.local.querySpaces().asLiveData()
-
-  // will be collected when applying a space query
-  val readSpaceQueryType = dataStoreMisc.readQuerySpace
-
-  private fun insertSpaces(spaces: Spaces, ownership: UserOwnership) =
-    viewModelScope.launch(Dispatchers.IO) {
-      LOG.D(TAG, "insertSpaces: total: " + spaces.spaces.size)
-      spaces.spaces.forEach { space ->
-        repository.local.insertSpace(space, ownership)
-      }
-    }
-
-  fun applyQueries() : Map<String, String> {
-    TODO("Apply ROOM queries")
-  }
-
   //// RETROFIT
   ////// Mutable Data
-  val spacesResponse: MutableLiveData<NetworkResult<Spaces>> = MutableLiveData()
   val versionResponse: MutableLiveData<NetworkResult<Version>> = MutableLiveData()
 
   var networkStatus = false
@@ -90,7 +67,6 @@ class MainViewModel @Inject constructor(
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dataStoreMisc.readBackFromSettings.asLiveData()
 
-  fun getSpaces() = viewModelScope.launch { getSpacesSafeCall() }
   fun displayBackendVersion(versionPreferences: Preference?) =
     viewModelScope.launch { displayBackendVersionSafeCall(versionPreferences) }
 
@@ -121,7 +97,7 @@ class MainViewModel @Inject constructor(
           if (e.message?.contains(EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
             exception = Exception(MSG_ERR_ONLY_SSL)
           }
-          spacesResponse.value = NetworkResult.Error(e.message)
+          versionResponse.value = NetworkResult.Error(e.message)
         }
       } catch(e: Exception) {
         LOG.E(TAG, "EXCEPTION: ${e.message}")
@@ -129,7 +105,7 @@ class MainViewModel @Inject constructor(
           is NullPointerException -> Exception(MSG_ERR_NPE)
           else -> e
         }
-        spacesResponse.value = NetworkResult.Error(exception?.message)
+        versionResponse.value = NetworkResult.Error(exception?.message)
       }
     } else {
       exception = Exception("No internet connection.")
@@ -148,56 +124,6 @@ class MainViewModel @Inject constructor(
     val spannableMsg = SpannableString(msg)
     versionColor?.let { spannableMsg.setSpan(versionColor, 0, spannableMsg.length, 0) }
     versionPreferences?.summary = spannableMsg
-  }
-
-  // TODO modify this call for u
-  private suspend fun getSpacesSafeCall() {
-    spacesResponse.value = NetworkResult.Loading()
-    if (app.hasInternetConnection()) {
-      try {
-        val response = repository.remote.getSpacesPublic()
-        LOG.D2(TAG, "Spaces msg: ${response.message()}" )
-        spacesResponse.value = handleSpacesResponse(response)
-        // LOG.E(TAG, "getSpaces: aft: handleSpacesResponse")
-
-        val spaces = spacesResponse.value!!.data
-        if (spaces != null) { offlineCacheSpaces(spaces, UserOwnership.PUBLIC) }
-      } catch(ce: ConnectException) {
-        val msg = "Connection failed:\n${retrofitHolder.retrofit.baseUrl()}"
-        handleSafecallError(msg, ce)
-      } catch(e: Exception) {
-        val msg = "Indoor Spaces Not Found." + "\nURL: ${retrofitHolder.retrofit.baseUrl()}"
-        handleSafecallError(msg, e)
-      }
-    } else {
-      spacesResponse.value = NetworkResult.Error("No Internet Connection.")
-    }
-  }
-
-  private fun offlineCacheSpaces(spaces: Spaces, ownership: UserOwnership) {
-    LOG.D2("offlineCacheSpaces: $ownership")
-    insertSpaces(spaces, ownership)
-  }
-
-  private fun handleSafecallError(msg:String, e: Exception) {
-    spacesResponse.value = NetworkResult.Error(msg)
-    LOG.E(msg)
-    LOG.E(TAG, e)
-  }
-
-  private fun handleSpacesResponse(response: Response<Spaces>): NetworkResult<Spaces>? {
-    val tag = "Indoor Spaces"
-    LOG.D2(TAG, "handleSpacesResponse")
-    if(response.isSuccessful) {
-      return when {
-        response.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
-        response.body()!!.spaces.isNullOrEmpty() -> NetworkResult.Error("$tag not found.")
-        response.isSuccessful -> NetworkResult.Success(response.body()!!) // can be nullable
-        else -> NetworkResult.Error(response.message())
-      }
-    }
-
-    return NetworkResult.Error("$tag: ${response.message()}")
   }
 
   private fun handleVersionResponse(response: Response<Version>): NetworkResult<Version>? {
@@ -228,26 +154,5 @@ class MainViewModel @Inject constructor(
   fun unsetBackFromSettings() = saveBackFromSettings(false)
 
   private fun saveBackFromSettings(value: Boolean) =
-    viewModelScope.launch(Dispatchers.IO) {
-      dataStoreMisc.saveBackFromSettings(value)
-    }
-
-
-  /**
-   * Persistently saves the query (in Misc DataStore)
-   */
-  fun saveQueryTypeDataStore() =
-    viewModelScope.launch(Dispatchers.IO) {
-      dataStoreMisc.saveQuerySpace(spacesQueryType)
-    }
-
-  /**
-   * Saves the query in the ViewModel (not persistent).
-   */
-  fun saveQueryTypeTemp(userOwnership: UserOwnership, ownershipId: Int,
-                        spaceType: SpaceType, spaceTypeId: Int) {
-    LOG.D(TAG, "Saving query type: $userOwnership $spaceType")
-    spacesQueryType = QuerySelectSpace(userOwnership, ownershipId, spaceType, spaceTypeId)
-  }
-
+    viewModelScope.launch(Dispatchers.IO) {  dataStoreMisc.saveBackFromSettings(value) }
 }

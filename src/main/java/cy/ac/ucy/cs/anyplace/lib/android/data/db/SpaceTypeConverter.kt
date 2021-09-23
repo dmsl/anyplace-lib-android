@@ -13,8 +13,9 @@ class SpaceTypeConverter {
 
   companion object {
     fun spaceToEntity(space: Space, ownership: UserOwnership): SpaceEntity {
-      val entity = SpaceEntity(
+      return SpaceEntity(
         space.id,
+        space.type.uppercase(),
         space.bucode,
         space.name,
         space.description,
@@ -22,14 +23,13 @@ class SpaceTypeConverter {
         space.coordinatesLat,
         space.coordinatesLon,
         space.url,
-        ownership
-      )
-      return entity
+        ownership)
     }
 
-    fun entityToSpace(tuple: SpaceEntity): Space{
+    private fun entityToSpace(tuple: SpaceEntity): Space {
       val entity = Space(
         tuple.id,
+        tuple.type.lowercase(),
         tuple.bucode?:"",
         tuple.name,
         tuple.description?:"",

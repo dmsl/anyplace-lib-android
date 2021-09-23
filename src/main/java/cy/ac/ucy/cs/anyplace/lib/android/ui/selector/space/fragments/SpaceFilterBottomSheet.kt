@@ -17,12 +17,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
   private lateinit var mainViewModel: MainViewModel
+  private lateinit var spacesViewModel: SpacesViewModel
 
   private var queryOwnershipStr = DEFAULT_QUERY_SPACE_OWNERSHIP
   private var queryOwnershipId = 0
@@ -33,6 +35,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     mainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+    spacesViewModel = ViewModelProvider(requireActivity()).get(SpacesViewModel::class.java)
   }
 
   override fun onCreateView(
@@ -42,7 +45,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
 
-    mainViewModel.readSpaceQueryType.asLiveData().observe(viewLifecycleOwner, { value ->
+    spacesViewModel.prefsQuerySpace.asLiveData().observe(viewLifecycleOwner, { value ->
       queryOwnershipStr=value.ownership.toString()
       querySpaceTypeStr=value.spaceType.toString()
 
@@ -69,11 +72,14 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
       val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
-      mainViewModel.saveQueryTypeTemp(
+      // CHECK storing temp, and below permanent (datastore).
+      // must do: if query is null, then don't store it.
+      spacesViewModel.saveQueryTypeTemp(
         queryOwnership, queryOwnershipId,
         querySpaceType, querySpaceTypeId)
 
-      mainViewModel.saveQueryTypeDataStore()
+      // TODO: if query is NOT null, then store it.. (after it's performed)
+      spacesViewModel.saveQueryTypeDataStore()
 
       val action = SpaceFilterBottomSheetDirections
           .actionSpaceFilterBottomSheetToSpacesListFragment(true)

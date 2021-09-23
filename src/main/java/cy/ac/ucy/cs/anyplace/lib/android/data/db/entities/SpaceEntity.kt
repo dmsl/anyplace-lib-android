@@ -7,21 +7,23 @@ enum class UserOwnership {
   PUBLIC,      // can be accessed by anyone
   OWNED,       // it is owned by user
   ACCESSIBLE,   // it is accessible by user due to admin/mod priviledges
-  __DONT_UPDATE  // TODO INFO if it's this one, then dont update it
+  __DONT_UPDATE,  // TODO INFO if it's this one, then dont update it
 }
 
 enum class SpaceType {
+  ALL,
   BUILDING,
   VESSEL,
-  UNKNOWN
+  UNKNOWN,
 }
 
 // Based on Space
+// INFO order is significant as we convert from SpaceEntity to Space and vice versa
 @Entity(tableName = DB_TBL_SPACES)
 data class SpaceEntity(
-  // @PrimaryKey
   @PrimaryKey(autoGenerate = false)
   var id: String,
+  val type: String="unknown",
   val bucode: String?="",
   val name: String,
   val description: String?="",

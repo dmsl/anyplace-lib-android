@@ -55,7 +55,6 @@ class CONST {
     const val PREF_MISC_QUERY_SPACE_TYPE= "pref_misc_queryType_space_type"
     const val PREF_MISC_QUERY_SPACE_TYPE_ID="pref_misc_queryType_space_typeId"
 
-
     ///// QUERY TYPES
     val DEFAULT_QUERY_SPACE_OWNERSHIP = UserOwnership.PUBLIC.toString().uppercase()
     val DEFAULT_QUERY_SPACE_TYPE = SpaceType.BUILDING.toString().uppercase()

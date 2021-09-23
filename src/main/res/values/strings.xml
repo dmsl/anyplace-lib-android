@@ -137,6 +137,10 @@
   <string name="space_type">Type</string>
   <string name="Building">Building</string>
   <string name="Vessel">Vessel</string>
+  <string name="search">Search</string>
+  <string name="search_space">Search spaces</string>
+  <string name="Any">Any</string>
+  <string name="All">All</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>

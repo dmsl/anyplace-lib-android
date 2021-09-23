@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -16,10 +18,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.SpaceTypeConverter.Companion.entityToSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreUser
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +38,7 @@ class SpaceListFragment : Fragment() {
   private val binding get() = _binding!!
   private val mAdapter by lazy { SpacesAdapter() }
   private lateinit var mainViewModel: MainViewModel
+  private lateinit var spacesViewModel: SpacesViewModel
   private lateinit var networkListener: NetworkListener
 
   private val args by navArgs<SpaceListFragmentArgs>() // delegated to NavArgs (SafeArgs plugin)
@@ -43,39 +48,34 @@ class SpaceListFragment : Fragment() {
   // Called before onCreateView
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    mainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java) // CLR ViewModelFactory
+    mainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+    spacesViewModel = ViewModelProvider(requireActivity()).get(SpacesViewModel::class.java)
     LOG.D3(TAG, "SpaceListFragment: onCreate")
   }
 
   override fun onResume() {
     super.onResume()
-
-    LOG.D(TAG, "onResume")
-    // TODO when adding to MapFragment: make a SelectSpaceViewModel, and make it a method there.
-    // and call w/ args from both SpaceList and SpaceMap
+    LOG.D3(TAG, "onResume")
     handleBackToFragment()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    mainViewModel.loadedApiData = false
+    spacesViewModel.loadedSpaces = false // TODO:PM replace to loadedSpaces
   }
 
+  // TODO:PM move to SpaceViewModel
   private fun handleBackToFragment() {
-    LOG.D(TAG, "handleBackToFragment")
     if(mainViewModel.backFromSettings) {
-      LOG.D(TAG, "handleBackToFragment: from settings")
+      LOG.D2(TAG, "handleBackToFragment: from settings")
       lifecycleScope.launch {
         val user = requireActivity().dataStoreUser.readUser.first()
         if (user.accessToken.isBlank()) {
           requireActivity().finish()
-          // startActivity(Intent(this@Select, LoginActivity::class.java)) CLR?
         } else {
           reloadSpacesFromRemote()
         }
       }
-    } else if (args.backFromBottomSheet) {
-      LOG.E(TAG, "BACK FROM BOTTOM SHEET!")
     }
   }
 
@@ -84,28 +84,32 @@ class SpaceListFragment : Fragment() {
     savedInstanceState: Bundle?
   ): View {
     LOG.D(TAG, "onCreateView")
-    LOG.D("HasLoadedSpaces: ${mainViewModel.loadedApiData}")
 
     // Inflate the layout for this fragment
     _binding = FragmentSpacesListBinding.inflate(inflater, container, false)
 
     binding.lifecycleOwner = this // for DataBinding
-    // this.mainViewModel: initialized in onCreate, and then passed to the binding
-    binding.mainViewModel = this.mainViewModel
+    binding.spacesViewModel = this.spacesViewModel
 
-    setHasOptionsMenu(true) //CHECK
+    setHasOptionsMenu(true)
+    observeNetworkChanges()
     setupRecyclerView()
     loadSpaces()
+    setupFab()
 
-    binding.fabFilterSpaces.setOnClickListener {
-      if(mainViewModel.networkStatus) {
-        findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
-      } else {
-        mainViewModel.showNetworkStatus()
-      }
-    }
+    observeSearchViewChanges()
 
     return binding.root
+  }
+
+  private fun setupFab() {
+    binding.fabFilterSpaces.setOnClickListener {
+      if(spacesViewModel.loadedSpaces) {
+        findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
+      } else {
+        Toast.makeText(context, "No spaces loaded.", Toast.LENGTH_SHORT).show()
+      }
+    }
   }
 
   private fun setupRecyclerView() {
@@ -120,67 +124,89 @@ class SpaceListFragment : Fragment() {
    * Runs on the very first time (when Activity is created), and then on Network changes.
    */
   private fun loadSpaces() {
-    LOG.D("loadSpaces")
+    LOG.D(TAG, "loadSpaces")
 
     lifecycleScope.launchWhenStarted {
-      LOG.D("loadSpaces: launchWHenStarted")
-      networkListener = NetworkListener()
-      // TODO:PM must NOT check for internet before checking cache!
-      // CHECK cache first! and implement properly the 'back online' feature.
-      networkListener.checkNetworkAvailability(requireActivity())
-          .collect { status ->
-            LOG.D("loadSpaces -> readDatabase")
-            LOG.D(TAG, "Network status: $status")
-            mainViewModel.networkStatus = status
-            mainViewModel.showNetworkStatus()
-            readDatabase()
-          }
+      LOG.D("loadSpaces: { launchWhenStarted }")
+      readDatabase()
+    }
+  }
+
+  private fun observeNetworkChanges() {
+    lifecycleScope.launch {
+    networkListener = NetworkListener()
+      networkListener.checkNetworkAvailability(requireActivity()).collect { status ->
+        LOG.D(TAG, "Network status: $status")
+        mainViewModel.networkStatus = status
+        // mainViewModel.showNetworkStatus()
+      }
+    }
+  }
+
+  private fun observeSearchViewChanges() {
+    lifecycleScope.launch {
+      spacesViewModel.searchViewData.observe(viewLifecycleOwner) { spaceName ->
+        LOG.D(TAG, "searchview: $spaceName")
+
+        spacesViewModel.readSpacesQuery.removeObservers(viewLifecycleOwner)
+        spacesViewModel.applyQuery(spaceName)
+        // LOG.D(TAG, "observeSearchViewChanges -> loadSpacesQuery")
+        // loadSpacesQuery() // CHECK
+
+        spacesViewModel.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->
+          LOG.D(TAG, "Query: ${query.size}")
+          loadDatabaseResults(query)
+        }
+
+      }
     }
   }
 
   private fun readDatabase() {
     lifecycleScope.launch {
       // if we are back from bottom sheet we must reload
-      if (!mainViewModel.loadedApiData  || args.backFromBottomSheet) {
 
+      LOG.E("readDatabase: loaded spaces: ${!spacesViewModel.loadedSpaces} : bottom: ${args.backFromBottomSheet}" +
+          ": " + (!spacesViewModel.loadedSpaces || args.backFromBottomSheet) + "\n")
+      if (!spacesViewModel.loadedSpaces || args.backFromBottomSheet) {
         if (args.backFromBottomSheet) {
-          // TODO properly implement this query. use just one MutableLiveData (readSpaces  only)
-          mainViewModel.querySpaces.observeOnce(viewLifecycleOwner) { query ->
-            if (query.isNotEmpty()) {
-              LOG.D2(TAG, "readDatabase: loading from cache..")
-              loadDatabaseResults(query)
-            } else { // HANDLE this..
-              LOG.E(TAG, "EMPTY QUERY...")
-            }
-          }
+          LOG.E("readDatabase: Back from bottom sheet\n")
+          LOG.D(TAG, "readDatabase -> loadSpacesQuery")
+          loadSpacesQuery()
         } else {
-
-          mainViewModel.readSpaces.observeOnce(viewLifecycleOwner) { database ->
+          spacesViewModel.readSpaces.observeOnce(viewLifecycleOwner) { database ->
             if (database.isNotEmpty()) {
-              LOG.D2(TAG, "readDatabase: loading from cache..")
+              LOG.D2(TAG, "readDatabase -> loadDatabaseResults (no query)")
               loadDatabaseResults(database)
             } else {
-              LOG.D2(TAG, "readDatabase: requesting new data..")
+              LOG.D2(TAG, "readDatabase -> requestRemoteSpaceData")
               requestRemoteSpacesData()
               observeRemoteSpacesResponse()
             }
           }
-
-
         }
-
-
+      } else {
+        LOG.W(TAG, "Not reloading...")
       }
     }
   }
 
-  private fun requestRemoteSpacesData() {
-    mainViewModel.getSpaces()
+  /**
+   * If null then its ignored
+   * TODO:PM make this collable from both allSpaces and spacesQuery
+   */
+  private fun loadSpacesQuery() {
+    spacesViewModel.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->
+      LOG.D(TAG, "Query: ${query.size}")
+      loadDatabaseResults(query)
+    }
   }
+
+  private fun requestRemoteSpacesData() = spacesViewModel.getSpaces()
 
   private fun reloadSpacesFromRemote() {
     mainViewModel.unsetBackFromSettings()
-    mainViewModel.loadedApiData = false
+    spacesViewModel.loadedSpaces = false
     requestRemoteSpacesData()
   }
 
@@ -188,23 +214,27 @@ class SpaceListFragment : Fragment() {
    * Loads the recycler view with content from the database
    */
   private fun loadDatabaseResults(spaces: List<SpaceEntity>) {
-    LOG.D(TAG, "loadFromDatabase")
-    hideShimmerEffect()
-    spaces.let { mAdapter.setData(entityToSpaces(spaces)) }
-    mainViewModel.loadedApiData = true
+    LOG.D(TAG, "loadDatabaseResults")
+    if (!spacesViewModel.loadedSpaces) {
+      hideShimmerEffect()
+      spaces.let { mAdapter.setData(entityToSpaces(spaces)) }
+    } else {
+      LOG.W(TAG, "loadDatabaseResults: skipped loading..")
+    }
+    spacesViewModel.loadedSpaces = true
   }
 
   private fun observeRemoteSpacesResponse() {
-    mainViewModel.spacesResponse.observe(viewLifecycleOwner,  { response ->
+    spacesViewModel.spacesResponse.observe(viewLifecycleOwner,  { response ->
       LOG.D(TAG, "observeSpacesResponse")
       when (response) {
         is NetworkResult.Success -> {
           hideShimmerEffect()
           response.data?.let { mAdapter.setData(it) }
-          mainViewModel.loadedApiData = true // TODO Set this from db cache as welL!
+          spacesViewModel.loadedSpaces = true // TODO Set this from db cache as welL!
         }
         is NetworkResult.Error -> {
-          if(mainViewModel.loadedApiData) LOG.E("Error response: after showed success.")
+          if(spacesViewModel.loadedSpaces) LOG.E("Error response: after showed success.")
           mAdapter.clearData()
           hideShimmerEffect()
           // if(!showedApiData) {
@@ -226,7 +256,7 @@ class SpaceListFragment : Fragment() {
   }
 
   private fun hideShimmerEffect() {
-    LOG.W(TAG, "hideShimmerEffect")
+    LOG.V5(TAG, "hideShimmerEffect")
     binding.shimmerLayout.stopShimmer()
     binding.shimmerLayout.visibility = View.GONE
     binding.recyclerView.visibility = View.VISIBLE

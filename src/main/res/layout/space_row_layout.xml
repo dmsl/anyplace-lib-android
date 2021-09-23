@@ -31,6 +31,7 @@
         android:layout_height="match_parent"
         android:background="@color/backgroundColor">
 
+        <!--readSpaceName="@{space}"-->
         <TextView
           android:id="@+id/name_textView"
           android:layout_width="0dp"
@@ -58,6 +59,7 @@
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@+id/name_textView"
           app:srcCompat="@drawable/ic_building"
+          readSpaceDrawable="@{space}"
           app:tint="@color/colorAccent"
           android:contentDescription="@string/indoor_space" />
 
@@ -117,11 +119,14 @@
           app:layout_constraintStart_toStartOf="@+id/guideline2"
           app:layout_constraintTop_toBottomOf="@+id/town_textView" />
 
+        <!--android:text="building"-->
+        <!--readSpaceType="@{space}"-->
         <TextView
           android:id="@+id/type_textView"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="building"
+
+          android:text="@{space.type}"
           app:layout_constraintEnd_toEndOf="@+id/imageView2"
           app:layout_constraintStart_toStartOf="@+id/imageView2"
           app:layout_constraintTop_toBottomOf="@+id/imageView2" />

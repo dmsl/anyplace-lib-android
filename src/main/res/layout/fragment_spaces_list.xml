@@ -5,8 +5,8 @@
 
   <data>
     <variable
-      name="mainViewModel"
-      type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel" />
+      name="spacesViewModel"
+      type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout
@@ -51,11 +51,11 @@
       </LinearLayout>
     </com.facebook.shimmer.ShimmerFrameLayout>
 
-    <!--TODO FROM DATABASE-->
-    <!--readDatabase="@{mainViewModel.readRecipes}"-->
+    <!--TODO:PM NEXT FROM DATABASE ??-->
+    <!--readDatabase="@{spacesViewModel.readRecipes}"-->
     <ImageView
       android:id="@+id/error_imageView"
-      readRemoteResponse="@{mainViewModel.spacesResponse}"
+      readRemoteResponse="@{spacesViewModel.spacesResponse}"
       android:layout_width="100dp"
       android:layout_height="100dp"
       android:alpha="0.5"
@@ -70,7 +70,7 @@
 
     <TextView
       android:id="@+id/error_textView"
-      readRemoteResponse="@{mainViewModel.spacesResponse}"
+      readRemoteResponse="@{spacesViewModel.spacesResponse}"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:visibility="gone"

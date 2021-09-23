@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.viewModels
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -12,26 +12,24 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.getViewModelFactory
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.login.LoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SelectSpaceActivity : BaseActivity() {
-  // private val args by navArgs<RecipesFragmentArgs>() // TODO navigation arguments..
-
+class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
-  // private val mainViewModel by viewModels<MainViewModel> { getViewModelFactory() }
   private lateinit var mainViewModel: MainViewModel
+  private lateinit var spaceViewModel: SpacesViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+  override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // setTheme(R.style.AppTheme) // TODO:PM splash screen
+    // setTheme(R.style.AppTheme) // TODO:PM  splash screen alternative
 
     // TODO:PM SelectSpaceActivity: Open with parameters:
     // 1: get spaces of user
@@ -42,7 +40,8 @@ class SelectSpaceActivity : BaseActivity() {
 
     binding = ActivitySelectSpaceBinding.inflate(layoutInflater)
     setContentView(binding.root)
-    mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java) // CLR ?
+    mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+    spaceViewModel = ViewModelProvider(this).get(SpacesViewModel::class.java)
 
     binding.lifecycleOwner = this
     binding.mainViewModel = this.mainViewModel
@@ -74,8 +73,14 @@ class SelectSpaceActivity : BaseActivity() {
     return navController.navigateUp() || super.onSupportNavigateUp()
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    menuInflater.inflate(R.menu.main_menu_settings, menu)
+  override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    menuInflater.inflate(R.menu.select_space_top_menu, menu)
+    val search = menu.findItem(R.id.item_search_spaces)
+    val searchView = search.actionView as? SearchView
+    searchView?.queryHint = getString(R.string.search_space)
+    // searchView?.isSubmitButtonEnabled = true
+    searchView?.setOnQueryTextListener(this)
+
     return super.onCreateOptionsMenu(menu)
   }
 
@@ -85,5 +90,14 @@ class SelectSpaceActivity : BaseActivity() {
       SettingsDialog().show(supportFragmentManager, null)
     }
     return super.onOptionsItemSelected(item)
+  }
+
+  override fun onQueryTextSubmit(query: String?): Boolean {
+    return true
+  }
+
+  override fun onQueryTextChange(newText: String?): Boolean {
+    newText?.let { spaceViewModel.searchViewData.value = it }
+    return true
   }
 }

@@ -70,7 +70,6 @@ class SettingsServerActivity: BaseActivity() {
       setPreferencesFromResource(R.xml.base_preferences, rootKey)
 
       val versionPreferences : Preference? = findPreference("pref_server_version")
-
       versionPreferences?.setOnPreferenceClickListener {
         versionPreferences.icon = null
         versionPreferences.summary = "refreshing.."
@@ -80,7 +79,6 @@ class SettingsServerActivity: BaseActivity() {
         }
         true // click is handled
       }
-
       reactToSettingsUpdates(versionPreferences)
     }
 

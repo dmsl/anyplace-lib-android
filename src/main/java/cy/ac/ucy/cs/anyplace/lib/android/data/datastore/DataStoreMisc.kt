@@ -101,8 +101,9 @@ class DataStoreMisc @Inject constructor(@ApplicationContext private val ctx: Con
 }
 
 data class QuerySelectSpace(
-  val ownership: UserOwnership,
-  val ownershipId: Int,
-  val spaceType: SpaceType,
-  val spaceTypeId: Int,
+  val ownership: UserOwnership = UserOwnership.PUBLIC,
+  val ownershipId: Int=0,
+  val spaceType: SpaceType = SpaceType.ALL,
+  val spaceTypeId: Int=0,
+  var spaceName: String=""
   )

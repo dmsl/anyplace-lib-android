@@ -17,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_NPE
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ONLY_SSL
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.LoginFormState
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginGoogleData
@@ -34,8 +35,6 @@ class LoginViewModel @Inject constructor(
   app: Application,
   private val repository: Repository,
   private val retrofitHolder: RetrofitHolder) : AndroidViewModel(app) {
-
-  private val TAG = LoginViewModel::class.java.simpleName
 
   private val _loginForm = MutableLiveData<LoginFormState>()
   val loginFormState: LiveData<LoginFormState> = _loginForm // CHECK:PM

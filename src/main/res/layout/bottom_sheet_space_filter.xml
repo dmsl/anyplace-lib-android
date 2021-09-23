@@ -114,8 +114,15 @@
         app:selectionRequired="true"
         app:singleLine="true"
         app:singleSelection="true"
-        app:checkedChip="@id/chip_building"
+        app:checkedChip="@id/chip_all"
         >
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_all"
+          android:text="@string/All"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
         <com.google.android.material.chip.Chip
           android:id="@+id/chip_building"
           android:text="@string/Building"
