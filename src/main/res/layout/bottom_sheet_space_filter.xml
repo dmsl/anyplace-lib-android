@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="@color/cardBackgroundColor"
+  tools:context="cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.fragments.SpaceFilterBottomSheet">
+
+  <TextView
+    android:id="@+id/textView_queryOwnership"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="24dp"
+    android:layout_marginTop="12dp"
+    android:text="@string/space_ownership"
+    android:textColor="@color/titleColor"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    />
+
+  <HorizontalScrollView
+    android:id="@+id/scrollView_ownership"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginStart="16dp"
+    android:scrollbars="none"
+    android:layout_marginTop="12dp"
+    android:layout_marginEnd="16dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/textView_queryOwnership">
+
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal">
+
+      <!--            selectionRequired: at least one must be selected -->
+      <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup_Ownership"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:selectionRequired="true"
+        app:singleLine="true"
+        app:singleSelection="true"
+        app:checkedChip="@id/chip_spacesPublic"
+        >
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_spacesPublic"
+          android:text="@string/Public"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_spacesAccessible"
+          android:text="@string/Accessible"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_spacesOwned"
+          android:text="@string/Owned"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
+      </com.google.android.material.chip.ChipGroup>
+    </LinearLayout>
+  </HorizontalScrollView>
+
+
+
+  <TextView
+    android:id="@+id/textView_spaceType"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="24dp"
+    android:layout_marginTop="12dp"
+    android:text="@string/space_type"
+    android:textColor="@color/titleColor"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    app:layout_constraintTop_toBottomOf="@id/scrollView_ownership"
+    app:layout_constraintStart_toStartOf="parent"
+    />
+
+  <HorizontalScrollView
+    android:id="@+id/scrollView_spaceType"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginStart="16dp"
+    android:scrollbars="none"
+    android:layout_marginTop="12dp"
+    android:layout_marginEnd="16dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/textView_spaceType">
+
+    <LinearLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal">
+
+      <!--            selectionRequired: at least one must be selected -->
+      <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup_spaceType"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:selectionRequired="true"
+        app:singleLine="true"
+        app:singleSelection="true"
+        app:checkedChip="@id/chip_building"
+        >
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_building"
+          android:text="@string/Building"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
+        <com.google.android.material.chip.Chip
+          android:id="@+id/chip_vessel"
+          android:text="@string/Vessel"
+          style="@style/CustomChipStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+
+      </com.google.android.material.chip.ChipGroup>
+    </LinearLayout>
+
+  </HorizontalScrollView>
+
+  <Button
+    android:id="@+id/apply_button"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginStart="24dp"
+    android:layout_marginTop="24dp"
+    android:layout_marginEnd="24dp"
+    android:layout_marginBottom="24dp"
+    style="@style/PrimaryButton"
+    android:text="@string/Apply"
+    android:textAllCaps="false"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/scrollView_spaceType" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

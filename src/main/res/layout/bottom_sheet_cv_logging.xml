@@ -180,6 +180,17 @@
 
 
 
+    <!--TODO move in bottom sheet-->
+    <!--<Switch-->
+    <!--  android:id="@+id/switchPadding"-->
+    <!--  app:layout_constraintTop_toBottomOf="@id/pv_camera"-->
+    <!--  android:background="@color/white"-->
+    <!--  app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--  android:layout_width="wrap_content"-->
+    <!--  android:layout_height="wrap_content"-->
+    <!--  android:text="Padding" />-->
+
+
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
