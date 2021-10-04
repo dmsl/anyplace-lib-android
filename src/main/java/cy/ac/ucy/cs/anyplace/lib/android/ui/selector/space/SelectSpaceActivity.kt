@@ -6,12 +6,16 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.login.LoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsDialog
@@ -19,6 +23,9 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
@@ -29,7 +36,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // setTheme(R.style.AppTheme) // TODO:PM  splash screen alternative
+    // setTheme(R.style.AppTheme) // INFO alternative way to present a splash screen
 
     // TODO:PM SelectSpaceActivity: Open with parameters:
     // 1: get spaces of user
@@ -58,6 +65,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
         finish()
       }
     })
+    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
 
     navController = findNavController(R.id.navHostFragment)
     val appBarConfiguration = AppBarConfiguration(setOf(

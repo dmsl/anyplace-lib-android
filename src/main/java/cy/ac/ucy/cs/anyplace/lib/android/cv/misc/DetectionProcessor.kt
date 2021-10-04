@@ -24,6 +24,9 @@ class DetectionProcessor(
     private var croppedBitmap: Bitmap? = null
     private var cropToFrameTransform: Matrix? = null
 
+    var frameDetections: List<Detector.Detection> = emptyList()
+        private set
+
     private val paint: Paint = Paint().also {
         it.color = Color.RED
         it.style = Paint.Style.STROKE
@@ -36,8 +39,8 @@ class DetectionProcessor(
         cropSize: Int,
         rotation: Int
     ) {
-        LOG.I(TAG, "Camera orientation relative to screen canvas : $rotation")
-        LOG.I(TAG, "Initializing with size ${previewWidth}x${previewHeight}")
+        LOG.D3(TAG, "Camera orientation relative to screen canvas : $rotation")
+        LOG.D3(TAG, "Initializing with size ${previewWidth}x${previewHeight}")
 
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
 
@@ -54,32 +57,41 @@ class DetectionProcessor(
             previewWidth,
             previewHeight,
             ((rotation + 1) % 4) * 90,
-            showScore = SHOW_SCORE
-        )
+            showScore = SHOW_SCORE)
         trackingOverlay.setTracker(tracker)
     }
 
     fun processImage(bitmap: Bitmap): Long {
+        // TODO:PM save images elsewhere...
+        // TODO:PM set a tracking window
+
         Log.v(TAG, "Running detection on image")
-        val detections: List<Detector.Detection>
         val detectionTime: Long = measureTimeMillis {
-            detections = detector.runDetection(bitmap)
+            frameDetections = detector.runDetection(bitmap)
         }
 
-        Log.v(TAG, "Recognized objects : ${detections.size}")
+        Log.v(TAG, "Recognized objects : ${frameDetections.size}")
         val cropCopyBitmap: Bitmap = Bitmap.createBitmap(croppedBitmap!!)
         val canvas = Canvas(cropCopyBitmap)
 
-        for (detection in detections) {
+        for (detection in frameDetections) {
             val boundingBox: RectF = detection.boundingBox
             canvas.drawRect(boundingBox, paint)
             cropToFrameTransform!!.mapRect(boundingBox)
         }
 
-        tracker.trackResults(detections)
-        trackingOverlay.postInvalidate()
+        drawDetections()
 
         return detectionTime
     }
 
+    fun clearObjects() {
+        frameDetections= emptyList()
+        drawDetections()
+    }
+
+    fun drawDetections() {
+        tracker.trackResults(frameDetections)
+        trackingOverlay.postInvalidate()
+    }
 }

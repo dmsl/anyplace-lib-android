@@ -5,4 +5,12 @@
     <declare-styleable name="FontAwesome">
         <attr name="type" format="string" />
     </declare-styleable>
+
+    <!-- TextView with Outline -->
+    <declare-styleable name="OutlineTextView">
+        <attr name="outlineColor" format="color" />
+        <attr name="outlineWidth" format="dimension" />
+    </declare-styleable>
 </resources>
+
+

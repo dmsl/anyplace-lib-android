@@ -21,7 +21,6 @@ fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
     return ViewModelFactory(this)
 }
 
-
 fun ComponentActivity.registerForActivityResult(
     callback: ActivityResultCallback<ActivityResult>
 ): ActivityResultLauncher<Intent> {

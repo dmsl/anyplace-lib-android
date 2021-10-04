@@ -26,25 +26,94 @@ internal class YoloV4Detector(
     private val detectionModel: DetectionModel,
     private val minimumScore: Float,
 ) : Detector {
-
-    private companion object {
-        // TODO:PM options
-        const val NUM_THREADS = 4
-        const val IS_GPU: Boolean = false
-        const val IS_NNAPI: Boolean = false
-    }
-
     private val inputSize: Int = detectionModel.inputSize
 
     // Config values.
-    private val labels: List<String>
+    val labels: List<String>
+
     private val interpreter: Interpreter
-    private val nmsThresh = 0.6f
 
     // Pre-allocated buffers.
     private val intValues = IntArray(inputSize * inputSize)
     private val byteBuffer: Array<ByteBuffer>
     private val outputMap: MutableMap<Int, Array<Array<FloatArray>>> = HashMap()
+
+    companion object {
+        // TODO:PM options
+        const val NUM_THREADS = 4
+        const val IS_GPU: Boolean = false
+        const val IS_NNAPI: Boolean = false
+
+        private val nmsThresh = 0.6f
+
+        private fun overlap(x1: Float, width1: Float, x2: Float, width2: Float): Float {
+            val left1 = x1 - width1 / 2
+            val left2 = x2 - width2 / 2
+            val left = max(left1, left2)
+
+            val right1 = x1 + width1 / 2
+            val right2 = x2 + width2 / 2
+            val right = min(right1, right2)
+
+            return right - left
+        }
+
+        fun boxIoU(a: RectF, b: RectF): Float {
+            return boxIntersection(a, b) / boxUnion(a, b)
+        }
+
+
+        fun boxIntersection(a: RectF, b: RectF): Float {
+            val w = overlap(
+                (a.left + a.right) / 2,
+                a.right - a.left,
+                (b.left + b.right) / 2,
+                b.right - b.left
+            )
+
+            val h = overlap(
+                (a.top + a.bottom) / 2,
+                a.bottom - a.top,
+                (b.top + b.bottom) / 2,
+                b.bottom - b.top
+            )
+
+            return if (w < 0F || h < 0F) 0F else w * h
+        }
+
+        fun boxUnion(a: RectF, b: RectF): Float {
+            val i = boxIntersection(a, b)
+            return (a.right - a.left) * (a.bottom - a.top) + (b.right - b.left) * (b.bottom - b.top) - i
+        }
+
+        /**
+         * Non-maximum Suppression. Removes overlapping bboxes, which is a
+         * side-effect of YOLO's operation.
+         */
+        fun NMS(detections: List<Detection>, labels: List<String>): List<Detection> {
+            val nmsList: MutableList<Detection> = mutableListOf()
+
+            for (labelIndex in labels.indices) {
+                val priorityQueue = PriorityQueue<Detection>(50)
+                priorityQueue.addAll(detections.filter { it.detectedClass == labelIndex })
+                while (priorityQueue.size > 0) {
+                    val previousPriorityQueue: List<Detection> = priorityQueue.toList()
+                    val max = previousPriorityQueue[0]
+                    nmsList.add(max)
+                    priorityQueue.clear()
+                    priorityQueue.addAll(previousPriorityQueue.filter {
+                        boxIoU(max.boundingBox, it.boundingBox) < nmsThresh
+                    })
+                }
+            }
+            return nmsList
+        }
+    } // companion
+
+    private fun nms(detections: List<Detection>): List<Detection> {
+        return NMS(detections, labels)
+    }
+
 
     init {
         val labelsFilename = detectionModel.labelFilePath
@@ -86,7 +155,8 @@ internal class YoloV4Detector(
         usePadding = CvLoggerViewModel.usePadding
         convertBitmapToByteBuffer(bitmap)
         val result = getDetections(bitmap.width, bitmap.height)
-        return nms(result)
+        // return nms(result) // INFO: we are not doing an NMS here
+        return result
     }
 
     private fun initializeInterpreter(assetManager: AssetManager): Interpreter {
@@ -216,69 +286,4 @@ internal class YoloV4Detector(
                 )
             }
     }
-
-    /**
-     * Non-maximum Suppression. Removes overlapping bboxes, which is a
-     * side-effect of YOLO's operation.
-     */
-    private fun nms(detections: List<Detection>): List<Detection> {
-        val nmsList: MutableList<Detection> = mutableListOf()
-
-        for (labelIndex in labels.indices) {
-            val priorityQueue = PriorityQueue<Detection>(50)
-            priorityQueue.addAll(detections.filter { it.detectedClass == labelIndex })
-
-            while (priorityQueue.size > 0) {
-                val previousPriorityQueue: List<Detection> = priorityQueue.toList()
-                val max = previousPriorityQueue[0]
-                nmsList.add(max)
-                priorityQueue.clear()
-                priorityQueue.addAll(previousPriorityQueue.filter {
-                    boxIoU(max.boundingBox, it.boundingBox) < nmsThresh
-                })
-            }
-        }
-
-        return nmsList
-    }
-
-    private fun boxIoU(a: RectF, b: RectF): Float {
-        return boxIntersection(a, b) / boxUnion(a, b)
-    }
-
-    private fun boxIntersection(a: RectF, b: RectF): Float {
-        val w = overlap(
-            (a.left + a.right) / 2,
-            a.right - a.left,
-            (b.left + b.right) / 2,
-            b.right - b.left
-        )
-
-        val h = overlap(
-            (a.top + a.bottom) / 2,
-            a.bottom - a.top,
-            (b.top + b.bottom) / 2,
-            b.bottom - b.top
-        )
-
-        return if (w < 0F || h < 0F) 0F else w * h
-    }
-
-    private fun boxUnion(a: RectF, b: RectF): Float {
-        val i = boxIntersection(a, b)
-        return (a.right - a.left) * (a.bottom - a.top) + (b.right - b.left) * (b.bottom - b.top) - i
-    }
-
-    private fun overlap(x1: Float, width1: Float, x2: Float, width2: Float): Float {
-        val left1 = x1 - width1 / 2
-        val left2 = x2 - width2 / 2
-        val left = max(left1, left2)
-
-        val right1 = x1 + width1 / 2
-        val right2 = x2 + width2 / 2
-        val right = min(right1, right2)
-
-        return right - left
-    }
-
 }

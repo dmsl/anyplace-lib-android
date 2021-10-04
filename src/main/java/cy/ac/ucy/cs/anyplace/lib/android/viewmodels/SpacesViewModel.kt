@@ -16,6 +16,8 @@ import cy.ac.ucy.cs.anyplace.lib.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -41,6 +43,11 @@ class SpacesViewModel @Inject constructor(
   fun saveQueryTypeDataStore() =
     viewModelScope.launch(Dispatchers.IO) { dataStoreMisc.saveQuerySpace(querySelectSpace) }
 
+  fun resetQuery() =
+    viewModelScope.launch(Dispatchers.IO) {
+      dataStoreMisc.saveQuerySpace(QuerySelectSpace())
+    }
+
   /**
    * Saves the query in the ViewModel (not persistent).
    */
@@ -50,23 +57,22 @@ class SpacesViewModel @Inject constructor(
     querySelectSpace=QuerySelectSpace(userOwnership, ownershipId, spaceType, spaceTypeId)
   }
 
+  fun saveQueryTypeTemp(query :QuerySelectSpace) { querySelectSpace=query }
+
   private fun saveQuerySpaceName(newText: String) {
     querySelectSpace.spaceName = newText
-    // CHECK: do NOT re initialize
-    readSpacesQuery = repository.local.querySpaces(querySelectSpace).asLiveData() // TODO
-    // TODO if we have previous results?!
-    loadedSpaces=false // CHECK
+    readSpacesQuery = repository.local.querySpaces(querySelectSpace).asLiveData()
+    loadedSpaces=false
   }
 
   fun applyQuery(newText: String) = saveQuerySpaceName(newText)
 
   //// ROOM
-  val readSpaces: LiveData<List<SpaceEntity>> = repository.local.readSpaces().asLiveData()
-
-  var readSpacesQuery: LiveData<List<SpaceEntity>> = repository.local.querySpaces(querySelectSpace).asLiveData()
+  // var readSpacesQuery: LiveData<List<SpaceEntity>> = apply { emptyList<SpaceEntity>() }
+  var readSpacesQuery: LiveData<List<SpaceEntity>> = MutableLiveData()
 
   // will be collected when applying a space query
-  var prefsQuerySpace = dataStoreMisc.readQuerySpace
+  var storedSpaceQuery = dataStoreMisc.readQuerySpace
 
   private fun insertSpaces(spaces: Spaces, ownership: UserOwnership) =
     viewModelScope.launch(Dispatchers.IO) {
@@ -128,6 +134,16 @@ class SpacesViewModel @Inject constructor(
     spacesResponse.value = NetworkResult.Error(msg)
     LOG.E(TAG, msg)
     LOG.E(TAG, e)
+  }
+
+  private var firstQuery = false
+
+  fun runFirstQuery() {
+    if (!firstQuery) {
+      LOG.D(TAG, "runFirstQuery: ${querySelectSpace.spaceType}")
+      readSpacesQuery = repository.local.querySpaces(querySelectSpace).asLiveData()
+    }
+    firstQuery = true
   }
 
 }

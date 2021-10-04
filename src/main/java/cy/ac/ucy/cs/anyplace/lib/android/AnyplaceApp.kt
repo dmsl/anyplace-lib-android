@@ -71,7 +71,7 @@ abstract class AnyplaceApp : Application() {
     val serverPreferences = dataStoreServer.readServerPrefs
     serverPreferences.asLiveData().observeForever { prefs ->
       retrofitHolder.set(prefs)
-      LOG.W("dynamicallyProvideRetrofit: Updated backend url: ${retrofitHolder.baseURL}")
+      LOG.V5("dynamicallyProvideRetrofit: Updated backend url: ${retrofitHolder.baseURL}")
     }
   }
 

@@ -34,7 +34,7 @@
 *
 */
 
-package cy.ac.ucy.cs.anyplace.lib.android.googlemap;
+package cy.ac.ucy.cs.anyplace.lib.android.maps.legacy;
 
 import cy.ac.ucy.cs.anyplace.lib.android.nav.IPoisClass;
 import com.google.android.gms.maps.model.Marker;

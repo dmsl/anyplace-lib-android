@@ -33,6 +33,7 @@
   <color name="colorPrimaryDark">@color/darkBlue</color>
   <color name="colorAccent">@color/lightBlue</color>
 
+  <color name="white_70">#70FFFFFF</color>
   <color name="white">#FFFFFF</color>
   <color name="lightGray">#F9F9F9</color>
   <color name="mediumGray">#D1D1D1</color>
@@ -42,6 +43,8 @@
   <color name="darker">#151B20</color>
   <color name="black">#000000</color>
   <color name="green">#00C980</color>
+
+  <color name="gmapsGrayColor">#F7F8F9</color>
 
 
   <!-- OLD COLORS -->

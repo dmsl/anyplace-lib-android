@@ -31,15 +31,16 @@
         android:layout_height="match_parent"
         android:background="@color/backgroundColor">
 
-        <!--readSpaceName="@{space}"-->
         <TextView
           android:id="@+id/name_textView"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_marginStart="12dp"
+          android:paddingTop="8dp"
           android:layout_marginEnd="12dp"
           android:maxLines="1"
-          android:text="@{space.name}"
+          android:text="Space Name"
+          readSpaceName="@{space}"
           android:textColor="@color/titleColor"
           android:textSize="18sp"
           android:ellipsize="end"
@@ -51,7 +52,7 @@
 
         <!--TODO PM: set type of the image...-->
         <ImageView
-          android:id="@+id/imageView2"
+          android:id="@+id/imageView_spaceType"
           android:layout_width="70dp"
           android:layout_height="70dp"
           android:layout_marginStart="12dp"
@@ -71,10 +72,11 @@
           android:layout_marginEnd="8dp"
           android:ellipsize="end"
           android:maxLines="2"
-          android:text="@{space.description}"
+          android:text="Space description"
+          readSpaceDescription="@{space}"
           app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toEndOf="@+id/imageView2"
-          app:layout_constraintTop_toTopOf="@+id/imageView2" />
+          app:layout_constraintStart_toEndOf="@+id/imageView_spaceType"
+          app:layout_constraintTop_toTopOf="@+id/imageView_spaceType" />
 
         <TextView
           android:id="@+id/lbl_town_textView"
@@ -125,11 +127,14 @@
           android:id="@+id/type_textView"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-
-          android:text="@{space.type}"
-          app:layout_constraintEnd_toEndOf="@+id/imageView2"
-          app:layout_constraintStart_toStartOf="@+id/imageView2"
-          app:layout_constraintTop_toBottomOf="@+id/imageView2" />
+          android:layout_marginBottom="8dp"
+          readSpaceType="@{space}"
+          android:text="building"
+          app:layout_constraintEnd_toEndOf="@+id/imageView_spaceType"
+          app:layout_constraintStart_toStartOf="@+id/imageView_spaceType"
+          app:layout_constraintTop_toBottomOf="@+id/imageView_spaceType"
+          app:layout_constraintBottom_toBottomOf="parent"
+          />
 
       </androidx.constraintlayout.widget.ConstraintLayout>
 

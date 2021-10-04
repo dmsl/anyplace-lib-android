@@ -34,7 +34,7 @@
  *
  */
 
-package cy.ac.ucy.cs.anyplace.lib.android.googlemap;
+package cy.ac.ucy.cs.anyplace.lib.android.maps.legacy;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 
 
-import android.content.Context;
 import android.util.Log;
 import android.util.SparseArray;
 

@@ -10,7 +10,7 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.googlemap.MapTileProvider
+import cy.ac.ucy.cs.anyplace.lib.android.maps.legacy.MapTileProvider
 import java.io.File
 
 interface PreviousRunningTask {

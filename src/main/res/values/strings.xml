@@ -141,6 +141,13 @@
   <string name="search_space">Search spaces</string>
   <string name="Any">Any</string>
   <string name="All">All</string>
+  <string name="status">Status</string>
+  <string name="developer_stats">Developer Stats</string>
+  <string name="computer_vision">Computer Vision:</string>
+  <string name="inference">Inference</string>
+  <string name="objects">Objects</string>
+  <string name="current_window">Current Window</string>
+  <string name="sliding_window">Sliding Window</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>

@@ -41,7 +41,15 @@ class SpacesBinding {
     fun readSpaceName(
       view:TextView,
       space: Space?) {
-      setText(view, space?.type, "No name")
+      setText(view, space?.name, "No name")
+    }
+
+    @BindingAdapter("readSpaceDescription", requireAll = true)
+    @JvmStatic
+    fun readSpaceDescription(
+      view:TextView,
+      space: Space?) {
+      setText(view, space?.description, "")
     }
 
     private fun setText(tv: TextView, value: String?, default: String) {
@@ -59,7 +67,7 @@ class SpacesBinding {
       space: Space?) {
       space?.let {
         if (space.type.lowercase() == "building") {
-          val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_anyplace)
+          val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_building)
           iv.setImageDrawable(drawableCompat)
         } else if (space.type.lowercase() == "vessel") {
           val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_vessel)

@@ -31,15 +31,15 @@ class LocalDataSource @Inject constructor(
     var ownershipStr = query.ownership.toString().uppercase()
     val typeStr = query.spaceType.toString().uppercase()
     if (ownership && type) {
-      // return anyplaceDao.querySpaces(
-      //   query.ownership.toString().uppercase(),
-      //   query.spaceType.toString().uppercase(),
-      //   query.spaceName)
+      return anyplaceDao.querySpacesOwnerType(
+        query.ownership.toString().uppercase(),
+        query.spaceType.toString().uppercase(),
+        query.spaceName)
     } else if (ownership) {
-      LOG.D("QUERY: ownership: $ownershipStr")
+      LOG.E("QUERY: ownership: $ownershipStr")
       return anyplaceDao.querySpaceOwner(ownershipStr, query.spaceName)
     } else if (type) {
-      LOG.D("QUERY: space type: $typeStr")
+      LOG.E("QUERY: space type: $typeStr")
       return anyplaceDao.querySpacesType(typeStr, query.spaceName)
     }
 

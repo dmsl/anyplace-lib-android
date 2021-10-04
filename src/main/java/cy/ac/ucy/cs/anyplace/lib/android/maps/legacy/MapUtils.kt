@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.googlemap
+package cy.ac.ucy.cs.anyplace.lib.android.maps.legacy
 
 import android.widget.SearchView
 import com.google.android.gms.maps.GoogleMap
