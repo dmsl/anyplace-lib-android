@@ -32,9 +32,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-  app: Application,
+  application: Application,
   private val repository: Repository,
-  private val retrofitHolder: RetrofitHolder) : AndroidViewModel(app) {
+  private val retrofitHolder: RetrofitHolder) : AndroidViewModel(application) {
 
   private val _loginForm = MutableLiveData<LoginFormState>()
   val loginFormState: LiveData<LoginFormState> = _loginForm // CHECK:PM

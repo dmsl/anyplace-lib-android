@@ -64,8 +64,7 @@ class MultiBoxTracker(
             val detectionFrameRect: RectF = detection.boundingBox
             val detectionScreenRect = RectF()
             rgbFrameToScreen.mapRect(detectionScreenRect, detectionFrameRect)
-            LOG.V3(TAG, "Result! Frame: ${detection.boundingBox} mapped to screen:$detectionScreenRect"
-            )
+            LOG.V5(TAG, "trackResults: Frame: ${detection.boundingBox} mapped to screen:$detectionScreenRect")
             screenRectangles.add(Pair(detection.score, detectionScreenRect))
             if (detectionFrameRect.width() < MIN_SIZE || detectionFrameRect.height() < MIN_SIZE) {
                 LOG.W(TAG, "Degenerate rectangle : $detectionFrameRect")
@@ -74,7 +73,7 @@ class MultiBoxTracker(
             return@mapNotNull Pair(detection.score, detection)
         }
 
-        if (detectionToTrack.isEmpty()) {  LOG.V2(TAG, "Nothing to track.") }
+        if (detectionToTrack.isEmpty()) {  LOG.V5(TAG, "Nothing to track.") }
 
         lock.withLock {
             trackedDetections.clear()

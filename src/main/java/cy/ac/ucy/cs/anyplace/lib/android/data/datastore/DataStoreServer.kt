@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_HOST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PORT
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PROTOCOL
@@ -15,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_HOST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_PORT
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_PROTOCOL
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_VERSION
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.NetUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -28,14 +30,10 @@ private val Context.dataStoreServer by preferencesDataStore(name = PREF_SERVER)
 
 /**
  * Backend Server settings, such as host url, port, etc.
- * TODO:PM update through UI !!
- * Is there an automatic way?
  */
-// @ViewModelScoped
 @Singleton // INFO cannot be ViewModelScoped, as it is used by NetworkModule
 class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
-  private val TAG = DataStoreServer::class.java.simpleName
 
   private val validKeys = setOf(
     PREF_SERVER_PROTOCOL,
@@ -60,7 +58,6 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
 
   private fun validKey(key: String?): Boolean {
     if (ignoreKey(key)) return false
-
     val found = validKeys.contains(key)
     if(!found) LOG.W(TAG, "Unknown key: $key")
 
@@ -75,10 +72,10 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
           PREF_SERVER_HOST -> it[KEY.host] = value?: DEFAULT_PREF_SERVER_HOST
           PREF_SERVER_PORT ->  {
             val storeValue : String =
-            if (NetUtils.isValidPort(value)) value!! else DEFAULT_PREF_SERVER_PORT
+              if (NetUtils.isValidPort(value)) value!! else DEFAULT_PREF_SERVER_PORT
             it[KEY.port] =  storeValue
           }
-          PREF_SERVER_PROTOCOL-> {
+          PREF_SERVER_PROTOCOL -> {
             if(NetUtils.isValidProtocol(value))
               it[KEY.protocol] = value?: DEFAULT_PREF_SERVER_PROTOCOL
           }
@@ -89,7 +86,6 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
 
   override fun getString(key: String?, defValue: String?): String? {
     if (!validKey(key)) return null
-
     return runBlocking(Dispatchers.IO) {
       val prefs = readServerPrefs.first()
       return@runBlocking when (key) {
@@ -101,14 +97,9 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
     }
   }
 
-  override fun putBoolean(key: String?, value: Boolean) {
-    LOG.W(TAG, "TODO: putBoolean")
-  }
+  override fun putBoolean(key: String?, value: Boolean) { }
 
-  override fun getBoolean(key: String?, defValue: Boolean): Boolean {
-    LOG.W(TAG, "TODO: getBoolean")
-    return false // TODO
-  }
+  override fun getBoolean(key: String?, defValue: Boolean): Boolean { return false }
 
   val readServerPrefs: Flow<ServerPrefs> = ctx.dataStoreServer.data
       .catch { exception ->
@@ -129,5 +120,5 @@ data class ServerPrefs(
   val protocol: String,
   val host: String,
   val port: String,
-  // TODO timeout? other?
+  // TODO timeout and other settings?
 )

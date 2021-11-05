@@ -37,19 +37,20 @@ class DetectionProcessor(
         previewWidth: Int,
         previewHeight: Int,
         cropSize: Int,
-        rotation: Int
-    ) {
+        rotation: Int) {
         LOG.D3(TAG, "Camera orientation relative to screen canvas : $rotation")
         LOG.D3(TAG, "Initializing with size ${previewWidth}x${previewHeight}")
 
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
+
+        val rotationFactor = ((rotation + 2) % 4) * 90
 
         cropToFrameTransform = ImageUtils.getTransformationMatrix(
             srcWidth = cropSize,
             srcHeight = cropSize,
             dstWidth = previewWidth,
             dstHeight = previewHeight,
-            rotation = ((rotation + 2) % 4) * 90
+            rotation = rotationFactor
         )
 
         tracker = MultiBoxTracker(
@@ -62,15 +63,10 @@ class DetectionProcessor(
     }
 
     fun processImage(bitmap: Bitmap): Long {
-        // TODO:PM save images elsewhere...
-        // TODO:PM set a tracking window
-
-        Log.v(TAG, "Running detection on image")
         val detectionTime: Long = measureTimeMillis {
             frameDetections = detector.runDetection(bitmap)
         }
 
-        Log.v(TAG, "Recognized objects : ${frameDetections.size}")
         val cropCopyBitmap: Bitmap = Bitmap.createBitmap(croppedBitmap!!)
         val canvas = Canvas(cropCopyBitmap)
 
@@ -81,7 +77,6 @@ class DetectionProcessor(
         }
 
         drawDetections()
-
         return detectionTime
     }
 
@@ -90,7 +85,7 @@ class DetectionProcessor(
         drawDetections()
     }
 
-    fun drawDetections() {
+    private fun drawDetections() {
         tracker.trackResults(frameDetections)
         trackingOverlay.postInvalidate()
     }

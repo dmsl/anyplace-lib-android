@@ -1,4 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.cache
+// DEPRECATE
 
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG

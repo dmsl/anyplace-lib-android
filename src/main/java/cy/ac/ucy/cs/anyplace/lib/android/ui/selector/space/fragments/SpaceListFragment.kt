@@ -199,7 +199,7 @@ class SpaceListFragment : Fragment() {
 
   /**
    * If null then its ignored
-   * TODO:PM make this collable from both allSpaces and spacesQuery
+   * TODO:PM make this callable from both allSpaces and spacesQuery
    */
   private fun loadSpacesQuery() {
     spaceViewModel.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->

@@ -50,7 +50,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
 import com.google.android.gms.maps.model.LatLng;
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceDebug;
+import cy.ac.ucy.cs.anyplace.lib.android.legacy.AnyplaceDebug;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.SensorsMain;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.SimpleWifiManager;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.WifiReceiver;

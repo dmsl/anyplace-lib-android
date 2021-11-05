@@ -1,3 +1,5 @@
+// DEPRECATE
+
 /*
  * Anyplace: A free and open Indoor Navigation Service with superb accuracy!
  *
@@ -53,21 +55,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.widget.Toast;
 
-
-/*
-import com.dmsl.anyplace.AnyplaceAPI;
-import com.dmsl.anyplace.MyApplication;
-
-import com.dmsl.anyplace.nav.BuildingModel.FetchBuildingTaskListener;
-import com.dmsl.anyplace.tasks.FetchBuildingsTask;
-import com.dmsl.anyplace.tasks.FetchBuildingsTask.FetchBuildingsTaskListener;
-import com.dmsl.anyplace.utils.NetworkUtils;
-*/
-
-
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.DBG;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated.BackgroundFetch;
+import cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated.BackgroundFetchListener;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchBuildingsTask;

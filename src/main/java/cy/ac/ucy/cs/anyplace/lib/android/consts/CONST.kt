@@ -24,9 +24,20 @@ class CONST {
     const val PREF_SERVER_HOST = "pref_server_host"
     const val PREF_SERVER_PORT = "pref_server_port"
     const val PREF_SERVER_VERSION= "pref_server_version"
+
     const val DEFAULT_PREF_SERVER_PROTOCOL = "https"
-    const val DEFAULT_PREF_SERVER_HOST = "ap-dev.cs.ucy.ac.cy" // TODO ap.cs
-    const val DEFAULT_PREF_SERVER_PORT = "9001" // TODO: 443?
+    const val DEFAULT_PREF_SERVER_HOST = "ap.cs.ucy.ac.cy" // TODO ap.cs
+    const val DEFAULT_PREF_SERVER_PORT = "44"
+
+    //// CV LOGGER
+    const val PREF_CVLOG = "pref_cvlog"
+    const val PREF_CVLOG_WINDOW_SECONDS = "pref_cvlog_window_seconds"
+    const val PREF_CVLOG_DEV_MODE = "pref_cvlog_dev_mode"
+    const val PREF_CVLOG_EPX_IMG_PADDING = "pref_cvlog_exp_img_padding"
+
+    const val DEFAULT_PREF_CVLOG_WINDOW_SECONDS = "5"
+    const val DEFAULT_PREF_CVLOG_DEV_MODE = false
+    const val DEFAULT_PREF_CVLOG_EPX_IMG_PADDING = false
 
     //// USER
     const val PREF_USER = "pref_user"

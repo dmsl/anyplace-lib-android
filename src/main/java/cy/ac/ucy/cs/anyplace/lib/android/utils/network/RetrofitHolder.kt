@@ -17,6 +17,16 @@ data class RetrofitHolder(
   lateinit var retrofit: Retrofit
   lateinit var api: API
 
+  companion object {
+    fun getDefaultBaseUrl(): String {
+      val protocol = DEFAULT_PREF_SERVER_PROTOCOL
+      val host = DEFAULT_PREF_SERVER_HOST
+      val port = DEFAULT_PREF_SERVER_PORT
+
+      return "${protocol}://${host}:${port}"
+    }
+  }
+
   private fun getBaseUrl(prefs: ServerPrefs) : String {
     return getBaseUrl(prefs.protocol, prefs.host, prefs.port)
   }
@@ -35,15 +45,4 @@ data class RetrofitHolder(
     this.api = this.retrofit.create(API::class.java)
     return this
   }
-
-  companion object {
-    fun getDefaultBaseUrl(): String {
-      val protocol = DEFAULT_PREF_SERVER_PROTOCOL
-      val host = DEFAULT_PREF_SERVER_HOST
-      val port = DEFAULT_PREF_SERVER_PORT
-
-      return "${protocol}://${host}:${port}"
-    }
-  }
-
 }

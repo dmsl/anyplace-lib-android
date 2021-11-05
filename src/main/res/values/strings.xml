@@ -41,12 +41,6 @@
   <string name="bottom_sheet_frame_text">Frame</string>
   <string name="bottom_sheet_crop_text">Crop</string>
   <string name="bottom_sheet_time_text">Detection Time</string>
-  <string name="bottom_sheet_resolution_placeholder">000*000</string>
-  <string name="bottom_sheet_time_placeholder">000 ms</string>
-
-  <string name="default_server_ip_address">ap.cs.ucy.ac.cy</string>
-  <string name="default_server_access_token">ACCESS_TOKEN</string>
-  <string name="default_server_port">443</string>
 
   <string name="app_name">Anyplace</string>
   <string name="app_name_logger">Logger</string>
@@ -96,7 +90,6 @@
   <string name="town_">Town:</string>
   <string name="country_">Country:</string>
   <string name="indoor_space">Indoor Space</string>
-  <string name="title_activity_settings">SettingsActivity</string>
   <string name="server_header">Server</string>
   <string name="server_host_url_title">Host address</string>
   <string name="server_protocol_title">Protocol</string>
@@ -105,8 +98,8 @@
   <string name="server_port_title">Port number</string>
 
   <!-- TODO: Remove or change this placeholder text -->
-  <string name="sync_title">Sync email periodically</string>
-  <string name="attachment_title">Download incoming attachments</string>
+  <string name="sync_msg_title">Sync messages periodically</string>
+  <string name="attachment_title">Download incoming images</string>
 
   <!-- Preference Titles -->
   <string name="attachment_summary_on">Automatically download attachments for incoming emails
@@ -146,8 +139,10 @@
   <string name="computer_vision">Computer Vision:</string>
   <string name="inference">Inference</string>
   <string name="objects">Objects</string>
-  <string name="current_window">Current Window</string>
-  <string name="sliding_window">Sliding Window</string>
+  <string name="current_window">Current Window:</string>
+  <string name="chat_header">Chat settings (example)</string>
+  <string name="cv_header">Computer Vision</string>
+  <string name="experimental_header">Experimental</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>
@@ -186,5 +181,19 @@
     <item> Maximum A Posteriori (MAP)</item>
     <item> Minimum Mean Square Error (MMSE)</item>
   </string-array>
+
+
+
+
+  <!-- PREFERENCES -->
+  <!-- These defaults are replicated in CONST.kt (in core-lib) -->
+  <!-- We have to have them in 2 places as the core-lib does not have XML values (pure KT lib) -->
+  <!-- And these are used in preferences_*. -->
+  <!-- In the future, when the DataStore / Preferences XML landscape clears out, we might revisit. -->
+  <!-- PREFERENCES:SERVER -->
+  <string name="default_pref_server_host">ap.cs.ucy.ac.cy</string>
+  <string name="default_pref_server_protocol">https</string>
+  <string name="default_server_access_token">ACCESS_TOKEN</string>
+  <string name="default_pref_server_port">44</string>
 
 </resources>

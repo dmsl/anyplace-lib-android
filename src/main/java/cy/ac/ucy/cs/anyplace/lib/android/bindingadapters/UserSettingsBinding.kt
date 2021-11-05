@@ -54,10 +54,9 @@ class UserSettingsBinding {
         view.isVisible = false
       } else {
         view.isVisible = true
-        // TODO load image with image load lib
-        // if user : photoUri
-        if (user.photoUri.isNotEmpty()) {
-          LOG.W("TODO show user photo")
+        if (user.photoUri.isNotEmpty()) {   // if user : photoUri
+          // TODO load image with image load lib
+          LOG.V5("TODO show user photo")
         }
       }
     }

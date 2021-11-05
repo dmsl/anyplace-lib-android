@@ -3,50 +3,100 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import cy.ac.ucy.cs.anyplace.lib.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.GroundOverlay
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.button.MaterialButton
 import com.google.common.util.concurrent.ListenableFuture
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
+import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUpdater.changeBackgroundCompatButton
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerViewModel.Companion.getSecondsRounded
+import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
+import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeMaterialButtonIcon
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.removeMaterialButtonIcon
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
+import cy.ac.ucy.cs.anyplace.lib.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
+import cy.ac.ucy.cs.anyplace.lib.models.Space
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
+
+@AndroidEntryPoint
 class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
   private companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
     const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
+    const val OPACITY_MAP_LOGGING = 0f
+    const val ANIMATION_DELAY : Long = 100
   }
-
+  private var floormapOverlay: GroundOverlay? = null
   private lateinit var binding: ActivityCvLoggerBinding
-  private val viewModel by viewModels<CvLoggerViewModel> { getViewModelFactory() }
+  private lateinit var viewModel: CvLoggerViewModel
   private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
   private lateinit var map: GoogleMap
+  private lateinit var statusUpdater: StatusUpdater
 
+  /** Selected [Space] */
+  private var space: Space? = null
+  /** All floors of the selected [space]*/
+  private var floors: Floors? = null
+  /** Selected floor/deck ([Floor]) of [space] */
+  private var floor: Floor? = null
 
-  /** kept here (not in viewModel0 as we want this to be reset on lifecycle updates */
+  /** Selected [Space] ([SpaceHelper]) */
+  private var spaceH: SpaceHelper? = null
+  /** floorsH of selected [spaceH] */
+  private var floorsH: FloorsHelper? = null
+  /** Selected floorH of [floorsH] */
+  private var floorH: FloorHelper? = null
+
+  /** LastVals: user last selections regarding a space.
+   * Currently not much use (for a field var), but if we have multiple
+   * lastVals for space then it would make sense. */
+  private var lastValSpaces: LastValSpaces = LastValSpaces()
+
+  private val overlays by lazy { Overlays(applicationContext) }
+  private val assetReader by lazy { AssetReader(applicationContext) }
+  private val appInfo by lazy { AppInfo(applicationContext) }
+
+  /** kept here (not in viewModel) as we want this to be reset on lifecycle updates */
   private var clearConfirm=false
   private var clickedScannedObjects=false
 
@@ -55,9 +105,103 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     binding = ActivityCvLoggerBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
-    setUpBottomSheet()
+    viewModel = ViewModelProvider(this).get(CvLoggerViewModel::class.java)
+    setupComputerVision()
     setupMap()
+    setupButtonsAndUi()
+  }
 
+  override fun onResume() {
+    super.onResume()
+    LOG.D3(TAG, "onResume")
+    readPrefsAndContinueSetup()
+  }
+
+  private fun readPrefsAndContinueSetup() {
+    LOG.D4(TAG, "readPrefsAndSetupBottomSheet")
+    lifecycleScope.launch {
+      dataStoreCvLogger.read.first { prefs ->
+        viewModel.prefs = prefs
+        // set up that depends on preferences
+        setUpBottomSheet()
+
+        true
+      }
+    }
+  }
+
+  /**
+   * Observes [viewModel.windowDetections] changes and updates
+   * [binding.bottomUi.buttonCameraWindow] accordingly.
+   */
+  private fun updateCameraTimerButton() {
+    val elapsed = viewModel.getElapsedSeconds()
+    val remaining = (viewModel.prefs.windowSeconds.toInt()) - elapsed
+    val btn = binding.bottomUi.buttonCameraTimer
+    val progressBar = binding.bottomUi.progressBarTimer
+
+    if (remaining>0) {
+      val windowSecs = viewModel.prefs.windowSeconds.toInt()
+      setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
+      btn.text = getSecondsRounded(remaining, windowSecs)
+    } else {
+      progressBar.visibility = View.INVISIBLE
+      btn.text = ""
+      progressBar.progress = 100
+      if (!viewModel.storedDetections.values.isEmpty()) {
+        changeMaterialButtonIcon(btn, applicationContext, R.drawable.ic_objects)
+      } else {   // no results, hide the timer
+        removeMaterialButtonIcon(btn)
+        btn.fadeOut()
+      }
+    }
+  }
+
+  /**
+   * Initiate a circular progress bar animation, inside a coroutine for
+   * smooth (and independent from other threads) updates.
+   * It progresses according to the window time
+   */
+  private fun setupProgressBarTimerAnimation(
+    btnTimer: MaterialButton,
+    progressBar: ProgressBar,
+    windowSecs: Int) {
+    // showing timer button but not yet the progress bar
+    if (btnTimer.visibility == View.VISIBLE &&
+      progressBar.visibility != View.VISIBLE) {
+      val delayMs = (windowSecs*1000/100).toLong()
+      lifecycleScope.launch {
+        var progress = 0
+        progressBar.progress=progress
+        progressBar.visibility = View.VISIBLE
+        while(progress < 100) {
+          when (viewModel.circleTimerAnimation) {
+            TimerAnimation.reset -> { resetCircleAnimation(progressBar); break }
+            TimerAnimation.running -> { progressBar.setProgress(++progress, true) }
+            TimerAnimation.paused -> {  }
+          }
+          delay(delayMs)
+        }
+      }
+    }
+  }
+
+  private fun resetCircleAnimation(progressBar: ProgressBar) {
+    progressBar.visibility = View.INVISIBLE
+    progressBar.progress=0
+  }
+
+  /**
+   * Observes [viewModel.objectDetectionsAll] changes and updates
+   * [binding.bottomUi.buttonCameraTimer] accordingly.
+   */
+  private fun observeObjectDetections() {
+    viewModel.objectsWindowAll.observeForever { detections ->
+      binding.bottomUi.tvWindowObjectsAll.text=detections.toString()
+    }
+  }
+
+  private fun setupComputerVision() {
     cameraProviderFuture = ProcessCameraProvider.getInstance(baseContext)
     requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
 
@@ -68,74 +212,46 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       binding.pvCamera
     )
 
-    observeFrameDetections()
+    observeObjectDetections()
     observeLoggingStatus()
-
-    // TODO:PM make this a setting?
-    // binding.switchPadding.setOnCheckedChangeListener { _, isChecked ->
-    //   CvLoggerViewModel.usePadding= isChecked
-    // }
   }
 
-  /**
-   * Observes [viewModel.windowDetections] changes and updates
-   * [binding.bottomSheet.buttonScannedObjects] accordingly.
-   */
-  private fun observeFrameDetections() {
-    viewModel.windowDetections.observeForever { detections ->
-      LOG.D3(TAG, "Detected: ${detections.size}")
-      val detectionNum = detections.size
-      binding.bottomSheet.buttonScannedObjects.text = detectionNum.toString() // TODO
-      if (detectionNum == 0) {
-        binding.bottomSheet.buttonScannedObjects.fadeOut()
-      } else if (!binding.bottomSheet.buttonScannedObjects.isVisible) {
-        binding.bottomSheet.buttonScannedObjects.fadeIn()
-      }
-    }
-  }
+  private fun setupButtonsAndUi() {
+    statusUpdater = StatusUpdater(binding.tvStatusTitle,
+      binding.viewStatusBackground,
+      binding.viewWarning,
+      applicationContext)
 
-  private fun setUpBottomSheet() {
-    val sheetBehavior = BottomSheetBehavior.from(binding.bottomSheet.root)
-    sheetBehavior.isHideable = false
+    checkInternet()
 
-    val callback = CvLoggerBottomSheetCallback(binding.bottomSheet.bottomSheetArrow)
-    sheetBehavior.addBottomSheetCallback(callback)
-
-    val gestureLayout = binding.bottomSheet.gestureLayout
-    gestureLayout.viewTreeObserver.addOnGlobalLayoutListener {
-      val height: Int = gestureLayout.measuredHeight
-      sheetBehavior.peekHeight = (height/2f).roundToInt()+20
-      LOG.W(TAG, "peek height: ${sheetBehavior.peekHeight}")
-    }
-
-    lifecycleScope.launch {
-      delay(200)
-      // binding.bottomSheet.
-      //   .translationYBy(bottomSheetBehavior.getPeekHeight());
-    }
-
-    // TODO:PM XXX:PM CHECK:PM if 0 objects detected: then continue...
-    // never get into pause..
-
-    binding.bottomSheet.buttonLogging.setOnClickListener {
+    binding.bottomUi.buttonLogging.setOnClickListener {
       LOG.D(TAG, "buttonStartLogging: ${viewModel.status}")
-
       when (viewModel.status.value) {
         Logging.stoppedMustStore -> {
-            val msg = "Long click on a map location to store objects"
-            Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
-            binding.viewWarning.flashView(500)
-          }
-      }
+          // TODO LEFTHERE
+          // TODO:PM long click on existing point: update existing measurements..
+          // SHOW MSG: This will ignore the last  'window'
+          // MATERIALIZE, STORE, and EXIT
+          // val msg = "TODO: store locally.."
+          viewModel.status.value = Logging.finished
+          setUpBottomSheet(true)
+          // TODO: STORE RESULTS..
+          // TODO put an upload button and enable it..
 
-      viewModel.toggleLogging(applicationContext)
-      // TODO: draw red borders on map and pv (camera and detections) ?
+          viewModel.hideActiveMarkers()
+          // TODO:PM heatmap saved results
+
+          // statusUpdater.showWarning(msg)
+        }
+        else ->
+          viewModel.toggleLogging()
+      }
     }
 
-    binding.bottomSheet.buttonScannedObjects.setOnClickListener {
-      if (!clickedScannedObjects) {
+    binding.bottomUi.buttonCameraTimer.setOnClickListener {
+      if (viewModel.objectsWindowUnique > 0 &&!clickedScannedObjects) {
         clickedScannedObjects=true
-        binding.bottomSheet.buttonClearObjects.fadeIn()
+        binding.bottomUi.buttonClearObjects.fadeIn()
         lifecycleScope.launch {
           delay(5000)
           clickedScannedObjects=false
@@ -150,63 +266,146 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       }
     }
 
-    binding.bottomSheet.buttonClearObjects.setOnClickListener {
+    binding.bottomUi.buttonClearObjects.setOnClickListener {
       if (!clearConfirm) {
         clearConfirm = true
-        binding.bottomSheet.buttonClearObjects.text = "Sure ?"
-        binding.bottomSheet.buttonClearObjects.alpha = 1f
-
+        binding.bottomUi.buttonClearObjects.text = "Sure ?"
+        binding.bottomUi.buttonClearObjects.alpha = 1f
       } else {
         hideClearObjectsButton()
+        binding.bottomUi.buttonCameraTimer.fadeOut()
         viewModel.resetWindow()
+        statusUpdater.hideStatus()
       }
     }
 
+    // // TODO:PM Settings
+    // // Setups a regular button to act as a menu button
+    //   binding.buttonSettings.setOnClickListener {
+    //     SettingsDialog.SHOW(supportFragmentManager, SettingsDialog.FROM_CVLOGGER)
+    //   }
+
+    binding.buttonSettings.setOnLongClickListener {
+      Toast.makeText(applicationContext,"App version: ${appInfo.version}", Toast.LENGTH_SHORT).show()
+      true
+    }
+  }
+
+  private fun checkInternet() {
+    if (!app.hasInternetConnection()) {
+      // TODO method that updates ui based on internet connectivity: gray out settings button
+      Toast.makeText(applicationContext, "No internet connection.", Toast.LENGTH_LONG).show()
+    }
+  }
+
+  private fun hideBottomSheet() {
+    binding.bottomUi.bottomSheetInternal.visibility = View.GONE
+    binding.bottomUi.bottomSheetArrow.visibility = View.GONE
+  }
+
+  private fun showBottomSheet() {
+    binding.bottomUi.bottomSheetInternal.visibility = View.VISIBLE
+    binding.bottomUi.bottomSheetArrow.visibility = View.VISIBLE
+  }
+
+  private fun setUpBottomSheet(forceShow : Boolean = false) {
+    val sheetBehavior = BottomSheetBehavior.from(binding.bottomUi.root)
+    sheetBehavior.isHideable = false
+    // TODO: dev mode hides other elements of bottom sheeet
+    if (!forceShow && !viewModel.prefs.devMode) {
+      hideBottomSheet()
+      return
+    }
+
+    showBottomSheet()
+
+    val callback = CvLoggerBottomSheetCallback(binding.bottomUi.bottomSheetArrow)
+    sheetBehavior.addBottomSheetCallback(callback)
+
+    val gestureLayout = binding.bottomUi.gestureLayout
+    gestureLayout.viewTreeObserver.addOnGlobalLayoutListener {
+      val height: Int = gestureLayout.measuredHeight
+      sheetBehavior.peekHeight = (height/2f).roundToInt()+50
+      LOG.V5(TAG, "peek height: ${sheetBehavior.peekHeight}")
+    }
+
     @SuppressLint("SetTextI18n")
-    binding.bottomSheet.cropInfo.text =
+    binding.bottomUi.cropInfo.text =
       "${Constants.DETECTION_MODEL.inputSize}x${Constants.DETECTION_MODEL.inputSize}"
   }
 
   private fun hideClearObjectsButton() {
     clearConfirm=false
-    binding.bottomSheet.buttonClearObjects.fadeOut()
+    binding.bottomUi.buttonClearObjects.fadeOut()
     lifecycleScope.launch {
       delay(100)
-      binding.bottomSheet.buttonClearObjects.alpha = 0.5f
-      binding.bottomSheet.buttonClearObjects.text = "Clear"
+      binding.bottomUi.buttonClearObjects.alpha = 0.5f
+      binding.bottomUi.buttonClearObjects.text = "Clear"
     }
   }
 
   private fun observeLoggingStatus() {
     viewModel.status.observeForever {  status ->
       LOG.D("logging: $status")
-      updateButtonLogging(status)
+      updatedLoggingUI(status)
     }
-
   }
 
   @SuppressLint("SetTextI18n")
-  private fun updateButtonLogging(status: Logging) {
+  private fun updatedLoggingUI(status: Logging) {
     LOG.D4("updateScanningButton: $status")
-    val btn = binding.bottomSheet.buttonLogging
+    val btnLogging = binding.bottomUi.buttonLogging
+    val btnTimer= binding.bottomUi.buttonCameraTimer
 
-    // TODO: draw red, gray, invisible borders..
+
     when (status) {
-      Logging.started -> { // just started logging
-        btn.text = "Pause"
-        changeBackgroundCompatButton(btn, applicationContext, R.color.darkGray)
-        binding.mapView.animateAlpha(0.5f, 100)
+      Logging.finished-> { // finished a scanning
+        btnTimer.fadeOut()
+        btnLogging.text = "TODO: store local"
+        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.green)
+
+        // sleep a while.....
+        // TODO show the below menu..
+        // TODO store..
+        // TODO show upload section..(on the below menu, with UPLOAD button)..
+
+        // TODO:PM heatmap?
+        // TODO set to stopped again
       }
-      Logging.stopped -> { // start logging
-        btn.text = "Start"
-        changeBackgroundCompatButton(btn, applicationContext, R.color.colorPrimary)
-        binding.mapView.animateAlpha(1f, 100)
-        // binding.mapView.alpha=1f
+      Logging.started -> { // just started scanning
+        viewModel.circleTimerAnimation=TimerAnimation.running
+        btnLogging.text = "Pause"
+        removeMaterialButtonIcon(btnTimer)
+        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.darkGray)
+        changeBackgroundButton(btnTimer, applicationContext, R.color.redDark)
+        btnTimer.fadeIn()
+        binding.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
-      Logging.stoppedMustStore -> {
-        btn.text = "Store"
-        binding.mapView.animateAlpha(1f, 100)
-        changeBackgroundCompatButton(btn, applicationContext, R.color.yellowDark)
+      Logging.stopped -> { // stopped after a pause or a store: can start logging again
+        viewModel.circleTimerAnimation=TimerAnimation.paused
+        if (viewModel.previouslyPaused) {
+          btnLogging.text = "resume"
+        } else {
+          btnLogging.text = "start"
+        }
+        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.colorPrimary)
+        binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
+        changeBackgroundButton(btnTimer, applicationContext, R.color.darkGray)
+      }
+      Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
+        viewModel.circleTimerAnimation=TimerAnimation.reset
+        lifecycleScope.launch {
+          statusUpdater.showWarningAutohide("No detections.")
+          restartLogging(250)
+        }
+
+      }
+      Logging.stoppedMustStore -> { // stopped with detections: must store
+        viewModel.circleTimerAnimation=TimerAnimation.reset
+        btnLogging.text = "store"
+        binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
+        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.yellowDark)
+        changeBackgroundButton(btnTimer, applicationContext, R.color.yellowDark)
       }
     }
   }
@@ -255,7 +454,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
 
     imageAnalysis.setAnalyzer(
       ContextCompat.getMainExecutor(baseContext),
-      this::analyzeImage
+      this@CvLoggerActivity::analyzeImage
     )
 
     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
@@ -277,13 +476,13 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val detectionTime = viewModel.detectObjectsOnImage(image)
-
         withContext(Dispatchers.Main) {
-          binding.bottomSheet.timeInfo.text = "${detectionTime}ms"
-          binding.bottomSheet.tvElapsedTime.text=viewModel.getElapsedSecondsStr()
-          binding.bottomSheet.tvCurrentWindow.text=viewModel.storedDetections.size.toString()
-          binding.bottomSheet.tvWindowObjects.text=viewModel.objectsWindow.toString()
-          binding.bottomSheet.tvTotalObjects.text=viewModel.objectsTotal.toString()
+          binding.bottomUi.timeInfo.text = "${detectionTime}ms"
+          updateCameraTimerButton()
+          binding.bottomUi.tvElapsedTime.text=viewModel.getElapsedSecondsStr()
+          binding.bottomUi.tvWindowObjectsUnique.text=viewModel.objectsWindowUnique.toString()
+          binding.bottomUi.tvCurrentWindow.text=viewModel.storedDetections.size.toString()
+          binding.bottomUi.tvTotalObjects.text=viewModel.objectsTotal.toString()
         }
       }
     }
@@ -292,12 +491,11 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
   private suspend fun setUpImageConverter(image: ImageProxy) {
     withContext(Dispatchers.Main){
       @SuppressLint("SetTextI18n")
-      binding.bottomSheet.frameInfo.text = "${image.width}x${image.height}"
+      binding.bottomUi.frameInfo.text = "${image.width}x${image.height}"
     }
 
     LOG.D2("Frame: ${image.width}x${image.height}")
     viewModel.setUpImageConverter(baseContext, image)
-
   }
 
   private fun setupMap() {
@@ -313,56 +511,243 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.D(TAG, "onMapReady")
     map = googleMap
+    viewModel.markers = Markers(applicationContext, map)
 
-    val latLng = CameraAndViewport.latLng
     val maxZoomLevel = map.maxZoomLevel // may be different from device to device
-
     // map.addMarker(MarkerOptions().position(latLng).title("Ucy Building"))
     // map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
 
+    // TODO Space has to be sent to this activity (SafeArgs?) using a previous "Select Space" activity.
+    // (maybe using Bundle is easier/better)
+    loadSpaceAndFloorFromAssets()
+
+    // TODO:PM this must be moved to earlier activity
+    // along with Space/Floors loading (that also needs implementation).
+    lifecycleScope.launch { floorsH?.fetchAllFloorplans() }
+
     // place some restrictions on the map
     map.moveCamera(CameraUpdateFactory.newCameraPosition(
-      CameraAndViewport.loggerCamera(latLng, maxZoomLevel)))
-    map.setMinZoomPreference(maxZoomLevel-2)
+      CameraAndViewport.loggerCamera(spaceH!!.latLng(), maxZoomLevel)))
+    map.setMinZoomPreference(maxZoomLevel-3)
 
     // restrict screen to current bounds.
     lifecycleScope.launch {
-      delay(500)
-      val spaceBounds = map.projection.visibleRegion.latLngBounds
-      LOG.D("bounds: ${spaceBounds.center}")
-      map.moveCamera(CameraUpdateFactory.newLatLngBounds(spaceBounds, 0))
-      map.setLatLngBoundsForCameraTarget(spaceBounds)
+      // delay(500) // CLR:PM
+
+      // if (floorH == null) { // BUGFIX CLR:PM
+      //   LOG.E("floorH is null!!!")
+      // }
+      map.moveCamera(CameraUpdateFactory.newLatLngBounds(floorH?.bounds(), 0))
+      val floorOnScreenBounds = map.projection.visibleRegion.latLngBounds
+      LOG.D2("bounds: ${floorOnScreenBounds.center}")
+      map.setLatLngBoundsForCameraTarget(floorH?.bounds())
+      readFloorplan(floorH!!)
     }
 
     map.uiSettings.apply {
       isZoomControlsEnabled = false
       isMapToolbarEnabled = false
+      isTiltGesturesEnabled = false
+      isCompassEnabled = false
+      isIndoorLevelPickerEnabled = true
     }
-
     setupOnMapLongClick()
   }
 
+  fun loadFloorplansAll() {
+    // val bitmap = FH.requestRemoteFloorplan()
+  }
+
+
+  /**
+   * Loads from assets the Space and the Space's Floors
+   * Then it loads the floorplan for [selectedFloorPlan].
+   *
+   * TODO Implement this from network (in an earlier activity), and
+   * pass it here through [SafeArgs] or [Bundle]
+   */
+  fun loadSpaceAndFloorFromAssets() {
+    space = assetReader.getSpace()
+    floors = assetReader.getFloors()
+
+    if (space == null || floors == null) {
+      showError(space, floors)
+      return
+    }
+
+    spaceH = SpaceHelper(applicationContext, viewModel.repository, space!!)
+    floorsH = FloorsHelper(floors!!, spaceH!!)
+
+    LOG.D("Selected ${spaceH?.prettyType}: ${space!!.name}")
+    LOG.D("${spaceH!!.prettyType} has ${floors!!.floors.size} ${spaceH!!.prettyFloors}.")
+
+    if (!floorsH!!.hasFloors()) {
+      val msg = "Selected ${spaceH!!.prettyType} has no ${spaceH!!.prettyFloors}."
+      LOG.E(msg)
+      Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
+      return
+    }
+
+    // TODO:PM put a floor selector...
+    var floor : Floor? = null
+    if (spaceH!!.hasLastValuesCached()) {
+      val lv = spaceH!!.loadLastValues()
+      if (lv.lastFloor!=null) {
+        LOG.D2(TAG, "LastVal: cached ${spaceH!!.prettyFloor}${lv.lastFloor}.")
+        floor = floorsH!!.getFloor(lv.lastFloor!!)
+      }
+      lastValSpaces = lv
+    }
+
+    if (floor == null)  {
+      LOG.D2(TAG, "Loading first ${spaceH!!.prettyFloor}.")
+      floor = floorsH!!.getFirstFloor()
+    }
+
+    val selectedFloorNum=floor.floorNumber.toInt()
+    // FIXED SELECTION:
+    // val selectedFloorNum=3
+    // floor = floorsH!!.getFloor(selectedFloorNum)
+    if (floor == null) {
+      showError(space, floors, floor, selectedFloorNum)
+      return
+    }
+
+    LOG.D("Selected ${spaceH?.prettyFloor}: ${floor?.floorName}")
+
+    floorH = FloorHelper(floor, spaceH!!)
+    updateAndCacheLastFloor(floor) // TODO:PM when floor changing..
+  }
+
+  private fun updateAndCacheLastFloor(floor: Floor) {
+    lastValSpaces.lastFloor=floor.floorNumber
+    spaceH?.cacheLastValues(lastValSpaces)
+  }
+
+  private fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
+    var msg = ""
+    when {
+      space == null -> msg = "No space selected."
+      floors == null -> msg = "Failed to get ${spaceH?.prettyFloors}."
+      floor == null -> msg = "Failed to get ${spaceH?.prettyFloor} $floorNum."
+    }
+    LOG.E(msg)
+    Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
+  }
+
+  /**
+   * Reads a floorplan (from cache or remote) using the [viewModel] and a [FloorHelper]
+   * Once it's read, then it is loaded it is posted on [viewModel.floorplanResp],
+   * and through an observer it is loaded on the map.
+   *
+   * Must be called each time wee want to load a floor.
+   */
+  private fun readFloorplan(FH: FloorHelper) {
+    LOG.D(TAG, "readFloorplan")
+    lifecycleScope.launch {
+      if (FH.hasFloorplanCached()) {
+        LOG.D(TAG, "readFloorplan: cache")
+        val localResult =
+          when (val bitmap = FH.loadFromCache()) {
+            null -> NetworkResult.Error("Failed to load from local cache")
+            else -> NetworkResult.Success(bitmap)
+          }
+        viewModel.floorplanResp.postValue(localResult)
+      } else {
+        LOG.D2(TAG, "readFloorplan: remote")
+        // FH.clearCache() on settings?
+        viewModel.getFloorplan(FH)
+      }
+    }
+
+    viewModel.floorplanResp.observeForever { response ->
+      when (response) {
+        is NetworkResult.Loading -> {
+          LOG.W("Loading ${spaceH?.prettyFloorplan}")
+        }
+        is NetworkResult.Error -> {
+          val msg = "Failed to get $space"
+          LOG.W(msg)
+          Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+        }
+        is NetworkResult.Success -> {
+          if (floorH == null) {
+            val msg = "No selected floor/deck."
+            LOG.W(msg)
+            Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+          } else {
+            renderFloorplan(response.data, floorH!!)
+          }
+        }
+      }
+    }
+  }
+
+  fun renderFloorplan(bitmap: Bitmap?, FH: FloorHelper) {
+    LOG.D("renderFloorplan:")
+    // TODO:PM remove the previous floorplan.
+    floormapOverlay = overlays.addSpaceOverlay(bitmap, map, FH.bounds())
+  }
+
+  /**
+   * Stores some measurements on the given GPS locations
+   */
   private fun setupOnMapLongClick() {
     map.setOnMapLongClickListener { location ->
       if (viewModel.canStoreObjects()) {
         LOG.D("clicked at: $location")
 
-        // center map
+        // re-center map
         map.animateCamera(CameraUpdateFactory.newCameraPosition(
-          CameraPosition(location, map.cameraPosition.zoom, 0f, 0f)))
+          CameraPosition(location, map.cameraPosition.zoom,
+            // don't alter tilt/bearing
+            map.cameraPosition.tilt,
+            map.cameraPosition.bearing)
+        ))
 
         val windowDetections = viewModel.windowDetections.value.orEmpty().size
         viewModel.storeDetections(location)
 
+        // add marker
         val curPoint = viewModel.storedDetections.size.toString()
-        val msg = "Point $curPoint|$windowDetections"
-        map.addMarker(MarkerOptions().position(location).title(msg))
+        val msg = "Point: $curPoint\n\nObjects: $windowDetections\n"
+        viewModel.addMarker(location, msg)
+
+        // pause a bit, then restart logging
+        lifecycleScope.launch {
+          restartLogging()
+        }
+        // binding.bottomUi.buttonCameraTimer.fadeOut()
+
       } else {
         val msg ="Not in logging mode"
         LOG.V2("onMapLongClick: $msg")
         Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
       }
     }
+  }
+
+  /**
+   * Pauses a bit, then it restarts logging
+   * Used when:
+   * - detections were stored on the map
+   * - no detections found
+   *
+   * Actions taken:
+   * - hides the top status
+   * - removes the camera timer (will be added again when reseted?) and makes it gray,
+   * - removes the logging button
+   * - shows the map
+   * - stars a new window
+   */
+  suspend private fun restartLogging(delayMs: Long = 500) {
+    delay(delayMs)
+    statusUpdater.hideStatus()
+    removeMaterialButtonIcon(binding.bottomUi.buttonCameraTimer)
+    changeBackgroundButton(binding.bottomUi.buttonCameraTimer, applicationContext, R.color.darkGray)
+    changeBackgroundButtonCompat(binding.bottomUi.buttonLogging, applicationContext, R.color.colorPrimary)
+    binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
+    viewModel.startNewWindow()
   }
 
 }

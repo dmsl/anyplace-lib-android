@@ -18,9 +18,12 @@
     <activity
       android:name=".android.ui.settings.SettingsServerActivity"
       android:exported="true"
-      android:label="@string/title_activity_settings" />
+      android:label="Settings: Server" />
+    <activity
+      android:name=".android.ui.settings.SettingsCvLoggerActivity"
+      android:exported="true"
+      android:label="Settings: Computer Vision" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
-
     <meta-data
       android:name="com.google.android.geo.API_KEY"
       android:value="@string/maps_api_key" />

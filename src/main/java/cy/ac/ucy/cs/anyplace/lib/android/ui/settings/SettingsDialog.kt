@@ -9,6 +9,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogMainSettingsBinding
 import kotlinx.coroutines.CoroutineScope
@@ -18,38 +21,72 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
 class SettingsDialog : DialogFragment() {
-  val TAG = SettingsDialog::class.java.simpleName
 
   companion object {
+    val KEY_FROM = "key.from"
     val FROM_LOGIN = "login.settings"
+    val FROM_CVLOGGER = "cvlogger.settings"
     val FROM_SELECT_SPACE = "select.space.settings"
+
+    fun SHOW(fragmentManager: FragmentManager, from: String) {
+      val args = Bundle()
+      args.putString(KEY_FROM, from)
+      val dialog = SettingsDialog()
+      dialog.arguments = args
+      val test = dialog.requireArguments().getString(KEY_FROM)
+      dialog.show(fragmentManager, from)
+    }
+
   }
 
   var _binding : DialogMainSettingsBinding ?= null
   private val binding get() = _binding!!
 
+  var fromCvLogger = true
+
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return activity?.let {
       _binding = DialogMainSettingsBinding.inflate(LayoutInflater.from(context))
-      // savedInstanceState[] // TODO send here rfom where we sttart..
+
+      handleArguments()
 
       val builder= AlertDialog.Builder(it)
       // isCancelable = false
       builder.setView(binding.root)
       val dialog = builder.create()
       dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-      setupUserLogout()
-      setupServerSettings()
 
-      CoroutineScope(Dispatchers.Main).launch {
-        val user = app.dataStoreUser.readUser.first()
-        if (user.accessToken.isNotBlank()) {
-          binding.user=user
-        }
-      }
+      setup()
 
       return dialog
     }?: throw IllegalStateException("$TAG Activity is null.")
+  }
+
+  private fun handleArguments() {
+    val bundle = requireArguments()
+    if (bundle.containsKey(KEY_FROM)) {
+      val fromActivity = bundle.getString(KEY_FROM)
+      when (fromActivity) {
+        FROM_CVLOGGER -> {
+          LOG.D(TAG, "From: cv logger")
+        }
+        else -> {
+          LOG.W(TAG, "From: $fromActivity")
+          fromCvLogger = false
+        }
+      }
+    }
+  }
+
+  private fun setupUser() {
+    CoroutineScope(Dispatchers.Main).launch {
+      val user = app.dataStoreUser.readUser.first()
+      if (user.accessToken.isNotBlank()) {
+        binding.user = user
+      }
+    }
+
+    setupUserLogout()
   }
 
   private fun setupUserLogout() {
@@ -72,6 +109,29 @@ class SettingsDialog : DialogFragment() {
   private fun setupServerSettings() {
     binding.buttonSettingsServer.setOnClickListener {
       startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
+    }
+  }
+
+  private fun setupCvLoggerSetings() {
+    binding.buttonComputerVision.setOnClickListener {
+      startActivity(Intent(requireActivity(), SettingsCvLoggerActivity::class.java))
+    }
+  }
+
+  private fun setup() {
+    setupCvLoggerSetings()
+
+    fromCvLogger=false // TODO
+    if (!fromCvLogger) {
+      setupServerSettings()
+      setupUser()
+    } else {
+      binding.buttonLogout.isEnabled = false
+      binding.buttonHelpAndFeedback.isEnabled = false
+      binding.buttonSettingsServer.isEnabled = false
+      binding.buttonLogout.alpha = .5f
+      binding.buttonHelpAndFeedback.alpha= .5f
+      binding.buttonSettingsServer.alpha= .5f
     }
   }
 }

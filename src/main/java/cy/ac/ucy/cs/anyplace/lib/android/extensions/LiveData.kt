@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.extensions
 
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer

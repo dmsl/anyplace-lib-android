@@ -7,7 +7,7 @@
     <EditTextPreference
       app:key="pref_server_host"
       app:title="@string/server_host_url_title"
-      app:defaultValue="ap-dev.cs.ucy.ac.cy"
+      app:defaultValue="@string/default_pref_server_host"
       app:useSimpleSummaryProvider="true" />
 
     <ListPreference
@@ -22,7 +22,7 @@
     <EditTextPreference
       app:key="pref_server_port"
       app:title="@string/server_port_title"
-      app:defaultValue="9001"
+      app:defaultValue="@string/default_pref_server_port"
       app:useSimpleSummaryProvider="true" />
 
     <Preference
@@ -32,18 +32,19 @@
 
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="@string/misc_header">
+  <PreferenceCategory app:title="@string/chat_header">
 
     <SwitchPreferenceCompat
       app:key="sync"
-      app:title="@string/sync_title" />
+      android:defaultValue="true"
+      app:title="@string/sync_msg_title" />
 
-    <SwitchPreferenceCompat
-      app:dependency="sync"
-      app:key="attachment"
-      app:summaryOff="@string/attachment_summary_off"
-      app:summaryOn="@string/attachment_summary_on"
-      app:title="@string/attachment_title" />
+    <!--<SwitchPreferenceCompat-->
+    <!--  app:dependency="sync"-->
+    <!--  app:key="attachment"-->
+    <!--  app:summaryOff="@string/attachment_summary_off"-->
+    <!--  app:summaryOn="@string/attachment_summary_on"-->
+    <!--  app:title="@string/attachment_title" />-->
 
   </PreferenceCategory>
 

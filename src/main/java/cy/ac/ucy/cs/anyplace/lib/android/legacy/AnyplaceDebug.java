@@ -34,7 +34,7 @@
 *
 */
 
-package cy.ac.ucy.cs.anyplace.lib.android;
+package cy.ac.ucy.cs.anyplace.lib.android.legacy;
 
 @Deprecated
 public class AnyplaceDebug {

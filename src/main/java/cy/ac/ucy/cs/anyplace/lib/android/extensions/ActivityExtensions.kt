@@ -7,19 +7,18 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.ViewModelFactory
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
 
-fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
-    return ViewModelFactory(this)
-}
+// CLR:PM
+// fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
+//     return ViewModelFactory(this)
+// }
 
 fun ComponentActivity.registerForActivityResult(
     callback: ActivityResultCallback<ActivityResult>
@@ -33,6 +32,7 @@ fun ComponentActivity.registerForActivityResult(
 // EXTENSION FUNCTIONS
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dataStoreServer: DataStoreServer get() = this.app.dataStoreServer
+val Activity.dataStoreCvLogger: DataStoreCvLogger get() = this.app.dataStoreCvLogger
 val Activity.dataStoreMisc: DataStoreMisc get() = this.app.dataStoreMisc
 val Activity.dataStoreUser: DataStoreUser get() = this.app.dataStoreUser
 

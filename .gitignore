@@ -290,4 +290,6 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/macos,linux,android,androidstudio,gradle,java
 
 # Ignore any tflite models
+src/main/assets/demo/
+src/main/assets/*.png
 src/main/assets/models/

@@ -28,6 +28,16 @@ fun View.animateAlpha(alpha: Float, delay: Long = 200) {
   }
 }
 
+fun View.flashOut(alphaStart: Float, delay: Long = 1000) {
+  alpha = alphaStart
+  visibility = View.VISIBLE
+
+  animate().apply {
+    duration = delay
+    alpha(0f)
+  }
+}
+
 
 fun View.flashView(delay: Long = 200) {
   alpha=0f
@@ -66,12 +76,13 @@ fun View.flashView(delay: Long = 200) {
   // }
 }
 
-
 fun View.fadeIn() {
-  visibility = View.VISIBLE
-  isEnabled = true
-  val anim = AnimationUtils.loadAnimation(context, R.anim.zoom_in)
-  startAnimation(anim)
+  if (visibility != View.VISIBLE) {
+    visibility = View.VISIBLE
+    isEnabled = true
+    val anim = AnimationUtils.loadAnimation(context, R.anim.zoom_in)
+    startAnimation(anim)
+  }
 }
 
 fun View.fadeOut() {

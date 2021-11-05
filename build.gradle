@@ -10,7 +10,7 @@ repositories {
   mavenCentral()
   google()
   maven { url 'https://jitpack.io' } // for publishing
-  mavenCentral()
+//  mavenCentral()
 }
 
 android {
@@ -56,9 +56,9 @@ android {
     dataBinding true
     viewBinding true
   }
-  aaptOptions {
-    noCompress "tflite"  // needed for AP-CV
-  }
+    androidResources {
+        noCompress 'tflite'
+    }
 }
 
 
@@ -96,9 +96,9 @@ dependencies {
   //// DEPENDENCY INJECTION (dagger/hilt)
   implementation "com.google.dagger:hilt-android:2.35"
   implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.annotation:annotation:1.2.0'
-    kapt "com.google.dagger:hilt-android-compiler:2.35"
+  implementation 'androidx.preference:preference:1.1.1'
+  implementation 'androidx.annotation:annotation:1.2.0'
+  kapt "com.google.dagger:hilt-android-compiler:2.35"
 
   // GOOGLE SERVICES
   //// FusedLocation (coarse/fine grain)
@@ -111,7 +111,7 @@ dependencies {
   implementation 'com.google.android.material:material:1.4.0-rc01'
 
   // Room components
-  implementation "androidx.room:room-runtime:2.3.0"
+  api "androidx.room:room-runtime:2.3.0"
   kapt "androidx.room:room-compiler:2.3.0"
   implementation "androidx.room:room-ktx:2.3.0"
   androidTestImplementation "androidx.room:room-testing:2.3.0"

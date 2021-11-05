@@ -54,7 +54,7 @@ import android.os.Handler;
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.SimpleWifiManager;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.WifiReceiver;
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceDebug;
+import cy.ac.ucy.cs.anyplace.lib.android.legacy.AnyplaceDebug;
 import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
 
 public abstract class FloorSelector {

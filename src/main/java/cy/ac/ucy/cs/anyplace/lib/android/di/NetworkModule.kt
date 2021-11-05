@@ -18,7 +18,7 @@ class NetworkModule {
   @Provides  // External class
   fun provideHttpClient(): OkHttpClient {
     return OkHttpClient.Builder()
-        .readTimeout(15, TimeUnit.SECONDS) // TODO:PM parameters..
+        .readTimeout(15, TimeUnit.SECONDS) // TODO:PM Make SETTINGS
         .connectTimeout(15, TimeUnit.SECONDS)
         .build()
   }

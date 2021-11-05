@@ -12,10 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_HT
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_NPE
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ONLY_SSL
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
@@ -45,9 +42,9 @@ class MainViewModel @Inject constructor(
   app: Application,
   private val repository: Repository,
   private val retrofitHolder: RetrofitHolder,
-  private val dataStoreServer: DataStoreServer,
+  dataStoreServer: DataStoreServer,
+  dataStoreUser: DataStoreUser,
   private val dataStoreMisc: DataStoreMisc,
-  private val dataStoreUser: DataStoreUser,
   ): AndroidViewModel(app) {
 
   // PREFERENCES
@@ -60,8 +57,8 @@ class MainViewModel @Inject constructor(
   var networkStatus = false
   /** normal var, filled by the observer (SelectSpaceActivity) */
   var backOnline = false
+  // TODO:PM: bind this when connectivity status changes
   var readBackOnline = dataStoreMisc.readBackOnline.asLiveData()
-
   var readUserLoggedIn = dataStoreUser.readUser.asLiveData()
 
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
@@ -115,7 +112,6 @@ class MainViewModel @Inject constructor(
       versionPreferences?.setIcon(R.drawable.ic_sad)
       LOG.E(msg)
       LOG.E(it)
-
       versionColor = ForegroundColorSpan(app.getColor(R.color.redDark))
     } ?: run {
       versionPreferences?.setIcon(R.drawable.ic_happy)

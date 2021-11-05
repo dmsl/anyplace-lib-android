@@ -20,8 +20,8 @@ class PermUtils {
   companion object {
 
     fun checkLoggerPermissionsAndSettings(ctx: Context) {
-      checkLocationService(ctx)
-      checkLocationFineGrain(ctx)
+    //   checkLocationService(ctx)
+    //   checkLocationFineGrain(ctx)
     }
 
     private fun checkLocationService(ctx: Context) {
@@ -47,16 +47,16 @@ class PermUtils {
     }
 
     private fun requestLocationFine(ctx: Context) {
-      requestPermission(
-              ctx,
-              Manifest.permission.ACCESS_FINE_LOCATION,
-              "Location required",
-              ctx.getString(R.string.app_name) +
-                      " needs the fine-grain location permission to operate.\n"+
-                      "It is used to get coarse/fine grain location when this is available," +
-                      "to focus the app on the relevant map areas.",
-              REQ_LOC_FINE_GRAIN
-      )
+      // requestPermission(
+      //         ctx,
+      //         Manifest.permission.ACCESS_FINE_LOCATION,
+      //         "Location required",
+      //         ctx.getString(R.string.app_name) +
+      //                 " needs the fine-grain location permission to operate.\n"+
+      //                 "It is used to get coarse/fine grain location when this is available," +
+      //                 "to focus the app on the relevant map areas.",
+      //         REQ_LOC_FINE_GRAIN
+      // )
     }
 
     private fun requestPermission(ctx: Context, perm: String, title: String, msg: String, code: Int) {
@@ -76,9 +76,10 @@ class PermUtils {
 
     /** Fine-Grain Location in anyplace apps */
     private fun hasLocationFineGrain(ctx: Context) : Boolean {
-      return (ActivityCompat.checkSelfPermission(ctx,
-              Manifest.permission.ACCESS_FINE_LOCATION)
-              == PackageManager.PERMISSION_GRANTED)
+      return false
+      // return (ActivityCompat.checkSelfPermission(ctx,
+      //         Manifest.permission.ACCESS_FINE_LOCATION)
+      //         == PackageManager.PERMISSION_GRANTED)
     }
 
 

@@ -1,0 +1,43 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!--TODO:PM remove this..-->
+  <PreferenceCategory app:title="@string/cv_header">
+
+    <SwitchPreferenceCompat
+      app:key="pref_cvlog_dev_mode"
+      android:defaultValue="true"
+      app:title="Developer Options"
+      app:summary="Show a bottom sheet with details"
+      />
+
+    <EditTextPreference
+      app:key="pref_cvlog_window_seconds"
+      app:title="Window Seconds"
+      app:summary="Number of seconds to scan per location"
+      app:defaultValue="5"
+      />
+
+
+  </PreferenceCategory>
+
+  <PreferenceCategory app:title="@string/experimental_header">
+
+    <SwitchPreferenceCompat
+      app:key="pref_cvlog_exp_img_padding"
+      android:defaultValue="false"
+      app:title="Image padding"
+      app:summary="Pad YOLO images instead of stretching them"
+      />
+
+    <!--<SwitchPreferenceCompat-->
+    <!--  app:dependency="sync"-->
+    <!--  app:key="attachment"-->
+    <!--  app:summaryOff="@string/attachment_summary_off"-->
+    <!--  app:summaryOn="@string/attachment_summary_on"-->
+    <!--  app:title="@string/attachment_title" />-->
+
+  </PreferenceCategory>
+
+
+</PreferenceScreen>

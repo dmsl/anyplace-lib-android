@@ -6,7 +6,7 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
-  android:id="@+id/bottom_sheet"
+  android:id="@+id/bottom_ui"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:orientation="vertical"
@@ -25,9 +25,8 @@
     android:orientation="vertical"
     android:padding="8dp"
     android:paddingTop="0dp"
-    android:layout_marginTop="6dp"
-    app:layout_constraintTop_toBottomOf="@id/button_scannedObjects">
-
+    android:layout_marginTop="12dp"
+    app:layout_constraintTop_toBottomOf="@id/button_logging">
 
     <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/gesture_layout"
@@ -36,64 +35,23 @@
       android:paddingTop="0dp"
       android:paddingBottom="20dp">
 
-      <ImageView
-        android:id="@+id/bottom_sheet_arrow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_icon_up"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/darkGray" />
-
-
-      <SeekBar
-        android:id="@+id/seekBar_slidingWindow"
-        style="@style/Widget.AppCompat.SeekBar.Discrete"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:max="10"
-        android:min="1"
-        android:progress="1"
-        app:layout_constraintLeft_toRightOf="@id/tv_titleSlidingWindowSetting"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettings"
-        tools:layout_editor_absoluteX="168dp"
-        tools:layout_editor_absoluteY="111dp" />
-
       <TextView
-        android:id="@+id/tv_titleCvSettings"
+        android:id="@+id/tv_titleCvTutorial"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="Settings"
+        android:text="Tutorial"
         android:textColor="@android:color/black"
         android:textSize="20sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider_beforeSettings" />
-
-      <TextView
-        android:id="@+id/tv_titleSlidingWindowSetting"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Sliding Window:"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/seekBar_slidingWindow"
-        app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettings" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 
       <TextView
         android:id="@+id/tv_titleCvSettingsDeveloper"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:gravity="center"
         android:text="@string/developer_stats"
         android:textColor="@android:color/black"
@@ -104,15 +62,40 @@
 
 
       <TextView
+        android:id="@+id/tv_titleCurrentWindow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Stored Windows"
+
+        android:layout_marginTop="8dp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimaryDark"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettingsDeveloper" />
+
+
+      <TextView
+        android:id="@+id/tv_currentWindow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        tools:text="2"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimaryDark"
+        app:layout_constraintBottom_toBottomOf="@id/tv_titleCurrentWindow"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_titleCurrentWindow" />
+
+
+      <TextView
         android:id="@+id/tv_titleDevSlidingWindow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="@string/sliding_window"
-        android:textColor="@android:color/black"
+        android:text="@string/current_window"
+        android:layout_marginTop="6dp"
+        android:textColor="@color/colorPrimaryDark"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_titleCvSettingsDeveloper" />
+        app:layout_constraintTop_toBottomOf="@id/tv_titleCurrentWindow" />
 
 
       <TextView
@@ -136,48 +119,49 @@
         app:layout_constraintTop_toTopOf="@id/tv_titleElapsedTime" />
 
 
+
+
       <TextView
-        android:id="@+id/tv_titleCurrentWindow"
+        android:id="@+id/tv_titleWindowObjectsAll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Current Window"
+        android:text="Scanned Objects (all)"
         android:textColor="@color/darkGray"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_elapsedTime" />
-
+        app:layout_constraintTop_toBottomOf="@id/tv_titleElapsedTime" />
 
       <TextView
-        android:id="@+id/tv_currentWindow"
+        android:id="@+id/tv_windowObjectsAll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="3"
+        tools:text="100"
         android:textColor="@color/darkGray"
-        app:layout_constraintBottom_toBottomOf="@id/tv_titleCurrentWindow"
+        app:layout_constraintBottom_toBottomOf="@id/tv_titleWindowObjectsAll"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_titleCurrentWindow" />
+        app:layout_constraintTop_toTopOf="@id/tv_titleWindowObjectsAll" />
 
 
       <TextView
-        android:id="@+id/tv_titleWindowObjects"
+        android:id="@+id/tv_titleWindowObjectsUnique"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Unique Objects"
         android:textColor="@color/darkGray"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_titleCurrentWindow" />
+        app:layout_constraintTop_toBottomOf="@id/tv_titleWindowObjectsAll" />
 
 
       <TextView
-        android:id="@+id/tv_windowObjects"
+        android:id="@+id/tv_windowObjectsUnique"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="5"
+        tools:text="5"
         android:textColor="@color/darkGray"
-        app:layout_constraintBottom_toBottomOf="@id/tv_titleWindowObjects"
+        app:layout_constraintBottom_toBottomOf="@id/tv_titleWindowObjectsUnique"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_titleWindowObjects" />
+        app:layout_constraintTop_toTopOf="@id/tv_titleWindowObjectsUnique" />
 
       <TextView
         android:id="@+id/tv_titleTotalObjects"
@@ -187,14 +171,14 @@
         android:textColor="@color/darkGray"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_titleWindowObjects" />
+        app:layout_constraintTop_toBottomOf="@id/tv_titleWindowObjectsUnique" />
 
 
       <TextView
         android:id="@+id/tv_totalObjects"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="5"
+        tools:text="15"
         android:textColor="@color/darkGray"
         app:layout_constraintBottom_toBottomOf="@id/tv_titleTotalObjects"
         app:layout_constraintRight_toRightOf="parent"
@@ -206,7 +190,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/inference"
-        android:textColor="@android:color/black"
+        android:textColor="@color/colorPrimaryDark"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_titleTotalObjects" />
@@ -229,7 +213,7 @@
         android:id="@+id/frame_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/bottom_sheet_resolution_placeholder"
+        tools:text="000x000"
         android:textColor="@color/darkGray"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_titleCV" />
@@ -250,8 +234,8 @@
         android:id="@+id/crop_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="right"
-        android:text="@string/bottom_sheet_resolution_placeholder"
+        android:gravity="end"
+        tools:text="400x400"
         android:textColor="@color/darkGray"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/frame_info" />
@@ -271,7 +255,7 @@
         android:id="@+id/time_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/bottom_sheet_time_placeholder"
+        tools:text="200ms"
         android:textColor="@color/darkGray"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/crop_info" />
@@ -281,42 +265,31 @@
         android:id="@+id/divider_beforeStats"
         android:layout_width="393dp"
         android:layout_height="2dp"
-        android:layout_marginTop="20dp"
         android:background="@color/mediumGray"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/seekBar_slidingWindow"
+        app:layout_constraintTop_toBottomOf="@id/tv_titleCvTutorial"
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="87dp" />
 
-      <View
-        android:id="@+id/divider_beforeSettings"
-        android:layout_width="393dp"
-        android:layout_height="2dp"
-        android:layout_marginTop="20dp"
-        android:background="@color/mediumGray"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_logging"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="87dp" />
-
-      <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_logging"
-        style="@style/PrimaryButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="22dp"
-        android:layout_marginRight="22dp"
-        android:padding="18dp"
-        android:text="Start Logging"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bottom_sheet_arrow" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
   </LinearLayout>
+
+  <ImageView
+    android:id="@+id/bottom_sheet_arrow"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    style="@style/ButtonRound"
+    android:src="@drawable/ic_icon_up"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="@id/bottom_sheet_internal"
+    app:layout_constraintBottom_toTopOf="@id/bottom_sheet_internal"
+    />
+
 
   <com.google.android.material.button.MaterialButton
     android:id="@+id/button_clearObjects"
@@ -335,29 +308,67 @@
     app:cornerRadius="10dp"
     app:layout_constraintHorizontal_bias="0.5"
     app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintRight_toLeftOf="@id/button_scannedObjects"
+    app:layout_constraintRight_toLeftOf="@id/button_cameraTimer"
     />
 
 
+
   <com.google.android.material.button.MaterialButton
-    android:id="@+id/button_scannedObjects"
-    android:layout_width="52dp"
-    android:layout_height="52dp"
-    android:text="99"
+    android:id="@+id/button_cameraTimer"
+    android:elevation="50dp"
+    android:visibility="invisible"
+    android:layout_width="62dp"
+    android:layout_height="62dp"
+    android:textSize="40sp"
     android:textStyle="bold"
     android:textAlignment="gravity"
     android:insetLeft="0dp"
+    android:textAllCaps="false"
+    app:iconGravity="textStart"
+    app:iconPadding="0dp"
+    app:iconSize="28dp"
     android:insetTop="0dp"
     android:insetRight="0dp"
     android:insetBottom="0dp"
     android:padding="0dp"
     android:layout_margin="6dp"
     android:layout_marginBottom="12dp"
-    android:visibility="invisible"
 
-    android:textSize="15sp"
     app:cornerRadius="50dp"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     />
+
+  <androidx.appcompat.widget.AppCompatButton
+    android:id="@+id/button_logging"
+    style="@style/PrimaryButton"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="22dp"
+    android:layout_marginRight="22dp"
+    android:layout_marginTop="8dp" android:layout_marginBottom="8dp"
+    android:padding="18dp"
+    tools:text="Start"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/button_cameraTimer" />
+
+  <!--app:layout_constraintCircleRadius="5dp"-->
+  <ProgressBar
+    android:id="@+id/progressBar_timer"
+    android:elevation="51dp"
+    android:visibility="invisible"
+    app:trackCornerRadius="6dp"
+
+    app:layout_constraintTop_toTopOf="@id/button_cameraTimer"
+    app:layout_constraintBottom_toBottomOf="@id/button_cameraTimer"
+    app:layout_constraintLeft_toLeftOf="@id/button_cameraTimer"
+    app:layout_constraintRight_toRightOf="@id/button_cameraTimer"
+    tools:progress="40"
+    style="@style/TimerProgressBar"
+    android:layout_width="82dp"
+    android:layout_height="82dp"
+    />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,8 +10,9 @@ object DetectorFactory {
      */
     fun createDetector(assetManager: AssetManager,
                        detectionModel: DetectionModel,
-                       minimumScore: Float): Detector {
-        return YoloV4Detector(assetManager, detectionModel, minimumScore)
+                       minimumScore: Float,
+                       usePadding: Boolean): Detector {
+        return YoloV4Detector(assetManager, detectionModel, minimumScore, usePadding)
     }
 
 }

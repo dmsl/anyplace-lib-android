@@ -34,7 +34,7 @@
  *
  */
 
-package cy.ac.ucy.cs.anyplace.lib.android.cache;
+package cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated;
 
 import java.io.Serializable;
 

@@ -7,9 +7,11 @@ import android.net.NetworkCapabilities
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
@@ -26,30 +28,28 @@ import javax.inject.Inject
  *  - control toast messages from here
  */
 abstract class AnyplaceApp : Application() {
-  private val TAG = AnyplaceApp::class.java.simpleName
 
-  // @Inject CLR:PM are these not needed?
   lateinit var dataStoreServer: DataStoreServer
+  lateinit var dataStoreCvLogger: DataStoreCvLogger
   lateinit var dataStoreMisc: DataStoreMisc
   lateinit var dataStoreUser: DataStoreUser
 
   @Inject
   lateinit var retrofitHolder: RetrofitHolder
 
-  @Deprecated("")
-  lateinit var prefs: Preferences
-  @Deprecated("")
-  lateinit var fileCache: FileCache
-  @Deprecated("")
-  lateinit var apiOld: Anyplace
-
   abstract val navigator: Boolean
   abstract val logger: Boolean
 
+  // CLR:PM are these not needed
+  @Deprecated("")  lateinit var prefs: Preferences
+  @Deprecated("")  lateinit var fileCache: FileCache
+  @Deprecated("")  lateinit var apiOld: Anyplace
+
   override fun onCreate() {
     super.onCreate()
-    LOG.D2(TAG, "AnyplaceApp:: onCreate")
+    LOG.D2(TAG, "onCreate")
     dataStoreServer = DataStoreServer(applicationContext)
+    dataStoreCvLogger = DataStoreCvLogger(applicationContext)
     dataStoreMisc = DataStoreMisc(applicationContext)
     dataStoreUser= DataStoreUser(applicationContext)
 

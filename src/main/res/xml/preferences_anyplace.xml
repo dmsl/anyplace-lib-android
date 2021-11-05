@@ -43,11 +43,11 @@
 
   <PreferenceCategory android:title="Server" >
     <EditTextPreference
-        android:defaultValue="@string/default_server_ip_address"
+        android:defaultValue="@string/default_pref_server_host"
         android:key="server_ip_address"
         android:title="Address" />
     <EditTextPreference
-        android:defaultValue="@string/default_server_port"
+        android:defaultValue="@string/default_pref_server_port"
         android:key="server_port"
         android:title="Port" />
 

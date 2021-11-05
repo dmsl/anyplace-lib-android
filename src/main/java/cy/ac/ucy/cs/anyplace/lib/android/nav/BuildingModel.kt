@@ -46,7 +46,7 @@ import java.util.*
 
 class BuildingModel(
         // init inherited fields
-        private val position: LatLng,  // XXX:PM BUG:PM this is not parcelable/serializable
+        private val position: LatLng,  // TODO this is not parcelable/serializable
         private val title: String,
         private val snippet: String,
         // extra fields (local to BuildingModel)
@@ -58,7 +58,7 @@ class BuildingModel(
   // }  CHECK:PM this is a mess.. CLR?
   // class BuildingModel(
   //         // init inherited fields
-  //         private val position: LatLng,  // XXX:PM BUG:PM this is not parcelable/serializable
+  //         private val position: LatLng,  // BUG this is not parcelable/serializable
   //         private val title: String,
   //         private val snippet: String,
   //         // extra fields (local to BuildingModel)

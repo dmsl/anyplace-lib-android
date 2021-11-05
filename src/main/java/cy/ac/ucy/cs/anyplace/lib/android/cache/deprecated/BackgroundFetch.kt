@@ -33,7 +33,7 @@
 * DEALINGS IN THE SOFTWARE.
 *
 */
-package cy.ac.ucy.cs.anyplace.lib.android.cache
+package cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated
 
 import android.app.Activity
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
@@ -48,9 +48,9 @@ import java.io.Serializable
 
 // @SuppressWarnings("serial")
 internal class BackgroundFetch(
-        private val activity: Activity,
-        private val l: BackgroundFetchListener,
-        val building: BuildingModel) : Serializable, Runnable {
+  private val activity: Activity,
+  private val l: BackgroundFetchListener,
+  val building: BuildingModel) : Serializable, Runnable {
 
   @JvmField
   var status = BackgroundFetchListener.Status.RUNNING
@@ -138,7 +138,7 @@ internal class BackgroundFetch(
         val currentApiVersion = Build.VERSION.SDK_INT
         currentTask = if (currentApiVersion >= Build.VERSION_CODES.HONEYCOMB) ({
           // Execute task parallel with others
-          // XXX:PM something is weird here (FetchFloorPlanTask)
+          // something is weird here (FetchFloorPlanTask)
           task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }) as FetchFloorPlanTask? else ({
           task.execute()

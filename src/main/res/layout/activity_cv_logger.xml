@@ -13,6 +13,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!--app:cardCornerRadius="75dp"-->
+    <!-- CAMERA VIEW -->
+    <!--android:elevation="0dp"-->
     <androidx.camera.view.PreviewView
       android:id="@+id/pv_camera"
 
@@ -21,43 +24,136 @@
       android:background="@color/black"
       android:scaleType="fitStart"
 
-      app:cardCornerRadius="75dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintDimensionRatio="4:6"
       app:layout_constraintHorizontal_bias="0.0"
-      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintVertical_bias="0.0"
 
+      app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintVertical_bias="0.0">
+      />
+    <!--</androidx.camera.view.PreviewView>-->
+    <!-- INFO: this is required, even though it has no children.
+     If this tag was closed directly (e.g., using />), then
+     the code in
+   -->
 
-    </androidx.camera.view.PreviewView>
+    <!-- DETECTED OBJECTS OVERLAY -->
+    <cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
+      android:id="@+id/tov_camera"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintDimensionRatio="4:6"
 
-    <!--android:background="@android:color/transparent"-->
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintVertical_bias="0.0" />
+
+    <!--<cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView-->
+    <!--  android:id="@+id/tov_camera"-->
+    <!--  android:layout_width="0dp"-->
+    <!--  android:layout_height="0dp"-->
+
+
+    <!--  app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--  app:layout_constraintEnd_toEndOf="parent"-->
+    <!--  app:layout_constraintHorizontal_bias="0.0"-->
+    <!--  app:layout_constraintStart_toStartOf="parent"-->
+    <!--  app:layout_constraintTop_toTopOf="parent"-->
+    <!--  app:layout_constraintVertical_bias="0.0" />-->
+
+
+
+
+    <!--android:alpha="0.7"-->
     <com.google.android.gms.maps.MapView
       android:id="@+id/mapView"
+      android:elevation="2dp"
       android:layout_width="0dp"
-
       android:layout_height="0dp"
-      android:alpha="0.7"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintDimensionRatio="4:6"
 
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintVertical_bias="0.0" />
-    <!--android:layout_height="0dp"-->
+
+
+
+
+    <!-- WARNING OVERLAY -->
+    <View
+      android:id="@+id/view_statusBackground"
+      android:elevation="39dp"
+      android:layout_width="0dp"
+      android:layout_height="68dp"
+      android:alpha="0.8"
+      android:background="@color/black"
+      android:visibility="invisible"
+      app:layout_constraintBottom_toBottomOf="parent"
+
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+
+      app:layout_constraintVertical_bias="0.0" />
+
+
+    <!-- WARNING TOP -->
+    <View
+      android:id="@+id/view_warning"
+      android:elevation="40dp"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:alpha="0"
+      android:background="@color/yellowDark"
+      android:visibility="invisible"
+      app:layout_constraintBottom_toBottomOf="parent"
+
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+
+      app:layout_constraintVertical_bias="0.0" />
+
+
+    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
+      android:id="@+id/tv_statusTitle"
+      android:elevation="40dp"
+
+      android:layout_width="0dp"
+
+      android:visibility="invisible"
+      android:layout_height="wrap_content"
+      android:fontFamily="sans-serif-black"
+      android:gravity="center"
+      android:text="@string/status"
+      android:textAllCaps="true"
+      android:textColor="@color/colorPrimary"
+      android:textSize="25sp"
+      app:textAllCaps="false"
+      android:textStyle="bold"
+      app:layout_anchor="@+id/constraintLayout"
+      app:layout_anchorGravity="top|center"
+      app:layout_constraintBottom_toBottomOf="@+id/button_settings"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="@+id/button_settings"
+      app:outlineColor="@color/white_B0"
+      app:outlineWidth="2dp" />
 
     <com.google.android.material.button.MaterialButton
       android:id="@+id/button_settings"
-      android:layout_width="52dp"
-      android:layout_height="52dp"
+      android:elevation="50dp"
+      android:layout_width="58dp"
+      android:layout_height="58dp"
       android:layout_alignParentEnd="true"
       android:layout_gravity="end"
-      android:layout_margin="6dp"
+      android:layout_margin="8dp"
 
-      android:layout_marginTop="8dp"
       android:insetLeft="0dp"
       android:insetTop="0dp"
       android:insetRight="0dp"
@@ -70,74 +166,13 @@
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- OVERLAY FOR DRAWING DETECTIONS -->
-    <cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
-      android:id="@+id/tov_camera"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-
-      app:layout_constraintDimensionRatio="4:6"
-      app:layout_constraintBottom_toBottomOf="parent"
-
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintVertical_bias="0.0" />
-
-    <!-- WARNING OVERLAY -->
-    <View
-      android:id="@+id/view_warning"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      android:alpha="0"
-      android:visibility="invisible"
-      app:layout_constraintDimensionRatio="4:6"
-      app:layout_constraintBottom_toBottomOf="parent"
-
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintVertical_bias="0.0"
-
-      android:background="@color/yellowDark"
-      />
-
-    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
-      android:id="@+id/tv_statusTitle"
-      android:layout_width="0dp"
-
-      android:textAllCaps="true"
-      android:fontFamily="sans-serif-black"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:text="@string/status"
-      android:textColor="@color/colorPrimary"
-      android:textSize="35sp"
-      android:textStyle="bold"
-      app:layout_anchor="@+id/constraintLayout"
-      app:layout_anchorGravity="top|center"
-      app:layout_constraintBottom_toBottomOf="@+id/button_settings"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/button_settings"
-      app:outlineColor="@color/white_70"
-      app:outlineWidth="1dp"
-      />
-
-
-    <!--app:iconPadding="0dp"-->
-    <!--app:iconSize="35dp"-->
-    <!--app:icon="@drawable/ic_anyplace"-->
-    <!--app:iconGravity="textStart"-->
-
-
   </androidx.constraintlayout.widget.ConstraintLayout>
 
   <include
-    android:id="@+id/bottom_sheet"
+    android:id="@+id/bottom_ui"
     layout="@layout/bottom_sheet_cv_logging"
-    android:elevation="00dp"
-    tools:layout_editor_absoluteY="5dp" />
+    android:elevation="0dp"
+    tools:layout_editor_absoluteY="4dp" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

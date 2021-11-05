@@ -45,7 +45,7 @@ import android.util.Log;
 
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LogRecord;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceDebug;
+import cy.ac.ucy.cs.anyplace.lib.android.legacy.AnyplaceDebug;
 
 public class AnyUserData {
   private static final String TAG = AnyUserData.class.getSimpleName();
