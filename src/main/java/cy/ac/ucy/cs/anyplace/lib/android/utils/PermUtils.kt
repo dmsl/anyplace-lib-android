@@ -166,16 +166,14 @@ class PermUtils {
                   .setPositiveButton("OK") { dialogInterface, i ->
                     // Prompt the user once explanation has been shown
                     // ActivityCompat.requestPermissions(
-                    //         ctx, arrayOf(perm), MY_PERMISSIONS_REQUEST_LOCATION)
-
-                    ActivityCompat.requestPermissions(ctx, arrayOf(perm), REQ_LOC_FINE_GRAIN)
+                    //         ctx, arrayOf(perm), MY_PERMISSIONS_REQUEST_LOCATION)RAIN)
 
                   }
                   .create().show()
         } else {
           LOG.D("Requesting permissions: without rationale!")
           // No explanation needed, we can request the permission.
-          ActivityCompat.requestPermissions(ctx, arrayOf(perm),  REQ_LOC_FINE_GRAIN)
+          // ActivityCompat.requestPermissions(ctx, arrayOf(perm),  REQ_LOC_FINE_GRAIN)
         }
       } else {
         LOG.D("Permission existed: $perm")
