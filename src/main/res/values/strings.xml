@@ -184,7 +184,6 @@
 
 
 
-
   <!-- PREFERENCES -->
   <!-- These defaults are replicated in CONST.kt (in core-lib) -->
   <!-- We have to have them in 2 places as the core-lib does not have XML values (pure KT lib) -->
@@ -195,5 +194,25 @@
   <string name="default_pref_server_protocol">https</string>
   <string name="default_server_access_token">ACCESS_TOKEN</string>
   <string name="default_pref_server_port">44</string>
+
+  <!-- TUTORIALS -->
+  <string name="tutorial">Tutorial</string>
+  <string name="tutorial_cvscan_start">1. START SCANNING:</string>
+  <string name="tutorial_cvscan_start_details">
+"   - will identify objects for some seconds
+   - these objects belong to the same \"scan window\"
+   - you may pause/resume while on a scan window
+   - a countdown is shown on bottom right"
+  </string>
+  <string name="tutorial_cvscan_store">2. STORE OBJECTS:</string>
+  <string name="tutorial_cvscan_store_details">
+"   - simply long click on a map location
+   - once saved, a new scan window will start immediately"
+  </string>
+  <string name="tutorial_cvscan_finish">3. FINISH SCANNING:</string>
+  <string name="tutorial_cvscan_finish_details">
+"   - the last scanned window will be discarded
+   - the \"Object Map\" will be stored locally"
+  </string>
 
 </resources>

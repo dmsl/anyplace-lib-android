@@ -36,6 +36,7 @@ class FloorsHelper(val floors: Floors,
    * (not on the logging/nav. in a earlier activity).
    */
   suspend fun fetchAllFloorplans() {
+    var alreadyCached=""
     floors.floors.forEach { floor ->
       val FH = FloorHelper(floor, spaceH)
       if (!FH.hasFloorplanCached()) {
@@ -45,8 +46,12 @@ class FloorsHelper(val floors: Floors,
           LOG.D("Downloaded: ${FH.prettyFloorplanNumber()}.")
         }
       } else {
-        LOG.D2("Already in cache: ${FH.prettyFloorplanNumber()}.")
+        alreadyCached+="${FH.floor.floorNumber}, "
       }
+    }
+
+    if (alreadyCached.isNotEmpty()) {
+      LOG.D2("Already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
     }
   }
 }

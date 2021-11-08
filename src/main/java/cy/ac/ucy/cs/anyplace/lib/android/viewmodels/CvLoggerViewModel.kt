@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
+package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -14,13 +14,8 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp_MembersInjector
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.DetectionProcessor
@@ -32,25 +27,19 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.RenderScriptImageTo
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvLoggerPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
-import cy.ac.ucy.cs.anyplace.lib.models.Spaces
+import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.net.ConnectException
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 
@@ -70,33 +59,22 @@ enum class TimerAnimation {
 
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
-  app: Application, // this is not the AnyplaceApp, hence it is not a field.
-  // AnyplaceApp can be used below as app through an Extension function
+  // [application] is not an [AnyplaceApp], hence it is not a field.
+  // [AnyplaceApp] can be used within the class as app through an Extension function
+  application: Application,
   val repository: Repository,
   // dataStoreCvLogger: DataStoreCvLogger,
-  private val retrofitHolder: RetrofitHolder): AndroidViewModel(app) {
-
-  private val assetReader by lazy { AssetReader(app.applicationContext) }
-  /** Initialized onMapReady */
-  var markers : Markers? = null
+  private val retrofitHolder: RetrofitHolder): AndroidViewModel(application) {
 
   companion object {
     /** Surface.ROTATION_0: portrait, Surface.ROTATION_270: landscape */
     const val CAMERA_ROTATION: Int = Surface.ROTATION_0
-
-    // TODO move in utils
-    fun getSecondsRounded(num: Float, maxAllowed: Int): String {
-      var rounded = num.toInt() + 1
-      if (rounded > maxAllowed) rounded = maxAllowed
-      return rounded.toString()
-    }
-
-    fun getSecondsPretty(num: Float): String {
-      val res = "%.1f".format(num) + "s"
-      if (res.length > 4) return "0.0s"
-      return res
-    }
   }
+
+  // private val timeUtils by lazy { timeUtils }
+  private val assetReader by lazy { AssetReader(app.applicationContext) }
+  /** Initialized onMapReady */
+  var markers : Markers? = null
 
   var circleTimerAnimation: TimerAnimation = TimerAnimation.paused
   lateinit var prefs: CvLoggerPrefs
@@ -275,7 +253,7 @@ class CvLoggerViewModel @Inject constructor(
   }
 
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
-  fun getElapsedSecondsStr(): String { return getSecondsPretty(getElapsedSeconds()) }
+  fun getElapsedSecondsStr(): String { return uTime.getSecondsPretty(getElapsedSeconds()) }
 
   fun resetWindow() {
     objectsWindowUnique=0

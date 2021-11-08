@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.utils;
+package cy.ac.ucy.cs.anyplace.lib.android.utils.legacy;
 
 import android.content.Context;
 

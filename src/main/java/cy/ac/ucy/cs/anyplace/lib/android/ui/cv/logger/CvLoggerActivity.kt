@@ -36,13 +36,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerViewModel.Companion.getSecondsRounded
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeMaterialButtonIcon
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.removeMaterialButtonIcon
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvLoggerViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Logging
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
@@ -143,7 +146,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     if (remaining>0) {
       val windowSecs = viewModel.prefs.windowSeconds.toInt()
       setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
-      btn.text = getSecondsRounded(remaining, windowSecs)
+      btn.text = uTime.getSecondsRounded(remaining, windowSecs)
     } else {
       progressBar.visibility = View.INVISIBLE
       btn.text = ""
@@ -218,6 +221,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
 
   private fun setupButtonsAndUi() {
     statusUpdater = StatusUpdater(binding.tvStatusTitle,
+      binding.tvStatusSubtitle,
       binding.viewStatusBackground,
       binding.viewWarning,
       applicationContext)
@@ -228,13 +232,25 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       LOG.D(TAG, "buttonStartLogging: ${viewModel.status}")
       when (viewModel.status.value) {
         Logging.stoppedMustStore -> {
+
+          if (viewModel.storedDetections.isEmpty()) {
+            lifecycleScope.launch {
+              statusUpdater.showWarningAutohide("Nothing on map to store.",
+                "TIP: long-click a location to attach objects.", 3000L)
+            }
+
+          } else {
+
+
+          // TODO hide tutorial once started....
+
           // TODO LEFTHERE
           // TODO:PM long click on existing point: update existing measurements..
           // SHOW MSG: This will ignore the last  'window'
           // MATERIALIZE, STORE, and EXIT
           // val msg = "TODO: store locally.."
           viewModel.status.value = Logging.finished
-          setUpBottomSheet(true)
+          // setUpBottomSheet()
           // TODO: STORE RESULTS..
           // TODO put an upload button and enable it..
 
@@ -242,6 +258,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
           // TODO:PM heatmap saved results
 
           // statusUpdater.showWarning(msg)
+          }
         }
         else ->
           viewModel.toggleLogging()
@@ -284,9 +301,8 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     //   binding.buttonSettings.setOnClickListener {
     //     SettingsDialog.SHOW(supportFragmentManager, SettingsDialog.FROM_CVLOGGER)
     //   }
-
     binding.buttonSettings.setOnLongClickListener {
-      Toast.makeText(applicationContext,"App version: ${appInfo.version}", Toast.LENGTH_SHORT).show()
+      Toast.makeText(applicationContext,"App Version: ${appInfo.version}", Toast.LENGTH_SHORT).show()
       true
     }
   }
@@ -306,16 +322,20 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
   private fun showBottomSheet() {
     binding.bottomUi.bottomSheetInternal.visibility = View.VISIBLE
     binding.bottomUi.bottomSheetArrow.visibility = View.VISIBLE
+
+    // hide developer options: TODO:PM once options are in place
+    // if (viewModel.prefs.devMode) {
+      binding.bottomUi.groupDevSettings.visibility = View.VISIBLE
+    // }
   }
 
-  private fun setUpBottomSheet(forceShow : Boolean = false) {
+  private fun setUpBottomSheet() {
     val sheetBehavior = BottomSheetBehavior.from(binding.bottomUi.root)
     sheetBehavior.isHideable = false
-    // TODO: dev mode hides other elements of bottom sheeet
-    if (!forceShow && !viewModel.prefs.devMode) {
-      hideBottomSheet()
-      return
-    }
+    // if (!forceShow && !viewModel.prefs.devMode) {
+    //   hideBottomSheet()
+    //   return
+    // }
 
     showBottomSheet()
 
@@ -357,6 +377,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     val btnLogging = binding.bottomUi.buttonLogging
     val btnTimer= binding.bottomUi.buttonCameraTimer
 
+    binding.bottomUi.groupTutorial.visibility = View.GONE
 
     when (status) {
       Logging.finished-> { // finished a scanning
@@ -374,7 +395,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       }
       Logging.started -> { // just started scanning
         viewModel.circleTimerAnimation=TimerAnimation.running
-        btnLogging.text = "Pause"
+        btnLogging.text = "PAUSE"
         removeMaterialButtonIcon(btnTimer)
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.darkGray)
         changeBackgroundButton(btnTimer, applicationContext, R.color.redDark)
@@ -384,9 +405,10 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       Logging.stopped -> { // stopped after a pause or a store: can start logging again
         viewModel.circleTimerAnimation=TimerAnimation.paused
         if (viewModel.previouslyPaused) {
-          btnLogging.text = "resume"
+          btnLogging.text = "RESUME"
         } else {
-          btnLogging.text = "start"
+          btnLogging.text = "START"
+          binding.bottomUi.groupTutorial.visibility = View.VISIBLE
         }
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.colorPrimary)
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
@@ -395,17 +417,21 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
         viewModel.circleTimerAnimation=TimerAnimation.reset
         lifecycleScope.launch {
-          statusUpdater.showWarningAutohide("No detections.")
-          restartLogging(250)
+          statusUpdater.showWarningAutohide("No detections.", "trying again..", 2000L)
+          restartLogging()
         }
 
       }
-      Logging.stoppedMustStore -> { // stopped with detections: must store
+      Logging.stoppedMustStore -> {
         viewModel.circleTimerAnimation=TimerAnimation.reset
-        btnLogging.text = "store"
+        btnLogging.text = "FINISH"
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.yellowDark)
         changeBackgroundButton(btnTimer, applicationContext, R.color.yellowDark)
+
+        val nothingStored = viewModel.storedDetections.isEmpty()
+        val loggingBtnColor = if (nothingStored) R.color.darkGray else R.color.yellowDark
+
+        changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
       }
     }
   }
@@ -523,7 +549,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    lifecycleScope.launch { floorsH?.fetchAllFloorplans() }
+    lifecycleScope.launch(Dispatchers.IO) { floorsH?.fetchAllFloorplans() }
 
     // place some restrictions on the map
     map.moveCamera(CameraUpdateFactory.newCameraPosition(
@@ -532,11 +558,13 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // restrict screen to current bounds.
     lifecycleScope.launch {
+      delay(500) // CHECK does this fix it?
       // delay(500) // CLR:PM
 
       // if (floorH == null) { // BUGFIX CLR:PM
-      //   LOG.E("floorH is null!!!")
+      //   LOG.E("floorH is null")
       // }
+
       map.moveCamera(CameraUpdateFactory.newLatLngBounds(floorH?.bounds(), 0))
       val floorOnScreenBounds = map.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
@@ -567,6 +595,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
    * pass it here through [SafeArgs] or [Bundle]
    */
   fun loadSpaceAndFloorFromAssets() {
+    LOG.D2(TAG, "loadSpaceAndFloorFromAssets")
     space = assetReader.getSpace()
     floors = assetReader.getFloors()
 
@@ -589,6 +618,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // TODO:PM put a floor selector...
+    // START OF: select floor: last selection or first available
     var floor : Floor? = null
     if (spaceH!!.hasLastValuesCached()) {
       val lv = spaceH!!.loadLastValues()
@@ -603,6 +633,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
       LOG.D2(TAG, "Loading first ${spaceH!!.prettyFloor}.")
       floor = floorsH!!.getFirstFloor()
     }
+    // END OF: select floor: last selection or first available
 
     val selectedFloorNum=floor.floorNumber.toInt()
     // FIXED SELECTION:
@@ -616,7 +647,7 @@ class CvLoggerActivity : AppCompatActivity(), OnMapReadyCallback {
     LOG.D("Selected ${spaceH?.prettyFloor}: ${floor?.floorName}")
 
     floorH = FloorHelper(floor, spaceH!!)
-    updateAndCacheLastFloor(floor) // TODO:PM when floor changing..
+    updateAndCacheLastFloor(floor) // TODO:PM ONLY when changing floor..
   }
 
   private fun updateAndCacheLastFloor(floor: Floor) {

@@ -29,11 +29,12 @@ interface Detector {
          * A sortable score for how good the [Detection] is relative to others. Higher should be better.
          */
         val score: Float,
-        /**
-         * Location of the detected object within the cropped image.
-         */
+        /** Location of the detected object within the cropped image. */
         val boundingBox: RectF,
-        val detectedClass: Int
+        val detectedClass: Int,
+        // TODO:CV OCR
+        /** Whether ther is OCR within that class */
+        val ocr: String? = null,
     ) : Comparable<Detection> {
         override fun toString(): String {
             var resultString = "[$id] $className "

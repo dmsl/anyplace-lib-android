@@ -25,7 +25,8 @@ class SpaceHelper(val ctx: Context,
   private val cache by lazy { Cache(ctx) }
 
   val prettyType: String
-    get() { // TODO check if valid space type?
+    get() {
+      // TODO check if valid space type?
       return space.type.replaceFirstChar(Char::uppercase)
     }
 

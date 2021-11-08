@@ -10,7 +10,6 @@ import org.tensorflow.lite.Interpreter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector.Detection
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerViewModel
 import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -278,6 +277,9 @@ internal class YoloV4Detector(
 
                 var label =labels[bestClassIndex]
                 if(usePadding) {  label+="_PAD" }
+
+                // TODO:CV OCR run it here..
+                // and put it in the outcome..
 
                 return@mapIndexedNotNull Detection(
                     id = index.toString(),

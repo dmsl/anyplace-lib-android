@@ -65,4 +65,16 @@
     <item name="android:progressDrawable">@drawable/timer_progressbar_circle</item>
   </style>
 
+
+  <style name="BottomSheetTitle" >
+    <item name="android:textColor">@color/black</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:textSize">20sp</item>
+  </style>
+  <style name="BottomSheetSection" >
+    <item name="android:textColor">@color/colorPrimaryDark</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:textSize">15sp</item>
+  </style>
+
 </resources>
