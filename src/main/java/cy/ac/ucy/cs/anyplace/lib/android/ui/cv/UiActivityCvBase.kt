@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
  * - [CvLoggerActivity]
  * - [CvNavigatorActivity] TODO:PM
  */
-open class UiActivityCvCommon(
+open class UiActivityCvBase(
     protected val ctx: Context,
     protected val scope: CoroutineScope,
     // private val viewModel: CvLoggerViewModel,

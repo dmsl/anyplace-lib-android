@@ -57,33 +57,23 @@ enum class TimerAnimation {
   reset
 }
 
+/**
+ * Extending [CvViewModelBase] for the additional ViewModel functionality of the Logger
+ */
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
-  // [application] is not an [AnyplaceApp], hence it is not a field.
-  // [AnyplaceApp] can be used within the class as app through an Extension function
   application: Application,
-  val repository: Repository,
+  repository: Repository,
   // dataStoreCvLogger: DataStoreCvLogger,
-  private val retrofitHolder: RetrofitHolder): AndroidViewModel(application) {
-
-  companion object {
-    /** Surface.ROTATION_0: portrait, Surface.ROTATION_270: landscape */
-    const val CAMERA_ROTATION: Int = Surface.ROTATION_0
-  }
-
-  // private val timeUtils by lazy { timeUtils }
-  private val assetReader by lazy { AssetReader(app.applicationContext) }
-  /** Initialized onMapReady */
-  var markers : Markers? = null
+  retrofitHolder: RetrofitHolder):
+  CvViewModelBase(application, repository, retrofitHolder) {
 
   var circleTimerAnimation: TimerAnimation = TimerAnimation.paused
   lateinit var prefs: CvLoggerPrefs
 
-  val floorplanResp: MutableLiveData<NetworkResult<Bitmap>> = MutableLiveData()
-
-  private lateinit  var detectionProcessor: DetectionProcessor
-  private lateinit var detector: YoloV4Detector
-  private var imageConverter: ImageToBitmapConverter? = null // TODO:PM LATE INIT?
+  // private lateinit  var detectionProcessor: DetectionProcessor
+  // private lateinit var detector: YoloV4Detector
+  // private var imageConverter: ImageToBitmapConverter? = null // TODO:PM LATE INIT?
 
   val windowDetections: MutableLiveData<List<Detector.Detection>> = MutableLiveData()
   val status: MutableLiveData<Logging> = MutableLiveData(Logging.stopped)
@@ -104,44 +94,41 @@ class CvLoggerViewModel @Inject constructor(
     return (status.value == Logging.started) || (status.value == Logging.stoppedMustStore)
   }
 
-  fun setUpDetectionProcessor(
-    assetManager: AssetManager,
-    displayMetrics: DisplayMetrics,
-    trackingOverlayView: TrackingOverlayView,
-    previewView: PreviewView) = viewModelScope.launch(Dispatchers.Main) {
-    // use: prefs.expImagePadding.
-    // this setting is experimental anyway. It also has to be read after the preferences are initialized
-    val usePadding = false
+  // CLR merge...
+  // fun setUpDetectionProcessor(
+  //   assetManager: AssetManager,
+  //   displayMetrics: DisplayMetrics,
+  //   trackingOverlayView: TrackingOverlayView,
+  //   previewView: PreviewView) = viewModelScope.launch(Dispatchers.Main) {
+  //   // use: prefs.expImagePadding.
+  //   // this setting is experimental anyway. It also has to be read after the preferences are initialized
+  //   val usePadding = false
+  //
+  //   detector = DetectorFactory.createDetector(
+  //     assetManager,
+  //     Constants.DETECTION_MODEL,
+  //     Constants.MINIMUM_SCORE,
+  //     usePadding) as YoloV4Detector
+  //
+  //   detectionProcessor = DetectionProcessor(
+  //     displayMetrics = displayMetrics,
+  //     detector = detector,
+  //     trackingOverlay = trackingOverlayView)
+  //
+  //   while (previewView.childCount == 0) { delay(200) }
+  //   val surfaceView: View = previewView.getChildAt(0)
+  //   while (surfaceView.height == 0) { delay(200) } // BUGFIX
+  //
+  //   detectionProcessor.initializeTrackingLayout(
+  //     previewWidth = surfaceView.width,
+ //     previewHeight =  surfaceView.height,
+  //     cropSize = detector.getDetectionModel().inputSize,
+  //     rotation = CAMERA_ROTATION)
+  // }
+  //
+  // fun imageConvertedIsSetUpped(): Boolean { return imageConverter != null }
+  //
 
-    detector = DetectorFactory.createDetector(
-      assetManager,
-      Constants.DETECTION_MODEL,
-      Constants.MINIMUM_SCORE,
-      usePadding) as YoloV4Detector
-
-    detectionProcessor = DetectionProcessor(
-      displayMetrics = displayMetrics,
-      detector = detector,
-      trackingOverlay = trackingOverlayView)
-
-    while (previewView.childCount == 0) { delay(200) }
-    val surfaceView: View = previewView.getChildAt(0)
-    while (surfaceView.height == 0) { delay(200) } // BUGFIX
-
-    detectionProcessor.initializeTrackingLayout(
-      previewWidth = surfaceView.width,
-      previewHeight =  surfaceView.height,
-      cropSize = detector.getDetectionModel().inputSize,
-      rotation = CAMERA_ROTATION)
-  }
-
-  fun imageConvertedIsSetUpped(): Boolean { return imageConverter != null }
-
-  @SuppressLint("UnsafeOptInUsageError")
-  fun setUpImageConverter(context: Context, image: ImageProxy) {
-    Log.v(TAG, "Image size : ${image.width}x${image.height}")
-    imageConverter = RenderScriptImageToBitmapConverter(context, image.image!!)
-  }
 
   @SuppressLint("UnsafeOptInUsageError")
   fun detectObjectsOnImage(image: ImageProxy): Long {
@@ -277,48 +264,4 @@ class CvLoggerViewModel @Inject constructor(
     objectsTotal+=objectsWindowUnique
     storedDetections[latLong] = windowDetections.value.orEmpty()
   }
-
-  fun getFloorplan(FH: FloorHelper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
-
-  private fun loadFloorplanFromAsset() {
-    LOG.W(TAG, "loading from asset file")
-    val base64 = assetReader.getFloorplan64Str()
-    val bitmap = base64?.let { ImgUtils.stringToBitmap(it) }
-    floorplanResp.value =
-      when (bitmap) {
-        null -> NetworkResult.Error("Cant read asset deckplan.")
-        else -> NetworkResult.Success(bitmap)
-      }
-  }
-
-  /**
-   * Requests a floorplan from remote and publishes outcome to [floorplanResp].
-   */
-  private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
-    floorplanResp.value = NetworkResult.Loading()
-    // loadFloorplanFromAsset()
-    if (app.hasInternetConnection()) {
-      val bitmap = FH.requestRemoteFloorplan()
-      if (bitmap != null) {
-        floorplanResp.value = NetworkResult.Success(bitmap)
-        FH.cacheFloorplan(bitmap)
-      } else {
-        val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
-        "Base URL: ${retrofitHolder.retrofit.baseUrl()}"
-        LOG.E(msg)
-        floorplanResp.value = NetworkResult.Error(msg)
-      }
-    } else {
-      floorplanResp.value = NetworkResult.Error("No Internet Connection.")
-    }
-  }
-
-  fun addMarker(latLng: LatLng, msg: String) {
-    markers?.addCvMarker(latLng, msg)
-  }
-
-  fun hideActiveMarkers() {
-    markers?.hideActiveMakers()
-  }
-
 }
