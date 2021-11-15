@@ -16,7 +16,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.GroundOverlay
 import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
@@ -33,7 +32,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase.Companion.CAMERA_ROTATION
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
-import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,44 +42,26 @@ import kotlinx.coroutines.launch
 /**
  * Sharing code between [CvLoggerActivity] and [CvNavigatorActivity]
  * This mostly is:
- * - yolo setup
+ * - YOLO setup
  * - gmap setup
  * - floorplan/overlay displaying
  *
  */
 @AndroidEntryPoint
 abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
-  protected companion object {
+  companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
     const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
     const val OPACITY_MAP_LOGGING = 0f
     const val ANIMATION_DELAY : Long = 100
   }
 
-  protected var floormapOverlay: GroundOverlay? = null
-  protected lateinit var VMbase: CvViewModelBase
+  /** Base [ViewModel] class: [CvViewModelBase] */
+  protected lateinit var VMb: CvViewModelBase
   protected lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
-  protected lateinit var map: GoogleMap
+  protected lateinit var gmap: GoogleMap
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
-
-  /** Selected [Space] */
-  protected var space: Space? = null
-  /** All floors of the selected [space]*/
-  protected var floors: Floors? = null
-  /** Selected floor/deck ([Floor]) of [space] */
-  protected var floor: Floor? = null
-  /** Selected [Space] ([SpaceHelper]) */
-  protected var spaceH: SpaceHelper? = null
-  /** floorsH of selected [spaceH] */
-  protected var floorsH: FloorsHelper? = null
-  /** Selected floorH of [floorsH] */
-  protected var floorH: FloorHelper? = null
-
-  /** LastVals: user last selections regarding a space.
-   * Currently not much use (for a field var), but if we have multiple
-   * lastVals for space then it would make sense. */
-  private var lastValSpaces: LastValSpaces = LastValSpaces()
 
   private lateinit var tovCamera: TrackingOverlayView
   private lateinit var pvCamera: PreviewView
@@ -98,7 +78,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     cameraProviderFuture = ProcessCameraProvider.getInstance(baseContext)
     requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
 
-    VMbase.setUpDetectionProcessor(
+    VMb.setUpDetectionProcessor(
       assets,
       resources.displayMetrics,
       tovCamera,
@@ -166,7 +146,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
    fun setUpImageConverter(image: ImageProxy) {
     LOG.D2("Frame: ${image.width}x${image.height}")
-    VMbase.setUpImageConverter(baseContext, image)
+    VMb.setUpImageConverter(baseContext, image)
   }
 
   /**
@@ -183,10 +163,10 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.D(TAG, "onMapReady")
-    map = googleMap
-    VMbase.markers = Markers(applicationContext, map)
+    gmap = googleMap
+    VMb.markers = Markers(applicationContext, gmap)
 
-    val maxZoomLevel = map.maxZoomLevel // may be different from device to device
+    val maxZoomLevel = gmap.maxZoomLevel // may be different from device to device
     // map.addMarker(MarkerOptions().position(latLng).title("Ucy Building"))
     // map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
 
@@ -196,12 +176,12 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    lifecycleScope.launch(Dispatchers.IO) { floorsH?.fetchAllFloorplans() }
+    lifecycleScope.launch(Dispatchers.IO) { VMb.floorsH?.fetchAllFloorplans() }
 
     // place some restrictions on the map
-    map.moveCamera(CameraUpdateFactory.newCameraPosition(
-      CameraAndViewport.loggerCamera(spaceH!!.latLng(), maxZoomLevel)))
-    map.setMinZoomPreference(maxZoomLevel-3)
+    gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
+      CameraAndViewport.loggerCamera(VMb.spaceH!!.latLng(), maxZoomLevel)))
+    gmap.setMinZoomPreference(maxZoomLevel-3)
 
     // restrict screen to current bounds.
     lifecycleScope.launch {
@@ -212,24 +192,27 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
       //   LOG.E("floorH is null")
       // }
 
-      map.moveCamera(CameraUpdateFactory.newLatLngBounds(floorH?.bounds(), 0))
-      val floorOnScreenBounds = map.projection.visibleRegion.latLngBounds
+      gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VMb.floorH?.bounds(), 0))
+      val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
-      map.setLatLngBoundsForCameraTarget(floorH?.bounds())
-      readFloorplan(floorH!!)
+      gmap.setLatLngBoundsForCameraTarget(VMb.floorH?.bounds())
+      readFloorplan(VMb.floorH!!)
     }
 
-    map.uiSettings.apply {
+    gmap.uiSettings.apply {
       isZoomControlsEnabled = false
       isMapToolbarEnabled = false
       isTiltGesturesEnabled = false
       isCompassEnabled = false
       isIndoorLevelPickerEnabled = true
     }
-    setupOnMapLongClick()
+    onMapReadySpecialize()
   }
 
-  protected abstract fun setupOnMapLongClick()
+  /**
+   * callback for additional functionality to the [CvActivityBase]-based classes
+   */
+  protected abstract fun onMapReadySpecialize()
 
   /**
    * Loads from assets the Space and the Space's Floors
@@ -240,22 +223,22 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
    */
   fun loadSpaceAndFloorFromAssets() {
     LOG.D2(TAG, "loadSpaceAndFloorFromAssets")
-    space = assetReader.getSpace()
-    floors = assetReader.getFloors()
+    VMb.space = assetReader.getSpace()
+    VMb.floors = assetReader.getFloors()
 
-    if (space == null || floors == null) {
-      showError(space, floors)
+    if (VMb.space == null || VMb.floors == null) {
+      showError(VMb.space, VMb.floors)
       return
     }
 
-    spaceH = SpaceHelper(applicationContext, VMbase.repository, space!!)
-    floorsH = FloorsHelper(floors!!, spaceH!!)
+    VMb.spaceH = SpaceHelper(applicationContext, VMb.repository, VMb.space!!)
+    VMb.floorsH = FloorsHelper(VMb.floors!!, VMb.spaceH!!)
 
-    LOG.D("Selected ${spaceH?.prettyType}: ${space!!.name}")
-    LOG.D("${spaceH!!.prettyType} has ${floors!!.floors.size} ${spaceH!!.prettyFloors}.")
+    LOG.D("Selected ${VMb.spaceH?.prettyType}: ${VMb.space!!.name}")
+    LOG.D("$VMb.{spaceH!!.prettyType} has ${VMb.floors!!.floors.size} ${VMb.spaceH!!.prettyFloors}.")
 
-    if (!floorsH!!.hasFloors()) {
-      val msg = "Selected ${spaceH!!.prettyType} has no ${spaceH!!.prettyFloors}."
+    if (!VMb.floorsH!!.hasFloors()) {
+      val msg = "Selected ${VMb.spaceH!!.prettyType} has no ${VMb.spaceH!!.prettyFloors}."
       LOG.E(msg)
       Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
       return
@@ -264,18 +247,18 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     // TODO:PM put a floor selector...
     // START OF: select floor: last selection or first available
     var floor : Floor? = null
-    if (spaceH!!.hasLastValuesCached()) {
-      val lv = spaceH!!.loadLastValues()
+    if (VMb.spaceH!!.hasLastValuesCached()) {
+      val lv = VMb.spaceH!!.loadLastValues()
       if (lv.lastFloor!=null) {
-        LOG.D2(TAG, "LastVal: cached ${spaceH!!.prettyFloor}${lv.lastFloor}.")
-        floor = floorsH!!.getFloor(lv.lastFloor!!)
+        LOG.D2(TAG, "LastVal: cached ${VMb.spaceH!!.prettyFloor}${lv.lastFloor}.")
+        floor = VMb.floorsH!!.getFloor(lv.lastFloor!!)
       }
-      lastValSpaces = lv
+      VMb.lastValSpaces = lv
     }
 
     if (floor == null)  {
-      LOG.D2(TAG, "Loading first ${spaceH!!.prettyFloor}.")
-      floor = floorsH!!.getFirstFloor()
+      LOG.D2(TAG, "Loading first ${VMb.spaceH!!.prettyFloor}.")
+      floor = VMb.floorsH!!.getFirstFloor()
     }
     // END OF: select floor: last selection or first available
 
@@ -284,35 +267,35 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     // val selectedFloorNum=3
     // floor = floorsH!!.getFloor(selectedFloorNum)
     if (floor == null) {
-      showError(space, floors, floor, selectedFloorNum)
+      showError(VMb.space, VMb.floors, floor, selectedFloorNum)
       return
     }
 
-    LOG.D("Selected ${spaceH?.prettyFloor}: ${floor?.floorName}")
+    LOG.D("Selected ${VMb.spaceH?.prettyFloor}: ${floor?.floorName}")
 
-    floorH = FloorHelper(floor, spaceH!!)
+    VMb.floorH = FloorHelper(floor, VMb.spaceH!!)
     updateAndCacheLastFloor(floor) // TODO:PM ONLY when changing floor..
   }
 
   private fun updateAndCacheLastFloor(floor: Floor) {
-    lastValSpaces.lastFloor=floor.floorNumber
-    spaceH?.cacheLastValues(lastValSpaces)
+    VMb.lastValSpaces.lastFloor=floor.floorNumber
+    VMb.spaceH?.cacheLastValues(VMb.lastValSpaces)
   }
 
   protected fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
     var msg = ""
     when {
       space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${spaceH?.prettyFloors}."
-      floor == null -> msg = "Failed to get ${spaceH?.prettyFloor} $floorNum."
+      floors == null -> msg = "Failed to get ${VMb.spaceH?.prettyFloors}."
+      floor == null -> msg = "Failed to get ${VMb.spaceH?.prettyFloor} $floorNum."
     }
     LOG.E(msg)
     Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
   }
 
   /**
-   * Reads a floorplan (from cache or remote) using the [VMbase] and a [FloorHelper]
-   * Once it's read, then it is loaded it is posted on [VMbase.floorplanResp],
+   * Reads a floorplan (from cache or remote) using the [VM] and a [FloorHelper]
+   * Once it's read, then it is loaded it is posted on [VMb.floorplanResp],
    * and through an observer it is loaded on the map.
    *
    * Must be called each time wee want to load a floor.
@@ -327,30 +310,30 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
             null -> NetworkResult.Error("Failed to load from local cache")
             else -> NetworkResult.Success(bitmap)
           }
-        VMbase.floorplanResp.postValue(localResult)
+        VMb.floorplanResp.postValue(localResult)
       } else {
         LOG.D2(TAG, "readFloorplan: remote")
-        VMbase.getFloorplan(FH)
+        VMb.getFloorplan(FH)
       }
     }
 
-    VMbase.floorplanResp.observeForever { response ->
+    VMb.floorplanResp.observeForever { response ->
       when (response) {
         is NetworkResult.Loading -> {
-          LOG.W("Loading ${spaceH?.prettyFloorplan}")
+          LOG.W("Loading ${VMb.spaceH?.prettyFloorplan}")
         }
         is NetworkResult.Error -> {
-          val msg = "Failed to get $space"
+          val msg = "Failed to get $VMb.space"
           LOG.W(msg)
           Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
         }
         is NetworkResult.Success -> {
-          if (floorH == null) {
+          if (VMb.floorH == null) {
             val msg = "No selected floor/deck."
             LOG.W(msg)
             Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
           } else {
-            renderFloorplan(response.data, floorH!!)
+            renderFloorplan(response.data, VMb.floorH!!)
           }
         }
       }
@@ -359,8 +342,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
   protected fun renderFloorplan(bitmap: Bitmap?, FH: FloorHelper) {
     LOG.D("renderFloorplan:")
-    // TODO:PM remove the previous floorplan.
-    floormapOverlay = overlays.addSpaceOverlay(bitmap, map, FH.bounds())
+    overlays.addFloorplan(bitmap, gmap, FH.bounds())
   }
 
   protected fun checkInternet() {

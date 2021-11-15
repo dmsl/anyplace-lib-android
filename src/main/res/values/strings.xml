@@ -199,20 +199,23 @@
   <string name="tutorial">Tutorial</string>
   <string name="tutorial_cvscan_start">1. START SCANNING:</string>
   <string name="tutorial_cvscan_start_details">
-"   - will identify objects for some seconds
-   - these objects belong to the same \"scan window\"
-   - you may pause/resume while on a scan window
-   - a countdown is shown on bottom right"
+"   - identifies objects for some seconds.
+   - these objects belong to the same \"scan window\".
+   - a countdown is shown at bottom-right.
+   - you may pause/resume while in a scan window.
+   - long-clicking discards the ongoing window,
+     and stores any map-assigned objects."
   </string>
-  <string name="tutorial_cvscan_store">2. STORE OBJECTS:</string>
+  <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
   <string name="tutorial_cvscan_store_details">
-"   - simply long click on a map location
-   - once saved, a new scan window will start immediately"
+"   - once the scan window ends, the map is shown
+   - scanned objects must be map-assigned with a long click
+   - once objects are map-assigned, a new scan window starts."
   </string>
   <string name="tutorial_cvscan_finish">3. FINISH SCANNING:</string>
   <string name="tutorial_cvscan_finish_details">
-"   - the last scanned window will be discarded
-   - the \"Object Map\" will be stored locally"
+"   - the last scanned window will be discarded.
+   - the \"Object Map\" will be stored locally.
   </string>
 
 </resources>

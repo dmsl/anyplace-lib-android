@@ -12,8 +12,11 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.animateAlpha
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeOut
+import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.UiActivityCvBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
@@ -34,33 +37,34 @@ class UiActivityCvLogger(
   ctx: Context,
   scope: CoroutineScope,
   statusUpdater: StatusUpdater,
-  private val viewModel: CvLoggerViewModel,
+  overlays: Overlays,
+  private val VM: CvLoggerViewModel,
   private val binding: ActivityCvLoggerBinding,
-) : UiActivityCvBase(ctx, scope, statusUpdater) {
+) : UiActivityCvBase(ctx, scope, statusUpdater, overlays) {
 
   private val appInfo by lazy { AppInfo(ctx) }
   private var clearConfirm=false
   private var clickedScannedObjects=false
 
   /**
-   * Observes [viewModel.windowDetections] changes and updates
+   * Observes [VM.windowDetections] changes and updates
    * [binding.bottomUi.buttonCameraWindow] accordingly.
    */
   fun updateCameraTimerButton() {
-    val elapsed = viewModel.getElapsedSeconds()
-    val remaining = (viewModel.prefs.windowSeconds.toInt()) - elapsed
+    val elapsed = VM.getElapsedSeconds()
+    val remaining = (VM.prefs.windowSeconds.toInt()) - elapsed
     val btn = binding.bottomUi.buttonCameraTimer
     val progressBar = binding.bottomUi.progressBarTimer
 
     if (remaining>0) {
-      val windowSecs = viewModel.prefs.windowSeconds.toInt()
+      val windowSecs = VM.prefs.windowSeconds.toInt()
       setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
       btn.text = uTime.getSecondsRounded(remaining, windowSecs)
     } else {
       progressBar.visibility = View.INVISIBLE
       btn.text = ""
       progressBar.progress = 100
-      if (!viewModel.storedDetections.values.isEmpty()) {
+      if (!VM.storedDetections.values.isEmpty()) {
         buttonUtils.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
       } else {   // no results, hide the timer
         buttonUtils.removeMaterialButtonIcon(btn)
@@ -87,7 +91,7 @@ class UiActivityCvLogger(
         progressBar.progress=progress
         progressBar.visibility = View.VISIBLE
         while(progress < 100) {
-          when (viewModel.circleTimerAnimation) {
+          when (VM.circleTimerAnimation) {
             TimerAnimation.reset -> { resetCircleAnimation(progressBar); break }
             TimerAnimation.running -> { progressBar.setProgress(++progress, true) }
             TimerAnimation.paused -> {  }
@@ -109,10 +113,10 @@ class UiActivityCvLogger(
   }
 
   fun bindCvStatsText() { // TODO:PM: NAV COMMONshared between activities?
-    binding.bottomUi.tvElapsedTime.text=viewModel.getElapsedSecondsStr()
-    binding.bottomUi.tvWindowObjectsUnique.text=viewModel.objectsWindowUnique.toString()
-    binding.bottomUi.tvCurrentWindow.text=viewModel.storedDetections.size.toString()
-    binding.bottomUi.tvTotalObjects.text=viewModel.objectsTotal.toString()
+    binding.bottomUi.tvElapsedTime.text=VM.getElapsedSecondsStr()
+    binding.bottomUi.tvWindowObjectsUnique.text=VM.objectsWindowUnique.toString()
+    binding.bottomUi.tvCurrentWindow.text=VM.storedDetections.size.toString()
+    binding.bottomUi.tvTotalObjects.text=VM.objectsTotal.toString()
   }
 
   fun hideClearObjectsButton() {
@@ -130,7 +134,7 @@ class UiActivityCvLogger(
    */
   fun setupClickCameraTimerCircleButton() {
     binding.bottomUi.buttonCameraTimer.setOnClickListener {
-      if (viewModel.objectsWindowUnique > 0 &&!clickedScannedObjects) {
+      if (VM.objectsWindowUnique > 0 &&!clickedScannedObjects) {
         clickedScannedObjects=true
         binding.bottomUi.buttonClearObjects.fadeIn()
         scope.launch {
@@ -157,7 +161,7 @@ class UiActivityCvLogger(
       } else {
         hideClearObjectsButton()
         binding.bottomUi.buttonCameraTimer.fadeOut()
-        viewModel.resetWindow()
+        VM.resetWindow()
         statusUpdater.hideStatus()
       }
     }
@@ -175,40 +179,71 @@ class UiActivityCvLogger(
     }
   }
 
+  fun handleStoreNoDetections() {
+    scope.launch {
+      statusUpdater.showWarningAutohide("Nothing on map to store.",
+        "TIP: long-click a location to attach objects.", 3000L)
+    }
+  }
+
+  /**
+   * It hides any active markers from the map, and if the detections are not empty:
+   * - it merges detections with the local cache
+   * - it updates the weighted heatmap
+   */
+  fun handleStoreDetections() {
+    // CLR:PM
+    // TODO hide tutorial once started....
+    // TODO LEFTHERE
+    // TODO:PM long click on existing point: update existing measurements..
+    // SHOW MSG: This will ignore the last  'window'
+    // MATERIALIZE, STORE, and EXIT
+    // TODO: STORE RESULTS..
+    // TODO put an upload button and enable it..
+    VM.status.value = Logging.finished
+
+    VM.hideActiveMarkers()
+
+    // an extra check in case of a forced storing (long click while running or paused mode)
+    if (VM.storedDetections.isEmpty()) {
+      val msg = "No detections on map."
+      LOG.W(TAG, msg)
+      scope.launch {
+        statusUpdater.showWarningAutohide(msg, "forced finish with long click..", 3000)
+      }
+      return
+    }
+
+    val cvMapH = VM.storeDetections(VM.floorH)
+    cvMapH?.getWeightedLocationList()?.let { overlays.refreshHeatmap(it) }
+  }
+
   fun setupClickedLoggingButton() {
     binding.bottomUi.buttonLogging.setOnClickListener {
-      LOG.D(TAG, "buttonStartLogging: ${viewModel.status}")
-      when (viewModel.status.value) {
+      LOG.D(TAG, "buttonStartLogging: ${VM.status}")
+      when (VM.status.value) {
         Logging.stoppedMustStore -> {
-
-          if (viewModel.storedDetections.isEmpty()) {
-            scope.launch {
-              statusUpdater.showWarningAutohide("Nothing on map to store.",
-                "TIP: long-click a location to attach objects.", 3000L)
-            }
-
+          if (VM.storedDetections.isEmpty()) {
+            handleStoreNoDetections()
           } else {
-            // TODO hide tutorial once started....
-
-            // TODO LEFTHERE
-            // TODO:PM long click on existing point: update existing measurements..
-            // SHOW MSG: This will ignore the last  'window'
-            // MATERIALIZE, STORE, and EXIT
-            // val msg = "TODO: store locally.."
-            viewModel.status.value = Logging.finished
-            // setUpBottomSheet()
-            // TODO: STORE RESULTS..
-            // TODO put an upload button and enable it..
-
-            viewModel.hideActiveMarkers()
-            // TODO:PM heatmap saved results
-
-            // statusUpdater.showWarning(msg)
+            handleStoreDetections()
           }
         }
         else ->
-          viewModel.toggleLogging()
+          VM.toggleLogging()
       }
+    }
+
+    binding.bottomUi.buttonLogging.setOnLongClickListener {
+      // val btnTimer = binding.bottomUi.buttonCameraTimer
+      // VM.longClickFinished = true // CLR:PM remove this variable
+      // TODO hide any stuff here...
+      VM.circleTimerAnimation = TimerAnimation.reset
+      binding.mapView.animateAlpha(1f, CvActivityBase.ANIMATION_DELAY)
+      // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
+
+      handleStoreDetections()
+      true
     }
   }
 

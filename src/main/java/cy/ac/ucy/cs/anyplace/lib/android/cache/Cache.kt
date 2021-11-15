@@ -6,7 +6,10 @@ import android.graphics.BitmapFactory
 import android.renderscript.ScriptGroup
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
 import cy.ac.ucy.cs.anyplace.lib.models.Space
@@ -24,15 +27,19 @@ class Cache(val ctx: Context) {
 
   companion object {
     // FILES
+    //// Space
     val JS_SPACE = "s.json"
     val JS_SPACE_LASTVAL = "s.lastval.json" // Cached settings, like last floor
     val JS_FLOORS = "f.json"
+    //// Space/Floor
     val PNG_FLOORPLAN = "f.png"
+    val JS_CVMAP = "cvmap.json"
   }
 
   // SPACES
   fun dirSpace(space: Space) : String {  return "${ctx.cacheDir}/${space.id}"  }
   fun dirSpace(floor: Floor) : String {  return "${ctx.cacheDir}/${floor.buid}" }
+  fun dirSpace(cvMap: CvMap) : String {  return "${ctx.cacheDir}/${cvMap.buid}" }
   fun jsonSpace(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE" }
   //// Last Values cache
   fun jsonSpaceLastValues(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_LASTVAL" }
@@ -53,7 +60,6 @@ class Cache(val ctx: Context) {
       false
     }
   }
-
   fun readSpaceLastValues(space: Space): LastValSpaces? {
     val filename = jsonSpaceLastValues(space)
     LOG.V4(TAG, "readSpaceLastValues: file: $filename")
@@ -73,10 +79,10 @@ class Cache(val ctx: Context) {
   //// FLOOR
   fun dirFloor(floor: Floor) : String { return "${dirSpace(floor)}/${floor.floorNumber}" }
   fun floorplan(floor: Floor) : String { return "${dirFloor(floor)}/$PNG_FLOORPLAN" }
+  fun dirFloor(cvMap: CvMap) : String { return "${dirSpace(cvMap)}/${cvMap.floorNumber}" }
 
   fun hasFloorplan(floor: Floor): Boolean { return File(floorplan(floor)).exists() }
-  fun clearFloorplan(floor: Floor) {  File(floorplan(floor)).delete()  }
-
+  fun deleteFloorplan(floor: Floor) {  File(floorplan(floor)).delete()  }
   // VERIFY:PM
   // 1. update the json and restore it later
   // 2. cache the image and check that it is cached.
@@ -98,9 +104,70 @@ class Cache(val ctx: Context) {
       false
     }
   }
-
-  fun loadFloorplan(floor: Floor): Bitmap? {
+  fun readFloorplan(floor: Floor): Bitmap? {
     return BitmapFactory.decodeFile(floorplan(floor))
+  }
+
+  //// CV Detection Maps
+  fun jsonFloorCvMap(floor: Floor) : String {  return "${dirFloor(floor)}/$JS_CVMAP" }
+  fun jsonFloorCvMap(cvMap: CvMap) : String {  return "${dirFloor(cvMap)}/$JS_CVMAP" }
+  fun hasJsonFloorCvMap(floor: Floor): Boolean { return File(jsonFloorCvMap(floor)).exists() }
+  fun hasJsonFloorCvMap(cvMap: CvMap): Boolean { return File(jsonFloorCvMap(cvMap)).exists() }
+  fun deleteFloorCvMap(cvMap: CvMap) {  File(jsonFloorCvMap(cvMap)).delete()  }
+
+  // /**
+  //  * Appends to the floor plan
+  //  */
+  // fun readAndMerge(cvMap: CvMap): Boolean {
+  //   val filename = jsonFloorCvMap(cvMap)
+  //   val oldCvMap  = readFloorCvMap(cvMap)
+  //   val combinedCvMap = CvMapHelper.merge(cvMap, oldCvMap)
+  //   return try {
+  //     File(dirSpace(cvMap)).mkdirs()
+  //     val fw= FileWriter(File(filename))
+  //     Gson().toJson(combinedCvMap, fw)
+  //     fw.close()
+  //     LOG.D2(TAG, "saveFloorCvMap: $combinedCvMap")
+  //     LOG.D2(TAG, "saveFloorCvMap: $filename")
+  //     true
+  //   } catch (e: Exception) {
+  //     LOG.E(TAG, "saveFloorCvMap: $filename: ${e.message}")
+  //     false
+  //   }
+  // }
+
+  /**
+   * This overrides any previous Cv Map,
+   * so any merging must be done earlier
+   *
+   */
+  fun saveFloorCvMap(cvMap: CvMap): Boolean {
+    val filename = jsonFloorCvMap(cvMap)
+    return try {
+      File(dirSpace(cvMap)).mkdirs()
+      val fw= FileWriter(File(filename))
+      Gson().toJson(cvMap, fw)
+      fw.close()
+      LOG.D2(TAG, "saveFloorCvMap: $cvMap")
+      LOG.D2(TAG, "saveFloorCvMap: $filename")
+      true
+    } catch (e: Exception) {
+      LOG.E(TAG, "saveFloorCvMap: $filename: ${e.message}")
+      false
+    }
+  }
+
+  fun readFloorCvMap(cvMap: CvMap) = _readFloorCvMap(jsonFloorCvMap(cvMap))
+  fun readFloorCvMap(floor: Floor) = _readFloorCvMap(jsonFloorCvMap(floor))
+  private fun _readFloorCvMap(filename: String): CvMap? {
+    LOG.V4(TAG, "readFloorCvMap: file: $filename")
+    try {
+      val json = File(filename).readText()
+      return Gson().fromJson(json, CvMap::class.java)
+    } catch (e: Exception) {
+      LOG.E(TAG, "readFloorCvMap: $filename: ${e.message}")
+    }
+    return null
   }
 
 }

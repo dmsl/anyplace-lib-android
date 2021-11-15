@@ -25,12 +25,18 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.RenderScriptImageTo
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
+import cy.ac.ucy.cs.anyplace.lib.models.Space
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +65,24 @@ abstract class CvViewModelBase constructor(
 
   // private val timeUtils by lazy { timeUtils }
   protected val assetReader by lazy { AssetReader(app.applicationContext) }
+
+  /** Selected [Space] */
+  var space: Space? = null
+  /** All floors of the selected [space]*/
+  var floors: Floors? = null
+  /** Selected floor/deck ([Floor]) of [space] */
+  var floor: Floor? = null
+  /** Selected [Space] ([SpaceHelper]) */
+  var spaceH: SpaceHelper? = null
+  /** floorsH of selected [spaceH] */
+  var floorsH: FloorsHelper? = null
+  /** Selected floorH of [floorsH] */
+  var floorH: FloorHelper? = null
+
+  /** LastVals: user last selections regarding a space.
+   * Currently not much use (for a field var), but if we have multiple
+   * lastVals for space then it would make sense. */
+  var lastValSpaces: LastValSpaces = LastValSpaces()
 
   /** Initialized onMapReady */
   var markers : Markers? = null
@@ -108,7 +132,7 @@ abstract class CvViewModelBase constructor(
     imageConverter = RenderScriptImageToBitmapConverter(context, image.image!!)
   }
 
-  private fun rotateImage(bitmap: Bitmap, degrees: Float): Bitmap {
+  protected fun rotateImage(bitmap: Bitmap, degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
   }

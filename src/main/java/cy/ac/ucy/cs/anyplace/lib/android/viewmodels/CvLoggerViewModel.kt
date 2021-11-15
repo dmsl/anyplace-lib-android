@@ -2,44 +2,21 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
-import android.content.res.AssetManager
 import android.graphics.Bitmap
-import android.graphics.Matrix
-import android.util.DisplayMetrics
-import android.util.Log
-import android.view.Surface
-import android.view.View
 import androidx.camera.core.ImageProxy
-import androidx.camera.view.PreviewView
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.DetectionProcessor
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.DetectorFactory
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.YoloV4Detector
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.ImageToBitmapConverter
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.RenderScriptImageToBitmapConverter
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvLoggerPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
-import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
-import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 
@@ -68,12 +45,9 @@ class CvLoggerViewModel @Inject constructor(
   retrofitHolder: RetrofitHolder):
   CvViewModelBase(application, repository, retrofitHolder) {
 
+  // var longClickFinished: Boolean = false
   var circleTimerAnimation: TimerAnimation = TimerAnimation.paused
   lateinit var prefs: CvLoggerPrefs
-
-  // private lateinit  var detectionProcessor: DetectionProcessor
-  // private lateinit var detector: YoloV4Detector
-  // private var imageConverter: ImageToBitmapConverter? = null // TODO:PM LATE INIT?
 
   val windowDetections: MutableLiveData<List<Detector.Detection>> = MutableLiveData()
   val status: MutableLiveData<Logging> = MutableLiveData(Logging.stopped)
@@ -90,45 +64,9 @@ class CvLoggerViewModel @Inject constructor(
   var currentTime : Long = 0
   var firstDetection = false
 
-  fun canStoreObjects() : Boolean {
+  fun canStoreDetections() : Boolean {
     return (status.value == Logging.started) || (status.value == Logging.stoppedMustStore)
   }
-
-  // CLR merge...
-  // fun setUpDetectionProcessor(
-  //   assetManager: AssetManager,
-  //   displayMetrics: DisplayMetrics,
-  //   trackingOverlayView: TrackingOverlayView,
-  //   previewView: PreviewView) = viewModelScope.launch(Dispatchers.Main) {
-  //   // use: prefs.expImagePadding.
-  //   // this setting is experimental anyway. It also has to be read after the preferences are initialized
-  //   val usePadding = false
-  //
-  //   detector = DetectorFactory.createDetector(
-  //     assetManager,
-  //     Constants.DETECTION_MODEL,
-  //     Constants.MINIMUM_SCORE,
-  //     usePadding) as YoloV4Detector
-  //
-  //   detectionProcessor = DetectionProcessor(
-  //     displayMetrics = displayMetrics,
-  //     detector = detector,
-  //     trackingOverlay = trackingOverlayView)
-  //
-  //   while (previewView.childCount == 0) { delay(200) }
-  //   val surfaceView: View = previewView.getChildAt(0)
-  //   while (surfaceView.height == 0) { delay(200) } // BUGFIX
-  //
-  //   detectionProcessor.initializeTrackingLayout(
-  //     previewWidth = surfaceView.width,
- //     previewHeight =  surfaceView.height,
-  //     cropSize = detector.getDetectionModel().inputSize,
-  //     rotation = CAMERA_ROTATION)
-  // }
-  //
-  // fun imageConvertedIsSetUpped(): Boolean { return imageConverter != null }
-  //
-
 
   @SuppressLint("UnsafeOptInUsageError")
   fun detectObjectsOnImage(image: ImageProxy): Long {
@@ -199,12 +137,6 @@ class CvLoggerViewModel @Inject constructor(
 
   private fun prefWindowMillis(): Int { return prefs.windowSeconds.toInt()*1000 }
 
-  private fun rotateImage(bitmap: Bitmap, degrees: Float): Bitmap {
-    val matrix = Matrix().apply { postRotate(degrees) }
-    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-  }
-
-
   fun finalizeLogging() {
     // TODO update must be avail now
     status.value = Logging.finished
@@ -260,8 +192,32 @@ class CvLoggerViewModel @Inject constructor(
    * Stores the detections on the [storedDetections],
    * a Hash Map of locations and object fingerprints
    */
-  fun storeDetections(latLong: LatLng) {
+  fun addDetections(latLong: LatLng) {
     objectsTotal+=objectsWindowUnique
     storedDetections[latLong] = windowDetections.value.orEmpty()
+  }
+
+  /**
+   * Generates a [cvMap] from the stored detections.
+   * Then it reads any local [CvMap] and merges with it.
+   * Finally the merged [CvMap] is written to cache (overriding previous one),
+   * and it is returned.
+   */
+  fun storeDetections(floorH: FloorHelper?) : CvMapHelper? {
+    if (floorH == null) {
+      LOG.E(TAG, "storeDetections: floorHelper is null.")
+      return null
+    }
+
+    val cvMap = CvMapHelper.generate(floorH, storedDetections)
+    val cvMapH = CvMapHelper(cvMap, floorH)
+    LOG.D(TAG, "storeDetections: has cache: ${cvMapH.hasCache()}") // CLR:PM
+    val merged = cvMapH.readLocalAndMerge()
+    val mergedH = CvMapHelper(merged, floorH)
+    mergedH.cache() // store merged CvMap to cache
+
+    LOG.D(TAG, "storeDetections: has cache: ${cvMapH.hasCache()}") // CLR:PM
+
+    return mergedH
   }
 }
