@@ -7,6 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 
@@ -60,7 +61,7 @@ class SpaceHelper(val ctx: Context,
   fun loadLastValues() : LastValSpaces {
     val lastVal = cache.readSpaceLastValues(space)
     return if (lastVal != null) {
-      LOG.D2("loadLastValues: ${prettyFloor}: ${lastVal.lastFloor}")
+      LOG.D2(TAG_METHOD, "${prettyFloor}: ${lastVal.lastFloor}")
       lastVal
     } else {
       LastValSpaces()

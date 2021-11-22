@@ -65,6 +65,7 @@ class StatusUpdater(
   }
 
   fun setStatus(text: String) {
+    hideStatus()
     tvStatus.text = text
     tvStatus.visibility = View.VISIBLE
 
@@ -109,12 +110,6 @@ class StatusUpdater(
 
   suspend fun showWarningAutohide(title: String, delay: Long = 500) {
     showMsgAutohide(Level.Warning, title, delay)
-    // tvTitle.setTextColor(ColorWarning(ctx))
-    // tvBg.setBackgroundColor(ColorWhite(ctx))
-    // showMessage(title)
-    // overlay.flashView(delay)
-    // delay(delay)
-    // hideStatus()
   }
 
   suspend fun showMsgAutohide(level: Level, title: String, delay: Long) {
@@ -131,13 +126,6 @@ class StatusUpdater(
 
   suspend fun showWarningAutohide(title: String, subtitle: String, delay: Long = 500) {
     showMsgAutohide(Level.Warning, title, subtitle, delay)
-    // tvTitle.setTextColor(ColorWarning(ctx))
-    // tvSubtitle.setTextColor(ColorWarning(ctx))
-    // tvBg.setBackgroundColor(ColorWhite(ctx))
-    // showMessage(title, subtitle)
-    // overlay.flashView(delay)
-    // delay(delay)
-    // hideStatus()
   }
 
   suspend fun showMsgAutohide(level:Level, title: String, subtitle: String, delay: Long) {
@@ -173,6 +161,5 @@ class StatusUpdater(
     tvMsgSubtitle.alpha=1f
     tvMsgSubtitle.visibility = View.VISIBLE
   }
-
 
 }

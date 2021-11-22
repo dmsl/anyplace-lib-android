@@ -15,6 +15,9 @@ import cy.ac.ucy.cs.anyplace.lib.R
 
 object buttonUtils {
 
+  /**
+   * Works for [MaterialButton]
+   */
   fun changeBackgroundButton(btn: Button, ctx: Context, colorId: Int) {
     val compatColor = ContextCompat.getColor(ctx, colorId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -22,6 +25,9 @@ object buttonUtils {
     }
   }
 
+  /**
+   * Works for [AppCompatButton]
+   */
   fun changeBackgroundButtonCompat(btn: Button, ctx: Context, colorId: Int) {
     val compatColor = ContextCompat.getColor(ctx, colorId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

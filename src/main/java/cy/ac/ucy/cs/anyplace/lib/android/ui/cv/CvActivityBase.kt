@@ -30,6 +30,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase.Companion.CAMERA_ROTATION
+import cy.ac.ucy.cs.anyplace.lib.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
 import cy.ac.ucy.cs.anyplace.lib.models.Space
@@ -111,18 +112,15 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
     imageAnalysis.setAnalyzer(
       ContextCompat.getMainExecutor(applicationContext),
-      this::analyzeImage
-    )
+      this::analyzeImage)
 
     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
     cameraProvider.bindToLifecycle(
       this as LifecycleOwner,
       cameraSelector,
       imageAnalysis,
-      preview
-    )
+      preview)
   }
-
 
   protected abstract fun analyzeImage(image: ImageProxy)
 
@@ -187,7 +185,6 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     lifecycleScope.launch {
       delay(500) // CHECK does this fix it?
       // delay(500) // CLR:PM
-
       // if (floorH == null) { // BUGFIX CLR:PM
       //   LOG.E("floorH is null")
       // }
@@ -222,7 +219,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
    * pass it here through [SafeArgs] or [Bundle]
    */
   fun loadSpaceAndFloorFromAssets() {
-    LOG.D2(TAG, "loadSpaceAndFloorFromAssets")
+    LOG.V2()
     VMb.space = assetReader.getSpace()
     VMb.floors = assetReader.getFloors()
 
@@ -234,12 +231,12 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     VMb.spaceH = SpaceHelper(applicationContext, VMb.repository, VMb.space!!)
     VMb.floorsH = FloorsHelper(VMb.floors!!, VMb.spaceH!!)
 
-    LOG.D("Selected ${VMb.spaceH?.prettyType}: ${VMb.space!!.name}")
-    LOG.D("$VMb.{spaceH!!.prettyType} has ${VMb.floors!!.floors.size} ${VMb.spaceH!!.prettyFloors}.")
+    LOG.D(TAG_METHOD, "Selected ${VMb.spaceH?.prettyType}: ${VMb.space!!.name}")
+    LOG.D(TAG_METHOD, "${VMb.spaceH!!.prettyType} has ${VMb.floors!!.floors.size} ${VMb.spaceH!!.prettyFloors}.")
 
     if (!VMb.floorsH!!.hasFloors()) {
       val msg = "Selected ${VMb.spaceH!!.prettyType} has no ${VMb.spaceH!!.prettyFloors}."
-      LOG.E(msg)
+      LOG.E(TAG_METHOD, msg)
       Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
       return
     }
@@ -250,14 +247,14 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     if (VMb.spaceH!!.hasLastValuesCached()) {
       val lv = VMb.spaceH!!.loadLastValues()
       if (lv.lastFloor!=null) {
-        LOG.D2(TAG, "LastVal: cached ${VMb.spaceH!!.prettyFloor}${lv.lastFloor}.")
+        LOG.D2(TAG_METHOD, " lastVal: cached ${VMb.spaceH!!.prettyFloor}${lv.lastFloor}.")
         floor = VMb.floorsH!!.getFloor(lv.lastFloor!!)
       }
       VMb.lastValSpaces = lv
     }
 
     if (floor == null)  {
-      LOG.D2(TAG, "Loading first ${VMb.spaceH!!.prettyFloor}.")
+      LOG.D2(TAG_METHOD, "Loading first ${VMb.spaceH!!.prettyFloor}.")
       floor = VMb.floorsH!!.getFirstFloor()
     }
     // END OF: select floor: last selection or first available
@@ -271,7 +268,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
       return
     }
 
-    LOG.D("Selected ${VMb.spaceH?.prettyFloor}: ${floor?.floorName}")
+    LOG.D(TAG_METHOD, "Selected ${VMb.spaceH?.prettyFloor}: ${floor?.floorName}")
 
     VMb.floorH = FloorHelper(floor, VMb.spaceH!!)
     updateAndCacheLastFloor(floor) // TODO:PM ONLY when changing floor..

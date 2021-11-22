@@ -41,7 +41,12 @@ class FloorHelper(val floor: Floor,
 
   fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(floor) }
   fun loadFromCache() : Bitmap? { return cache.readFloorplan(floor) }
-  fun clearCache() { cache.deleteFloorplan(floor) }
+  fun clearCacheFloorplan() { cache.deleteFloorplan(floor) }
+  fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
+  fun clearCache() {
+    clearCacheFloorplan()
+    clearCacheCvMap()
+  }
   fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(floor, bitmap) } }
   fun hasFloorCvMap() = cache.hasJsonFloorCvMap(floor)
   fun loadCvMapFromCache() = cache.readFloorCvMap(floor)

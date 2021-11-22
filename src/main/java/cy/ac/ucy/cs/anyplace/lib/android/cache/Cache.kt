@@ -113,7 +113,9 @@ class Cache(val ctx: Context) {
   fun jsonFloorCvMap(cvMap: CvMap) : String {  return "${dirFloor(cvMap)}/$JS_CVMAP" }
   fun hasJsonFloorCvMap(floor: Floor): Boolean { return File(jsonFloorCvMap(floor)).exists() }
   fun hasJsonFloorCvMap(cvMap: CvMap): Boolean { return File(jsonFloorCvMap(cvMap)).exists() }
-  fun deleteFloorCvMap(cvMap: CvMap) {  File(jsonFloorCvMap(cvMap)).delete()  }
+  fun deleteFloorCvMap(cvMap: CvMap) {  _deleteFloorCvMap(jsonFloorCvMap(cvMap)) }
+  fun deleteFloorCvMap(floor: Floor) {  _deleteFloorCvMap(jsonFloorCvMap(floor)) }
+  private fun _deleteFloorCvMap(filename: String) {  File(filename).delete()  }
 
   // /**
   //  * Appends to the floor plan
@@ -160,12 +162,13 @@ class Cache(val ctx: Context) {
   fun readFloorCvMap(cvMap: CvMap) = _readFloorCvMap(jsonFloorCvMap(cvMap))
   fun readFloorCvMap(floor: Floor) = _readFloorCvMap(jsonFloorCvMap(floor))
   private fun _readFloorCvMap(filename: String): CvMap? {
-    LOG.V4(TAG, "readFloorCvMap: file: $filename")
+    LOG.V4(TAG, "_readFloorCvMap: file: $filename")
     try {
-      val json = File(filename).readText()
-      return Gson().fromJson(json, CvMap::class.java)
+      val str = File(filename).readText()
+      return Gson().fromJson(str, CvMap::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "readFloorCvMap: $filename: ${e.message}")
+      LOG.E(TAG, "_readFloorCvMap: $filename: ${e.message}")
+      // TODO deleting local cache...
     }
     return null
   }

@@ -23,7 +23,7 @@ fun MarkerOptions.iconFromVector(context: Context, @DrawableRes vectorDrawable: 
   return this
 }
 
-fun MarkerOptions.iconFromShape(ctx: Context, @DrawableRes id: Int): MarkerOptions {
+fun MarkerOptions.iconFromShape(ctx: Context, @DrawableRes id: Int, sizeInDp: Int = 18): MarkerOptions {
   this.icon(ContextCompat.getDrawable(ctx, id)?.run {
     val iconGen = IconGenerator(ctx)
     val shapeSize = ctx.resources.getDimensionPixelSize(R.dimen.map_dot_marker_size)

@@ -201,10 +201,6 @@
   <string name="tutorial_cvscan_start_details">
 "   - identifies objects for some seconds.
    - these objects belong to the same \"scan window\".
-   - a countdown is shown at bottom-right.
-   - you may pause/resume while in a scan window.
-   - long-clicking discards the ongoing window,
-     and stores any map-assigned objects."
   </string>
   <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
   <string name="tutorial_cvscan_store_details">
@@ -217,5 +213,6 @@
 "   - the last scanned window will be discarded.
    - the \"Object Map\" will be stored locally.
   </string>
+  <string name="clear">Clear</string>
 
 </resources>

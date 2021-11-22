@@ -31,11 +31,13 @@ class CONST {
 
     //// CV LOGGER
     const val PREF_CVLOG = "pref_cvlog"
-    const val PREF_CVLOG_WINDOW_SECONDS = "pref_cvlog_window_seconds"
+    const val PREF_CVLOG_WINDOW_LOGGING_SECONDS = "pref_cvlog_window_logging_seconds"
+    const val PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "pref_cvlog_window_localization_seconds"
     const val PREF_CVLOG_DEV_MODE = "pref_cvlog_dev_mode"
     const val PREF_CVLOG_EPX_IMG_PADDING = "pref_cvlog_exp_img_padding"
 
-    const val DEFAULT_PREF_CVLOG_WINDOW_SECONDS = "5"
+    const val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
+    const val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
     const val DEFAULT_PREF_CVLOG_DEV_MODE = false
     const val DEFAULT_PREF_CVLOG_EPX_IMG_PADDING = false
 

@@ -21,17 +21,18 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 
 enum class Logging {
-  started,
+  running,
   stopped,
   stoppedMustStore,
   stoppedNoDetections,
   finished,
+  demoNavigation, // DemoLocalizatoin
 }
 
 enum class TimerAnimation {
   running,
   paused,
-  reset
+  reset,
 }
 
 /**
@@ -49,23 +50,26 @@ class CvLoggerViewModel @Inject constructor(
   var circleTimerAnimation: TimerAnimation = TimerAnimation.paused
   lateinit var prefs: CvLoggerPrefs
 
-  val windowDetections: MutableLiveData<List<Detector.Detection>> = MutableLiveData()
-  val status: MutableLiveData<Logging> = MutableLiveData(Logging.stopped)
+  val logging: MutableLiveData<Logging> = MutableLiveData(Logging.stopped)
+  /** Detections of the current logger scan-window */
+  val detectionsLogging: MutableLiveData<List<Detector.Detection>> = MutableLiveData()
+  /** Detections assigned to map locations */
   var storedDetections: MutableMap<LatLng, List<Detector.Detection>> = mutableMapOf()
   val objectsWindowAll: MutableLiveData<Int> = MutableLiveData(0)
   /** for stats, and for enabling scanned objects clear (on current window) */
   var objectsWindowUnique = 0
   var objectsTotal = 0
+  /** whether there was a pause in the current scanning window */
   var previouslyPaused = false
+  /** no logging operations performed before */
+  var initialStart = true
 
-  var windowStart : Long = 0
   /** stores the elapsed time on stops/pauses */
   var windowElapsedPause : Long = 0
-  var currentTime : Long = 0
   var firstDetection = false
 
   fun canStoreDetections() : Boolean {
-    return (status.value == Logging.started) || (status.value == Logging.stoppedMustStore)
+    return (logging.value == Logging.running) || (logging.value == Logging.stoppedMustStore)
   }
 
   @SuppressLint("UnsafeOptInUsageError")
@@ -77,88 +81,103 @@ class CvLoggerViewModel @Inject constructor(
         bitmap = rotateImage(bitmap, 90.0f)
       }
     }
-    if (status.value == Logging.started) {
-      LOG.V4(TAG, "Conversion time : $conversionTime ms")
-      val detectionTime: Long = detectionProcessor.processImage(bitmap)
-      LOG.V4(TAG, "Detection time : $detectionTime ms")
 
-      val processingTime = conversionTime + detectionTime
-      LOG.V3(TAG, "Analysis time : $processingTime ms")
+    when (logging.value) {
+      Logging.running -> {
+        val detectionTime: Long = detectionProcessor.processImage(bitmap)
+        val processingTime = conversionTime + detectionTime
+        val detections = detectionProcessor.frameDetections
+        LOG.V4(TAG, "Conversion time : $conversionTime ms")
+        LOG.V4(TAG, "Detection time : $detectionTime ms")
+        LOG.V3(TAG, "Analysis time : $processingTime ms")
+        LOG.V3(TAG, "Detected: ${detections.size}")
 
-      val detections = detectionProcessor.frameDetections
-      // LOG.W(TAG, "Detected: ${detections.size}") // CLR
-      updateDetections(detections)
+        updateDetectionsLogging(detections)
+        return detectionTime
+      }
+      Logging.demoNavigation -> {
+        val detectionTime: Long = detectionProcessor.processImage(bitmap)
+        val detections = detectionProcessor.frameDetections
+        LOG.V4(TAG, "Detection time : $detectionTime ms")
 
-      return detectionTime
-    } else {  // Clear objects
-      detectionProcessor.clearObjects()
+        updateDetectionsLocalization(detections)
+        return detectionTime
+      }
+      else -> {  // Clear objects
+        detectionProcessor.clearObjects()
+      }
     }
     return 0
   }
 
-  private fun updateDetections(detections: List<Detector.Detection>) {
+  /**
+   * Update detections that concern only the logging phase.
+   */
+  private fun updateDetectionsLogging(detections: List<Detector.Detection>) {
     currentTime = System.currentTimeMillis()
-    LOG.V5(TAG, "updateDetections: ${status.value}")
+    LOG.V5(TAG, "updateDetectionsLogging: ${logging.value}")
 
-    val appendedDetections = windowDetections.value.orEmpty() + detections
+    val appendedDetections = detectionsLogging.value.orEmpty() + detections
     objectsWindowAll.postValue(appendedDetections.size)
     when {
       firstDetection -> {
-        LOG.D("updateDetections: Initing window: $currentTime")
+        LOG.D3("updateDetectionsLogging: Initing window: $currentTime")
         windowStart = currentTime
         firstDetection=false
-        this.windowDetections.postValue(appendedDetections)
+        this.detectionsLogging.postValue(appendedDetections)
       }
-      status.value == Logging.stoppedMustStore -> {
+      logging.value == Logging.stoppedMustStore -> {
         windowStart = currentTime
-        LOG.E("updateDetections: new window: $currentTime")
+        LOG.D("updateDetectionsLogging: new window: $currentTime")
       }
 
-      currentTime-windowStart > prefWindowMillis() -> { // Window finished
+      currentTime-windowStart > prefWindowLoggingMillis() -> { // Window finished
         windowElapsedPause = 0 // resetting any pause time
         previouslyPaused=false
         if (appendedDetections.isEmpty()) {
-          status.postValue(Logging.stoppedNoDetections)
+          logging.postValue(Logging.stoppedNoDetections)
         } else {
-          status.postValue(Logging.stoppedMustStore)
-          LOG.D3("updateDetections: status: $status objects: ${appendedDetections.size}")
+          logging.postValue(Logging.stoppedMustStore)
+          LOG.D3("updateDetectionsLogging: status: $logging objects: ${appendedDetections.size}")
           val detectionsDedup = YoloV4Detector.NMS(appendedDetections, detector.labels, 0.01f)
-          windowDetections.postValue(detectionsDedup)
-          LOG.D3("updateDetections: status: $status objects: ${detectionsDedup.size} (dedup)")
+          detectionsLogging.postValue(detectionsDedup)
+          LOG.D3("updateDetectionsLogging: status: $logging objects: ${detectionsDedup.size} (dedup)")
           objectsWindowUnique=detectionsDedup.size
           objectsTotal+=objectsWindowUnique
         }
       }
       else -> { // Within a window
-        this.windowDetections.postValue(appendedDetections)
+        this.detectionsLogging.postValue(appendedDetections)
       }
     }
   }
 
-  private fun prefWindowMillis(): Int { return prefs.windowSeconds.toInt()*1000 }
+  fun prefWindowLoggingMillis(): Int { return prefs.windowLoggingSeconds.toInt()*1000 }
+  override fun prefWindowLocalizationMillis(): Int { return prefs.windowLocalizationSeconds.toInt()*1000 }
 
   fun finalizeLogging() {
     // TODO update must be avail now
-    status.value = Logging.finished
+    logging.value = Logging.finished
   }
 
-  /** Toggle [status] between stopped (or notStarted), and started.
+  /** Toggle [logging] between stopped (or notStarted), and started.
    *  There will be no effect when in stoppedMustStore mode.
    *
    *  In that case it will wait for the user to store the logging data.
    */
   fun toggleLogging() {
-    when (status.value) {
+    initialStart = false
+    when (logging.value) {
       Logging.finished-> {}
       Logging.stoppedNoDetections,
       Logging.stopped -> {
-        status.value = Logging.started
+        logging.value = Logging.running
         val now = System.currentTimeMillis()
         windowStart=now-windowElapsedPause
       }
-      Logging.started-> {
+      Logging.running-> {
         previouslyPaused = true
-        status.value = Logging.stopped
+        logging.value = Logging.stopped
         LOG.D("toggleLogging: paused")
 
         // pause timer:
@@ -166,7 +185,7 @@ class CvLoggerViewModel @Inject constructor(
         windowElapsedPause = now-windowStart
       }
       else ->  {
-        LOG.W(TAG, "toggleLoggingStatus: Ignoring: ${status.value}")
+        LOG.W(TAG, "toggleLoggingStatus: Ignoring: ${logging.value}")
       }
     }
   }
@@ -176,15 +195,15 @@ class CvLoggerViewModel @Inject constructor(
 
   fun resetWindow() {
     objectsWindowUnique=0
-    windowDetections.value = emptyList()
-    status.value= Logging.stopped// CHECK:PM this was stopped. starting directly
+    detectionsLogging.value = emptyList()
+    logging.value= Logging.stopped// CHECK:PM this was stopped. starting directly
     // status.value= Logging.started // CHECK:PM this was stopped. starting directly
   }
 
   fun startNewWindow() {
     objectsWindowUnique=0
-    windowDetections.value = emptyList()
-    status.value= Logging.stopped
+    detectionsLogging.value = emptyList()
+    logging.value= Logging.stopped
     toggleLogging()
   }
 
@@ -194,30 +213,32 @@ class CvLoggerViewModel @Inject constructor(
    */
   fun addDetections(latLong: LatLng) {
     objectsTotal+=objectsWindowUnique
-    storedDetections[latLong] = windowDetections.value.orEmpty()
+    storedDetections[latLong] = detectionsLogging.value.orEmpty()
   }
 
   /**
    * Generates a [cvMap] from the stored detections.
    * Then it reads any local [CvMap] and merges with it.
    * Finally the merged [CvMap] is written to cache (overriding previous one),
-   * and it is returned.
+   * and stored in [CvViewModelBase].
    */
-  fun storeDetections(floorH: FloorHelper?) : CvMapHelper? {
-    if (floorH == null) {
+  fun storeDetections(FH: FloorHelper?) {
+    if (FH == null) {
       LOG.E(TAG, "storeDetections: floorHelper is null.")
-      return null
+      return
     }
 
-    val cvMap = CvMapHelper.generate(floorH, storedDetections)
-    val cvMapH = CvMapHelper(cvMap, floorH)
-    LOG.D(TAG, "storeDetections: has cache: ${cvMapH.hasCache()}") // CLR:PM
-    val merged = cvMapH.readLocalAndMerge()
-    val mergedH = CvMapHelper(merged, floorH)
-    mergedH.cache() // store merged CvMap to cache
+    // TODO:PM UPDATE radiomap TODO:TRIAL
+    val curMap = CvMapHelper.generate(FH, storedDetections)
+    val curMapH = CvMapHelper(curMap, detector.labels, FH)
+    LOG.D(TAG, "storeDetections: has cache: ${curMapH.hasCache()}") // CLR:PM
+    val merged = curMapH.readLocalAndMerge()
+    val mergedH = CvMapHelper(merged, detector.labels, FH)
+    mergedH.storeToCache()
 
-    LOG.D(TAG, "storeDetections: has cache: ${cvMapH.hasCache()}") // CLR:PM
+    LOG.D(TAG, "storeDetections: has cache: ${cvMapH?.hasCache()}") // CLR:PM
 
-    return mergedH
+    mergedH.generateCvMapFast()
+    cvMapH = mergedH
   }
 }

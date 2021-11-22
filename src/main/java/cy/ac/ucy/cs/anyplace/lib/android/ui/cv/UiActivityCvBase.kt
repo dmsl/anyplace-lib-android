@@ -31,34 +31,17 @@ open class UiActivityCvBase(
   // private val viewModel: CvLoggerViewModel,
   // private val binding: ActivityCvLoggerBinding,
   protected val statusUpdater: StatusUpdater,
-  protected val overlays: Overlays,
-) {
-
-  private fun getCvHeatmapGradient() : Gradient {
-    val colors = intArrayOf(
-      // Color.rgb(127, 114, 170), // light purple
-      // Color.rgb(6, 135, 142), // green/blue0
-      // Color.rgb(255, 203, 91), // yellow
-      Color.rgb(255, 255, 255), // white
-      Color.rgb(7, 145, 84), // green/blue0
-    )
-    val startPoints = floatArrayOf(0.5f, 1f)
-    // val startPoints = floatArrayOf(0.2f, 0.4f, 1f)
-    return Gradient(colors, startPoints)
-  }
+  protected val overlays: Overlays) {
 
 
-  fun renderHeatmap(gmap: GoogleMap, floorH: FloorHelper?, cvMap: CvMap?) {
-    if (floorH == null || cvMap == null) {
+  fun renderHeatmap(gmap: GoogleMap, cvMapH: CvMapHelper?) {
+    if (cvMapH == null) {
       LOG.W(TAG, "renderHeatmap: floorHelper or cvMap are null.")
       return
     }
-    val cvMapH = CvMapHelper(cvMap, floorH)
-    LOG.D(TAG, "renderHeatmap")
-    LOG.E(TAG, "CV MAP:")
-    LOG.E(TAG, cvMap.toString())
 
-    overlays.addHeatmap(gmap, cvMapH.getWeightedLocationList(), getCvHeatmapGradient())
+    LOG.D2(TAG, "renderHeatmap: locations ${cvMapH.cvMap.locations.size}")
+    overlays.addHeatmap(gmap, cvMapH.getWeightedLocationList())
   }
 
 }

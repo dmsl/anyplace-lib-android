@@ -8,6 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.CONFIG.Companion.OU
  * Enum which describes tflite models used by Detector.
  */
 enum class DetectionModel(
+        val modelName: String,
     val modelFilename: String,
     val labelFilePath: String,
     val inputSize: Int,
@@ -15,25 +16,27 @@ enum class DetectionModel(
     val isQuantized: Boolean
 ) {
     COCO(
+            "coco",
         "models/coco/model.tflite",
         "file:///android_asset/models/coco/obj.names",
         INPUT_SIZE,
         OUTPUT_WIDTH_TINY,
         false
-    )
-    ,
+    ),
+  VESSEL(
+          "vessel",
+          "models/vessel/model.tflite",
+          "file:///android_asset/models/vessel/obj.names",
+          INPUT_SIZE,
+          OUTPUT_WIDTH_TINY,
+          false
+  ),
     CAMPUS_UCY(
+            "campus-ucy",
     "models/home-pm-v2-60000+Final/model.tflite",
     "file:///android_asset/models/campus-ucy-v1-50000+final/obj.names",
         INPUT_SIZE,
         OUTPUT_WIDTH_TINY,
     false
-    ),
-    HOME_PM2(
-        "models/home-pm-v2-60000+Final/model.tflite",
-        "file:///android_asset/models/home-pm-v2-60000+Final/obj.names",
-        INPUT_SIZE,
-        OUTPUT_WIDTH_TINY,
-        false
     )
 }

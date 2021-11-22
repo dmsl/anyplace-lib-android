@@ -4,17 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.camera.core.ImageProxy
+import com.google.android.gms.maps.MapView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.animateAlpha
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeOut
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.UiActivityCvBase
@@ -22,13 +19,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvLoggerViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Localization
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
+import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 /**
  * Encapsulating UI operations for the [CvLoggerActivity]
@@ -46,25 +44,29 @@ class UiActivityCvLogger(
   private var clearConfirm=false
   private var clickedScannedObjects=false
 
+  private var longClickClearCvMap=false
+
+
   /**
    * Observes [VM.windowDetections] changes and updates
    * [binding.bottomUi.buttonCameraWindow] accordingly.
    */
   fun updateCameraTimerButton() {
     val elapsed = VM.getElapsedSeconds()
-    val remaining = (VM.prefs.windowSeconds.toInt()) - elapsed
+    val remaining = (VM.prefs.windowLoggingSeconds.toInt()) - elapsed
     val btn = binding.bottomUi.buttonCameraTimer
     val progressBar = binding.bottomUi.progressBarTimer
 
     if (remaining>0) {
-      val windowSecs = VM.prefs.windowSeconds.toInt()
+      val windowSecs = VM.prefs.windowLoggingSeconds.toInt()
       setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
       btn.text = uTime.getSecondsRounded(remaining, windowSecs)
     } else {
       progressBar.visibility = View.INVISIBLE
       btn.text = ""
       progressBar.progress = 100
-      if (!VM.storedDetections.values.isEmpty()) {
+
+      if (!VM.detectionsLogging.value.isNullOrEmpty()) {
         buttonUtils.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
       } else {   // no results, hide the timer
         buttonUtils.removeMaterialButtonIcon(btn)
@@ -174,7 +176,9 @@ class UiActivityCvLogger(
     //     SettingsDialog.SHOW(supportFragmentManager, SettingsDialog.FROM_CVLOGGER)
     //   }
     binding.buttonSettings.setOnLongClickListener {
-      Toast.makeText(ctx,"App Version: ${appInfo.version}", Toast.LENGTH_SHORT).show()
+      scope.launch {
+        statusUpdater.showInfoAutohide("App Version: ${appInfo.version}", 1000L)
+      }
       true
     }
   }
@@ -192,15 +196,10 @@ class UiActivityCvLogger(
    * - it updates the weighted heatmap
    */
   fun handleStoreDetections() {
-    // CLR:PM
-    // TODO hide tutorial once started....
-    // TODO LEFTHERE
-    // TODO:PM long click on existing point: update existing measurements..
-    // SHOW MSG: This will ignore the last  'window'
     // MATERIALIZE, STORE, and EXIT
     // TODO: STORE RESULTS..
     // TODO put an upload button and enable it..
-    VM.status.value = Logging.finished
+    VM.logging.value = Logging.finished
 
     VM.hideActiveMarkers()
 
@@ -214,14 +213,14 @@ class UiActivityCvLogger(
       return
     }
 
-    val cvMapH = VM.storeDetections(VM.floorH)
-    cvMapH?.getWeightedLocationList()?.let { overlays.refreshHeatmap(it) }
+    VM.storeDetections(VM.floorH)
+    VM.cvMapH?.let { overlays.refreshHeatmap(it.getWeightedLocationList()) }
   }
 
   fun setupClickedLoggingButton() {
     binding.bottomUi.buttonLogging.setOnClickListener {
-      LOG.D(TAG, "buttonStartLogging: ${VM.status}")
-      when (VM.status.value) {
+      LOG.D(TAG, "buttonStartLogging: ${VM.logging}")
+      when (VM.logging.value) {
         Logging.stoppedMustStore -> {
           if (VM.storedDetections.isEmpty()) {
             handleStoreNoDetections()
@@ -243,6 +242,63 @@ class UiActivityCvLogger(
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
       handleStoreDetections()
+      true
+    }
+  }
+
+  fun startLocalization(mapView: MapView) {
+    val btnDemoNav = binding.bottomUi.buttonDemoNavigation
+    btnDemoNav.isEnabled = false
+    VM.currentTime = System.currentTimeMillis()
+    VM.windowStart = VM.currentTime
+    VM.localization.value = Localization.running
+    statusUpdater.setStatus("scanning..")
+    btnDemoNav.visibility = View.VISIBLE
+    buttonUtils.changeBackgroundButton(btnDemoNav, ctx, R.color.colorPrimary)
+    mapView.alpha = 0.90f // TODO:PM no alpha..
+  }
+
+  fun endLocalization(mapView: MapView) {
+    LOG.D2()
+    val btnDemoNav = binding.bottomUi.buttonDemoNavigation
+    statusUpdater.clearStatus()
+    buttonUtils.changeBackgroundButton(btnDemoNav, ctx, R.color.darkGray)
+    btnDemoNav.isEnabled = true
+    mapView.alpha = 1f
+    VM.localization.tryEmit(Localization.stopped)
+  }
+
+  fun setupClickDemoNavigation(mapView: MapView) {
+    binding.bottomUi.buttonDemoNavigation.setOnClickListener {
+      when (VM.logging.value) {
+        Logging.stopped,
+        Logging.stoppedMustStore -> {  // enter demo-nav mode
+          VM.logging.postValue(Logging.demoNavigation)
+        }
+        // Logging.demoNavigation-> { // exit demo-nav mode:
+        //   // stopLocalization(mapView)
+        //   // VM.logging.postValue(Logging.stopped)
+        // }
+        else -> { // ignore click
+          LOG.D(TAG_METHOD, "Ignoring Demo-Navigation. status: ${VM.logging}")
+        }
+      }
+    }
+
+    // CLR:PM TRIAL remove this functionality..
+    binding.bottomUi.buttonDemoNavigation.setOnLongClickListener {
+      if (!longClickClearCvMap) {
+        scope.launch {
+          statusUpdater.showWarningAutohide("Delete CvMap?", "long-click again", 2000L)
+        }
+        longClickClearCvMap = true
+      } else {
+        scope.launch {
+          statusUpdater.showInfoAutohide("Deleted CvMap", 2000L)
+        }
+        VM.cvMapH?.clearCache()
+      }
+
       true
     }
   }
@@ -277,9 +333,8 @@ class UiActivityCvLogger(
 
     val gestureLayout = binding.bottomUi.gestureLayout
     gestureLayout.viewTreeObserver.addOnGlobalLayoutListener {
-      val height: Int = gestureLayout.measuredHeight
-      sheetBehavior.peekHeight = (height/2f).roundToInt()+50
-      LOG.V5(TAG, "peek height: ${sheetBehavior.peekHeight}")
+      sheetBehavior.peekHeight = binding.bottomUi.bottomSheetArrow.bottom + 60
+      LOG.V4(TAG, "peek height: ${sheetBehavior.peekHeight}")
     }
 
     @SuppressLint("SetTextI18n")

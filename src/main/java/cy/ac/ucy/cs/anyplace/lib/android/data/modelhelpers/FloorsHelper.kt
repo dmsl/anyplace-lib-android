@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
 
@@ -23,11 +24,20 @@ class FloorsHelper(val floors: Floors,
     return null
   }
 
-  fun clearCachedFloorplans() {
+  /** Deletes all cached floorplans */
+  fun clearCacheFloorplans() = clearCache("floorplans") { clearCacheFloorplan() }
+
+  /** Deletes all cached [CvMap]s */
+  fun clearCacheCvMaps() = clearCache("CvMaps") { clearCacheCvMap() }
+
+  /** Deletes all the cache related to a floor */
+  fun clearCaches() = clearCache("all") { clearCache() }
+
+  private fun clearCache(msg: String, method: FloorHelper.() -> Unit) {
     floors.floors.forEach { floor ->
       val FH = FloorHelper(floor, spaceH)
-      FH.clearCache()
-      LOG.D("Deleted cache: ${FH.prettyFloorplanNumber()}.")
+      FH.method()
+      LOG.D5(TAG, "clearCache:$msg: ${FH.prettyFloorplanNumber()}.")
     }
   }
 
@@ -51,7 +61,7 @@ class FloorsHelper(val floors: Floors,
     }
 
     if (alreadyCached.isNotEmpty()) {
-      LOG.D2("Already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
+      LOG.D2(TAG_METHOD, "already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
     }
   }
 }

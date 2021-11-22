@@ -5,6 +5,9 @@ This library is used to create the [Demo Client](./demo/)
 <img width="300"
     src="https://developer.android.com/topic/libraries/architecture/images/final-architecture.png" />
 
+### Logcat
+See [LOGCAT.md](./LOGCAT.md)
+
 --- 
 
 # Structure:
@@ -23,4 +26,3 @@ In debug mode execute:
 gradle signingReport
 
 then copy SHA-1 hash and paste into the developer console.
-

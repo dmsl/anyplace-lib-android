@@ -12,18 +12,23 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CameraPosition
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.removeMaterialButtonIcon
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvLoggerViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Localization
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.TimerAnimation
+import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
+import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,9 +41,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   private lateinit var UI: UiActivityCvLogger
 
   // FRAGMENTS
-
   /** kept here (not in viewModel) as we want this to be reset on lifecycle updates */
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     binding = ActivityCvLoggerBinding.inflate(layoutInflater)
@@ -47,20 +50,21 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     VMb = VM
 
     statusUpdater = StatusUpdater(
-      binding.tvStatusTitle,
-      binding.tvStatusSubtitle,
-      binding.viewStatusBackground,
-      binding.viewWarning,
-      applicationContext
+            binding.tvStatusSticky,
+            binding.tvMsgTitle,
+            binding.tvMsgSubtitle,
+            binding.viewStatusBackground,
+            binding.viewWarning,
+            applicationContext
     )
 
     UI = UiActivityCvLogger(
-      applicationContext,
-      lifecycleScope,
-      statusUpdater,
-      overlays,
-      VM,
-      binding,
+            applicationContext,
+            lifecycleScope,
+            statusUpdater,
+            overlays,
+            VM,
+            binding,
     )
 
     setupComputerVision()
@@ -95,6 +99,11 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     super.setupComputerVision(binding.tovCamera, binding.pvCamera)
     observeObjectDetections()
     observeLoggingStatus()
+
+    // there is demo localization in Logger too,
+    // to validate findings according to the latest CvMap
+    collectLocalizationStatus()
+    collectLocation()
   }
 
   /**
@@ -108,9 +117,47 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   }
 
   private fun observeLoggingStatus() {
-    VM.status.observeForever { status ->
-      LOG.D("logging: $status")
-      updatedLoggingUI(status)
+    VM.logging.observeForever { status ->
+      LOG.D(TAG_METHOD, "logging: $status")
+      updateLoggingUi(status)
+    }
+  }
+
+  private fun collectLocation() {
+    lifecycleScope.launch{
+      VM.location.collect { result ->
+        when (result) {
+          is LocalizationResult.Unset -> { }
+          is LocalizationResult.Error -> {
+            val msg = result.message.toString()
+            val details = result.details
+            if (details != null) {
+              statusUpdater.showErrorAutohide(msg, details, 4000L)
+            } else {
+              statusUpdater.showErrorAutohide(msg, 4000L)
+            }
+          }
+          is LocalizationResult.Success -> {
+            result.coord?.let { VM.setUserLocation(it) }
+            statusUpdater.showInfoAutohide("Found loc","XY: ${result.details}.", 3000L)
+          }
+        }
+      }
+    }
+  }
+
+  private fun collectLocalizationStatus() {
+      lifecycleScope.launch{
+      VM.localization.collect { status ->
+        LOG.W(TAG_METHOD, "status: $status")
+        when(status) {
+          Localization.stopped -> {
+            UI.endLocalization(binding.mapView)
+            VM.logging.postValue(Logging.stopped)
+          }
+          else ->  {}
+        }
+      }
     }
   }
 
@@ -120,33 +167,41 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     UI.setupClickCameraTimerCircleButton()
     UI.setupClickClearObjectsPopup()
     UI.setupClickSettingsMenuButton()
+    UI.setupClickDemoNavigation(binding.mapView)
   }
 
   @SuppressLint("SetTextI18n")
-  private fun updatedLoggingUI(status: Logging) {
-    LOG.D4("updateScanningButton: $status")
+  private fun updateLoggingUi(status: Logging) {
+    LOG.D4(TAG_METHOD, "status: $status")
     val btnLogging = binding.bottomUi.buttonLogging
+    val btnDemoNav= binding.bottomUi.buttonDemoNavigation
     val btnTimer = binding.bottomUi.buttonCameraTimer
     binding.bottomUi.groupTutorial.visibility = View.GONE
+    btnLogging.visibility = View.VISIBLE // hidden only by demo-nav
 
     when (status) {
+      Logging.demoNavigation -> {
+        btnLogging.visibility = View.INVISIBLE
+        VM.circleTimerAnimation = TimerAnimation.reset
+        UI.startLocalization(binding.mapView)
+      }
       Logging.finished -> { // finished a scanning
+        btnDemoNav.visibility = View.GONE
         btnTimer.fadeOut()
-        btnLogging.text = "TODO: store local"
+        btnLogging.text = "Stored"
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.green)
-        // TODO APPEND
+        // TODO:TRIAL LEFTHERE: new logic?
+        // TODO:TRIAL onMapLongClick store on long-click
         // VM.circleTimerAnimation = TimerAnimation.reset
-
         // DetectionMapHelper.generate(storedDetections)
-
         // sleep a while.....
         // TODO show the below menu..
         // TODO store..
         // TODO show upload section..(on the below menu, with UPLOAD button)..
-        // TODO:PM heatmap?
         // TODO set to stopped again
       }
-      Logging.started -> { // just started scanning
+      Logging.running -> { // just started scanning
+        btnDemoNav.fadeOut()
         VM.circleTimerAnimation = TimerAnimation.running
         btnLogging.text = "PAUSE"
         removeMaterialButtonIcon(btnTimer)
@@ -156,6 +211,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         binding.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
       Logging.stopped -> { // stopped after a pause or a store: can start logging again
+        btnDemoNav.fadeIn()
         VM.circleTimerAnimation = TimerAnimation.paused
         if (VM.previouslyPaused) {
           btnLogging.text = "RESUME"
@@ -168,6 +224,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         changeBackgroundButton(btnTimer, applicationContext, R.color.darkGray)
       }
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
+        btnDemoNav.visibility = View.GONE
         VM.circleTimerAnimation = TimerAnimation.reset
         lifecycleScope.launch {
           statusUpdater.showWarningAutohide("No detections.", "trying again..", 2000L)
@@ -175,7 +232,10 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         }
       }
       Logging.stoppedMustStore -> {
+        btnDemoNav.visibility = View.GONE
         VM.circleTimerAnimation = TimerAnimation.reset
+        btnTimer.visibility=View.VISIBLE
+        LOG.D(TAG_METHOD, "stopped must store: visible")
         btnLogging.text = "FINISH"
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
         changeBackgroundButton(btnTimer, applicationContext, R.color.yellowDark)
@@ -208,9 +268,28 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
 
   override fun onMapReadySpecialize() {
     setupOnMapLongClick()
-    LOG.E(TAG, "Has CV map: ${VM.floorH?.hasFloorCvMap()}")
-    val cvMap = VM.floorH?.loadCvMapFromCache()
-    UI.renderHeatmap(gmap, VM.floorH, cvMap)
+
+    // UI setup that requires the map to be ready
+    lifecycleScope.launch {
+      if (VM.floorH==null) return@launch
+      val FH = VM.floorH!!
+      val cvMap = if (FH.hasFloorCvMap()) VM.floorH?.loadCvMapFromCache() else null
+      when {
+        !FH.hasFloorCvMap() -> { LOG.W(TAG, "No local CvMap") }
+        cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
+        cvMap.schema < CvMap.SCHEMA -> {
+          LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMap.SCHEMA}")
+          LOG.E(TAG, "outdated cv-map")
+          FH.clearCacheCvMap()
+        }
+        else -> { // all is good, render.
+          VM.cvMapH = CvMapHelper(cvMap, VM.detector.labels, FH)
+          VM.cvMapH?.generateCvMapFast()
+          UI.renderHeatmap(gmap, VM.cvMapH)
+        }
+      }
+
+    }
   }
 
   /**
@@ -219,21 +298,20 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   fun setupOnMapLongClick() {
     gmap.setOnMapLongClickListener { location ->
       if (VM.canStoreDetections()) {
-        LOG.D(TAG, "clicked at: $location")
+        LOG.V3(TAG, "clicked at: $location")
 
         // re-center map
         gmap.animateCamera(
-          CameraUpdateFactory.newCameraPosition(
-            CameraPosition(
-              location, gmap.cameraPosition.zoom,
-              // don't alter tilt/bearing
-              gmap.cameraPosition.tilt,
-              gmap.cameraPosition.bearing
-            )
-          )
+                CameraUpdateFactory.newCameraPosition(
+                        CameraPosition(
+                                location, gmap.cameraPosition.zoom,
+                                // don't alter tilt/bearing
+                                gmap.cameraPosition.tilt,
+                                gmap.cameraPosition.bearing)
+                )
         )
 
-        val windowDetections = VM.windowDetections.value.orEmpty().size
+        val windowDetections = VM.detectionsLogging.value.orEmpty().size
         VM.addDetections(location)
 
         // add marker
@@ -269,14 +347,15 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
    * - stars a new window
    */
   private suspend fun restartLogging(delayMs: Long = 500) {
+    LOG.D()
     delay(delayMs)
     statusUpdater.hideStatus()
     removeMaterialButtonIcon(binding.bottomUi.buttonCameraTimer)
     changeBackgroundButton(binding.bottomUi.buttonCameraTimer, applicationContext, R.color.darkGray)
     changeBackgroundButtonCompat(
-      binding.bottomUi.buttonLogging,
-      applicationContext,
-      R.color.colorPrimary
+            binding.bottomUi.buttonLogging,
+            applicationContext,
+            R.color.colorPrimary
     )
     binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
     VM.startNewWindow()

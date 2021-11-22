@@ -86,8 +86,35 @@
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintVertical_bias="0.0" />
 
+    <!-- 4.1 STATUS: sticky status message
+    e.g. entering a particular mode
+    -->
+    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
+        android:id="@+id/tv_statusSticky"
+        android:elevation="100dp"
+        android:layout_width="0dp"
+        android:visibility="invisible"
+        tools:text="demo-Status"
+        tools:visibility="visible"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
 
-    <!-- 4. OVERLAY: WARNING
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="20sp"
+        app:textAllCaps="false"
+        android:textStyle="bold"
+
+        android:translationY = "2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:outlineColor="@color/white_B0"
+        app:outlineWidth="0.5dp"
+        />
+
+
+    <!-- 4.2 OVERLAY: WARNING
             An empty [View] that quickly flashes yellow/red to bring attention
             using [StatusUpdater]
     -->
@@ -132,12 +159,12 @@
 
     <!-- 5.1. TITLE: StatusUpdater -->
     <TextView
-      android:id="@+id/tv_statusTitle"
+      android:id="@+id/tv_msgTitle"
       android:elevation="40dp"
       android:layout_width="0dp"
 
       android:visibility="invisible"
-      tools:text="Status Title"
+      tools:text="Msg Title"
       tools:visibility="visible"
       android:layout_height="wrap_content"
       android:fontFamily="sans-serif-black"
@@ -158,7 +185,7 @@
 
     <!-- 5.2. TITLE: StatusUpdater -->
     <TextView
-      android:id="@+id/tv_statusSubtitle"
+      android:id="@+id/tv_msgSubtitle"
       android:elevation="40dp"
       android:translationY = "-2dp"
       android:layout_width="0dp"
@@ -170,12 +197,12 @@
       android:textAllCaps="true"
       android:textColor="@color/colorPrimary"
       android:textSize="18sp"
-      tools:text="This is the subtitle"
+      tools:text="This is the msg subtitle"
       app:textAllCaps="false"
       android:textStyle="bold"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_statusTitle"
+      app:layout_constraintTop_toBottomOf="@+id/tv_msgTitle"
       />
 
     <!-- 6. Settings Button -->
@@ -196,7 +223,7 @@
       app:icon="@drawable/ic_settings_dark"
       app:iconGravity="textStart"
       app:iconPadding="0dp"
-      app:iconSize="35dp"
+      app:iconSize="42dp"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 

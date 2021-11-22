@@ -1,38 +1,43 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
-import android.graphics.Bitmap
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants.DETECTION_MODEL
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.models.CvDetection
-import cy.ac.ucy.cs.anyplace.lib.models.CvLocation
-import cy.ac.ucy.cs.anyplace.lib.models.CvMap
-import cy.ac.ucy.cs.anyplace.lib.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
+import cy.ac.ucy.cs.anyplace.lib.models.*
 
 /**
  * Extra functionality on top of the below data classes:
  * - [CvMap]
- * - [CvMap]
+ *
  */
 class CvMapHelper(val cvMap: CvMap,
+                  /** Label names of the used [DetectionModel] */
+                  val labels: List<String>,
                   val floorH: FloorHelper) {
+
+  lateinit var cvMapFast: CvMapFast
+
   companion object {
     // val SCORE_LIMIT  = 0.7f
     fun toCvDetection(d: Detector.Detection) =
       CvDetection(d.className, d.boundingBox.width(), d.boundingBox.height(), d.ocr)
 
-    fun toLatLng(cvLoc: CvLocation) = LatLng(cvLoc.lat.toDouble(), cvLoc.lon.toDouble())
-
     fun toCvLocation(latLng: LatLng, cvDetections: List<CvDetection>) =
       CvLocation(latLng.latitude.toString(), latLng.longitude.toString(), cvDetections)
 
+    /**
+     * Generates a CvMap from a list of [input] detections
+     */
     fun generate(floorH: FloorHelper, input: Map<LatLng, List<Detector.Detection>>): CvMap {
       val cvLocations :MutableList<CvLocation> = mutableListOf()
+      LOG.D(TAG, "generate:")
       input.forEach { (latLng, detections) ->
-        LOG.D(TAG, "LOCATION: $latLng: : ${detections.size}")
+        LOG.D(TAG, "location: $latLng: : ${detections.size}")
         val cvDetections: MutableList<CvDetection> = mutableListOf()
         detections.forEach { detection ->
           LOG.D(TAG, "  - ${detection.className}:${detection.detectedClass}: score: ${detection.score}")
@@ -41,25 +46,30 @@ class CvMapHelper(val cvMap: CvMap,
         cvLocations.add(toCvLocation(latLng, cvDetections))
       }
 
-      return CvMap(floorH.spaceH.space.id, floorH.floor.floorNumber, cvLocations)
+      return CvMap(DETECTION_MODEL.name,
+              floorH.spaceH.space.id,
+              floorH.floor.floorNumber,
+              cvLocations, CvMap.SCHEMA)
     }
 
     /**
      * Merges two CvMaps
      */
-    fun merge(newCvMap: CvMap, oldCvMap: CvMap?): CvMap {
-      if (oldCvMap == null) return newCvMap
+    fun merge(cvm1: CvMap, cvm2: CvMap?): CvMap {
+      if (cvm2 == null) return cvm1
 
-      if (newCvMap.buid != oldCvMap.buid) {
-        LOG.E(TAG, "merge: space ids don't match")
-        return newCvMap
-      } else if (newCvMap.floorNumber != oldCvMap.floorNumber) {
-        LOG.E(TAG, "merge: floor numbers don't match")
-        return newCvMap
+      if (cvm1.buid != cvm2.buid) {
+        LOG.E(TAG, "merge: Space IDs don't match")
+        return cvm1
+      } else if (cvm1.floorNumber != cvm2.floorNumber) {
+        LOG.E(TAG, "merge: floor number don't match")
+        return cvm1
       }
 
+      // fill a hashmap with entries from [cvm1] (then for [cvm2]). O(n+m)
+      // key is the location. If a key exists, then append the [CvDetection] list
       val combined: MutableMap<LatLng, MutableList<CvDetection>> = HashMap()
-      newCvMap.locations.forEach {  cvLoc ->
+      cvm1.locations.forEach { cvLoc ->
        val latLng = toLatLng(cvLoc)
         if (combined.containsKey(latLng)) {
           combined[latLng]?.addAll(cvLoc.detections)
@@ -67,7 +77,7 @@ class CvMapHelper(val cvMap: CvMap,
           combined[latLng]= cvLoc.detections.toMutableList()
         }
       }
-      oldCvMap.locations.forEach { cvLoc ->
+      cvm2.locations.forEach { cvLoc ->
         val latLng = toLatLng(cvLoc)
         if (combined.containsKey(latLng)) {
           combined[latLng]?.addAll(cvLoc.detections)
@@ -76,18 +86,23 @@ class CvMapHelper(val cvMap: CvMap,
         }
       }
 
-      // combine:
-      val cvLocations :MutableList<CvLocation> = mutableListOf()
+      // iterate the hashmap and combine entries:
+      // - for each KV: put all
+      val cvLocations: MutableList<CvLocation> = mutableListOf()
       combined.forEach { (latLng, detections) ->
-        LOG.D(TAG, "MERGE-LOC: $latLng: : ${detections.size}")
-        val cvDetections: MutableList<CvDetection> = mutableListOf()
-        detections.forEach { detection ->
-          cvDetections.add(detection)
-        }
-        cvLocations.add(toCvLocation(latLng, cvDetections))
+        LOG.D(TAG, "merge: location: $latLng: : ${detections.size}")
+        // val cvDetections: MutableList<CvDetection> = mutableListOf()
+        // CHECK:PM CLR:PM doing this directly..(no immutable obj restriction) ..
+        // cvDetections.addAll(detections)
+        // detections.forEach { cvDetections.add(it) } // CHECK:PM and CLR:PM
+        cvLocations.add(toCvLocation(latLng, detections))
       }
 
-      return CvMap(newCvMap.buid, newCvMap.floorNumber, cvLocations)
+      return CvMap(cvm2.detectionModel,
+              cvm1.buid,
+              cvm1.floorNumber,
+              cvLocations,
+              cvm1.schema)
     }
   }
 
@@ -123,5 +138,14 @@ class CvMapHelper(val cvMap: CvMap,
       val localCvMap  = cache.readFloorCvMap(cvMap)
       return merge(cvMap, localCvMap)
   }
-  fun cache() = cache.saveFloorCvMap(cvMap)
+  fun storeToCache() = cache.saveFloorCvMap(cvMap)
+
+  fun generateCvMapFast() {
+    LOG.W(TAG, "generateCvMapFast TODO:PM coroutine?")
+    val s = System.currentTimeMillis()
+    cvMapFast = CvMapFast(cvMap, labels)
+    val time = System.currentTimeMillis()-s
+    LOG.D(TAG, "generateCvMapFast in ${time}ms.")
+  }
 }
+
