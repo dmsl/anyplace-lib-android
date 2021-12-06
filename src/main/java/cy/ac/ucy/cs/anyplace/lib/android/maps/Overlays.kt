@@ -12,6 +12,7 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import java.io.IOException
 import java.io.InputStream
 
@@ -33,38 +34,32 @@ class Overlays(private val ctx: Context) {
     return null
   }
 
-  fun addFloorplan(bitmap: Bitmap?, map: GoogleMap, bounds: LatLngBounds) {
-    if (floorplanOverlay != null) {
-      LOG.E(TAG, "addFloorplanOverlay: TODO: remove previous floorplan")
-    }
+  fun drawFloorplan(bitmap: Bitmap?, map: GoogleMap, bounds: LatLngBounds) {
     if (bitmap != null) {
+      if (floorplanOverlay != null) {
+        floorplanOverlay!!.remove()
+      }
       val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
       floorplanOverlay = map.addGroundOverlay(
-        GroundOverlayOptions().apply {
-          positionFromBounds(bounds)
-          image (bitmapDescriptor)
-        }
-      )
+              GroundOverlayOptions().apply {
+                positionFromBounds(bounds)
+                image (bitmapDescriptor)
+              })
     }
-    floorplanOverlay = null
+    // floorplanOverlay = null
   }
 
-  fun refreshHeatmap(locations: List<WeightedLatLng>) {
+  fun refreshHeatmap(map: GoogleMap, locations: List<WeightedLatLng>) {
     LOG.E(TAG, "refreshHeatmap")
     if (heatmapTileProvider != null) {
       LOG.E(TAG, "refreshHeatmap: updating")
       heatmapTileProvider?.setWeightedData(locations)
       heatmapOverlay?.clearTileCache()
+    } else {
+      LOG.E(TAG_METHOD, "heatmapTileProvider was null!") // CLR:PM
+      createHeatmap(map, locations)
     }
   }
-
-  // fun updateHeatmap(gmap: GoogleMap, locations: List<WeightedLatLng>, gradient: Gradient?) {
-  //   if (heatmapTileProvider == null) {
-  //     addHeatmap(gmap, locations, gradient)
-  //   } else {
-  //     heatmapTileProvider?.setWeightedData(locations)
-  //   }
-  // }
 
   fun removeHeatmap() = heatmapOverlay?.remove()
 
@@ -86,7 +81,7 @@ class Overlays(private val ctx: Context) {
     } else null
   }
 
-  fun addHeatmap(map: GoogleMap, locations: List<WeightedLatLng>) {
+  fun createHeatmap(map: GoogleMap, locations: List<WeightedLatLng>) {
     val gradient = CvHeatmapGradient()
     if (heatmapOverlay != null) {
       LOG.D(TAG, "addHeatmap: removing previous heatmap")

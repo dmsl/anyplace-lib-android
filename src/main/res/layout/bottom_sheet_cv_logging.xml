@@ -409,7 +409,7 @@
 
         app:cornerRadius="50dp"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_demoNavigation" />
+        app:layout_constraintBottom_toTopOf="@id/button_logging" />
 
     <!--app:layout_constraintCircleRadius="5dp"-->
     <ProgressBar
@@ -428,25 +428,6 @@
         style="@style/TimerProgressBar"
         android:layout_width="68dp"
         android:layout_height="68dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_demoNavigation"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="6dp"
-        android:backgroundTint="@color/darkGray"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        android:padding="0dp"
-        android:text=""
-        app:cornerRadius="50dp"
-        app:icon="@drawable/ic_location_found"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="38dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button_logging"

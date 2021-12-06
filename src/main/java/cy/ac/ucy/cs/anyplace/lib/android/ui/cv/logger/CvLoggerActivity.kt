@@ -12,8 +12,8 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CameraPosition
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
@@ -24,7 +24,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
-import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -47,25 +46,33 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     binding = ActivityCvLoggerBinding.inflate(layoutInflater)
     setContentView(binding.root)
     VM = ViewModelProvider(this).get(CvLoggerViewModel::class.java)
-    VMb = VM
+    VMB = VM
 
     statusUpdater = StatusUpdater(
+            applicationContext,
             binding.tvStatusSticky,
             binding.tvMsgTitle,
             binding.tvMsgSubtitle,
             binding.viewStatusBackground,
-            binding.viewWarning,
-            applicationContext
-    )
+            binding.viewWarning)
+
+    floorSelector = FloorSelector(
+            applicationContext,
+            binding.groupFloorSelector,
+            binding.textViewTitleFloor,
+            binding.buttonSelectedFloor,
+            binding.buttonFloorUp,
+            binding.buttonFloorDown)
 
     UI = UiActivityCvLogger(
             applicationContext,
             lifecycleScope,
             statusUpdater,
+            floorSelector,
             overlays,
             VM,
-            binding,
-    )
+            binding)
+    UIB = UI
 
     setupComputerVision()
     setupMap()
@@ -163,18 +170,19 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
 
   private fun setupButtonsAndUi() {
     checkInternet()
-    UI.setupClickedLoggingButton()
     UI.setupClickCameraTimerCircleButton()
     UI.setupClickClearObjectsPopup()
     UI.setupClickSettingsMenuButton()
     UI.setupClickDemoNavigation(binding.mapView)
+
+    UI.setupOnFloorSelectionClick()
   }
 
   @SuppressLint("SetTextI18n")
   private fun updateLoggingUi(status: Logging) {
     LOG.D4(TAG_METHOD, "status: $status")
     val btnLogging = binding.bottomUi.buttonLogging
-    val btnDemoNav= binding.bottomUi.buttonDemoNavigation
+    val btnDemoNav= binding.buttonDemoNavigation
     val btnTimer = binding.bottomUi.buttonCameraTimer
     binding.bottomUi.groupTutorial.visibility = View.GONE
     btnLogging.visibility = View.VISIBLE // hidden only by demo-nav
@@ -266,30 +274,18 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     }
   }
 
+  /**
+   * Anything that relies on the [gmap].
+   * - called by [CvActivityBase.onMapReady]
+   */
   override fun onMapReadySpecialize() {
+    UI.setupClickedLoggingButton(gmap)
     setupOnMapLongClick()
+  }
 
-    // UI setup that requires the map to be ready
-    lifecycleScope.launch {
-      if (VM.floorH==null) return@launch
-      val FH = VM.floorH!!
-      val cvMap = if (FH.hasFloorCvMap()) VM.floorH?.loadCvMapFromCache() else null
-      when {
-        !FH.hasFloorCvMap() -> { LOG.W(TAG, "No local CvMap") }
-        cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
-        cvMap.schema < CvMap.SCHEMA -> {
-          LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMap.SCHEMA}")
-          LOG.E(TAG, "outdated cv-map")
-          FH.clearCacheCvMap()
-        }
-        else -> { // all is good, render.
-          VM.cvMapH = CvMapHelper(cvMap, VM.detector.labels, FH)
-          VM.cvMapH?.generateCvMapFast()
-          UI.renderHeatmap(gmap, VM.cvMapH)
-        }
-      }
-
-    }
+  override fun onFloorplanLoadedSuccess() {
+    LOG.E()
+    // CLR this
   }
 
   /**

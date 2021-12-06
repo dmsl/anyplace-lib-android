@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
  * TODO:PM if something else is showing: then hide it
  */
 class StatusUpdater(
+        private val ctx: Context,
         /** Stick mode in the status bar,
          * for example setting 'Localization' Mode
          */
@@ -31,8 +32,7 @@ class StatusUpdater(
         /** BG view in the status bar */
         private val tvBg: View,
         /** Overlay View on top of the others.  It may appear briefly to emphasize text. */
-        private val overlay: View,
-        private val ctx: Context) {
+        private val overlay: View) {
 
   enum class Level {
     Warning,

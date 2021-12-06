@@ -13,30 +13,37 @@ enum class DetectionModel(
     val labelFilePath: String,
     val inputSize: Int,
     val outputSize: Int,
-    val isQuantized: Boolean
-) {
+    val isQuantized: Boolean) {
     COCO(
-            "coco",
+        "coco",
         "models/coco/model.tflite",
         "file:///android_asset/models/coco/obj.names",
         INPUT_SIZE,
         OUTPUT_WIDTH_TINY,
         false
     ),
-  VESSEL(
-          "vessel",
-          "models/vessel/model.tflite",
-          "file:///android_asset/models/vessel/obj.names",
+  VESSEL_WRONG(
+          "vessel-wrong",
+          "models/vessel-wrong/model.tflite",
+          "file:///android_asset/models/vessel-wrong/obj.names",
           INPUT_SIZE,
           OUTPUT_WIDTH_TINY,
           false
   ),
-    CAMPUS_UCY(
-            "campus-ucy",
-    "models/home-pm-v2-60000+Final/model.tflite",
-    "file:///android_asset/models/campus-ucy-v1-50000+final/obj.names",
-        INPUT_SIZE,
-        OUTPUT_WIDTH_TINY,
-    false
-    )
+  VESSEL_v1(
+          "vessel-wrong",
+          "models/vessel-v1/model.tflite",
+          "file:///android_asset/models/vessel-v1/obj.names",
+          INPUT_SIZE,
+          OUTPUT_WIDTH_TINY,
+          false
+  ),
+  CAMPUS_UCY(
+          "campus-ucy",
+          "models/campus-ucy/model.tflite",
+          "file:///android_asset/models/campus-ucy/obj.names",
+          INPUT_SIZE,
+          OUTPUT_WIDTH_TINY,
+          false
+  )
 }

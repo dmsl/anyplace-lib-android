@@ -229,7 +229,7 @@ class CvLoggerViewModel @Inject constructor(
     }
 
     // TODO:PM UPDATE radiomap TODO:TRIAL
-    val curMap = CvMapHelper.generate(FH, storedDetections)
+    val curMap = CvMapHelper.generate(detector.getDetectionModel(), FH, storedDetections)
     val curMapH = CvMapHelper(curMap, detector.labels, FH)
     LOG.D(TAG, "storeDetections: has cache: ${curMapH.hasCache()}") // CLR:PM
     val merged = curMapH.readLocalAndMerge()

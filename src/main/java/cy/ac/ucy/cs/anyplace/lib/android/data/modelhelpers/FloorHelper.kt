@@ -8,6 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import android.util.Base64
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import okhttp3.ResponseBody
 import retrofit2.Response
 
@@ -42,14 +43,17 @@ class FloorHelper(val floor: Floor,
   fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(floor) }
   fun loadFromCache() : Bitmap? { return cache.readFloorplan(floor) }
   fun clearCacheFloorplan() { cache.deleteFloorplan(floor) }
-  fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
+  // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
+  /** Deletes the cvmap folder that might contain several CvMaps
+   * created with different [DetectionModel]s */
+  fun clearCacheCvMaps() { cache.deleteFloorCvMaps(floor) }
   fun clearCache() {
     clearCacheFloorplan()
-    clearCacheCvMap()
+    clearCacheCvMaps()
   }
   fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(floor, bitmap) } }
-  fun hasFloorCvMap() = cache.hasJsonFloorCvMap(floor)
-  fun loadCvMapFromCache() = cache.readFloorCvMap(floor)
+  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModel(floor, model)
+  fun loadCvMapFromCache(model: DetectionModel) = cache.readFloorCvMap(floor, model)
 
   // CLR:PM
   // https://ap-dev.cs.ucy.ac.cy:9001/api/floorplans64/vessel_9bdb1052-ff23-4f9b-b9f9-aae5095af468_1634646807927/-2
@@ -72,7 +76,4 @@ class FloorHelper(val floor: Floor,
 
     return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
   }
-
-
-
 }

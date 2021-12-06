@@ -20,17 +20,16 @@ import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase.Companion.CAMERA_ROTATION
-import cy.ac.ucy.cs.anyplace.lib.models.Coord
+import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
 import cy.ac.ucy.cs.anyplace.lib.models.Space
@@ -38,6 +37,7 @@ import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -58,14 +58,17 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
   }
 
   /** Base [ViewModel] class: [CvViewModelBase] */
-  protected lateinit var VMb: CvViewModelBase
+  protected lateinit var VMB: CvViewModelBase
   protected lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
   protected lateinit var gmap: GoogleMap
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
 
   private lateinit var tovCamera: TrackingOverlayView
+  protected lateinit var floorSelector: FloorSelector
   private lateinit var pvCamera: PreviewView
+
+  protected lateinit var UIB: UiActivityCvBase
 
   /** Setups the Computer Vision processor using
    * - a [TrackingOverlayView] that shows the detected objects
@@ -79,11 +82,11 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     cameraProviderFuture = ProcessCameraProvider.getInstance(baseContext)
     requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
 
-    VMb.setUpDetectionProcessor(
-      assets,
-      resources.displayMetrics,
-      tovCamera,
-      pvCamera)
+    VMB.setUpDetectionProcessor(
+            assets,
+            resources.displayMetrics,
+            tovCamera,
+            pvCamera)
   }
 
 
@@ -94,44 +97,44 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
    */
   fun bindPreview() {
     val preview: Preview = Preview.Builder()
-        .setTargetAspectRatio(CAMERA_ASPECT_RATIO)
-        .setTargetRotation(CAMERA_ROTATION)
-        .build()
+            .setTargetAspectRatio(CAMERA_ASPECT_RATIO)
+            .setTargetRotation(CAMERA_ROTATION)
+            .build()
 
     val cameraSelector: CameraSelector = CameraSelector.Builder()
-        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-        .build()
+            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .build()
 
     preview.setSurfaceProvider(pvCamera.surfaceProvider)
 
     val imageAnalysis = ImageAnalysis.Builder()
-        .setTargetAspectRatio(CAMERA_ASPECT_RATIO)
-        .setTargetRotation(CAMERA_ROTATION)
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
+            .setTargetAspectRatio(CAMERA_ASPECT_RATIO)
+            .setTargetRotation(CAMERA_ROTATION)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
 
     imageAnalysis.setAnalyzer(
-      ContextCompat.getMainExecutor(applicationContext),
-      this::analyzeImage)
+            ContextCompat.getMainExecutor(applicationContext),
+            this::analyzeImage)
 
     val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
     cameraProvider.bindToLifecycle(
-      this as LifecycleOwner,
-      cameraSelector,
-      imageAnalysis,
-      preview)
+            this as LifecycleOwner,
+            cameraSelector,
+            imageAnalysis,
+            preview)
   }
 
   protected abstract fun analyzeImage(image: ImageProxy)
 
   override fun onRequestPermissionsResult(
-    requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+          requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
     when (requestCode) {
       CAMERA_REQUEST_CODE -> {
         val indexOfCameraPermission = permissions.indexOf(Manifest.permission.CAMERA)
         if (grantResults[indexOfCameraPermission] == PackageManager.PERMISSION_GRANTED) {
           cameraProviderFuture.addListener(
-            this@CvActivityBase::bindPreview, ContextCompat.getMainExecutor(baseContext))
+                  this@CvActivityBase::bindPreview, ContextCompat.getMainExecutor(baseContext))
         } else {
           val msg = "Permissions not granted."
           Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
@@ -142,9 +145,9 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
   }
 
-   fun setUpImageConverter(image: ImageProxy) {
+  fun setUpImageConverter(image: ImageProxy) {
     LOG.D2("Frame: ${image.width}x${image.height}")
-    VMb.setUpImageConverter(baseContext, image)
+    VMB.setUpImageConverter(baseContext, image)
   }
 
   /**
@@ -153,16 +156,16 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
   protected fun setupMap() {
     val mapFragment = SupportMapFragment.newInstance()
     supportFragmentManager
-        .beginTransaction()
-        .add(R.id.mapView, mapFragment)
-        .commit()
+            .beginTransaction()
+            .add(R.id.mapView, mapFragment)
+            .commit()
     mapFragment.getMapAsync(this)
   }
 
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.D(TAG, "onMapReady")
     gmap = googleMap
-    VMb.markers = Markers(applicationContext, gmap)
+    VMB.markers = Markers(applicationContext, gmap)
 
     val maxZoomLevel = gmap.maxZoomLevel // may be different from device to device
     // map.addMarker(MarkerOptions().position(latLng).title("Ucy Building"))
@@ -170,15 +173,15 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
     // TODO Space has to be sent to this activity (SafeArgs?) using a previous "Select Space" activity.
     // (maybe using Bundle is easier/better)
-    loadSpaceAndFloorFromAssets()
+    loadSpaceAndFloor()
 
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    lifecycleScope.launch(Dispatchers.IO) { VMb.floorsH?.fetchAllFloorplans() }
+    lifecycleScope.launch(Dispatchers.IO) { VMB.floorsH?.fetchAllFloorplans() }
 
     // place some restrictions on the map
     gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
-      CameraAndViewport.loggerCamera(VMb.spaceH!!.latLng(), maxZoomLevel)))
+            CameraAndViewport.loggerCamera(VMB.spaceH!!.latLng(), maxZoomLevel)))
     gmap.setMinZoomPreference(maxZoomLevel-3)
 
     // restrict screen to current bounds.
@@ -189,11 +192,10 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
       //   LOG.E("floorH is null")
       // }
 
-      gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VMb.floorH?.bounds(), 0))
+      gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VMB.floorH?.bounds(), 0))
       val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
-      gmap.setLatLngBoundsForCameraTarget(VMb.floorH?.bounds())
-      readFloorplan(VMb.floorH!!)
+      gmap.setLatLngBoundsForCameraTarget(VMB.floorH?.bounds())
     }
 
     gmap.uiSettings.apply {
@@ -211,6 +213,27 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
    */
   protected abstract fun onMapReadySpecialize()
 
+  private fun loadSpaceAndFloorFromAssets() : Boolean {
+    LOG.V2()
+    VMB.space = assetReader.getSpace()
+    VMB.floors = assetReader.getFloors()
+
+    if (VMB.space == null || VMB.floors == null) {
+      showError(VMB.space, VMB.floors)
+      return false
+    }
+
+    VMB.spaceH = SpaceHelper(applicationContext, VMB.repository, VMB.space!!)
+    VMB.floorsH = FloorsHelper(VMB.floors!!, VMB.spaceH)
+    val prettySpace = VMB.spaceH.prettyType
+    val prettyFloors= VMB.spaceH.prettyFloors
+
+    LOG.D3(TAG_METHOD, "$prettySpace: ${VMB.space!!.name} " +
+            "(has ${VMB.floors!!.floors.size} $prettyFloors)")
+
+    return true
+  }
+
   /**
    * Loads from assets the Space and the Space's Floors
    * Then it loads the floorplan for [selectedFloorPlan].
@@ -218,128 +241,210 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
    * TODO Implement this from network (in an earlier activity), and
    * pass it here through [SafeArgs] or [Bundle]
    */
-  fun loadSpaceAndFloorFromAssets() {
-    LOG.V2()
-    VMb.space = assetReader.getSpace()
-    VMb.floors = assetReader.getFloors()
+  fun loadSpaceAndFloor() {
+    // TODO: accept this as a bundle!
+    if(!loadSpaceAndFloorFromAssets()) return
 
-    if (VMb.space == null || VMb.floors == null) {
-      showError(VMb.space, VMb.floors)
-      return
-    }
+    VMB.selectInitialFloor(applicationContext)
 
-    VMb.spaceH = SpaceHelper(applicationContext, VMb.repository, VMb.space!!)
-    VMb.floorsH = FloorsHelper(VMb.floors!!, VMb.spaceH!!)
-
-    LOG.D(TAG_METHOD, "Selected ${VMb.spaceH?.prettyType}: ${VMb.space!!.name}")
-    LOG.D(TAG_METHOD, "${VMb.spaceH!!.prettyType} has ${VMb.floors!!.floors.size} ${VMb.spaceH!!.prettyFloors}.")
-
-    if (!VMb.floorsH!!.hasFloors()) {
-      val msg = "Selected ${VMb.spaceH!!.prettyType} has no ${VMb.spaceH!!.prettyFloors}."
-      LOG.E(TAG_METHOD, msg)
-      Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
-      return
-    }
-
-    // TODO:PM put a floor selector...
-    // START OF: select floor: last selection or first available
-    var floor : Floor? = null
-    if (VMb.spaceH!!.hasLastValuesCached()) {
-      val lv = VMb.spaceH!!.loadLastValues()
-      if (lv.lastFloor!=null) {
-        LOG.D2(TAG_METHOD, " lastVal: cached ${VMb.spaceH!!.prettyFloor}${lv.lastFloor}.")
-        floor = VMb.floorsH!!.getFloor(lv.lastFloor!!)
-      }
-      VMb.lastValSpaces = lv
-    }
-
-    if (floor == null)  {
-      LOG.D2(TAG_METHOD, "Loading first ${VMb.spaceH!!.prettyFloor}.")
-      floor = VMb.floorsH!!.getFirstFloor()
-    }
-    // END OF: select floor: last selection or first available
-
-    val selectedFloorNum=floor.floorNumber.toInt()
-    // FIXED SELECTION:
-    // val selectedFloorNum=3
-    // floor = floorsH!!.getFloor(selectedFloorNum)
-    if (floor == null) {
-      showError(VMb.space, VMb.floors, floor, selectedFloorNum)
-      return
-    }
-
-    LOG.D(TAG_METHOD, "Selected ${VMb.spaceH?.prettyFloor}: ${floor?.floorName}")
-
-    VMb.floorH = FloorHelper(floor, VMb.spaceH!!)
-    updateAndCacheLastFloor(floor) // TODO:PM ONLY when changing floor..
+    observeFloorChanges()
+    observeFloorplanChanges()
   }
 
-  private fun updateAndCacheLastFloor(floor: Floor) {
-    VMb.lastValSpaces.lastFloor=floor.floorNumber
-    VMb.spaceH?.cacheLastValues(VMb.lastValSpaces)
+  /**
+   * Observe when [VMB.floor] changes and react accordingly:
+   * - update [floorSelector] UI (the up/down buttons)
+   * - store the last floor selection (for the relevant [Space])
+   * - loads the floor
+   */
+  protected fun observeFloorChanges() {
+    LOG.W()
+    lifecycleScope.launch{
+      VMB.floor.collect { selectedFloor ->
+
+        // update FloorHelper & FloorSelector
+        VMB.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VMB.spaceH) else null
+        floorSelector.updateFloorSelector(selectedFloor, VMB.floorsH)
+        LOG.E(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor?.floorNumber}")
+        if (selectedFloor != null) {
+
+          updateAndCacheLastFloor(VMB.floor.value)
+          LOG.W(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
+          lazilyChangeFloor()
+          // loadFloor(VMB.floorH!!)
+        }
+      }
+    }
+  }
+
+
+  /**
+   *
+   */
+  private fun lazilyChangeFloor() {
+    LOG.W()
+    if (floorChangeRequestTime == 0L) {
+      floorChangeRequestTime = System.currentTimeMillis()
+      loadFloor(VMB.floorH!!)
+      return
+    }
+
+    floorChangeRequestTime = System.currentTimeMillis()
+    LOG.W(TAG_METHOD, "isChanging: $isLazilyChangingFloor")
+
+    lifecycleScope.launch(Dispatchers.IO) {
+      if (!isLazilyChangingFloor) {
+        LOG.W(LOG.TAG, "will change to floor: ${VMB.floorH!!.prettyFloorName()}")
+        isLazilyChangingFloor = true
+        do {
+          val curTime = System.currentTimeMillis()
+          val diff = curTime-floorChangeRequestTime
+          LOG.D(LOG.TAG, "delay: $diff")
+          delay(100)
+        } while(diff < DELAY_CHANGE_FLOOR)
+
+        LOG.W(LOG.TAG, "changing to floor: ${VMB.floorH!!.prettyFloorName()} (after delay)")
+
+        loadFloor(VMB.floorH!!)
+        isLazilyChangingFloor = false
+      } else {
+        LOG.E(LOG.TAG, "skipping floor: ${VMB.floorH!!.prettyFloorName()}")
+      }
+    }
+  }
+
+
+
+  /**
+   * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
+   */
+  private fun updateAndCacheLastFloor(floor: Floor?) {
+    LOG.W(TAG_METHOD, floor?.floorNumber.toString())
+    if (floor != null) {
+      VMB.lastValSpaces.lastFloor=floor.floorNumber
+      VMB.spaceH?.cacheLastValues(VMB.lastValSpaces)
+    }
   }
 
   protected fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
     var msg = ""
     when {
       space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${VMb.spaceH?.prettyFloors}."
-      floor == null -> msg = "Failed to get ${VMb.spaceH?.prettyFloor} $floorNum."
+      floors == null -> msg = "Failed to get ${VMB.spaceH?.prettyFloors}."
+      floor == null -> msg = "Failed to get ${VMB.spaceH?.prettyFloor} $floorNum."
     }
     LOG.E(msg)
     Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
   }
 
+  private var floorChangeRequestTime : Long = 0
+  private var isLazilyChangingFloor = false
+  private val DELAY_CHANGE_FLOOR = 300
+
   /**
-   * Reads a floorplan (from cache or remote) using the [VM] and a [FloorHelper]
-   * Once it's read, then it is loaded it is posted on [VMb.floorplanResp],
+   * Loads a floor into the UI
+   * Reads a floorplan (from cache or remote) using the [VMB] and a [FloorHelper]
+   * Once it's read, then it is loaded it is posted on [VMB.floorplanFlow],
    * and through an observer it is loaded on the map.
    *
    * Must be called each time wee want to load a floor.
    */
-  protected fun readFloorplan(FH: FloorHelper) {
-    LOG.D(TAG, "readFloorplan")
+  private fun loadFloor(FH: FloorHelper) {
+    LOG.W(TAG_METHOD, FH.prettyFloorName())
     lifecycleScope.launch {
       if (FH.hasFloorplanCached()) {
-        LOG.D(TAG, "readFloorplan: cache")
-        val localResult =
-          when (val bitmap = FH.loadFromCache()) {
-            null -> NetworkResult.Error("Failed to load from local cache")
-            else -> NetworkResult.Success(bitmap)
-          }
-        VMb.floorplanResp.postValue(localResult)
+        readFloorplanFromCache(FH)
       } else {
         LOG.D2(TAG, "readFloorplan: remote")
-        VMb.getFloorplan(FH)
+        VMB.getFloorplanFromRemote(FH)
       }
     }
+  }
 
-    VMb.floorplanResp.observeForever { response ->
-      when (response) {
-        is NetworkResult.Loading -> {
-          LOG.W("Loading ${VMb.spaceH?.prettyFloorplan}")
-        }
-        is NetworkResult.Error -> {
-          val msg = "Failed to get $VMb.space"
-          LOG.W(msg)
-          Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
-        }
-        is NetworkResult.Success -> {
-          if (VMb.floorH == null) {
-            val msg = "No selected floor/deck."
+  /**
+   * Reads a floorplan image form the devices cache
+   */
+  protected fun readFloorplanFromCache(FH: FloorHelper) {
+    LOG.D(TAG_METHOD, FH.prettyFloorName())
+    val localResult =
+            when (val bitmap = FH.loadFromCache()) {
+              null -> NetworkResult.Error("Failed to load from local cache")
+              else -> NetworkResult.Success(bitmap)
+            }
+    VMB.floorplanFlow.value = localResult
+  }
+
+
+  /**
+   * Observes when a floorplan changes ([VMB.floorplanFlow]) and loads
+   * the new image, and the relevant heatmap
+   *
+   * This has to be separate
+   */
+  protected fun observeFloorplanChanges() {
+    lifecycleScope.launch {
+      VMB.floorplanFlow.collect { response ->
+        when (response) {
+          is NetworkResult.Loading -> {
+            LOG.W("Loading ${VMB.spaceH?.prettyFloorplan}")
+          }
+          is NetworkResult.Error -> {
+            val msg = "Failed to get $VMB.space"
             LOG.W(msg)
             Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
-          } else {
-            renderFloorplan(response.data, VMb.floorH!!)
+          }
+          is NetworkResult.Success -> {
+            if (VMB.floorH == null) {
+              val msg = "No selected floor/deck."
+              LOG.W(msg)
+              Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
+            } else {
+              renderFloorplan(response.data, VMB.floorH!!)
+              loadCvMapAndHeatmap()
+              // TODO:PM LEFTHERE....
+              // renderHeatmap()
+            }
+            // onFloorplanLoadedSuccess()
           }
         }
       }
     }
   }
 
+  /** Called when a floorplan was successfully loaded */
+  abstract fun onFloorplanLoadedSuccess()
+
+  /**
+   * Reads the [CvMap] from cache and if it exists it:
+   * - parses it into the optimized [CvMapFast] structure
+   * - it renders a heatmap of the detections
+   */
+  fun loadCvMapAndHeatmap() {
+    LOG.E()
+    val model = VMB.detector.getDetectionModel()
+    if (VMB.floorH==null) return
+    val FH = VMB.floorH!!
+    val cvMap = if (FH.hasFloorCvMap(model)) VMB.floorH?.loadCvMapFromCache(model) else null
+    UIB.removeHeatmap()
+    when {
+      !FH.hasFloorCvMap(model) -> { LOG.W(TAG, "No local CvMap") }
+      cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
+      cvMap.schema < CvMap.SCHEMA -> {
+        LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMap.SCHEMA}")
+        LOG.E(TAG, "outdated cv-map")
+        FH.clearCacheCvMaps()
+      }
+      else -> { // all is good, render.
+        VMB.cvMapH = CvMapHelper(cvMap, VMB.detector.labels, FH)
+        VMB.cvMapH?.generateCvMapFast()
+        UIB.renderHeatmap(gmap, VMB.cvMapH)
+      }
+    }
+  }
+
   protected fun renderFloorplan(bitmap: Bitmap?, FH: FloorHelper) {
-    LOG.D("renderFloorplan:")
-    overlays.addFloorplan(bitmap, gmap, FH.bounds())
+    LOG.D()
+    overlays.drawFloorplan(bitmap, gmap, FH.bounds())
   }
 
   protected fun checkInternet() {

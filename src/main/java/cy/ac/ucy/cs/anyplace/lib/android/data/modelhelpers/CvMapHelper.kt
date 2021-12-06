@@ -4,9 +4,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants.DETECTION_MODEL
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.models.*
 
@@ -33,7 +34,7 @@ class CvMapHelper(val cvMap: CvMap,
     /**
      * Generates a CvMap from a list of [input] detections
      */
-    fun generate(floorH: FloorHelper, input: Map<LatLng, List<Detector.Detection>>): CvMap {
+    fun generate(model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Detector.Detection>>): CvMap {
       val cvLocations :MutableList<CvLocation> = mutableListOf()
       LOG.D(TAG, "generate:")
       input.forEach { (latLng, detections) ->
@@ -46,7 +47,7 @@ class CvMapHelper(val cvMap: CvMap,
         cvLocations.add(toCvLocation(latLng, cvDetections))
       }
 
-      return CvMap(DETECTION_MODEL.name,
+      return CvMap(model.modelName,
               floorH.spaceH.space.id,
               floorH.floor.floorNumber,
               cvLocations, CvMap.SCHEMA)
@@ -132,8 +133,8 @@ class CvMapHelper(val cvMap: CvMap,
     return locations
   }
 
-  fun hasCache() = cache.hasJsonFloorCvMap(cvMap)
-  fun clearCache() = cache.deleteFloorCvMap(cvMap)
+  fun hasCache() = cache.hasDirFloorCvMaps(cvMap)
+  fun clearCache() = cache.deleteFloorCvMaps(cvMap)
   fun readLocalAndMerge(): CvMap {
       val localCvMap  = cache.readFloorCvMap(cvMap)
       return merge(cvMap, localCvMap)
@@ -145,7 +146,7 @@ class CvMapHelper(val cvMap: CvMap,
     val s = System.currentTimeMillis()
     cvMapFast = CvMapFast(cvMap, labels)
     val time = System.currentTimeMillis()-s
-    LOG.D(TAG, "generateCvMapFast in ${time}ms.")
+    LOG.W(TAG_METHOD, "in ${time}ms.")
   }
 }
 

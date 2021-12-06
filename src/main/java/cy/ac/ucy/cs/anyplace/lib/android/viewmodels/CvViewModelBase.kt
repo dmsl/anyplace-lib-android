@@ -9,10 +9,10 @@ import android.graphics.Matrix
 import android.util.DisplayMetrics
 import android.view.Surface
 import android.view.View
+import android.widget.Toast
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
@@ -29,7 +29,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -41,6 +40,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult.Error
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,7 +86,6 @@ abstract class CvViewModelBase constructor(
   val localization = MutableStateFlow(Localization.stopped)
   val localizationFlow = localization.asStateFlow()
 
-
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
   // e.g., each window might be 5seconds.
   /** related to cv scan window */
@@ -103,14 +102,20 @@ abstract class CvViewModelBase constructor(
   var space: Space? = null
   /** All floors of the selected [space]*/
   var floors: Floors? = null
-  /** Selected floor/deck ([Floor]) of [space] */
-  var floor: Floor? = null
+
   /** Selected [Space] ([SpaceHelper]) */
-  var spaceH: SpaceHelper? = null
+  lateinit var spaceH: SpaceHelper
+
   /** floorsH of selected [spaceH] */
-  var floorsH: FloorsHelper? = null
+  lateinit var floorsH: FloorsHelper
+
+  // TODO rebuild FLoorH and floor
   /** Selected floorH of [floorsH] */
   var floorH: FloorHelper? = null
+
+  /** Selected floor/deck ([Floor]) of [space] */
+  var floor: MutableStateFlow<Floor?> = MutableStateFlow(null)
+
 
   /** LastVals: user last selections regarding a space.
    * Currently not much use (for a field var), but if we have multiple
@@ -119,7 +124,10 @@ abstract class CvViewModelBase constructor(
 
   /** Initialized onMapReady */
   var markers : Markers? = null
-  val floorplanResp: MutableLiveData<NetworkResult<Bitmap>> = MutableLiveData()
+  // val floorplanResp: MutableLiveData<NetworkResult<Bitmap>> = MutableLiveData()
+  val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(Error(null))
+  // MutableStateFlow(false)
+  // MutableStateFlow(false)
 
   /** Holds the functionality of a [CvMap] and can generate the [CvMapFast] */
   var cvMapH: CvMapHelper? = null
@@ -137,7 +145,6 @@ abstract class CvViewModelBase constructor(
     // use: prefs.expImagePadding.
     // this setting is experimental anyway. It also has to be read after the preferences are initialized
     val usePadding = false
-
     detector = DetectorFactory.createDetector(
       assetManager,
       Constants.DETECTION_MODEL,
@@ -175,38 +182,38 @@ abstract class CvViewModelBase constructor(
 
   //// FLOOR PLANS
 
-  fun getFloorplan(FH: FloorHelper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
+  fun getFloorplanFromRemote(FH: FloorHelper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
 
   private fun loadFloorplanFromAsset() {
     LOG.W(TAG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
     val bitmap = base64?.let { ImgUtils.stringToBitmap(it) }
-    floorplanResp.value =
+    floorplanFlow.value =
       when (bitmap) {
-        null -> NetworkResult.Error("Cant read asset deckplan.")
+        null -> Error("Cant read asset deckplan.")
         else -> NetworkResult.Success(bitmap)
       }
   }
 
   /**
-   * Requests a floorplan from remote and publishes outcome to [floorplanResp].
+   * Requests a floorplan from remote and publishes outcome to [floorplanFlow].
    */
   private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
-    floorplanResp.value = NetworkResult.Loading()
+    floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
     if (app.hasInternetConnection()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
-        floorplanResp.value = NetworkResult.Success(bitmap)
+        floorplanFlow.value = NetworkResult.Success(bitmap)
         FH.cacheFloorplan(bitmap)
       } else {
         val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
         "Base URL: ${retrofitHolder.retrofit.baseUrl()}"
         LOG.E(msg)
-        floorplanResp.value = NetworkResult.Error(msg)
+        floorplanFlow.value = Error(msg)
       }
     } else {
-      floorplanResp.value = NetworkResult.Error("No Internet Connection.")
+      floorplanFlow.value = Error("No Internet Connection.")
     }
   }
 
@@ -270,6 +277,66 @@ abstract class CvViewModelBase constructor(
       }
     }
 
+  }
+
+  /** Go one floor up */
+  fun floorGoUp() {
+    val floorNumStr = floor.value?.floorNumber.toString()
+    if (floorsH.canGoUp(floorNumStr) == true) {
+      val to = floorsH.getFloorAbove(floorNumStr)
+      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      floor.value = to
+    } else {
+      LOG.W(TAG_METHOD, "Cannot go further up.")
+    }
+  }
+
+  /** Go one floor down */
+  fun floorGoDown() {
+    val floorNumStr = floor.value?.floorNumber.toString()
+    if (floorsH.canGoDown(floorNumStr) == true) {
+      val to = floorsH.getFloorBelow(floorNumStr)
+      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      floor.value = to
+    } else {
+      LOG.W(TAG_METHOD, "Cannot go further down.")
+    }
+  }
+
+  /**
+   * Selects the first available floor, or the last floor that was picked
+   * for a particular space.
+   */
+  fun selectInitialFloor(ctx: Context) {
+    LOG.E()
+    // val spaceH = spaceH!!
+    // val floorsH = floorsH!!
+
+    if (!floorsH.hasFloors()) {  // space has no floors
+      val msg = "Selected ${spaceH.prettyType} has no ${spaceH.prettyFloors}."
+      LOG.E(TAG_METHOD, msg)
+      Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+      floor.value = null
+    }
+
+    // var floor : Floor? = null
+    // START OF: select floor: last selection or first available
+    // VMb.floor.value = null
+    if (spaceH.hasLastValuesCached()) {
+      val lastVal = spaceH.loadLastValues()
+      if (lastVal.lastFloor!=null) {
+        LOG.D2(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
+        floor.value = floorsH.getFloor(lastVal.lastFloor!!)
+      }
+      lastValSpaces = lastVal
+    }
+
+    if (floor.value == null)  {
+      LOG.D2(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
+      floor.value = floorsH.getFirstFloor()
+    }
+
+    LOG.D(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
   }
 
 }

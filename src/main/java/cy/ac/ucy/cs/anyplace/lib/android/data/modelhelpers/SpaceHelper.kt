@@ -20,7 +20,7 @@ class SpaceHelper(val ctx: Context,
 
   companion object {
     const val TP_BUILDING = "building"
-    const val TP_VESSEL = "vessel"
+    const val TP_VESSEL = "vessel-wrong"
   }
 
   private val cache by lazy { Cache(ctx) }

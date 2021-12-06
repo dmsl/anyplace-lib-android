@@ -243,7 +243,7 @@ internal class YoloV4Detector(
         if (usePadding && imageHeight>imageWidth) {
             ratio= (imageHeight.toFloat()/imageWidth)
             ratioQ = 1+((ratio-1)/8f)
-            LOG.V5("ratioQ: $ratioQ")
+            // LOG.V5("ratioQ: $ratioQ")
         }
 
         val boundingBoxes = outputMap[0]!![0]
@@ -254,9 +254,7 @@ internal class YoloV4Detector(
                 val bestClassIndex: Int = labels.indices.maxByOrNull { classScores[it] }!!
                 val bestScore = classScores[bestClassIndex]
 
-                if (bestScore <= minimumScore) {
-                    return@mapIndexedNotNull null
-                }
+                if (bestScore <= minimumScore) { return@mapIndexedNotNull null }
 
                 var xPos = boundingBoxes[0]
                 val yPos = boundingBoxes[1]

@@ -14,8 +14,7 @@ import kotlin.system.measureTimeMillis
 class DetectionProcessor(
         private val displayMetrics: DisplayMetrics,
         private var detector: Detector,
-        private var trackingOverlay: TrackingOverlayView
-) {
+        private var trackingOverlay: TrackingOverlayView) {
   private companion object {
     const val SHOW_SCORE: Boolean = true
   }

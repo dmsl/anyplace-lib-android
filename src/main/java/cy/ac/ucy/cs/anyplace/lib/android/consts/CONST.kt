@@ -64,7 +64,7 @@ class CONST {
     // public, accessible, owned
     const val PREF_MISC_QUERY_SPACE_OWNERSHIP= "pref_misc_queryType_space_ownership"
     const val PREF_MISC_QUERY_SPACE_OWNERSHIP_ID= "pref_misc_queryType_space_ownershipId"
-    // building or vessel
+    // building or vessel-wrong
     const val PREF_MISC_QUERY_SPACE_TYPE= "pref_misc_queryType_space_type"
     const val PREF_MISC_QUERY_SPACE_TYPE_ID="pref_misc_queryType_space_typeId"
 

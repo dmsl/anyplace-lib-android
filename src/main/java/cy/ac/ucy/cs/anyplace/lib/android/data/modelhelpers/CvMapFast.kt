@@ -122,7 +122,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
    * - [locationMap]
    */
   fun populateBitmap() {
-    LOG.D(TAG, "populateBitmap")
+    LOG.D2(TAG, "populateBitmap")
     for (locationIndex in cvMap.locations.indices) {
       val location = cvMap.locations[locationIndex]
 
@@ -149,13 +149,13 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
         }
       }
 
-      LOG.D("${_locNames[dbgkey]}: classes: $locValues")
+      LOG.V3(TAG_METHOD, "${_locNames[dbgkey]}: classes: $locValues")
     }
 
 
     locationMap.forEach { (coordClass, detections) ->
       val dbgkey = coordClass.coord.lat.toString()+"_"+coordClass.coord.lon.toString()
-      LOG.W("LM: ${_locNames[dbgkey]}: class: ${labels[coordClass.classId]}:${coordClass.classId} num: ${detections.size} ")
+      LOG.V4(TAG_METHOD, "LM: ${_locNames[dbgkey]}: class: ${labels[coordClass.classId]}:${coordClass.classId} num: ${detections.size} ")
       // LOG.D("${_locNames[dbgkey]}: class: ${it.detection} idx:$idx")
     }
 

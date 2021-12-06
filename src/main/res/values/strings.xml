@@ -214,5 +214,6 @@
    - the \"Object Map\" will be stored locally.
   </string>
   <string name="clear">Clear</string>
+  <string name="upper_floor">Upper floor</string>
 
 </resources>

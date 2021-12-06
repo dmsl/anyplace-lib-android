@@ -6,9 +6,12 @@ import android.graphics.BitmapFactory
 import android.renderscript.ScriptGroup
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
@@ -33,7 +36,6 @@ class Cache(val ctx: Context) {
     val JS_FLOORS = "f.json"
     //// Space/Floor
     val PNG_FLOORPLAN = "f.png"
-    val JS_CVMAP = "cvmap.json"
   }
 
   // SPACES
@@ -68,7 +70,7 @@ class Cache(val ctx: Context) {
       val lv = Gson().fromJson(json, LastValSpaces::class.java)
       return lv
     } catch (e: Exception) {
-     LOG.E(TAG, "readSpaceLastValues: $filename: ${e.message}")
+      LOG.E(TAG, "readSpaceLastValues: $filename: ${e.message}")
     }
 
     return null
@@ -109,15 +111,47 @@ class Cache(val ctx: Context) {
   }
 
   //// CV Detection Maps
-  fun jsonFloorCvMap(floor: Floor) : String {  return "${dirFloor(floor)}/$JS_CVMAP" }
-  fun jsonFloorCvMap(cvMap: CvMap) : String {  return "${dirFloor(cvMap)}/$JS_CVMAP" }
-  fun hasJsonFloorCvMap(floor: Floor): Boolean { return File(jsonFloorCvMap(floor)).exists() }
-  fun hasJsonFloorCvMap(cvMap: CvMap): Boolean { return File(jsonFloorCvMap(cvMap)).exists() }
-  fun deleteFloorCvMap(cvMap: CvMap) {  _deleteFloorCvMap(jsonFloorCvMap(cvMap)) }
-  fun deleteFloorCvMap(floor: Floor) {  _deleteFloorCvMap(jsonFloorCvMap(floor)) }
-  private fun _deleteFloorCvMap(filename: String) {  File(filename).delete()  }
+  ////// Filenames for CvModels: its the model-name.json
+  fun filenameCvMapModel(model: String) : String {  return "${model}.json" }
+  fun filenameCvMapModel(model: DetectionModel) : String {  return "${model.modelName}.json" }
+  fun filenameCvMapModel(cvMap: CvMap) : String {  return "${cvMap.detectionModel}.json" }
 
-  // /**
+  /** Directory (per [Floor] of [CvMap]s. */
+  fun dirFloorCvMaps(floor: Floor) : String {  return "${dirFloor(floor)}/cvmap" }
+  fun dirFloorCvMaps(cvMap: CvMap) : String {  return "${dirFloor(cvMap)}/cvmap" }
+  fun hasDirFloorCvMaps(floor: Floor): Boolean { return File(dirFloorCvMaps(floor)).exists() }
+  fun hasDirFloorCvMaps(cvMap: CvMap): Boolean { return File(dirFloorCvMaps(cvMap)).exists() }
+
+  fun deleteFloorCvMaps(cvMap: CvMap) {  File(dirFloorCvMaps(cvMap)).deleteRecursively() }
+  fun deleteFloorCvMaps(floor: Floor) {  File(dirFloorCvMaps(floor)).deleteRecursively() }
+
+  fun jsonFloorCvMapModel(f: Floor, m: String) : String {  return "${dirFloorCvMaps(f)}/${filenameCvMapModel(m)}" }
+  fun jsonFloorCvMapModel(f: Floor, m: DetectionModel) : String {  return "${dirFloorCvMaps(f)}/${filenameCvMapModel(m)}" }
+  fun jsonFloorCvMapModel(cvm: CvMap) : String {  return "${dirFloorCvMaps(cvm)}/${filenameCvMapModel(cvm)}" }
+
+  fun hasJsonFloorCvMapModel(f: Floor, m: String): Boolean { return File(jsonFloorCvMapModel(f, m)).exists() }
+  fun printJsonFloorCvMapModel(f: Floor, m: DetectionModel) { LOG.W(TAG, jsonFloorCvMapModel(f, m)) }
+  fun hasJsonFloorCvMapModel(f: Floor, m: DetectionModel): Boolean {
+    printJsonFloorCvMapModel(f, m)
+    return File(jsonFloorCvMapModel(f, m)).exists() }
+  fun hasJsonFloorCvMapModel(cvm: CvMap): Boolean { return File(jsonFloorCvMapModel(cvm)).exists() }
+
+  fun deleteFloorCvMapModel(f: Floor, m: String) {  File(jsonFloorCvMapModel(f, m)).delete() }
+  fun deleteFloorCvMapModel(f: Floor, m: DetectionModel) {  File(jsonFloorCvMapModel(f, m)).delete() }
+  fun deleteFloorCvMapModel(cvm: CvMap) {  File(jsonFloorCvMapModel(cvm)).delete() }
+
+
+  // LEFTHERE: wrong name.. it is capitals XXX
+  // CAMPUS_UCY instead of campus-ucy (for the folder name..)
+
+  // fun jsonFloorCvMapModel(cvMap: CvMap) : String {  return "${dirFloor(cvMap)}/${cvMap.detectionModel}/$JS_CVMAP" }
+  // fun hasJsonFloorCvMapModel(floor: Floor): Boolean { return File(jsonFloorCvMap(floor)).exists() }
+  // fun hasJsonFloorCvMapModel(cvMap: CvMap): Boolean { return File(jsonFloorCvMap(cvMap)).exists() }
+  // fun deleteFloorCvMap(cvMap: CvMap) {  _deleteFloorCvMap(jsonFloorCvMap(cvMap)) }
+  // fun deleteFloorCvMap(floor: Floor) {  _deleteFloorCvMap(jsonFloorCvMap(floor)) }
+
+
+  // /** CHECK:PM CLR?
   //  * Appends to the floor plan
   //  */
   // fun readAndMerge(cvMap: CvMap): Boolean {
@@ -144,14 +178,14 @@ class Cache(val ctx: Context) {
    *
    */
   fun saveFloorCvMap(cvMap: CvMap): Boolean {
-    val filename = jsonFloorCvMap(cvMap)
+    val filename = jsonFloorCvMapModel(cvMap)
     return try {
-      File(dirSpace(cvMap)).mkdirs()
+      File(dirFloorCvMaps(cvMap)).mkdirs()
       val fw= FileWriter(File(filename))
       Gson().toJson(cvMap, fw)
       fw.close()
-      LOG.D2(TAG, "saveFloorCvMap: $cvMap")
-      LOG.D2(TAG, "saveFloorCvMap: $filename")
+      LOG.D2(TAG_METHOD, "$cvMap")
+      LOG.D2(TAG_METHOD, "filename: $filename")
       true
     } catch (e: Exception) {
       LOG.E(TAG, "saveFloorCvMap: $filename: ${e.message}")
@@ -159,8 +193,10 @@ class Cache(val ctx: Context) {
     }
   }
 
-  fun readFloorCvMap(cvMap: CvMap) = _readFloorCvMap(jsonFloorCvMap(cvMap))
-  fun readFloorCvMap(floor: Floor) = _readFloorCvMap(jsonFloorCvMap(floor))
+  fun readFloorCvMap(cvMap: CvMap) = _readFloorCvMap(jsonFloorCvMapModel(cvMap))
+  fun readFloorCvMap(floor: Floor, model: DetectionModel)
+          = _readFloorCvMap(jsonFloorCvMapModel(floor, model))
+
   private fun _readFloorCvMap(filename: String): CvMap? {
     LOG.V4(TAG, "_readFloorCvMap: file: $filename")
     try {
