@@ -42,10 +42,12 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
-  packagingOptions {
-    exclude 'META-INF/DEPENDENCIES'
-  }
-  compileOptions {
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
+        }
+    }
+    compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
@@ -164,13 +166,10 @@ dependencies {
   implementation "androidx.camera:camera-lifecycle:1.0.1"
   implementation "androidx.camera:camera-view:1.0.0-alpha28"
 
+
   ////  Deep-Learning engine
   implementation 'org.tensorflow:tensorflow-lite:2.3.0'
   implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
-
-  // FLIR: TODO move on LASH app
-  implementation files('libs/flir/androidsdk-release.aar')
-  implementation files('libs/flir/thermalsdk-release.aar')
 
   // TESTING
   // testImplementation 'junit:junit:4.12'
