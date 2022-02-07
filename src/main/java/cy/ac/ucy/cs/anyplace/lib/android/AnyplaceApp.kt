@@ -25,6 +25,7 @@ import javax.inject.Inject
  *
  */
 abstract class AnyplaceApp : Application() {
+
   lateinit var dataStoreServer: DataStoreServer
   /** Preferences for Cv Activities */
   lateinit var dataStoreCv: DataStoreCv
@@ -57,17 +58,11 @@ abstract class AnyplaceApp : Application() {
 
     dynamicallyInjectRetrofit()
 
-    // CLR:PM
+    // CLR:PM OBSOLETE CODE
     prefs = Preferences(applicationContext)
     fileCache = FileCache(prefs)
     fileCache.initDirs()
   }
-
-  // fun buildComponent(): AppComponent {
-  //   return DaggerAppComponent.builder()
-  //           .appModule(AppModule(this))
-  //           .build()
-  // }
 
   /**
    * Dynamically provide a new Retrofit instance each time the

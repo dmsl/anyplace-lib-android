@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
+package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -20,13 +20,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 
+// TODO: keep just logger stuff, and put generic in CvVM
+
 enum class Logging {
   running,
   stopped,
   stoppedMustStore,
   stoppedNoDetections,
-  // finished, CLR:PM
   demoNavigation, // DemoLocalization
+  // finished, CLR:PM
 }
 
 enum class TimerAnimation {
@@ -170,7 +172,7 @@ class CvLoggerViewModel @Inject constructor(
         val now = System.currentTimeMillis()
         windowStart=now-windowElapsedPause
       }
-      Logging.running-> {
+      Logging.running -> {
         previouslyPaused = true
         logging.value = Logging.stopped
         LOG.D("toggleLogging: paused")

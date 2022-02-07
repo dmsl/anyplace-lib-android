@@ -27,8 +27,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase.Companion.CAMERA_ROTATION
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvViewModelBase
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvViewModelBase.Companion.CAMERA_ROTATION
 import cy.ac.ucy.cs.anyplace.lib.models.CvMap
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors

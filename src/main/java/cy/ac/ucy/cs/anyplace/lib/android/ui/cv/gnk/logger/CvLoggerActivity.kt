@@ -18,10 +18,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.removeMaterialButtonIcon
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvLoggerViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Localization
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.Logging
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.TimerAnimation
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Localization
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Logging
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import dagger.hilt.android.AndroidEntryPoint

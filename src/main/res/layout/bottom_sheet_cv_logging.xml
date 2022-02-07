@@ -7,7 +7,7 @@
   <data>
     <variable
         name="vm"
-        type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvLoggerViewModel" />
+        type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout

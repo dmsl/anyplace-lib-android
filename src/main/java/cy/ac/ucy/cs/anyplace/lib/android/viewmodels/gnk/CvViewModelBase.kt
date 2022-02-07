@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
+package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk
 
 import android.annotation.SuppressLint
 import android.app.Application

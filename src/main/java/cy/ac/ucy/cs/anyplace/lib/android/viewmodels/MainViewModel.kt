@@ -27,9 +27,11 @@ import java.lang.NullPointerException
 import java.net.UnknownServiceException
 import javax.inject.Inject
 
-// TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
-//  (e.g. SpaceViewModel, Login)
+/**
+TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
+(e.g. SpaceViewModel, Login)
 
+*/
 @HiltViewModel
 class MainViewModel @Inject constructor(
   app: Application,

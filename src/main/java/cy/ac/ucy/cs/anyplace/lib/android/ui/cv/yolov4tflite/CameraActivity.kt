@@ -21,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.hardware.Camera.PreviewCallback
 import android.widget.LinearLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import android.widget.TextView
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.R
 import android.view.WindowManager
@@ -36,11 +35,17 @@ import android.media.ImageReader
 import android.os.*
 import android.util.Size
 import android.view.Surface
-import android.widget.ImageView
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
 import java.lang.Exception
 
+/**
+ * Contains logic related to:
+ * 1. The Camera (nothing about detection)
+ * 2. The Basic BottomSheet binding:
+ *    - it sets it up, and
+ *    - knows nothing about the content and structure of the BottomSheet
+ */
 abstract class CameraActivity : AppCompatActivity(),
         ImageReader.OnImageAvailableListener,
         PreviewCallback {
@@ -62,10 +67,7 @@ abstract class CameraActivity : AppCompatActivity(),
   protected lateinit var bottomSheetLayout: LinearLayout
   protected lateinit var gestureLayout: LinearLayout
   protected lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
-  protected lateinit var frameValueTextView: TextView
-  protected lateinit var cropValueTextView: TextView
-  protected lateinit var inferenceTimeTextView: TextView
-  protected lateinit var bottomSheetArrowImageView: ImageView
+
   private var rgbBytes: IntArray? = null
 
   protected var previewWidth = 0
@@ -80,21 +82,46 @@ abstract class CameraActivity : AppCompatActivity(),
   private var postInferenceCallback: Runnable? = null
   private var imageConverter: Runnable? = null
 
+
+  // OVERRIDES
+  ///// LAYOUT
+  protected abstract val layout_activity: Int
+  protected abstract val layout_camera_fragment: Int
+  protected abstract val id_bottomsheet: Int
+  protected abstract val id_gesture_layout: Int
+
+  //// CAMERA METHODS
+  protected abstract fun processImage()
+  protected abstract fun onProcessImageFinished()
+  protected abstract fun onPreviewSizeChosen(size: Size?, rotation: Int)
+
+  //// OPTIONS
+  protected abstract val desiredPreviewFrameSize: Size?
+  protected abstract fun setNumThreads(numThreads: Int)
+  protected abstract fun setUseNNAPI(isChecked: Boolean)
+  protected abstract fun setupSpecializedUi()
+
   override fun onCreate(savedInstanceState: Bundle?) {
     LOG.V()
     super.onCreate(null)
 
-    // Bind overridden UI elements:
+    setupBaseUi()
+    checkPermissionsAndConnectCamera()
+    setupSpecializedUi()
+  }
+
+  /**
+   * Base UI includes at least:
+   * - the layout that is set from an overridden getter
+   * - a bottom sheet
+   */
+  private fun setupBaseUi() {
+    // bind overridden UI elements
     setContentView(layout_activity)
     bottomSheetLayout = findViewById(id_bottomsheet)
     gestureLayout = findViewById(id_gesture_layout)
-    bottomSheetArrowImageView = findViewById(id_bottomsheet_arrow)
 
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
-    checkPermissionsAndConnectCamera()
-
-    setupBottomSheet()
   }
 
   fun checkPermissionsAndConnectCamera() {
@@ -104,8 +131,6 @@ abstract class CameraActivity : AppCompatActivity(),
       requestCameraPermission()
     }
   }
-
-  protected abstract fun setupBottomSheet()
 
   protected fun getRgbBytes(): IntArray? {
     imageConverter!!.run()
@@ -131,7 +156,7 @@ abstract class CameraActivity : AppCompatActivity(),
         onPreviewSizeChosen(Size(previewSize.width, previewSize.height), 90)
       }
     } catch (e: Exception) {
-      LOG.E(TAG_METHOD, e)
+      LOG.E(e)
       return
     }
     isProcessingFrame = true
@@ -142,8 +167,7 @@ abstract class CameraActivity : AppCompatActivity(),
               bytes,
               previewWidth,
               previewHeight,
-              rgbBytes
-      )
+              rgbBytes)
     }
     postInferenceCallback = Runnable {
       camera.addCallbackBuffer(bytes)
@@ -174,20 +198,18 @@ abstract class CameraActivity : AppCompatActivity(),
       luminanceStride = planes[0].rowStride
       val uvRowStride = planes[1].rowStride
       val uvPixelStride = planes[1].pixelStride
-      imageConverter = object : Runnable {
-        override fun run() {
-          ImageUtils.convertYUV420ToARGB8888(
-                  yuvBytes[0],
-                  yuvBytes[1],
-                  yuvBytes[2],
-                  previewWidth,
-                  previewHeight,
-                  luminanceStride,
-                  uvRowStride,
-                  uvPixelStride,
-                  rgbBytes
-          )
-        }
+      imageConverter = Runnable {
+        ImageUtils.convertYUV420ToARGB8888(
+                yuvBytes[0],
+                yuvBytes[1],
+                yuvBytes[2],
+                previewWidth,
+                previewHeight,
+                luminanceStride,
+                uvRowStride,
+                uvPixelStride,
+                rgbBytes
+        )
       }
       postInferenceCallback = Runnable {
         image.close()
@@ -195,7 +217,7 @@ abstract class CameraActivity : AppCompatActivity(),
       }
       processImage()
     } catch (e: Exception) {
-      LOG.E("Exception: " + e.message)
+      LOG.E(e)
       Trace.endSection()
       return
     }
@@ -265,9 +287,7 @@ abstract class CameraActivity : AppCompatActivity(),
   private fun hasCameraPermission(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED
-    } else {
-      true
-    }
+    } else true
   }
 
   private fun requestCameraPermission() {
@@ -359,9 +379,7 @@ abstract class CameraActivity : AppCompatActivity(),
   }
 
   protected fun readyForNextImage() {
-    if (postInferenceCallback != null) {
-      postInferenceCallback!!.run()
-    }
+    postInferenceCallback?.run()
   }
 
   protected val screenOrientation: Int
@@ -371,32 +389,4 @@ abstract class CameraActivity : AppCompatActivity(),
       Surface.ROTATION_90 -> 90
       else -> 0
     }
-
-  protected fun showFrameInfo(frameInfo: String?) {
-    frameValueTextView.text = frameInfo
-  }
-
-  protected fun showCropInfo(cropInfo: String?) {
-    cropValueTextView.text = cropInfo
-  }
-
-  protected fun showInference(inferenceTime: String?) {
-    inferenceTimeTextView.text = inferenceTime
-  }
-
-  // CAMERA METHODS
-  protected abstract fun processImage()
-  protected abstract fun onPreviewSizeChosen(size: Size?, rotation: Int)
-
-  // LAYOUT OVERRIDES
-  protected abstract val layout_activity: Int
-  protected abstract val layout_camera_fragment: Int
-  protected abstract val id_bottomsheet: Int
-  protected abstract val id_gesture_layout: Int
-  protected abstract val id_bottomsheet_arrow: Int
-
-  // OPTIONS
-  protected abstract val desiredPreviewFrameSize: Size?
-  protected abstract fun setNumThreads(numThreads: Int)
-  protected abstract fun setUseNNAPI(isChecked: Boolean)
 }

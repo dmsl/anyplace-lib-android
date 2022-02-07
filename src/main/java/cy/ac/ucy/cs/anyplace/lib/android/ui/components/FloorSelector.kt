@@ -11,9 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeOut
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 
 /**

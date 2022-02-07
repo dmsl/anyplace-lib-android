@@ -1,39 +1,47 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * This is the default DetectorActivity as it comes from:
  * - https://github.com/hunglc007/tensorflow-yolov4-tflite
  */
-
-
-
-// LEFTHERE: USE GETTERS !!!
-// LEFTHERE: USE GETTERS !!!
-// LEFTHERE: USE GETTERS !!!
-// override val desiredPreviewFrameSize: Size?
-//   get() = DetectorActivityBase.DESIRED_PREVIEW_SIZE
 class DetectorActivity : DetectorActivityBase() {
-
-  // Must provide the below:
+  // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.tfe_od_activity_camera
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   override val id_gesture_layout: Int get() = R.id.bottom_sheet_layout
-  override val id_bottomsheet_arrow: Int get() = R.id.bottom_sheet_arrow
+
+  // BottomSheet specific details (default ones)
+  lateinit var frameValueTextView: TextView
+  lateinit var cropValueTextView: TextView
+  lateinit var inferenceTimeTextView: TextView
+  lateinit var bottomSheetArrowImageView: ImageView
 
   override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
     LOG.D()
     super.onCreate(savedInstanceState, persistentState)
   }
 
-  override fun setupBottomSheet() {
+  override fun setupSpecializedUi() {
+    setupBottomSheet()
+  }
+
+  fun setupBottomSheet() {
+    bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow)
+
     sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout)
     val vto = gestureLayout.viewTreeObserver
 
@@ -47,6 +55,14 @@ class DetectorActivity : DetectorActivityBase() {
             })
 
     sheetBehavior.isHideable = false
+    setupBottomStageChange()
+
+    frameValueTextView = findViewById(R.id.frame_info)
+    cropValueTextView = findViewById(R.id.crop_info)
+    inferenceTimeTextView = findViewById(R.id.inference_info)
+  }
+
+  private fun setupBottomStageChange() {
     sheetBehavior.setBottomSheetCallback(
             object : BottomSheetBehavior.BottomSheetCallback() {
               override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -61,15 +77,24 @@ class DetectorActivity : DetectorActivityBase() {
                   else -> {}
                 }
               }
-
-              override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                LOG.D("Sliding...")
-              }
+              override fun onSlide(bottomSheet: View, slideOffset: Float) {}
             })
+  }
 
-    frameValueTextView = findViewById(R.id.frame_info)
-    cropValueTextView = findViewById(R.id.crop_info)
-    inferenceTimeTextView = findViewById(R.id.inference_info)
+  override fun onProcessImageFinished() {
+    LOG.D()
+    lifecycleScope.launch(Dispatchers.Main) {
+      updateUiBottomSheet()
+    }
+  }
+
+  @SuppressLint("SetTextI18n")
+  private fun updateUiBottomSheet() {
+    frameValueTextView.text = "${previewWidth}x${previewHeight}"
+    val w = cropCopyBitmap.width
+    val h = cropCopyBitmap.height
+    cropValueTextView.text = "${w}x${h}"
+    inferenceTimeTextView.text =  "${lastProcessingTimeMs}ms"
   }
 
 }

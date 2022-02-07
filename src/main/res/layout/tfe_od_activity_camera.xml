@@ -22,47 +22,21 @@
     android:layout_height="match_parent"
     android:background="#00000000">
 
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/relativeLayout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/black"
+      android:orientation="vertical">
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!--<RelativeLayout-->
-    <!--TODO:MRG RENAME TO: -->
-    <!--android:id="@+id/constraintLayout"-->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/relativeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="STN"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <!--<androidx.appcompat.widget.Toolbar-->
-        <!--    android:id="@+id/toolbar"-->
-        <!--    android:layout_width="match_parent"-->
-        <!--    android:layout_height="?attr/actionBarSize"-->
-        <!--    android:layout_alignParentTop="true"-->
-        <!--    android:background="@color/tfe_semi_transparent">-->
-
-        <!--    <ImageView-->
-        <!--        android:layout_width="wrap_content"-->
-        <!--        android:layout_height="wrap_content"-->
-        <!--        android:src="@drawable/tfl2_logo" />-->
-        <!--</androidx.appcompat.widget.Toolbar>-->
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <!--</RelativeLayout>-->
-
-    <include
-        android:id="@+id/bottom_sheet_layout"
-        layout="@layout/tfe_od_layout_bottom_sheet" />
-
+    <!-- Used by CameraActivity -->
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
@@ -72,4 +46,16 @@
         tools:context="org.tensorflow.demo.CameraActivity">
 
     </FrameLayout>
+
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <include
+        android:id="@+id/bottom_sheet_layout"
+        layout="@layout/tfe_od_layout_bottom_sheet" />
+
+
+
+
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
