@@ -47,18 +47,23 @@ enum class Localization {
   stopped,
   stoppedNoDetections,
 }
-/**  TODO put in CvMapViewModel
+
+/** CvMapViewModel is used by:
+ *  - Logger TODO
+ *  - Navigator TODO
+ *  - SMASS TODO
+ *
+ *  Other notes:
  *    - floorplan fetching
  *    - gmap markers
  */
-@HiltViewModel
-abstract class CvMapViewModel @Inject constructor(
+// @HiltViewModel
+abstract class CvMapViewModel constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
         val repository: Repository,
         val retrofitHolder: RetrofitHolder): DetectorViewModel(application) {
-
 
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
