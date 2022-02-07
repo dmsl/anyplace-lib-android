@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.graphics.Bitmap
 import android.graphics.RectF
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 
 @Deprecated("")
 /**

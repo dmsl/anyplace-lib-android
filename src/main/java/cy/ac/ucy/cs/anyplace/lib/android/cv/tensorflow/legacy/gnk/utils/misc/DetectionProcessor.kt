@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.misc
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.misc
 
 import android.graphics.*
 import android.util.DisplayMetrics

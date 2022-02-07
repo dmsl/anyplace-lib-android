@@ -51,9 +51,6 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
-// import org.tensorflow.lite.examples.detection.env.ImageUtils;
-// import org.tensorflow.lite.examples.detection.env.Logger;
-
 import java.nio.ByteBuffer;
 
 import cy.ac.ucy.cs.anyplace.lib.R;

@@ -22,7 +22,7 @@ android {
     //noinspection OldTargetApi,ExpiredTargetSdkVersion
     targetSdkVersion 30
 
-      // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
 
     // Read the API key from ./secure.properties into R.string.maps_api_key
@@ -42,12 +42,12 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
-    packagingOptions {
-        resources {
-            excludes += ['META-INF/DEPENDENCIES']
-        }
+  packagingOptions {
+    resources {
+      excludes += ['META-INF/DEPENDENCIES']
     }
-    compileOptions {
+  }
+  compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
@@ -58,9 +58,9 @@ android {
     dataBinding true
     viewBinding true
   }
-    androidResources {
-        noCompress 'tflite'
-    }
+  androidResources {
+    noCompress 'tflite'
+  }
 }
 
 
@@ -169,10 +169,11 @@ dependencies {
 
 
   ////  Deep-Learning engine
-//  implementation 'org.tensorflow:tensorflow-lite:2.3.0'
-//  implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
   implementation 'org.tensorflow:tensorflow-lite:2.2.0'
   implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
+  // INCOMPATIBLE with some models:
+  // implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+  // implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
 
 
   // TESTING

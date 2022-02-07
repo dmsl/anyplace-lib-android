@@ -17,7 +17,7 @@ import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.YoloConstants
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.Utils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate

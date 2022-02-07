@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums
+package cy.ac.ucy.cs.anyplace.lib.android.cv.enums
 
 class CONFIG {
   companion object {

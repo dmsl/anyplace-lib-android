@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger.CvLoggerActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger.StatusUpdater
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import kotlinx.coroutines.CoroutineScope
 

@@ -16,8 +16,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.YoloConstants
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.DetectionProcessor
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.misc.DetectionProcessor
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.DetectorFactory
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4Detector

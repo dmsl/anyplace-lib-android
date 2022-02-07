@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.content.res.AssetManager
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 
 @Deprecated("")
 object DetectorFactory {

@@ -1,6 +1,6 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.misc
+package cy.ac.ucy.cs.anyplace.lib.android.cv.enums
 
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 
 object YoloConstants {
   // TODO:PM OPTIONS

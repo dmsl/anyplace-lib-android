@@ -8,7 +8,7 @@ import android.os.SystemClock
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import org.tensorflow.lite.Interpreter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector.Detection
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import org.tensorflow.lite.gpu.GpuDelegate
 import java.io.FileInputStream

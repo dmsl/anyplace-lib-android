@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import android.util.Base64
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import okhttp3.ResponseBody
 import retrofit2.Response
 
