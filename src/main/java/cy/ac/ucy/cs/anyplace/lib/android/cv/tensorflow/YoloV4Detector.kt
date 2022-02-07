@@ -172,7 +172,7 @@ internal class YoloV4Detector(
                 options.setUseNNAPI(true)
             }
             else -> {
-                options.setUseXNNPACK(true)
+                // options.setUseXNNPACK(true)
             }
         }
 

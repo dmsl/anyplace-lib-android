@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk
 
 import android.app.Activity
 import android.content.Context
@@ -10,8 +10,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.StatusUpdater
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger.CvLoggerActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger.StatusUpdater
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvViewModelBase
 import kotlinx.coroutines.CoroutineScope
 

@@ -169,8 +169,11 @@ dependencies {
 
 
   ////  Deep-Learning engine
-  implementation 'org.tensorflow:tensorflow-lite:2.3.0'
-  implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+//  implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+//  implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+  implementation 'org.tensorflow:tensorflow-lite:2.2.0'
+  implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
+
 
   // TESTING
   // testImplementation 'junit:junit:4.12'

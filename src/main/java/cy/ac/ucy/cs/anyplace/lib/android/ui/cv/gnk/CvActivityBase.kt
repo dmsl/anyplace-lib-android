@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk
 
 import android.Manifest
 import android.content.pm.PackageManager

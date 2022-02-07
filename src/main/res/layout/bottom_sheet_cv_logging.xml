@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:background="@drawable/bottom_sheet_cv_logging_bg"
+        android:background="@drawable/cv_bottom_sheet_logging_bg"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:padding="8dp"

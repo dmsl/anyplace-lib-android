@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger
 
 import android.content.Context
 import android.view.View
@@ -62,7 +62,7 @@ class StatusUpdater(
         Level.Warning -> ColorWarning(ctx)
         Level.Error -> ColorError(ctx)
         Level.Info -> ColorInfo(ctx)
-        Level.Normal-> ColorNormal(ctx)
+        Level.Normal -> ColorNormal(ctx)
       }
     }
   }
@@ -137,7 +137,7 @@ class StatusUpdater(
     }
   }
 
-  private fun showMsgAutohide(level:Level, title: String, subtitle: String, delay: Long) {
+  private fun showMsgAutohide(level: Level, title: String, subtitle: String, delay: Long) {
     scope.launch {
       clearMessages()
       tvBg.setBackgroundColor(ColorWhite(ctx))

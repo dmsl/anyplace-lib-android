@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger
 
 import android.view.View
 import android.widget.ImageView

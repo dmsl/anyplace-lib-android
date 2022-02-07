@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.logger
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -16,9 +16,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.UiActivityCvBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime

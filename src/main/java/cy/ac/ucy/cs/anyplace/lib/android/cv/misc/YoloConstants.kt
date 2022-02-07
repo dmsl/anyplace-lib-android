@@ -8,6 +8,7 @@ object YoloConstants {
   @Deprecated("replace all usages with the active model. and make it a setting..")
   // val DETECTION_MODEL: DetectionModel = DetectionModel.COCO
   val DETECTION_MODEL: DetectionModel = DetectionModel.VESSEL_b64sb8
+
   // val DETECTION_MODEL: DetectionModel = DetectionModel.VESSEL_b64sb1
   // val DETECTION_MODEL: DetectionModel = DetectionModel.VESSEL
   // val DETECTION_MODEL: DetectionModel = DetectionModel.VESSEL_v1
