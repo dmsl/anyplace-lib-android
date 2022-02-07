@@ -1,9 +1,10 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.graphics.Bitmap
 import android.media.Image
 import android.renderscript.ScriptIntrinsicYuvToRGB
 
+@Deprecated("")
 /**
  * Utility class for converting [Image] to [Bitmap].
  */

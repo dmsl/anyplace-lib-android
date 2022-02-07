@@ -1,9 +1,10 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization
 
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 
+@Deprecated("")
 /**
  * A class that encapsulates the tedious bits of rendering legible, bordered text onto a [Canvas].
  */

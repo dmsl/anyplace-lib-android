@@ -1,9 +1,10 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.graphics.Bitmap
 import android.graphics.RectF
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 
+@Deprecated("")
 /**
  * Generic interface for interacting with different detection engines.
  */

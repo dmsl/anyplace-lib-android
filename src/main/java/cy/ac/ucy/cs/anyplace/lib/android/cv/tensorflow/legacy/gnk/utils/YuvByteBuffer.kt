@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.graphics.ImageFormat
 import android.media.Image
@@ -14,6 +14,7 @@ https://github.com/android/camera-samples/blob/master/CameraUtils/lib/src/main/j
 @IntDef(ImageFormat.NV21, ImageFormat.YUV_420_888)
 annotation class YuvType
 
+@Deprecated("")
 class YuvByteBuffer(image: Image, dstBuffer: ByteBuffer? = null) {
     @YuvType
     val type: Int

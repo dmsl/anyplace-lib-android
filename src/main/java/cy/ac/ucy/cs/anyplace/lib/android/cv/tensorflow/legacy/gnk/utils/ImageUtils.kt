@@ -1,9 +1,10 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.graphics.Matrix
 import android.util.Log
 import kotlin.math.abs
 
+@Deprecated("")
 /**
  * Utility class for manipulating images.
  */

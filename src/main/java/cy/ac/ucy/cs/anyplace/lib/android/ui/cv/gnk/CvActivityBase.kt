@@ -19,7 +19,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers

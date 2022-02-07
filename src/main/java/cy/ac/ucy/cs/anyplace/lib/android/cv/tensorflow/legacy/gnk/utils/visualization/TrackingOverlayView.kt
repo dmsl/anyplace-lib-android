@@ -1,11 +1,12 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization
 
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.MultiBoxTracker
 
+
+@Deprecated("")
 /**
  * A simple [View] providing a render callback for [MultiBoxTracker].
  */

@@ -24,21 +24,34 @@ import java.io.IOException
 import java.util.*
 
 /**
+ *
+ * TODO:
+ * - COMMON:
+ *   - bottom sheet
+ *   - settings button
+ *   - setup those from here
+ *
+ *  - BaseClass:
+ *   - CvMapActivity:
+ *    - COMMON:
+ *      - floor picker, etc..
+ *
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
  * objects.
  */
 class DetectorActivity : CameraActivity(), OnImageAvailableListener {
   companion object {
     private val MODE = DetectorMode.TF_OD_API
-    // private const val TF_OD_API_INPUT_SIZE = 416
-    // private const val TF_OD_API_IS_QUANTIZED = false
-
-    // private const val MINIMUM_CONFIDENCE_TF_OD_API = 0.2f
     private const val MAINTAIN_ASPECT = false
     private val DESIRED_PREVIEW_SIZE = Size(640, 480)
     private const val SAVE_PREVIEW_BITMAP = false
     private const val TEXT_SIZE_DIP = 10f
   }
+
+  private lateinit var rgbFrameBitmap: Bitmap
+  private lateinit var croppedBitmap: Bitmap
+  private lateinit var frameToCropTransform: Matrix
+  private lateinit var cropCopyBitmap: Bitmap
 
   var trackingOverlay: OverlayView? = null
   private var sensorOrientation: Int? = null
@@ -51,11 +64,6 @@ class DetectorActivity : CameraActivity(), OnImageAvailableListener {
   private var tracker: MultiBoxTracker? = null
   private var borderedText: BorderedText? = null
 
-  private lateinit var rgbFrameBitmap: Bitmap
-  private lateinit var croppedBitmap: Bitmap
-  private lateinit var frameToCropTransform: Matrix
-  private lateinit var cropCopyBitmap: Bitmap
-
 
   public override fun onPreviewSizeChosen(size: Size, rotation: Int) {
     //ViewModel
@@ -67,15 +75,14 @@ class DetectorActivity : CameraActivity(), OnImageAvailableListener {
     tracker = MultiBoxTracker(this)
 
     val model = YoloConstants.DETECTION_MODEL
-    val cropSize = model.inputSize  // TF_OD_API_INPUT_SIZE
+    val cropSize = model.inputSize
+
     try {
       detector = YoloV4Classifier.create(
               assets,
-              model.modelFilename, //TF_OD_API_MODEL_FILE
-              model.labelFilePath, // TF_OD_API_LABELS_FILE,
-              model.isQuantized) // TF_OD_API_IS_QUANTIZED
-
-      // cropSize = model.inputSize // TF_OD_API_INPUT_SIZE
+              model.modelFilename,
+              model.labelFilePath,
+              model.isQuantized)
     } catch (e: IOException) {
       e.printStackTrace()
       LOG.E(TAG_METHOD, "Initializing classifier", e)

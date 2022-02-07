@@ -7,8 +7,8 @@ import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.YoloV4Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4Detector
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvLoggerPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper

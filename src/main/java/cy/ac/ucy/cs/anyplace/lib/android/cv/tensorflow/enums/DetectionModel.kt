@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums
 
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.CONFIG.Companion.INPUT_SIZE
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.CONFIG.Companion.OUTPUT_WIDTH_TINY
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.CONFIG.Companion.INPUT_SIZE
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.CONFIG.Companion.OUTPUT_WIDTH_TINY
 
 /**
  * TODO:PM Deprecate. download online.

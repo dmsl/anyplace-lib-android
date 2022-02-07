@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,6 +6,8 @@ import android.graphics.ImageFormat
 import android.media.Image
 import android.renderscript.*
 
+
+@Deprecated("")
 // TODO: RenderScript is deprecated in API 31 and newer. Additional Vulkan implementation is recommended.
 /**
  * Utility class for converting [Image] to [Bitmap].

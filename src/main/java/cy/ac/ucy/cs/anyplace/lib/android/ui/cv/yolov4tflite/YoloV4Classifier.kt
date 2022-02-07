@@ -17,6 +17,7 @@ import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.Utils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
@@ -41,7 +42,6 @@ import kotlin.math.sqrt
  */
 open class YoloV4Classifier private constructor() : Classifier {
   companion object {
-    const val MINIMUM_CONFIDENCE_TF_OD_API = 0.2f
 
     /**
      * Initializes a native TensorFlow session for classifying images.
@@ -153,10 +153,7 @@ open class YoloV4Classifier private constructor() : Classifier {
   override fun setUseNNAPI(isChecked: Boolean) {
     if (tfLite != null) tfLite!!.setUseNNAPI(isChecked)
   }
-
-  override fun getObjThresh(): Float {
-    return MINIMUM_CONFIDENCE_TF_OD_API
-  }
+  override fun getObjThresh() = YoloConstants.MINIMUM_SCORE
 
   private var isModelQuantized = false
 

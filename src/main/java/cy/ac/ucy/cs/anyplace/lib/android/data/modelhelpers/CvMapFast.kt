@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
 import cy.ac.ucy.cs.anyplace.lib.android.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD

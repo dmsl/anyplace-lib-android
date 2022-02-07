@@ -2,15 +2,15 @@ package cy.ac.ucy.cs.anyplace.lib.android.cv.misc
 
 import android.graphics.*
 import android.util.DisplayMetrics
-import android.util.Log
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.ImageUtils
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.MultiBoxTracker
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization.TrackingOverlayView
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageUtils
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.MultiBoxTracker
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import kotlin.system.measureTimeMillis
 
+@Deprecated("")
 class DetectionProcessor(
         private val displayMetrics: DisplayMetrics,
         private var detector: Detector,

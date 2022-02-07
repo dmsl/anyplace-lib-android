@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils
 
 import android.content.res.AssetManager
 import android.graphics.Bitmap
@@ -7,7 +7,7 @@ import android.graphics.RectF
 import android.os.SystemClock
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import org.tensorflow.lite.Interpreter
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector.Detection
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector.Detection
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -20,6 +20,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+@Deprecated("")
 internal class YoloV4Detector(
     assetManager: AssetManager,
     private val detectionModel: DetectionModel,

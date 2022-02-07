@@ -1,20 +1,20 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.visualization
+package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization
 
 import android.graphics.*
 import android.graphics.Paint.Cap
 import android.graphics.Paint.Join
 import android.util.DisplayMetrics
-import android.util.Log
 import android.util.Pair
 import android.util.TypedValue
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector.Detection
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.utils.ImageUtils.getTransformationMatrix
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector.Detection
+import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageUtils.getTransformationMatrix
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.math.min
 
+@Deprecated("")
 /**
  * A tracker that draws detection bounding boxes and scores (optional) on [Canvas].
  */
