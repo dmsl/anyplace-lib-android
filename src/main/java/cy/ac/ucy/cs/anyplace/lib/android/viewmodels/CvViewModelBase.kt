@@ -16,7 +16,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
+import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.DetectionProcessor
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.DetectorFactory
@@ -147,8 +147,8 @@ abstract class CvViewModelBase constructor(
     val usePadding = false
     detector = DetectorFactory.createDetector(
       assetManager,
-      Constants.DETECTION_MODEL,
-      Constants.MINIMUM_SCORE,
+      YoloConstants.DETECTION_MODEL,
+      YoloConstants.MINIMUM_SCORE,
       usePadding) as YoloV4Detector
 
     detectionProcessor = DetectionProcessor(
@@ -313,7 +313,7 @@ abstract class CvViewModelBase constructor(
     // val floorsH = floorsH!!
 
     if (!floorsH.hasFloors()) {  // space has no floors
-      val msg = "Selected ${spaceH.prettyType} has no ${spaceH.prettyFloors}."
+      val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."
       LOG.E(TAG_METHOD, msg)
       Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
       floor.value = null

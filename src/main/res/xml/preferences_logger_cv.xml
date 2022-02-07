@@ -1,42 +1,67 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
 
-  <!--TODO:PM remove this..-->
-  <PreferenceCategory app:title="@string/cv_header">
 
-    <SwitchPreferenceCompat
-      app:key="pref_cvlog_dev_mode"
-      android:defaultValue="true"
-      app:title="Developer Options"
-      app:summary="Show a bottom sheet with details"
-      />
-
+  <PreferenceCategory
+      app:title="@string/prefs_header_object_recognition"
+      app:icon="@drawable/ic_settings_cv"
+      >
     <EditTextPreference
-      app:key="pref_cvlog_window_seconds"
-      app:title="Window Seconds"
-      app:summary="Number of seconds to scan per location"
-      app:defaultValue="5"
-      />
+        app:key="@string/pref_cvlog_window_logging_seconds"
+        app:title="Logging Window"
+        app:summary="@string/summary_logging_window"
+        />
+    <EditTextPreference
+        app:key="@string/pref_cvlog_window_localization_seconds"
+        app:title="Localization Window"
+        app:summary="@string/summary_localization_window"
+        />
+    <DropDownPreference
+        app:key="@string/pref_cvlog_model"
+        android:enabled="false"
+        app:title="TODO MODEL PICKER"
+        app:summary="Change the object identification model"
+        />
+  </PreferenceCategory>
 
+
+  <PreferenceCategory app:title="@string/prefs_header_cache"
+      app:icon="@drawable/ic_folder">
+    <Preference
+        android:title="Clear local data"
+        android:key="@string/pref_log_clear_cache"
+        android:summary="Delete local Object Maps"
+        />
+    <Preference
+        android:title="Clear all cache"
+        android:key="pref_log_clear_cvmaps"
+        android:summary="Delete Object Maps, Floor Plans, Spaces"
+        android:enabled="false"
+        />
 
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="@string/experimental_header">
+  <PreferenceCategory
+      app:title="@string/developer_options"
+      app:icon="@drawable/ic_developer_options"
+      >
 
     <SwitchPreferenceCompat
-      app:key="pref_cvlog_exp_img_padding"
-      android:defaultValue="false"
-      app:title="Image padding"
-      app:summary="Pad YOLO images instead of stretching them"
-      />
+        app:key="@string/pref_cvlog_dev_mode"
+        android:defaultValue="true"
+        app:title="Show bottom sheet"
+        app:summary="Shows additional details on the bottom"
+        />
 
-    <!--<SwitchPreferenceCompat-->
-    <!--  app:dependency="sync"-->
-    <!--  app:key="attachment"-->
-    <!--  app:summaryOff="@string/attachment_summary_off"-->
-    <!--  app:summaryOn="@string/attachment_summary_on"-->
-    <!--  app:title="@string/attachment_title" />-->
-
+    <SwitchPreferenceCompat
+        app:key="pref_cvlog_exp_img_padding"
+        android:defaultValue="false"
+        android:enabled="false"
+        app:title="Image padding"
+        app:summary="Apply a padding instead of stretching"
+        />
   </PreferenceCategory>
 
 

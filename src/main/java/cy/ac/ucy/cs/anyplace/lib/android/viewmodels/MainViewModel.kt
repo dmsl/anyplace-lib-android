@@ -8,20 +8,14 @@ import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_HTTP_FORBIDEN
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_NPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ONLY_SSL
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AnyplaceUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GenUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
-import cy.ac.ucy.cs.anyplace.lib.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.models.Version
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +24,6 @@ import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
 import java.lang.NullPointerException
-import java.net.ConnectException
 import java.net.UnknownServiceException
 import javax.inject.Inject
 
@@ -46,6 +39,8 @@ class MainViewModel @Inject constructor(
   dataStoreUser: DataStoreUser,
   private val dataStoreMisc: DataStoreMisc,
   ): AndroidViewModel(app) {
+
+  private val C by lazy { CONST(app.applicationContext) }
 
   // PREFERENCES
   val serverPreferences = dataStoreServer.readServerPrefs
@@ -91,15 +86,15 @@ class MainViewModel @Inject constructor(
         LOG.E(TAG, "EXCEPTION: ${e.message}")
         exception = e
         e.let {
-          if (e.message?.contains(EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
-            exception = Exception(MSG_ERR_ONLY_SSL)
+          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+            exception = Exception(C.MSG_ERR_ONLY_SSL)
           }
           versionResponse.value = NetworkResult.Error(e.message)
         }
       } catch(e: Exception) {
         LOG.E(TAG, "EXCEPTION: ${e.message}")
         exception = when (e) {
-          is NullPointerException -> Exception(MSG_ERR_NPE)
+          is NullPointerException -> Exception(C.MSG_ERR_NPE)
           else -> e
         }
         versionResponse.value = NetworkResult.Error(exception?.message)

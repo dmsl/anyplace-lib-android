@@ -7,10 +7,9 @@ import android.net.NetworkCapabilities
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
+import cy.ac.ucy.cs.anyplace.lib.android.di.AppComponent
+import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
@@ -24,12 +23,20 @@ import javax.inject.Inject
  *  - Preferences
  *  - the FileCache
  *
- *  TODO:
- *  - control toast messages from here
  */
 abstract class AnyplaceApp : Application() {
 
+
+
+  // companion object {
+  //   private var _appComponent: AppComponent?= null
+  //   fun getAppComponent() = _appComponent
+  // }
+
   lateinit var dataStoreServer: DataStoreServer
+  /** Preferences for Cv Activities */
+  lateinit var dataStoreCv: DataStoreCv
+  /** Preferences for the CvLogger Activity */
   lateinit var dataStoreCvLogger: DataStoreCvLogger
   lateinit var dataStoreMisc: DataStoreMisc
   lateinit var dataStoreUser: DataStoreUser
@@ -45,10 +52,18 @@ abstract class AnyplaceApp : Application() {
   @Deprecated("")  lateinit var fileCache: FileCache
   @Deprecated("")  lateinit var apiOld: Anyplace
 
+
+
   override fun onCreate() {
     super.onCreate()
     LOG.D2(TAG, "onCreate")
+    // _appComponent = buildComponent()
+
+    DaggerAppComponent.builder().application(this).build()
+    // DaggerAppComponent.create().inject(this)
+
     dataStoreServer = DataStoreServer(applicationContext)
+    dataStoreCv = DataStoreCv(applicationContext)
     dataStoreCvLogger = DataStoreCvLogger(applicationContext)
     dataStoreMisc = DataStoreMisc(applicationContext)
     dataStoreUser= DataStoreUser(applicationContext)
@@ -60,6 +75,13 @@ abstract class AnyplaceApp : Application() {
     fileCache = FileCache(prefs)
     fileCache.initDirs()
   }
+
+  // fun buildComponent(): AppComponent {
+  //   return DaggerAppComponent.builder()
+  //           .appModule(AppModule(this))
+  //           .build()
+  // }
+
   /**
    * Dynamically provide a new Retrofit instance each time the
    * server preferences are updated.

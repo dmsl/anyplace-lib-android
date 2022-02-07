@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.di
 
 import android.content.Context
 import androidx.room.Room
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DB_NAME
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.AnyplaceDatabase
 import dagger.Module
 import dagger.Provides
@@ -18,15 +18,13 @@ object DatabaseModule {
   @Singleton
   @Provides
   fun provideDatabase(
-    @ApplicationContext ctx: Context
-  ) = Room.databaseBuilder(
-    ctx,
-    AnyplaceDatabase::class.java,
-    DB_NAME)
-    .build()
+          @ApplicationContext ctx: Context) = Room.databaseBuilder(
+          ctx,
+          AnyplaceDatabase::class.java,
+          CONST(ctx).DB_NAME)
+          .build()
 
   @Singleton
   @Provides
   fun provideDao(database: AnyplaceDatabase) = database.anyplaceDao()
-
 }

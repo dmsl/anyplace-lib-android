@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import android.util.Base64
+import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.enums.DetectionModel
 import okhttp3.ResponseBody
@@ -18,11 +19,17 @@ import retrofit2.Response
 class FloorHelper(val floor: Floor,
                   val spaceH: SpaceHelper) {
 
+  override fun toString(): String = Gson().toJson(floor, Floor::class.java)
+
+  companion object {
+    fun parse(str: String): Floor = Gson().fromJson(str, Floor::class.java)
+  }
+
   private val cache by lazy { Cache(spaceH.ctx) }
 
   fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${floor.floorNumber}"
   fun prettyFloorNumber() = "${spaceH.prettyFloor}${floor.floorName}"
-  fun prettyFloorName() = "${spaceH.prettyFloorplan} ${floor.floorName}"
+  fun prettyFloorName() = "${spaceH.prettyFloor} ${floor.floorName}"
 
   fun northEast() : LatLng {
     val latNE = floor.topRightLat.toDouble()
@@ -46,13 +53,13 @@ class FloorHelper(val floor: Floor,
   // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
   /** Deletes the cvmap folder that might contain several CvMaps
    * created with different [DetectionModel]s */
-  fun clearCacheCvMaps() { cache.deleteFloorCvMaps(floor) }
+  fun clearCacheCvMaps() { cache.deleteFloorCvMapsLocal(floor) }
   fun clearCache() {
     clearCacheFloorplan()
     clearCacheCvMaps()
   }
   fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(floor, bitmap) } }
-  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModel(floor, model)
+  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModelLocal(floor, model)
   fun loadCvMapFromCache(model: DetectionModel) = cache.readFloorCvMap(floor, model)
 
   // CLR:PM

@@ -133,8 +133,8 @@ class CvMapHelper(val cvMap: CvMap,
     return locations
   }
 
-  fun hasCache() = cache.hasDirFloorCvMaps(cvMap)
-  fun clearCache() = cache.deleteFloorCvMaps(cvMap)
+  fun hasCache() = cache.hasDirFloorCvMapsLocal(cvMap)
+  fun clearCache() = cache.deleteFloorCvMapsLocal(cvMap)
   fun readLocalAndMerge(): CvMap {
       val localCvMap  = cache.readFloorCvMap(cvMap)
       return merge(cvMap, localCvMap)

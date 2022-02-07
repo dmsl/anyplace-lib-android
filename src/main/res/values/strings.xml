@@ -141,8 +141,8 @@
   <string name="objects">Objects</string>
   <string name="current_window">Current Window:</string>
   <string name="chat_header">Chat settings (example)</string>
-  <string name="cv_header">Computer Vision</string>
-  <string name="experimental_header">Experimental</string>
+  <string name="prefs_header_object_recognition">Object Recognition</string>
+  <string name="developer_options">Developer Options</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>
@@ -205,15 +205,33 @@
   <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
   <string name="tutorial_cvscan_store_details">
 "   - once the scan window ends, the map is shown
-   - scanned objects must be map-assigned with a long click
-   - once objects are map-assigned, a new scan window starts."
+   - scanned objects must be map-assigned with long-click
+   - once objects are assigned, a new scan starts."
   </string>
-  <string name="tutorial_cvscan_finish">3. FINISH SCANNING:</string>
+  <string name="tutorial_cvscan_finish">3. END SCANNING:</string>
   <string name="tutorial_cvscan_finish_details">
 "   - the last scanned window will be discarded.
    - the \"Object Map\" will be stored locally.
+   - a \"Heat Map\" of the stored detections will updated.
   </string>
   <string name="clear">Clear</string>
   <string name="upper_floor">Upper floor</string>
+  <string name="prefs_header_cvmap">Object Maps</string>
+  <string name="prefs_header_cache">Cache</string>
+  <string name="prefs_header_application">Application</string>
+  <string name="apply_just_to">Apply just to</string>
+  <string name="pref_cat_space">pref_cat_space</string>
+  <string name="pref_cvlog_model">pref_cvlog_model</string>
+  <string name="pref_cat_floor">pref_cat_floor</string>
+  <string name="pref_log_clear_cache">pref_log_clear_cache</string>
+  <string name="for_all_spaces">for all spaces</string>
+  <string name="confirm">Confirm</string>
+  <string name="for_var_var">for %1$s %2$s</string>
+  <string name="clear_local_data">Clear local data:</string>
+  <string name="pref_cvlog_window_localization_seconds">pref_cvlog_window_localization_seconds</string>
+  <string name="pref_cvlog_window_logging_seconds">pref_cvlog_window_logging_seconds</string>
+  <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
+  <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
+  <string name="pref_cvlog_dev_mode">pref_cvlog_dev_mode</string>
 
 </resources>

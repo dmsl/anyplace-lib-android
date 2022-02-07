@@ -3,15 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.datastore
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_QUERY_SPACE_OWNERSHIP
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_QUERY_SPACE_TYPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_BACK_FROM_SETTINGS
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_BACK_ONLINE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_NAME
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_QUERY_SPACE_OWNERSHIP
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_QUERY_SPACE_OWNERSHIP_ID
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_QUERY_SPACE_TYPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_MISC_QUERY_SPACE_TYPE_ID
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -21,30 +13,34 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
-
-private val Context.dataStoreMisc by preferencesDataStore(name = PREF_MISC_NAME)
+import javax.inject.Singleton
 
 /**
  * Miscellaneous preferences
  */
-@ViewModelScoped
+@Singleton
 class DataStoreMisc @Inject constructor(@ApplicationContext private val ctx: Context) {
+
+  private val C by lazy { CONST(ctx) }
+  private val Context.dataStoreMisc by preferencesDataStore(name = C.PREF_MISC_NAME)
+
   // TODO: DEBUG MODES:
   // BETA, ALPHA, DEV ?
 
-  private object KEY {
-    val backOnline = booleanPreferencesKey(PREF_MISC_BACK_ONLINE)
-    val backFromSettings = booleanPreferencesKey(PREF_MISC_BACK_FROM_SETTINGS)
+  private class Keys(c: CONST) {
+    val backOnline = booleanPreferencesKey(c.PREF_MISC_BACK_ONLINE)
+    val backFromSettings = booleanPreferencesKey(c.PREF_MISC_BACK_FROM_SETTINGS)
 
     // SPACES QUERY
-    val querySpace_ownership= stringPreferencesKey(PREF_MISC_QUERY_SPACE_OWNERSHIP)
-    val querySpace_ownershipId= intPreferencesKey(PREF_MISC_QUERY_SPACE_OWNERSHIP_ID)
+    val querySpace_ownership= stringPreferencesKey(c.PREF_MISC_QUERY_SPACE_OWNERSHIP)
+    val querySpace_ownershipId= intPreferencesKey(c.PREF_MISC_QUERY_SPACE_OWNERSHIP_ID)
 
-    val querySpace_type = stringPreferencesKey(PREF_MISC_QUERY_SPACE_TYPE)
-    val querySpace_typeId = intPreferencesKey(PREF_MISC_QUERY_SPACE_TYPE_ID)
+    val querySpace_type = stringPreferencesKey(c.PREF_MISC_QUERY_SPACE_TYPE)
+    val querySpace_typeId = intPreferencesKey(c.PREF_MISC_QUERY_SPACE_TYPE_ID)
 
-    // val queryTypeSpace= stringPreferencesKey(PREF_MISC_QUERY_TYPE_SPACE)
+    // val queryTypeSpace= stringPreferencesKey(c.PREF_MISC_QUERY_TYPE_SPACE)
   }
+  private val KEY = Keys(C)
 
   suspend fun saveBackOnline(value: Boolean) =
     saveBoolean(KEY.backOnline, value)
@@ -89,10 +85,10 @@ class DataStoreMisc @Inject constructor(@ApplicationContext private val ctx: Con
         }
       }
       .map { preferences ->
-        val ownershipStr = preferences[KEY.querySpace_ownership] ?: DEFAULT_QUERY_SPACE_OWNERSHIP
+        val ownershipStr = preferences[KEY.querySpace_ownership] ?: C.DEFAULT_QUERY_SPACE_OWNERSHIP
         val ownershipId = preferences[KEY.querySpace_ownershipId] ?: 0
 
-        val spaceTypeStr = preferences[KEY.querySpace_type] ?: DEFAULT_QUERY_SPACE_TYPE
+        val spaceTypeStr = preferences[KEY.querySpace_type] ?: C.DEFAULT_QUERY_SPACE_TYPE
         val spaceTypeId = preferences[KEY.querySpace_typeId] ?: 0
 
         QuerySelectSpace(UserOwnership.valueOf(ownershipStr.uppercase()), ownershipId,

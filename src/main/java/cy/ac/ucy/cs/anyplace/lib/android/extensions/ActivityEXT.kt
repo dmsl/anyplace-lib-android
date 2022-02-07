@@ -12,10 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreUser
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
 
 // CLR:PM
 // fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
@@ -35,6 +32,7 @@ fun ComponentActivity.registerForActivityResult(
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dataStoreServer: DataStoreServer get() = this.app.dataStoreServer
 val Activity.dataStoreCvLogger: DataStoreCvLogger get() = this.app.dataStoreCvLogger
+val Activity.dataStoreCv: DataStoreCv get() = this.app.dataStoreCv
 val Activity.dataStoreMisc: DataStoreMisc get() = this.app.dataStoreMisc
 val Activity.dataStoreUser: DataStoreUser get() = this.app.dataStoreUser
 
@@ -93,7 +91,7 @@ val Any.METHOD: String get()  {
       val className = frame.className
       // className.
       when  {
-        methodName == null -> {return "<null-method>"}
+        methodName == null -> { return "<null-method>" }
         methodName == "getMETHOD" ||
                 methodName == "getTAG_METHOD" -> {}
 
@@ -103,6 +101,7 @@ val Any.METHOD: String get()  {
 
         // internal classes
         className.endsWith("LOG\$Companion") ||
+                className.endsWith("EXTKt") ||
                 className.startsWith("kotlin") -> { } // Log.w("anyplace", "IGN: $methodName KT")
         else -> {
           // remove any lambda method endings (e.g., methodName$lambda-1)

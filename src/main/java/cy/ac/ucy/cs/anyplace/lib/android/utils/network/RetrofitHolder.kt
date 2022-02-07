@@ -1,27 +1,28 @@
 package cy.ac.ucy.cs.anyplace.lib.android.utils.network
 
+import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.API
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_HOST
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PORT
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PROTOCOL
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.ServerPrefs
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 data class RetrofitHolder(
-  val okHttpClient: OkHttpClient,
-  val gsonConverterFactory: GsonConverterFactory)  {
+        val ctx: Context,
+        val okHttpClient: OkHttpClient,
+        val gsonConverterFactory: GsonConverterFactory)  {
 
   lateinit var baseURL: String
   lateinit var retrofit: Retrofit
   lateinit var api: API
 
   companion object {
-    fun getDefaultBaseUrl(): String {
-      val protocol = DEFAULT_PREF_SERVER_PROTOCOL
-      val host = DEFAULT_PREF_SERVER_HOST
-      val port = DEFAULT_PREF_SERVER_PORT
+    fun getDefaultBaseUrl(ctx: Context): String {
+      val c = CONST(ctx)
+      val protocol = c.DEFAULT_PREF_SERVER_PROTOCOL
+      val host = c.DEFAULT_PREF_SERVER_HOST
+      val port = c.DEFAULT_PREF_SERVER_PORT
 
       return "${protocol}://${host}:${port}"
     }

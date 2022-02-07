@@ -2,12 +2,23 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.resizeTo
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.setColor
 import cy.ac.ucy.cs.anyplace.lib.models.LastValSpaces
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 
@@ -18,17 +29,25 @@ class SpaceHelper(val ctx: Context,
                   val repo: Repository,
                   val space: Space) {
 
+  override fun toString(): String = Gson().toJson(space, Space::class.java)
+
   companion object {
     const val TP_BUILDING = "building"
-    const val TP_VESSEL = "vessel-wrong"
+    const val TP_VESSEL = "vessel"
+
+    fun parse(str: String): Space  = Gson().fromJson(str, Space::class.java)
   }
 
   private val cache by lazy { Cache(ctx) }
 
   val prettyType: String
     get() {
-      // TODO check if valid space type?
-      return space.type.replaceFirstChar(Char::uppercase)
+      return space.type
+    }
+
+  val prettyTypeCapitalize: String
+    get() {
+      return prettyType.replaceFirstChar(Char::uppercase)
     }
 
   val prettyFloor : String
@@ -38,6 +57,29 @@ class SpaceHelper(val ctx: Context,
         TP_VESSEL -> "deck"
         else -> "floor"
       }
+    }
+
+
+  /** Returns an icon according to the [Space] typ */
+  fun getIcon(ctx: Context): Drawable? = getIcon(ctx, null, null)
+  fun getIcon(ctx: Context, @ColorRes colorRes: Int): Drawable? = getIcon(ctx, colorRes, null)
+
+  /** Returns an icon resized according to the [Space] typ */
+  fun getIcon(ctx: Context, @ColorRes colorRes: Int?, size: Int?): Drawable? {
+    val icon = when (space.type) {
+      TP_VESSEL -> ContextCompat.getDrawable(ctx, R.drawable.ic_vessel)
+      else -> ContextCompat.getDrawable(ctx, R.drawable.ic_building)  // TP_BUILDING case
+    } ?: return null
+
+    if (colorRes != null) { icon.setColor(ctx, colorRes) }
+
+    return if (size != null) icon.resizeTo(ctx, size) else icon
+  }
+
+  /** Capitalize first letter */
+  val prettyFloorCapitalize : String
+    get() {
+      return prettyFloor.replaceFirstChar(Char::uppercase)
     }
 
   val prettyFloors : String get() = "${prettyFloor}s"
@@ -67,5 +109,4 @@ class SpaceHelper(val ctx: Context,
       LastValSpaces()
     }
   }
-
 }

@@ -5,39 +5,34 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_PHOTO_URI
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_ACCESS_TOKEN
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_ACCOUNT
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_EMAIL
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_ID
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_NAME
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_TYPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_USER_USERNAME
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.models.User
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
 
-private val Context.dataStoreUser by preferencesDataStore(name = PREF_USER)
-
-@ViewModelScoped
+@Singleton
 class DataStoreUser @Inject constructor(@ApplicationContext private val ctx: Context) {
-  private object KEY {
-    val accessToken = stringPreferencesKey(PREF_USER_ACCESS_TOKEN)
-    val name = stringPreferencesKey(PREF_USER_NAME)
-    val username = stringPreferencesKey(PREF_USER_USERNAME)
-    val id = stringPreferencesKey(PREF_USER_ID)
-    val email = stringPreferencesKey(PREF_USER_EMAIL)
-    val account = stringPreferencesKey(PREF_USER_ACCOUNT)
-    val type = stringPreferencesKey(PREF_USER_TYPE)
-    val photoUri= stringPreferencesKey(PREF_PHOTO_URI)
+
+  private val C by lazy { CONST(ctx) }
+  private val Context.dataStoreUser by preferencesDataStore(name = C.PREF_USER)
+
+  private class Keys(c: CONST) {
+    val accessToken = stringPreferencesKey(c.PREF_USER_ACCESS_TOKEN)
+    val name = stringPreferencesKey(c.PREF_USER_NAME)
+    val username = stringPreferencesKey(c.PREF_USER_USERNAME)
+    val id = stringPreferencesKey(c.PREF_USER_ID)
+    val email = stringPreferencesKey(c.PREF_USER_EMAIL)
+    val account = stringPreferencesKey(c.PREF_USER_ACCOUNT)
+    val type = stringPreferencesKey(c.PREF_USER_TYPE)
+    val photoUri= stringPreferencesKey(c.PREF_PHOTO_URI)
   }
+  private val KEY = Keys(C)
 
   val readUser: Flow<User> =
     ctx.dataStoreUser.data
@@ -50,10 +45,8 @@ class DataStoreUser @Inject constructor(@ApplicationContext private val ctx: Con
           val name = it[KEY.name] ?: ""
           val type = it[KEY.type] ?: ""
           val account = it[KEY.account] ?: ""
-
           val username = it[KEY.username] ?: ""
           val email = it[KEY.email] ?: ""
-
           val photoUri = it[KEY.photoUri] ?: ""
 
           User(accessToken, id, name, type, account, username, email, photoUri)

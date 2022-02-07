@@ -9,12 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_HTTP_FORBIDEN
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_ILLEGAL_STATE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.EXCEPTION_MSG_NPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ILLEGAL_STATE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_NPE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.MSG_ERR_ONLY_SSL
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.LoginFormState
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -36,6 +31,7 @@ class LoginViewModel @Inject constructor(
   private val repository: Repository,
   private val retrofitHolder: RetrofitHolder) : AndroidViewModel(application) {
 
+  private val C by lazy { CONST(application.applicationContext) }
   private val _loginForm = MutableLiveData<LoginFormState>()
   val loginFormState: LiveData<LoginFormState> = _loginForm // CHECK:PM
 
@@ -70,12 +66,12 @@ class LoginViewModel @Inject constructor(
         val msg = "Login failed"
         handleSafecallError(msg, e)
         e.let {
-          if (e.message?.contains(EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
-            exception = Exception(MSG_ERR_ONLY_SSL)
-          } else if (e.message?.contains(EXCEPTION_MSG_ILLEGAL_STATE) == true) {
-            exception = Exception(MSG_ERR_ILLEGAL_STATE)
-          } else if (e.message?.contains(EXCEPTION_MSG_NPE) == true) {
-            exception = Exception(MSG_ERR_NPE)
+          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+            exception = Exception(C.MSG_ERR_ONLY_SSL)
+          } else if (e.message?.contains(C.EXCEPTION_MSG_ILLEGAL_STATE) == true) {
+            exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
+          } else if (e.message?.contains(C.EXCEPTION_MSG_NPE) == true) {
+            exception = Exception(C.MSG_ERR_NPE)
           }
         }
         LOG.E(TAG, "Exception: ${exception!!.message}")
@@ -108,12 +104,12 @@ class LoginViewModel @Inject constructor(
         val msg = "Google Login failed"
         handleSafecallError(msg, e)
         e.let {
-          if (e.message?.contains(EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
-            exception = Exception(MSG_ERR_ONLY_SSL)
-          } else if (e.message?.contains(EXCEPTION_MSG_ILLEGAL_STATE) == true) {
-            exception = Exception(MSG_ERR_ILLEGAL_STATE)
-          } else if (e.message?.contains(EXCEPTION_MSG_NPE) == true) {
-            exception = Exception(MSG_ERR_NPE)
+          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+            exception = Exception(C.MSG_ERR_ONLY_SSL)
+          } else if (e.message?.contains(C.EXCEPTION_MSG_ILLEGAL_STATE) == true) {
+            exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
+          } else if (e.message?.contains(C.EXCEPTION_MSG_NPE) == true) {
+            exception = Exception(C.MSG_ERR_NPE)
           }
         }
         LOG.E(TAG, "Exception: ${exception!!.message}")

@@ -1,10 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
+import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.models.Space
 import java.lang.Exception
 
 /**
@@ -12,10 +14,17 @@ import java.lang.Exception
  */
 class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
 
-  private val floors: List<Floor> = unsortedFloors.floors.sortedBy { floor ->
-    floor.floorNumber.toInt()
+  /** Parses this sorted BUGFIX: wrapping on a new object */
+  override fun toString(): String = Gson().toJson(Floors(floors), Floors::class.java)
+  companion object {
+    fun parse(str: String): Floors = Gson().fromJson(str, Floors::class.java)
   }
 
+  private val floors: List<Floor> = (unsortedFloors.floors.sortedBy { floor ->
+    floor.floorNumber.toInt()
+  })
+
+  val size : Int get() = floors.size
   fun hasFloors()  = floors.isNotEmpty()
   fun getFirstFloor() = floors[0]
   fun getLastFloor() = floors[floors.size-1]
@@ -114,4 +123,5 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
     LOG.D5(TAG_METHOD, "IDX: $idx")
     return if (idx>=0 && idx<floors.size) floors[idx] else null
   }
+
 }

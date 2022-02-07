@@ -25,8 +25,8 @@ enum class Logging {
   stopped,
   stoppedMustStore,
   stoppedNoDetections,
-  finished,
-  demoNavigation, // DemoLocalizatoin
+  // finished, CLR:PM
+  demoNavigation, // DemoLocalization
 }
 
 enum class TimerAnimation {
@@ -155,11 +155,6 @@ class CvLoggerViewModel @Inject constructor(
   fun prefWindowLoggingMillis(): Int { return prefs.windowLoggingSeconds.toInt()*1000 }
   override fun prefWindowLocalizationMillis(): Int { return prefs.windowLocalizationSeconds.toInt()*1000 }
 
-  fun finalizeLogging() {
-    // TODO update must be avail now
-    logging.value = Logging.finished
-  }
-
   /** Toggle [logging] between stopped (or notStarted), and started.
    *  There will be no effect when in stoppedMustStore mode.
    *
@@ -168,7 +163,7 @@ class CvLoggerViewModel @Inject constructor(
   fun toggleLogging() {
     initialStart = false
     when (logging.value) {
-      Logging.finished-> {}
+      // Logging.finished-> {}
       Logging.stoppedNoDetections,
       Logging.stopped -> {
         logging.value = Logging.running
@@ -193,7 +188,7 @@ class CvLoggerViewModel @Inject constructor(
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
   fun getElapsedSecondsStr(): String { return uTime.getSecondsPretty(getElapsedSeconds()) }
 
-  fun resetWindow() {
+  fun resetLoggingWindow() {
     objectsWindowUnique=0
     detectionsLogging.value = emptyList()
     logging.value= Logging.stopped// CHECK:PM this was stopped. starting directly
@@ -240,5 +235,7 @@ class CvLoggerViewModel @Inject constructor(
 
     mergedH.generateCvMapFast()
     cvMapH = mergedH
+
+    storedDetections.clear()
   }
 }

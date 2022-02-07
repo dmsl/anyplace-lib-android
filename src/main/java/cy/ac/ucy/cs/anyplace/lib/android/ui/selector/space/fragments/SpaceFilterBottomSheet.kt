@@ -11,9 +11,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_QUERY_SPACE_OWNERSHIP
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_QUERY_SPACE_TYPE
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -22,15 +20,17 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
+  private val C by lazy { CONST(requireActivity()) }
+
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
   private lateinit var mainViewModel: MainViewModel
   private lateinit var spacesViewModel: SpacesViewModel
 
-  private var queryOwnershipStr = DEFAULT_QUERY_SPACE_OWNERSHIP
+  private var queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
   private var queryOwnershipId = 0
 
-  private var querySpaceTypeStr = DEFAULT_QUERY_SPACE_TYPE
+  private var querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
   private var querySpaceTypeId= 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,23 +47,22 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
 
-    spacesViewModel.storedSpaceQuery.asLiveData().observe(viewLifecycleOwner, { value ->
-      queryOwnershipStr=value.ownership.toString()
-      querySpaceTypeStr=value.spaceType.toString()
+    spacesViewModel.storedSpaceQuery.asLiveData().observe(viewLifecycleOwner) { value ->
+      queryOwnershipStr = value.ownership.toString()
+      querySpaceTypeStr = value.spaceType.toString()
       val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
       // initialize the query
       spacesViewModel.saveQueryTypeTemp(
-        queryOwnership, queryOwnershipId,
-        querySpaceType, querySpaceTypeId)
+              queryOwnership, queryOwnershipId,
+              querySpaceType, querySpaceTypeId)
 
       updateChip(value.ownershipId, binding.chipGroupOwnership)
       updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
 
       LOG.D2("Spaces Query: Ownership: $queryOwnershipStr Type: $querySpaceTypeStr")
-    })
-
+    }
 
     binding.chipGroupOwnership.setOnCheckedChangeListener { group, chipId ->
       val chip = group.findViewById<Chip>(chipId)

@@ -1,22 +1,25 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.widget.ProgressBar
 import androidx.camera.core.ImageProxy
+import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.misc.Constants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.UiActivityCvBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
@@ -30,17 +33,19 @@ import kotlinx.coroutines.launch
  * Encapsulating UI operations for the [CvLoggerActivity]
  */
 class UiActivityCvLogger(
-  ctx: Context,
-  scope: CoroutineScope,
-  statusUpdater: StatusUpdater,
-  floorSelector: FloorSelector,
-  overlays: Overlays,
-  private val VM: CvLoggerViewModel,
-  private val binding: ActivityCvLoggerBinding,
-) : UiActivityCvBase(ctx,
-        VM as CvViewModelBase,
-        scope, statusUpdater, overlays,
-        floorSelector) {
+        activity: Activity,
+        fragmentManager: FragmentManager,
+        scope: CoroutineScope,
+        statusUpdater: StatusUpdater,
+        floorSelector: FloorSelector,
+        overlays: Overlays,
+        private val VM: CvLoggerViewModel,
+        private val binding: ActivityCvLoggerBinding) :
+        UiActivityCvBase(activity,
+                fragmentManager,
+                VM as CvViewModelBase,
+                scope, statusUpdater, overlays,
+                floorSelector) {
 
   private val appInfo by lazy { AppInfo(ctx) }
   private var clearConfirm=false
@@ -81,12 +86,12 @@ class UiActivityCvLogger(
    * It progresses according to the window time
    */
   private fun setupProgressBarTimerAnimation(
-    btnTimer: MaterialButton,
-    progressBar: ProgressBar,
-    windowSecs: Int) {
+          btnTimer: MaterialButton,
+          progressBar: ProgressBar,
+          windowSecs: Int) {
     // showing timer button but not yet the progress bar
     if (btnTimer.visibility == View.VISIBLE &&
-      progressBar.visibility != View.VISIBLE) {
+            progressBar.visibility != View.VISIBLE) {
       val delayMs = (windowSecs*1000/100).toLong()
       scope.launch {
         var progress = 0
@@ -163,16 +168,24 @@ class UiActivityCvLogger(
       } else {
         hideClearObjectsButton()
         binding.bottomUi.buttonCameraTimer.fadeOut()
-        VM.resetWindow()
+        VM.resetLoggingWindow()
         statusUpdater.hideStatus()
       }
     }
   }
 
-  fun setupClickSettingsMenuButton() {
-    // REMOVE, and make settings..
-    buttonUtils.changeBackgroundButton(binding.buttonSettings, ctx, R.color.darkGray)
 
+  fun setupClickSettingsMenuButton() {
+    LOG.D2()
+
+    // Setups a regular button to act as a menu button
+    binding.buttonSettings.setOnClickListener { // TODO:PM
+      val intent = Intent(activity, SettingsCvLoggerActivity::class.java)
+      intent.putExtra(SettingsCvLoggerActivity.ARG_SPACE, VM.spaceH.toString())
+      intent.putExtra(SettingsCvLoggerActivity.ARG_FLOORS, VM.floorsH.toString())
+      intent.putExtra(SettingsCvLoggerActivity.ARG_FLOOR, VM.floorH.toString())
+      activity.startActivity(intent)
+    }
     // // TODO:PM Settings
     // // Setups a regular button to act as a menu button
     //   binding.buttonSettings.setOnClickListener {
@@ -187,10 +200,9 @@ class UiActivityCvLogger(
   }
 
   fun handleStoreNoDetections() {
-    scope.launch {
-      statusUpdater.showWarningAutohide("Nothing on map to store.",
-        "TIP: long-click a location to attach objects.", 3000L)
-    }
+    statusUpdater.showWarningAutohide("Nothing stored.", "no objects attached on map", 5000L)
+    VM.resetLoggingWindow()
+    VM.logging.value = Logging.stopped
   }
 
   /**
@@ -198,26 +210,33 @@ class UiActivityCvLogger(
    * - it merges detections with the local cache
    * - it updates the weighted heatmap
    */
-  fun handleStoreDetections(map: GoogleMap) {
-    // MATERIALIZE, STORE, and EXIT
-    // TODO: STORE RESULTS..
-    // TODO put an upload button and enable it..
-    VM.logging.value = Logging.finished
+  fun handleStoreDetections(gmap: GoogleMap) {
+    storeDetectionsAndUpdateUI(gmap)
+    VM.logging.value = Logging.stopped
+  }
 
+  /**
+   * It stores detections using [VM], and updates the UI:
+   * - shows warning when no detections captured
+   * otherwise:
+   * - clears the [gmap] markers
+   * - updates the heatmap
+   */
+  fun storeDetectionsAndUpdateUI(gmap: GoogleMap) {
+    // TODO show/enable an upload button
     VM.hideActiveMarkers()
-
     // an extra check in case of a forced storing (long click while running or paused mode)
     if (VM.storedDetections.isEmpty()) {
-      val msg = "No detections on map."
+      val msg = "Nothing stored."
       LOG.W(TAG, msg)
-      scope.launch {
-        statusUpdater.showWarningAutohide(msg, "forced finish with long click..", 3000)
-      }
+      statusUpdater.showWarningAutohide(msg, 3000)
       return
     }
 
+    val detectionsToStored = VM.storedDetections.size
     VM.storeDetections(VM.floorH)
-    VM.cvMapH?.let { overlays.refreshHeatmap(map, it.getWeightedLocationList()) }
+    VM.cvMapH?.let { overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
+    statusUpdater.showWarningAutohide("stored $detectionsToStored locations", 3000)
   }
 
   fun setupClickedLoggingButton(gmap: GoogleMap) {
@@ -248,6 +267,8 @@ class UiActivityCvLogger(
       binding.mapView.animateAlpha(1f, CvActivityBase.ANIMATION_DELAY)
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
+      // LEFTHERE: test this
+      statusUpdater.showInfoAutohide("stored ${VM.storedDetections.size} locations", 3000)
       handleStoreDetections(gmap)
       true
     }

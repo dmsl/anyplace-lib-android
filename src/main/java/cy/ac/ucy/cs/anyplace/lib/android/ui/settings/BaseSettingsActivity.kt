@@ -9,6 +9,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreServer
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
@@ -23,8 +24,8 @@ import javax.inject.Inject
 open class BaseSettingsActivity: BaseActivity() {
   protected lateinit var mainViewModel: MainViewModel
 
-  @Inject
-  protected lateinit var retrofitHolder: RetrofitHolder
+  @Inject protected lateinit var repo: Repository
+  @Inject protected lateinit var retrofitHolder: RetrofitHolder
 
   override fun onResume() {
     super.onResume()

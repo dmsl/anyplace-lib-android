@@ -5,15 +5,7 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_CVLOG_DEV_MODE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_CVLOG_EPX_IMG_PADDING
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_CVLOG
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_CVLOG_EPX_IMG_PADDING
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_CVLOG_DEV_MODE
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_CVLOG_WINDOW_LOGGING_SECONDS
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -23,30 +15,36 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.dataStoreCvLogger by preferencesDataStore(name = PREF_CVLOG)
 
 /**
- * Backend Server settings, such as host url, port, etc.
+ * Computer Vision DataStore
+ * TODO SETTINGS:
+ * - image
  */
 @Singleton
 class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
+  private val C by lazy { CONST(ctx) }
+  private val Context.dataStoreCvLogger by preferencesDataStore(name = C.PREF_CVLOG)
+  val datastore = ctx.dataStoreCvLogger
+
+  // TODO:TRIAL
   private val validKeys = setOf(
-          PREF_CVLOG_WINDOW_LOGGING_SECONDS,
-          PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS,
-          PREF_CVLOG_DEV_MODE,
-          PREF_CVLOG_EPX_IMG_PADDING,
+          C.PREF_CVLOG_WINDOW_LOGGING_SECONDS,
+          C.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS,
+          C.PREF_CVLOG_DEV_MODE,
+          C.PREF_CVLOG_EPX_IMG_PADDING,
   )
 
-  private object KEY {
-    val windowLoggingSeconds = stringPreferencesKey(PREF_CVLOG_WINDOW_LOGGING_SECONDS)
-    val windowLocalizationSeconds = stringPreferencesKey(PREF_CVLOG_WINDOW_LOGGING_SECONDS)
-    val devMode = booleanPreferencesKey(PREF_CVLOG_DEV_MODE)
-    val expImagePadding = booleanPreferencesKey(PREF_CVLOG_EPX_IMG_PADDING)
+  private class Keys(c: CONST) {
+    val windowLoggingSeconds = stringPreferencesKey(c.PREF_CVLOG_WINDOW_LOGGING_SECONDS)
+    val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS)
+    val devMode = booleanPreferencesKey(c.PREF_CVLOG_DEV_MODE)
+    val expImagePadding = booleanPreferencesKey(c.PREF_CVLOG_EPX_IMG_PADDING)
   }
+  private val KEY = Keys(C)
 
-  val datastore = ctx.dataStoreCvLogger
 
   private fun validKey(key: String?): Boolean {
     val found = validKeys.contains(key)
@@ -59,23 +57,27 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     runBlocking {
       datastore.edit {
         when (key) {
-          PREF_CVLOG_DEV_MODE -> it[KEY.devMode] = value
-          PREF_CVLOG_EPX_IMG_PADDING-> it[KEY.expImagePadding] = value
+          C.PREF_CVLOG_DEV_MODE -> it[KEY.devMode] = value
+          C.PREF_CVLOG_EPX_IMG_PADDING-> it[KEY.expImagePadding] = value
         }
       }
     }
   }
 
+  /**
+   * WORKAROUND: SharedPreferences/XML use by default string.
+   * Here it is convert ot an [Int] and stored in the [DataStore].
+   */
   override fun putString(key: String?, value: String?) {
     LOG.D3(TAG, "putString: $key = $value")
     if (!validKey(key)) return
     runBlocking {
       datastore.edit {
         when (key) {
-          PREF_CVLOG_WINDOW_LOGGING_SECONDS -> it[KEY.windowLoggingSeconds] = value ?:
-                  DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-          PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] = value ?:
-                  DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+          C.PREF_CVLOG_WINDOW_LOGGING_SECONDS -> it[KEY.windowLoggingSeconds] =
+                  value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
+          C.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] =
+                  value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
         }
       }
     }
@@ -86,8 +88,8 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        PREF_CVLOG_DEV_MODE -> prefs.devMode
-        PREF_CVLOG_EPX_IMG_PADDING -> prefs.expImagePadding
+        C.PREF_CVLOG_DEV_MODE -> prefs.devMode
+        C.PREF_CVLOG_EPX_IMG_PADDING -> prefs.expImagePadding
         else -> false
       }
     }
@@ -98,8 +100,8 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSeconds
-        PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
+        C.PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSeconds
+        C.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
         else -> null
       }
     }
@@ -112,21 +114,16 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
             } else { throw exception }
           }
           .map { preferences ->
-            var windowLoggingSeconds = preferences[KEY.windowLoggingSeconds] ?: DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-            var windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?: DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
-            val devMode = preferences[KEY.devMode] ?: DEFAULT_PREF_CVLOG_DEV_MODE // TODO:PM make default to true
-            val expImagePadding= preferences[KEY.expImagePadding] ?: DEFAULT_PREF_CVLOG_EPX_IMG_PADDING
-
-            // CHECK: are the below needed? (given the handling above..)
-            windowLoggingSeconds.toIntOrNull() ?: run {
-              windowLoggingSeconds = DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-            }
-            windowLocalizationSeconds.toIntOrNull() ?: run {
-              windowLocalizationSeconds = DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
-            }
+            val windowLoggingSeconds = preferences[KEY.windowLoggingSeconds] ?:
+            C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
+            val windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?:
+            C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+            val devMode = preferences[KEY.devMode] ?:
+            C.DEFAULT_PREF_CVLOG_DEV_MODE // TODO:PM make default to true
+            val expImagePadding= preferences[KEY.expImagePadding] ?:
+            C.DEFAULT_PREF_CVLOG_EPX_IMG_PADDING
 
             LOG.D2(TAG, "Prefs: logging: $windowLoggingSeconds, localization: $windowLocalizationSeconds")
-
             CvLoggerPrefs(windowLoggingSeconds, windowLocalizationSeconds, devMode, expImagePadding)
           }
 }

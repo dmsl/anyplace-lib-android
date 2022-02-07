@@ -22,7 +22,8 @@
     <activity
       android:name=".android.ui.settings.SettingsCvLoggerActivity"
       android:exported="true"
-      android:label="Settings: Computer Vision" />
+        android:icon="@drawable/ic_settings"
+      android:label="Logger Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
     <meta-data
       android:name="com.google.android.geo.API_KEY"

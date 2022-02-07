@@ -8,14 +8,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_HOST
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PORT
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DEFAULT_PREF_SERVER_PROTOCOL
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_HOST
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_PORT
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_PROTOCOL
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.PREF_SERVER_VERSION
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.NetUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -26,8 +18,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val Context.dataStoreServer by preferencesDataStore(name = PREF_SERVER)
-
 /**
  * Backend Server settings, such as host url, port, etc.
  */
@@ -35,20 +25,25 @@ private val Context.dataStoreServer by preferencesDataStore(name = PREF_SERVER)
 class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
+
+  private val C by lazy { CONST(ctx) }
+  private val Context.dataStoreServer by preferencesDataStore(name = C.PREF_SERVER)
+
   private val validKeys = setOf(
-    PREF_SERVER_PROTOCOL,
-    PREF_SERVER_HOST,
-    PREF_SERVER_PORT)
+          C.PREF_SERVER_PROTOCOL,
+          C.PREF_SERVER_HOST,
+          C.PREF_SERVER_PORT)
 
   // these are not actual preferences. just placeholders to display some information
   // like backend version when displaying the connection status.
-  private val ignoreKeys = setOf(PREF_SERVER_VERSION)
+  private val ignoreKeys = setOf(C.PREF_SERVER_VERSION)
 
-  private object KEY {
-    val protocol= stringPreferencesKey(PREF_SERVER_PROTOCOL)
-    val host = stringPreferencesKey(PREF_SERVER_HOST)
-    val port = stringPreferencesKey(PREF_SERVER_PORT)
+  private class Keys(c: CONST) {
+    val protocol= stringPreferencesKey(c.PREF_SERVER_PROTOCOL)
+    val host = stringPreferencesKey(c.PREF_SERVER_HOST)
+    val port = stringPreferencesKey(c.PREF_SERVER_PORT)
   }
+  private val KEY = Keys(C)
 
   val datastore = ctx.dataStoreServer
 
@@ -69,15 +64,15 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
     runBlocking {
       datastore.edit {
         when (key) {
-          PREF_SERVER_HOST -> it[KEY.host] = value?: DEFAULT_PREF_SERVER_HOST
-          PREF_SERVER_PORT ->  {
+          C.PREF_SERVER_HOST -> it[KEY.host] = value?: C.DEFAULT_PREF_SERVER_HOST
+          C.PREF_SERVER_PORT ->  {
             val storeValue : String =
-              if (NetUtils.isValidPort(value)) value!! else DEFAULT_PREF_SERVER_PORT
+              if (NetUtils.isValidPort(value)) value!! else C.DEFAULT_PREF_SERVER_PORT
             it[KEY.port] =  storeValue
           }
-          PREF_SERVER_PROTOCOL -> {
+          C.PREF_SERVER_PROTOCOL -> {
             if(NetUtils.isValidProtocol(value))
-              it[KEY.protocol] = value?: DEFAULT_PREF_SERVER_PROTOCOL
+              it[KEY.protocol] = value?: C.DEFAULT_PREF_SERVER_PROTOCOL
           }
         }
       }
@@ -89,9 +84,9 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
     return runBlocking(Dispatchers.IO) {
       val prefs = readServerPrefs.first()
       return@runBlocking when (key) {
-        PREF_SERVER_HOST -> prefs.host
-        PREF_SERVER_PORT -> prefs.port
-        PREF_SERVER_PROTOCOL -> prefs.protocol
+        C.PREF_SERVER_HOST -> prefs.host
+        C.PREF_SERVER_PORT -> prefs.port
+        C.PREF_SERVER_PROTOCOL -> prefs.protocol
         else -> null
       }
     }
@@ -108,10 +103,9 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
         } else { throw exception }
       }
       .map { preferences ->
-        val protocol = preferences[KEY.protocol] ?: DEFAULT_PREF_SERVER_PROTOCOL
-        val host = preferences[KEY.host] ?: DEFAULT_PREF_SERVER_HOST
-        val port = preferences[KEY.port] ?: DEFAULT_PREF_SERVER_PORT
-
+        val protocol = preferences[KEY.protocol] ?: C.DEFAULT_PREF_SERVER_PROTOCOL
+        val host = preferences[KEY.host] ?: C.DEFAULT_PREF_SERVER_HOST
+        val port = preferences[KEY.port] ?: C.DEFAULT_PREF_SERVER_PORT
         ServerPrefs(protocol, host, port)
       }
 }

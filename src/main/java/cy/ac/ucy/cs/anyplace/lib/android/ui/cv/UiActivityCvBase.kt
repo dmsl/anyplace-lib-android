@@ -1,7 +1,9 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.app.Activity
 import android.content.Context
 import androidx.camera.core.*
+import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
@@ -23,13 +25,16 @@ import kotlinx.coroutines.CoroutineScope
  * CHECK: add also gmap markers here?
  */
 open class UiActivityCvBase(
-        protected val ctx: Context,
+        protected val activity: Activity,
+        protected val fragmentManager: FragmentManager,
         protected val VMb: CvViewModelBase,
         protected val scope: CoroutineScope,
         protected val statusUpdater: StatusUpdater,
         /** [GoogleMap] overlays */
         protected val overlays: Overlays,
         protected val floorSelector: FloorSelector) {
+
+  protected val ctx: Context = activity.applicationContext
 
   fun setupOnFloorSelectionClick(){
     floorSelector.onFloorDown { VMb.floorGoDown() }

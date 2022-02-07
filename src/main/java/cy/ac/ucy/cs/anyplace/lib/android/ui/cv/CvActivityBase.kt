@@ -38,6 +38,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -67,8 +68,33 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
   private lateinit var tovCamera: TrackingOverlayView
   protected lateinit var floorSelector: FloorSelector
   private lateinit var pvCamera: PreviewView
-
   protected lateinit var UIB: UiActivityCvBase
+
+  override fun onResume() {
+    super.onResume()
+    LOG.D3(TAG, "onResume")
+    readPrefsAndContinueSetup()
+  }
+
+  /**
+   * Read [dataStoreCv] preferences
+   * TODO load CvModel from here?
+   */
+  private fun readPrefsAndContinueSetup() {
+    lifecycleScope.launch {
+      dataStoreCv.read.first { prefs->
+        if (prefs.reloadCvMaps) {
+          LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
+          // refresh CvMap+Heatmap only when needed
+          // TODO do something similar with floorplans when necessary as well
+          loadCvMapAndHeatmap()
+          dataStoreCv.setReloadCvMaps(false)
+        }
+
+        true
+      }
+    }
+  }
 
   /** Setups the Computer Vision processor using
    * - a [TrackingOverlayView] that shows the detected objects
@@ -177,11 +203,11 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    lifecycleScope.launch(Dispatchers.IO) { VMB.floorsH?.fetchAllFloorplans() }
+    lifecycleScope.launch(Dispatchers.IO) { VMB.floorsH.fetchAllFloorplans() }
 
     // place some restrictions on the map
     gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
-            CameraAndViewport.loggerCamera(VMB.spaceH!!.latLng(), maxZoomLevel)))
+            CameraAndViewport.loggerCamera(VMB.spaceH.latLng(), maxZoomLevel)))
     gmap.setMinZoomPreference(maxZoomLevel-3)
 
     // restrict screen to current bounds.
@@ -225,7 +251,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
 
     VMB.spaceH = SpaceHelper(applicationContext, VMB.repository, VMB.space!!)
     VMB.floorsH = FloorsHelper(VMB.floors!!, VMB.spaceH)
-    val prettySpace = VMB.spaceH.prettyType
+    val prettySpace = VMB.spaceH.prettyTypeCapitalize
     val prettyFloors= VMB.spaceH.prettyFloors
 
     LOG.D3(TAG_METHOD, "$prettySpace: ${VMB.space!!.name} " +
@@ -271,7 +297,6 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
           updateAndCacheLastFloor(VMB.floor.value)
           LOG.W(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
           lazilyChangeFloor()
-          // loadFloor(VMB.floorH!!)
         }
       }
     }
@@ -322,7 +347,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     LOG.W(TAG_METHOD, floor?.floorNumber.toString())
     if (floor != null) {
       VMB.lastValSpaces.lastFloor=floor.floorNumber
-      VMB.spaceH?.cacheLastValues(VMB.lastValSpaces)
+      VMB.spaceH.cacheLastValues(VMB.lastValSpaces)
     }
   }
 
@@ -330,8 +355,8 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
     var msg = ""
     when {
       space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${VMB.spaceH?.prettyFloors}."
-      floor == null -> msg = "Failed to get ${VMB.spaceH?.prettyFloor} $floorNum."
+      floors == null -> msg = "Failed to get ${VMB.spaceH.prettyFloors}."
+      floor == null -> msg = "Failed to get ${VMB.spaceH.prettyFloor} $floorNum."
     }
     LOG.E(msg)
     Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
@@ -386,7 +411,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
       VMB.floorplanFlow.collect { response ->
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W("Loading ${VMB.spaceH?.prettyFloorplan}")
+            LOG.W("Loading ${VMB.spaceH.prettyFloorplan}")
           }
           is NetworkResult.Error -> {
             val msg = "Failed to get $VMB.space"
@@ -401,10 +426,7 @@ abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
             } else {
               renderFloorplan(response.data, VMB.floorH!!)
               loadCvMapAndHeatmap()
-              // TODO:PM LEFTHERE....
-              // renderHeatmap()
             }
-            // onFloorplanLoadedSuccess()
           }
         }
       }

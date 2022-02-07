@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.camera.core.*
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +49,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
 
     statusUpdater = StatusUpdater(
             applicationContext,
+            lifecycleScope,
             binding.tvStatusSticky,
             binding.tvMsgTitle,
             binding.tvMsgSubtitle,
@@ -65,7 +65,8 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
             binding.buttonFloorDown)
 
     UI = UiActivityCvLogger(
-            applicationContext,
+            this@CvLoggerActivity,
+            supportFragmentManager,
             lifecycleScope,
             statusUpdater,
             floorSelector,
@@ -193,25 +194,25 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         VM.circleTimerAnimation = TimerAnimation.reset
         UI.startLocalization(binding.mapView)
       }
-      Logging.finished -> { // finished a scanning
-        btnDemoNav.visibility = View.GONE
-        btnTimer.fadeOut()
-        btnLogging.text = "Stored"
-        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.green)
-        // TODO:TRIAL LEFTHERE: new logic?
-        // TODO:TRIAL onMapLongClick store on long-click
-        // VM.circleTimerAnimation = TimerAnimation.reset
-        // DetectionMapHelper.generate(storedDetections)
-        // sleep a while.....
-        // TODO show the below menu..
-        // TODO store..
-        // TODO show upload section..(on the below menu, with UPLOAD button)..
-        // TODO set to stopped again
-      }
+      // Logging.finished -> { // finished a scanning
+      //   btnDemoNav.visibility = View.GONE
+      //   btnTimer.fadeOut()
+      //   btnLogging.text = "Stored"
+      //   changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.green)
+      //   // TODO:TRIAL LEFTHERE: new logic?
+      //   // TODO:TRIAL onMapLongClick store on long-click
+      //   // VM.circleTimerAnimation = TimerAnimation.reset
+      //   // DetectionMapHelper.generate(storedDetections)
+      //   // sleep a while.....
+      //   // TODO show the below menu..
+      //   // TODO store..
+      //   // TODO show upload section..(on the below menu, with UPLOAD button)..
+      //   // TODO set to stopped again
+      // }
       Logging.running -> { // just started scanning
         btnDemoNav.fadeOut()
         VM.circleTimerAnimation = TimerAnimation.running
-        btnLogging.text = "PAUSE"
+        btnLogging.text = "pause"
         removeMaterialButtonIcon(btnTimer)
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.darkGray)
         changeBackgroundButton(btnTimer, applicationContext, R.color.redDark)
@@ -220,11 +221,15 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
       }
       Logging.stopped -> { // stopped after a pause or a store: can start logging again
         btnDemoNav.fadeIn()
+        // clear btnTimer related components.. TODO make this a class..
+        VM.circleTimerAnimation = TimerAnimation.reset
+        btnTimer.fadeOut()
+        binding.bottomUi.progressBarTimer.fadeOut()
         VM.circleTimerAnimation = TimerAnimation.paused
         if (VM.previouslyPaused) {
-          btnLogging.text = "RESUME"
+          btnLogging.text = "resume"
         } else {
-          btnLogging.text = "START"
+          btnLogging.text = "scan"
           binding.bottomUi.groupTutorial.visibility = View.VISIBLE
         }
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.colorPrimary)
@@ -235,7 +240,9 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         btnDemoNav.visibility = View.GONE
         VM.circleTimerAnimation = TimerAnimation.reset
         lifecycleScope.launch {
-          statusUpdater.showWarningAutohide("No detections.", "trying again..", 2000L)
+          val ms = 1500L
+          statusUpdater.showWarningAutohide("No detections.", "trying again..", ms)
+          delay(ms) // wait before restarting..
           restartLogging()
         }
       }
@@ -244,13 +251,21 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         VM.circleTimerAnimation = TimerAnimation.reset
         btnTimer.visibility=View.VISIBLE
         LOG.D(TAG_METHOD, "stopped must store: visible")
-        btnLogging.text = "FINISH"
+
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
         changeBackgroundButton(btnTimer, applicationContext, R.color.yellowDark)
 
-        val nothingStored = VM.storedDetections.isEmpty()
-        val loggingBtnColor = if (nothingStored) R.color.darkGray else R.color.yellowDark
-        changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
+        val storedDetections = VM.storedDetections.size
+        val noDetections = storedDetections == 0
+        val title="long-click on map"
+        val subtitle = if (noDetections) "nothing new attached on map yet" else "mapped locations: $storedDetections"
+        val delay = if(noDetections) 7000L else 5000L
+        statusUpdater.showNormalAutohide(title, subtitle, delay)
+
+        btnLogging.text = "END"
+        // val loggingBtnColor = if (noDetections) R.color.darkGray else R.color.yellowDark
+        // changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
+        changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.darkGray)
       }
     }
   }
@@ -284,8 +299,8 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   }
 
   override fun onFloorplanLoadedSuccess() {
-    LOG.E()
-    // CLR this
+    LOG.W()
+    // CLR this ?
   }
 
   /**
@@ -322,9 +337,9 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         // binding.bottomUi.buttonCameraTimer.fadeOut()
 
       } else {
-        val msg = "Not in logging mode"
+        val msg ="Not in scanning mode"
+        statusUpdater.showWarningAutohide(msg, 2000)
         LOG.V2("onMapLongClick: $msg")
-        Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
       }
     }
   }

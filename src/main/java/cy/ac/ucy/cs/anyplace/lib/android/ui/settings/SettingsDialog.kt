@@ -33,10 +33,9 @@ class SettingsDialog : DialogFragment() {
       args.putString(KEY_FROM, from)
       val dialog = SettingsDialog()
       dialog.arguments = args
-      val test = dialog.requireArguments().getString(KEY_FROM)
+      // val test = dialog.requireArguments().getString(KEY_FROM)
       dialog.show(fragmentManager, from)
     }
-
   }
 
   var _binding : DialogMainSettingsBinding ?= null
@@ -120,8 +119,7 @@ class SettingsDialog : DialogFragment() {
 
   private fun setup() {
     setupCvLoggerSetings()
-
-    fromCvLogger=false // TODO
+    fromCvLogger=false // TODO:PM
     if (!fromCvLogger) {
       setupServerSettings()
       setupUser()
