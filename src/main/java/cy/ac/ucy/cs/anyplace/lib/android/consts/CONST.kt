@@ -33,9 +33,9 @@ class CONST(ctx: Context) {
   val PREF_SERVER_PORT = "pref_server_port"
   val PREF_SERVER_VERSION = "pref_server_version"
 
-  val DEFAULT_PREF_SERVER_PROTOCOL = "https"
-  val DEFAULT_PREF_SERVER_HOST = "ap.cs.ucy.ac.cy"  // TODO ap.cs
-  val DEFAULT_PREF_SERVER_PORT = "44"
+  val DEFAULT_PREF_SERVER_PROTOCOL = ctx.getString(R.string.default_pref_server_protocol)
+  val DEFAULT_PREF_SERVER_HOST = ctx.getString(R.string.default_pref_server_host)
+  val DEFAULT_PREF_SERVER_PORT =ctx.getString(R.string.default_pref_server_port)
 
   /** shared settings in cv activities*/
   val PREF_CV = "pref_cv"
@@ -43,20 +43,36 @@ class CONST(ctx: Context) {
   val PREF_RELOAD_MODEL = "pref_cv_reload_model"
   val PREF_RELOAD_CVMAPS = "pref_cv_reload_cvmaps"
   val PREF_RELOAD_FLOORPLAN = "pref_cv_reload_floorplans"  // TODO
+
   val DEFAULT_PREF_MODEL_NAME = "coco"
 
-  /** Settings for Cv Logger */
-  val PREF_CVLOG = "pref_cvlog"
-  val PREF_CVLOG_WINDOW_LOGGING_SECONDS = "pref_cvlog_window_logging_seconds"
-  val PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "pref_cvlog_window_localization_seconds"
-  val PREF_CVLOG_DEV_MODE = ctx.getString(R.string.pref_cvlog_dev_mode) // "pref_cvlog_dev_mode"
-
-  val PREF_CVLOG_EPX_IMG_PADDING = "pref_cvlog_exp_img_padding"
+  //// Settings for Cv Logger
+  val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
+  val PREF_CVLOG_WINDOW_LOGGING_SECONDS = ctx.getString(R.string.pref_cvlog_window_logging_seconds)
+  val PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = ctx.getString(R.string.pref_cvlog_window_localization_seconds)
+  val PREF_CVLOG_DEV_MODE = ctx.getString(R.string.pref_cvlog_dev_mode)
+  val PREF_CVLOG_EPX_IMG_PADDING = ctx.getString(R.string.pref_cvlog_exp_img_padding)
 
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
-  val DEFAULT_PREF_CVLOG_DEV_MODE = false
-  val DEFAULT_PREF_CVLOG_EPX_IMG_PADDING = false
+  val DEFAULT_PREF_CVLOG_DEV_MODE = true
+  val DEFAULT_PREF_CVLOG_EXP_IMG_PADDING = false
+
+  //// MISC
+  val PREF_MISC_NAME = "pref_misc"
+  val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
+  val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
+
+
+
+
+
+
+
+
+
+
+
 
   //// USER
   val PREF_USER = "pref_user"
@@ -69,10 +85,6 @@ class CONST(ctx: Context) {
   val PREF_USER_ID = "pref_user_id"
   val PREF_USER_USERNAME = "pref_user_username"
 
-  //// MISC
-  val PREF_MISC_NAME = "pref_misc"
-  val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
-  val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
 
   // public, accessible, owned
   val PREF_MISC_QUERY_SPACE_OWNERSHIP = "pref_misc_queryType_space_ownership"

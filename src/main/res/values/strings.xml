@@ -183,18 +183,6 @@
   </string-array>
 
 
-
-  <!-- PREFERENCES -->
-  <!-- These defaults are replicated in CONST.kt (in core-lib) -->
-  <!-- We have to have them in 2 places as the core-lib does not have XML values (pure KT lib) -->
-  <!-- And these are used in preferences_*. -->
-  <!-- In the future, when the DataStore / Preferences XML landscape clears out, we might revisit. -->
-  <!-- PREFERENCES:SERVER -->
-  <string name="default_pref_server_host">ap.cs.ucy.ac.cy</string>
-  <string name="default_pref_server_protocol">https</string>
-  <string name="default_server_access_token">ACCESS_TOKEN</string>
-  <string name="default_pref_server_port">44</string>
-
   <!-- TUTORIALS -->
   <string name="tutorial">Tutorial</string>
   <string name="tutorial_cvscan_start">1. START SCANNING:</string>
@@ -220,18 +208,13 @@
   <string name="prefs_header_cache">Cache</string>
   <string name="prefs_header_application">Application</string>
   <string name="apply_just_to">Apply just to</string>
-  <string name="pref_cat_space">pref_cat_space</string>
-  <string name="pref_cvlog_model">pref_cvlog_model</string>
-  <string name="pref_cat_floor">pref_cat_floor</string>
-  <string name="pref_log_clear_cache">pref_log_clear_cache</string>
   <string name="for_all_spaces">for all spaces</string>
   <string name="confirm">Confirm</string>
   <string name="for_var_var">for %1$s %2$s</string>
-  <string name="clear_local_data">Clear local data:</string>
-  <string name="pref_cvlog_window_localization_seconds">pref_cvlog_window_localization_seconds</string>
-  <string name="pref_cvlog_window_logging_seconds">pref_cvlog_window_logging_seconds</string>
+  <string name="clear_local_data">Clear local data</string>
+
   <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
   <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
-  <string name="pref_cvlog_dev_mode">pref_cvlog_dev_mode</string>
+  <string name="change_cv_model">Change Object Recognition Model</string>
 
 </resources>

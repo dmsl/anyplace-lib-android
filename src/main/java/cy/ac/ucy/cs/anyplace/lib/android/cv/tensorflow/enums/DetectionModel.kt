@@ -48,6 +48,15 @@ enum class DetectionModel(
           false
   ),
 
+  VESSEL_b64sb8(
+          "vessel-b64sb8",
+          "models/vessel-231221-final-b64sb8/model.tflite",
+          "file:///android_asset/models/vessel-231221-final-b64sb8/obj.names",
+          INPUT_SIZE,
+          OUTPUT_WIDTH_TINY,
+          false
+  ),
+
   CAMPUS_UCY(
           "campus-ucy",
           "models/campus-ucy/model.tflite",

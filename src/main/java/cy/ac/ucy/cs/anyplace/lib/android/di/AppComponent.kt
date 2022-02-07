@@ -5,13 +5,6 @@ import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
-// import dagger.Component
-// import javax.inject.Singleton
-// @Singleton
-// @Component(modules= [AppModule::class])
-// interface AppComponent
-
-// @Component(modules = [AppModule::class])
 @Component
 @Singleton
 interface AppComponent {

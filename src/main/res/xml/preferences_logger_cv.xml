@@ -1,13 +1,9 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
-
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
   <PreferenceCategory
       app:title="@string/prefs_header_object_recognition"
-      app:icon="@drawable/ic_settings_cv"
-      >
+      app:icon="@drawable/ic_settings_cv">
     <EditTextPreference
         app:key="@string/pref_cvlog_window_logging_seconds"
         app:title="Logging Window"
@@ -20,9 +16,9 @@
         />
     <DropDownPreference
         app:key="@string/pref_cvlog_model"
-        android:enabled="false"
-        app:title="TODO MODEL PICKER"
-        app:summary="Change the object identification model"
+        app:title="Change Detection Model"
+        app:enabled="false"
+        app:summary="Pick different Object Detection model"
         />
   </PreferenceCategory>
 
@@ -30,14 +26,20 @@
   <PreferenceCategory app:title="@string/prefs_header_cache"
       app:icon="@drawable/ic_folder">
     <Preference
-        android:title="Clear local data"
-        android:key="@string/pref_log_clear_cache"
-        android:summary="Delete local Object Maps"
+        android:title="Sync local data"
+        android:key="@string/pref_log_sync_local_data"
+        android:summary="Store local ObjectMaps to the server."
+        android:enabled="false"
         />
     <Preference
-        android:title="Clear all cache"
+        android:title="Clear local data"
+        android:key="@string/pref_log_clear_cache"
+        android:summary="Delete Object Maps that were not synced yet."
+        />
+    <Preference
+        android:title="Clear floorplans"
         android:key="pref_log_clear_cvmaps"
-        android:summary="Delete Object Maps, Floor Plans, Spaces"
+        android:summary="Delete ...."
         android:enabled="false"
         />
 
@@ -51,8 +53,8 @@
     <SwitchPreferenceCompat
         app:key="@string/pref_cvlog_dev_mode"
         android:defaultValue="true"
-        app:title="Show bottom sheet"
-        app:summary="Shows additional details on the bottom"
+        app:title="Show scan details"
+        app:summary="Additional details while scanning (bottomsheet)"
         />
 
     <SwitchPreferenceCompat

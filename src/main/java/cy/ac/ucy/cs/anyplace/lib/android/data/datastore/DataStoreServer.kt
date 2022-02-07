@@ -25,7 +25,6 @@ import javax.inject.Singleton
 class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
-
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreServer by preferencesDataStore(name = C.PREF_SERVER)
 

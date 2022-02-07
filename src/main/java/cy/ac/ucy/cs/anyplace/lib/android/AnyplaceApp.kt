@@ -25,14 +25,6 @@ import javax.inject.Inject
  *
  */
 abstract class AnyplaceApp : Application() {
-
-
-
-  // companion object {
-  //   private var _appComponent: AppComponent?= null
-  //   fun getAppComponent() = _appComponent
-  // }
-
   lateinit var dataStoreServer: DataStoreServer
   /** Preferences for Cv Activities */
   lateinit var dataStoreCv: DataStoreCv
@@ -52,15 +44,10 @@ abstract class AnyplaceApp : Application() {
   @Deprecated("")  lateinit var fileCache: FileCache
   @Deprecated("")  lateinit var apiOld: Anyplace
 
-
-
   override fun onCreate() {
     super.onCreate()
     LOG.D2(TAG, "onCreate")
-    // _appComponent = buildComponent()
-
     DaggerAppComponent.builder().application(this).build()
-    // DaggerAppComponent.create().inject(this)
 
     dataStoreServer = DataStoreServer(applicationContext)
     dataStoreCv = DataStoreCv(applicationContext)

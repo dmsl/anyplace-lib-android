@@ -29,7 +29,6 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
   private val Context.dataStoreCvLogger by preferencesDataStore(name = C.PREF_CVLOG)
   val datastore = ctx.dataStoreCvLogger
 
-  // TODO:TRIAL
   private val validKeys = setOf(
           C.PREF_CVLOG_WINDOW_LOGGING_SECONDS,
           C.PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS,
@@ -45,7 +44,6 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
   }
   private val KEY = Keys(C)
 
-
   private fun validKey(key: String?): Boolean {
     val found = validKeys.contains(key)
     if(!found) LOG.W(TAG, "Unknown key: $key")
@@ -56,6 +54,7 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     if (!validKey(key)) return
     runBlocking {
       datastore.edit {
+        LOG.E(TAG, "put boolean: $key:$value" )
         when (key) {
           C.PREF_CVLOG_DEV_MODE -> it[KEY.devMode] = value
           C.PREF_CVLOG_EPX_IMG_PADDING-> it[KEY.expImagePadding] = value
@@ -118,13 +117,14 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
             C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
             val windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?:
             C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
-            val devMode = preferences[KEY.devMode] ?:
-            C.DEFAULT_PREF_CVLOG_DEV_MODE // TODO:PM make default to true
+            val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CVLOG_DEV_MODE
             val expImagePadding= preferences[KEY.expImagePadding] ?:
-            C.DEFAULT_PREF_CVLOG_EPX_IMG_PADDING
+            C.DEFAULT_PREF_CVLOG_EXP_IMG_PADDING
 
-            LOG.D2(TAG, "Prefs: logging: $windowLoggingSeconds, localization: $windowLocalizationSeconds")
-            CvLoggerPrefs(windowLoggingSeconds, windowLocalizationSeconds, devMode, expImagePadding)
+            val prefs = CvLoggerPrefs(windowLoggingSeconds, windowLocalizationSeconds, devMode, expImagePadding)
+            LOG.D2(TAG, "read prefs: $prefs")
+
+            prefs
           }
 }
 

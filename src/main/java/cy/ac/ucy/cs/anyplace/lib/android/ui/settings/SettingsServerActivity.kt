@@ -50,11 +50,11 @@ class SettingsServerActivity: BaseSettingsActivity() {
     }
 
     private fun reactToSettingsUpdates(versionPreferences: Preference?) {
-      mainViewModel.serverPreferences.asLiveData().observe(this, { prefs ->
+      mainViewModel.serverPreferences.asLiveData().observe(this) { prefs ->
         retrofitHolder.set(prefs)
         LOG.D3(TAG, "reactToSettingsUpdates: ${retrofitHolder.retrofit.baseUrl()}")
         mainViewModel.displayBackendVersion(versionPreferences)
-      })
+      }
     }
   }
 }
