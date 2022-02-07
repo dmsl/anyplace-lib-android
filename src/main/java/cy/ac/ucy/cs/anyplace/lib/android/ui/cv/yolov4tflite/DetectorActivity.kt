@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,7 +25,7 @@ class DetectorActivity : DetectorActivityBase() {
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.tfe_od_activity_camera
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
-  override val id_gesture_layout: Int get() = R.id.bottom_sheet_layout
+  override val id_gesture_layout: Int get() = R.id.gesture_layout
 
   // BottomSheet specific details (default ones)
   lateinit var frameValueTextView: TextView
@@ -43,7 +42,7 @@ class DetectorActivity : DetectorActivityBase() {
     setupBottomSheet()
   }
 
-  fun setupBottomSheet() {
+  private fun setupBottomSheet() {
     bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow)
     sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout)
     val vto = gestureLayout.viewTreeObserver
@@ -58,30 +57,12 @@ class DetectorActivity : DetectorActivityBase() {
             })
 
     sheetBehavior.isHideable = false
-    setupBottomStageChange()
+    setupBottomStageChange(bottomSheetArrowImageView,
+            R.drawable.ic_icon_down, R.drawable.ic_icon_up)
 
     frameValueTextView = findViewById(R.id.frame_info)
     cropValueTextView = findViewById(R.id.crop_info)
     inferenceTimeTextView = findViewById(R.id.inference_info)
-  }
-
-  private fun setupBottomStageChange() {
-    sheetBehavior.setBottomSheetCallback(
-            object : BottomSheetBehavior.BottomSheetCallback() {
-              override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                  BottomSheetBehavior.STATE_EXPANDED -> {
-                    bottomSheetArrowImageView.setImageResource(R.drawable.ic_icon_down)
-                  }
-                  BottomSheetBehavior.STATE_COLLAPSED -> {
-                    bottomSheetArrowImageView.setImageResource(R.drawable.ic_icon_up)
-                  }
-                  BottomSheetBehavior.STATE_SETTLING -> bottomSheetArrowImageView.setImageResource(R.drawable.ic_icon_up)
-                  else -> {}
-                }
-              }
-              override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-            })
   }
 
   override fun onProcessImageFinished() {

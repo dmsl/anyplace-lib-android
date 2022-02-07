@@ -35,6 +35,10 @@ import android.media.ImageReader
 import android.os.*
 import android.util.Size
 import android.view.Surface
+import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
+import androidx.constraintlayout.widget.ConstraintLayout
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,9 +70,9 @@ abstract class CameraActivity : AppCompatActivity(),
     }
   }
 
-  protected lateinit var bottomSheetLayout: LinearLayout
-  protected lateinit var gestureLayout: LinearLayout
-  protected lateinit var sheetBehavior: BottomSheetBehavior<LinearLayout>
+  protected lateinit var bottomSheetLayout: ConstraintLayout
+  protected lateinit var gestureLayout: ConstraintLayout
+  protected lateinit var sheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
   private var rgbBytes: IntArray? = null
 
@@ -123,6 +127,24 @@ abstract class CameraActivity : AppCompatActivity(),
     gestureLayout = findViewById(id_gesture_layout)
 
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+  }
+
+  /**
+   * Opening/Closing UI changes by the bottomsheet
+   */
+  fun setupBottomStageChange(iv: ImageView, @DrawableRes icDown: Int, @DrawableRes icUp: Int) {
+    sheetBehavior.setBottomSheetCallback(
+            object : BottomSheetBehavior.BottomSheetCallback() {
+              override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                  BottomSheetBehavior.STATE_EXPANDED -> { iv.setImageResource(icDown) }
+                  BottomSheetBehavior.STATE_COLLAPSED -> { iv.setImageResource(icUp) }
+                  BottomSheetBehavior.STATE_SETTLING -> iv.setImageResource(icUp)
+                  else -> {}
+                }
+              }
+              override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            })
   }
 
   fun checkPermissionsAndConnectCamera() {
