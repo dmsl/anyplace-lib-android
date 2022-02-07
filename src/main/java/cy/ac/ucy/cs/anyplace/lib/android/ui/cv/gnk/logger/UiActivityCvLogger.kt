@@ -25,6 +25,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.*
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Localization
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay

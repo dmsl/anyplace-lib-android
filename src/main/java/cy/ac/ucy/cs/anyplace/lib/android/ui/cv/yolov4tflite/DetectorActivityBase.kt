@@ -149,8 +149,6 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
     return true
   }
 
-
-
   override fun processImage() {
     // ViewModel
     ++timestamp
@@ -192,19 +190,13 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
     canvas = Canvas(cropCopyBitmap)
 
     // Flows here
-    storeResults(results, canvas)
+    val detections = storeResults(results, canvas)
 
     // finalize detection:
     // View
-    tracker!!.trackResults(VM.detections.value, currTimestamp)
+    tracker!!.trackResults(detections, currTimestamp)
     trackingOverlay.postInvalidate()
     computingDetection = false
-
-    // Can observe detections like so:
-    // lifecycleScope.launch(Dispatchers.IO) {
-    //   VM.detections.collect { detections ->
-    //   }
-    // }
   }
 
   private val MODE = DetectorMode.TF_OD_API
@@ -212,7 +204,8 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   // by default uses Tensorflow Object Detection API frozen checkpoints.
   private enum class DetectorMode { TF_OD_API }
 
-  fun storeResults(results: MutableList<Classifier.Recognition>, canvas: Canvas) {
+  fun storeResults(results: MutableList<Classifier.Recognition>, canvas: Canvas):
+          MutableList<Classifier.Recognition> {
     val minScore = YoloConstants.MINIMUM_SCORE
     val minimumConfidence: Float = when (MODE) {
       DetectorMode.TF_OD_API -> minScore
@@ -235,16 +228,14 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
       }
     }
 
-    VM.publishRecognitions(mappedRecognitions)
+    return mappedRecognitions
   }
-
 
   override val layout_camera_fragment: Int
     get() = R.layout.tfe_od_camera_connection_fragment_tracking
 
   override val desiredPreviewFrameSize: Size?
     get() = DESIRED_PREVIEW_SIZE
-
 
   override fun setUseNNAPI(isChecked: Boolean) {
     lifecycleScope.launch(Dispatchers.IO) { detector.setUseNNAPI(isChecked) }

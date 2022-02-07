@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 /**
  * This is the default DetectorActivity as it comes from:
  * - https://github.com/hunglc007/tensorflow-yolov4-tflite
+ *
+ * To be used only as an example.
  */
 @AndroidEntryPoint
 class DetectorActivity : DetectorActivityBase() {
@@ -43,7 +45,6 @@ class DetectorActivity : DetectorActivityBase() {
 
   fun setupBottomSheet() {
     bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow)
-
     sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout)
     val vto = gestureLayout.viewTreeObserver
 
