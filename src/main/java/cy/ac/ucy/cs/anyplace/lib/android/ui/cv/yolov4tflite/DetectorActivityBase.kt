@@ -65,62 +65,50 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
   private lateinit var cropCopyBitmap: Bitmap
+  private lateinit var detector: Classifier
 
   var trackingOverlay: OverlayView? = null
   private var sensorOrientation: Int? = null
-  private var detector: Classifier? = null
   private var lastProcessingTimeMs: Long = 0
 
   private var computingDetection = false
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
   private var tracker: MultiBoxTracker? = null
-  private var borderedText: BorderedText? = null
+  private lateinit var borderedText: BorderedText
+  val model = YoloConstants.DETECTION_MODEL
 
+  override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
 
-  public override fun onPreviewSizeChosen(size: Size, rotation: Int) {
+   setupDetector()
+
+    // TODO setupUI()
+
+    if (size==null) return;
+
     // ViewModel
     val textSizePx = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, resources.displayMetrics)
     borderedText = BorderedText(textSizePx)
-    borderedText!!.setTypeface(Typeface.MONOSPACE)
+    borderedText.setTypeface(Typeface.MONOSPACE)
     tracker = MultiBoxTracker(this)
-
-    val model = YoloConstants.DETECTION_MODEL
-    val cropSize = model.inputSize
-
-    try {
-      detector = YoloV4Classifier.create(
-              assets,
-              model.modelFilename,
-              model.labelFilePath,
-              model.isQuantized)
-    } catch (e: IOException) {
-      e.printStackTrace()
-      LOG.E(TAG_METHOD, "Initializing classifier", e)
-      val toast = Toast.makeText(
-              applicationContext, "Classifier could not be initialized", Toast.LENGTH_SHORT
-      )
-      toast.show()
-      finish()
-    }
-
     previewWidth = size.width
     previewHeight = size.height
     sensorOrientation = rotation - screenOrientation
-    LOG.I(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-    LOG.I(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+
+    LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
+    LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+
+    val cropSize = model.inputSize
     rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
     croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
     frameToCropTransform = ImageUtils.getTransformationMatrix(
-            previewWidth, previewHeight,
-            cropSize, cropSize,
-            sensorOrientation!!, MAINTAIN_ASPECT
-    )
+            previewWidth, previewHeight, cropSize, cropSize,
+            sensorOrientation!!, MAINTAIN_ASPECT)
     cropToFrameTransform = Matrix()
     frameToCropTransform.invert(cropToFrameTransform)
 
-    //View
+    // View
     trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
     trackingOverlay!!.addCallback { canvas ->
       tracker!!.draw(canvas)
@@ -130,7 +118,7 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   }
 
   override fun processImage() {
-    //ViewModel
+    // ViewModel
     ++timestamp
     val currTimestamp = timestamp
     trackingOverlay!!.postInvalidate()
@@ -141,29 +129,23 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
       return
     }
     computingDetection = true
-    LOG.I("Preparing image $currTimestamp for detection in bg thread.")
-    rgbFrameBitmap.setPixels(rgbBytes, 0, previewWidth, 0, 0, previewWidth, previewHeight)
+    LOG.V3(TAG_METHOD, "Preparing image $currTimestamp for detection in bg thread.")
+    rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight)
     readyForNextImage()
-    val canvas = Canvas(croppedBitmap)
+    var canvas = Canvas(croppedBitmap)
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
     // For examining the actual TF input.
-    if (SAVE_PREVIEW_BITMAP) {
-      ImageUtils.saveBitmap(croppedBitmap)
-    }
+    if (SAVE_PREVIEW_BITMAP) {  ImageUtils.saveBitmap(croppedBitmap)  }
 
-    // TODO COROUTINE: run on IO thread
     lifecycleScope.launch(Dispatchers.IO) {
-      // delay(1000) // TODO: REMOVE
-
-      // runInBackground {
-      LOG.I("Running detection on image $currTimestamp")
+      LOG.V4(TAG_METHOD, "Running detection on image $currTimestamp")
       val startTime = SystemClock.uptimeMillis()
-      val results = detector!!.recognizeImage(croppedBitmap)
+      val results = detector.recognizeImage(croppedBitmap)
       lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
-      LOG.E("CHECK", "run: " + results.size)
+      LOG.V3(TAG_METHOD, "Detections: ${results.size}")
       cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
-      val canvas = Canvas(cropCopyBitmap)
+      canvas = Canvas(cropCopyBitmap)
       val paint = Paint()
       paint.color = Color.RED
       paint.style = Paint.Style.STROKE
@@ -174,7 +156,7 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
         DetectorMode.TF_OD_API -> minScore
       }
 
-      //Flows here
+      // Flows here
       val mappedRecognitions: MutableList<Recognition> =LinkedList()
       for (result in results) {
         val location = result.location
@@ -186,42 +168,54 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
         }
       }
 
-      //View
+      // View
       tracker!!.trackResults(mappedRecognitions, currTimestamp)
       trackingOverlay!!.postInvalidate()
       computingDetection = false
-      runOnUiThread {
-        showFrameInfo(previewWidth.toString() + "x" + previewHeight)
 
-        showCropInfo(
-                cropCopyBitmap?.getWidth().toString() + "x" + cropCopyBitmap?.getHeight()
-        )
+      lifecycleScope.launch(Dispatchers.Main) {
+        // TODO runs after detection?
+        showFrameInfo(previewWidth.toString() + "x" + previewHeight)
+        val w = cropCopyBitmap.width
+        val h = cropCopyBitmap.height
+        showCropInfo("${w}x${h}")
         showInference(lastProcessingTimeMs.toString() + "ms")
       }
-      // }
     }
-
   }
 
-  override fun getLayoutId(): Int {
-    return R.layout.tfe_od_camera_connection_fragment_tracking
+  private fun setupDetector() {
+    LOG.I()
+    try {
+      detector = YoloV4Classifier.create(
+              assets,
+              model.modelFilename,
+              model.labelFilePath,
+              model.isQuantized)
+    } catch (e: IOException) {
+      val msg  ="Cant initialize classifier"
+      LOG.E(TAG_METHOD, msg, e)
+      val toast = Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT)
+      toast.show()
+      finish()
+    }
   }
 
-  override fun getDesiredPreviewFrameSize(): Size {
-    return DESIRED_PREVIEW_SIZE
-  }
+  override val layout_camera_fragment: Int
+    get() = R.layout.tfe_od_camera_connection_fragment_tracking
 
-  // Which detection model to use: by default uses Tensorflow Object Detection API frozen
-  // checkpoints.
-  private enum class DetectorMode {
-    TF_OD_API
-  }
+  override val desiredPreviewFrameSize: Size?
+    get() = DESIRED_PREVIEW_SIZE
+
+  // Which detection model to use:
+  // by default uses Tensorflow Object Detection API frozen checkpoints.
+  private enum class DetectorMode { TF_OD_API }
 
   override fun setUseNNAPI(isChecked: Boolean) {
-    runInBackground { detector!!.setUseNNAPI(isChecked) }
+    runInBackground { detector.setUseNNAPI(isChecked) }
   }
 
   override fun setNumThreads(numThreads: Int) {
-    runInBackground { detector!!.setNumThreads(numThreads) }
+    runInBackground { detector.setNumThreads(numThreads) }
   }
 }

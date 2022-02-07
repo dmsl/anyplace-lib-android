@@ -101,88 +101,88 @@
             android:textColor="@android:color/black" />
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_marginTop="10dp"
-        android:background="@android:color/darker_gray" />
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1px"-->
+<!--        android:layout_marginTop="10dp"-->
+<!--        android:background="@android:color/darker_gray" />-->
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:visibility="gone"
-        android:orientation="horizontal">
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="10dp"-->
+<!--        android:visibility="gone"-->
+<!--        android:orientation="horizontal">-->
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Threads"
-            android:textColor="@android:color/black" />
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:text="Threads"-->
+<!--            android:textColor="@android:color/black" />-->
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/rectangle"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="4dp">
+<!--        <LinearLayout-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentRight="true"-->
+<!--            android:background="@drawable/rectangle"-->
+<!--            android:gravity="center"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:padding="4dp">-->
 
-            <ImageView
-                android:id="@+id/minus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_remove" />
+<!--            <ImageView-->
+<!--                android:id="@+id/minus"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:src="@drawable/ic_baseline_remove" />-->
 
-            <TextView
-                android:id="@+id/threads"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:text="1"
-                android:textColor="@android:color/black"
-                android:textSize="14sp" />
+<!--            <TextView-->
+<!--                android:id="@+id/threads"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginLeft="10dp"-->
+<!--                android:layout_marginRight="10dp"-->
+<!--                android:text="1"-->
+<!--                android:textColor="@android:color/black"-->
+<!--                android:textSize="14sp" />-->
 
-            <ImageView
-                android:id="@+id/plus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_add" />
-        </LinearLayout>
-    </RelativeLayout>
+<!--            <ImageView-->
+<!--                android:id="@+id/plus"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:src="@drawable/ic_baseline_add" />-->
+<!--        </LinearLayout>-->
+<!--    </RelativeLayout>-->
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_marginTop="10dp"
-        android:background="@android:color/darker_gray" />
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1px"-->
+<!--        android:layout_marginTop="10dp"-->
+<!--        android:background="@android:color/darker_gray" />-->
 
-    <!-- TODO(b/112541284): Unhide when new NNAPI delegate is used. -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
+<!--    &lt;!&ndash; TODO(b/112541284): Unhide when new NNAPI delegate is used. &ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:visibility="visible">-->
 
-        <TextView
-            android:id="@+id/api"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="API"
-            android:textColor="@android:color/black" />
+<!--        <TextView-->
+<!--            android:id="@+id/api"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:text="API"-->
+<!--            android:textColor="@android:color/black" />-->
 
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/api_info_switch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:checked="false"
-            android:gravity="right"
-            android:text="TFLITE"
-            android:textColor="@android:color/black" />
-    </LinearLayout>
+<!--        <androidx.appcompat.widget.SwitchCompat-->
+<!--            android:id="@+id/api_info_switch"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:checked="false"-->
+<!--            android:gravity="right"-->
+<!--            android:text="TFLITE"-->
+<!--            android:textColor="@android:color/black" />-->
+<!--    </LinearLayout>-->
 </LinearLayout>
