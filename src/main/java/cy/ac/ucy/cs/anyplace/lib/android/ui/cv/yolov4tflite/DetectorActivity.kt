@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
  * This is the default DetectorActivity as it comes from:
  * - https://github.com/hunglc007/tensorflow-yolov4-tflite
  */
+@AndroidEntryPoint
 class DetectorActivity : DetectorActivityBase() {
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.tfe_od_activity_camera
@@ -96,5 +98,4 @@ class DetectorActivity : DetectorActivityBase() {
     cropValueTextView.text = "${w}x${h}"
     inferenceTimeTextView.text =  "${lastProcessingTimeMs}ms"
   }
-
 }

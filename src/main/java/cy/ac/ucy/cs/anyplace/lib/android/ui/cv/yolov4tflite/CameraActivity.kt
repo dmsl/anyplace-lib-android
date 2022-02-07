@@ -37,6 +37,7 @@ import android.util.Size
 import android.view.Surface
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
+import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Exception
 
 /**
@@ -46,6 +47,7 @@ import java.lang.Exception
  *    - it sets it up, and
  *    - knows nothing about the content and structure of the BottomSheet
  */
+@AndroidEntryPoint
 abstract class CameraActivity : AppCompatActivity(),
         ImageReader.OnImageAvailableListener,
         PreviewCallback {
@@ -81,7 +83,6 @@ abstract class CameraActivity : AppCompatActivity(),
   protected var luminanceStride = 0
   private var postInferenceCallback: Runnable? = null
   private var imageConverter: Runnable? = null
-
 
   // OVERRIDES
   ///// LAYOUT

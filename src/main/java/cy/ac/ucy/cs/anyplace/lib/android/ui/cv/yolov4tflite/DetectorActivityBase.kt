@@ -7,17 +7,21 @@ import android.util.Size
 import android.util.TypedValue
 import android.view.View
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview.OverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.BorderedText
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.tracking.MultiBoxTracker
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier.Recognition
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 import java.io.IOException
@@ -57,20 +61,20 @@ import java.util.*
  * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
  * objects.
  */
+@AndroidEntryPoint
 abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener {
   companion object {
-    private val MODE = DetectorMode.TF_OD_API
     private const val SAVE_PREVIEW_BITMAP = false // debug option
     private const val MAINTAIN_ASPECT = false
     private val DESIRED_PREVIEW_SIZE = Size(640, 480)
-    private const val TEXT_SIZE_DIP = 10f
+    const val TEXT_SIZE_DIP = 10f
   }
 
+  protected lateinit var VM: DetectorViewModel
   private lateinit var rgbFrameBitmap: Bitmap
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
   protected lateinit var cropCopyBitmap: Bitmap
-  private lateinit var detector: Classifier
 
   lateinit var trackingOverlay: OverlayView
   private var sensorOrientation: Int? = null
@@ -79,45 +83,73 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   private var computingDetection = false
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
+
+  private lateinit var detector: Classifier
   private var tracker: MultiBoxTracker? = null
   private lateinit var borderedText: BorderedText
-  val model = YoloConstants.DETECTION_MODEL
 
+  // TODO: this method is problematic even for the original project.
+  // It should run on an IO Dispatcher. Otherwise the app will lag on boot.
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size==null) return
 
-    setupDetector()
+    VM = ViewModelProvider(this).get(DetectorViewModel::class.java)
 
-    // ViewModel
-    val textSizePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, resources.displayMetrics)
-    borderedText = BorderedText(textSizePx)
-    borderedText.setTypeface(Typeface.MONOSPACE)
-    tracker = MultiBoxTracker(this)
-    previewWidth = size.width
-    previewHeight = size.height
-    sensorOrientation = rotation - screenOrientation
+      if(!setupDetector()) {
+        val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
+        toast.show()
+        finish()
+      }
 
-    LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-    LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+      val textSizePx = TypedValue.applyDimension(
+              TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
+              app.resources.displayMetrics)
 
-    val cropSize = model.inputSize
-    rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
-    croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
-    frameToCropTransform = ImageUtils.getTransformationMatrix(
-            previewWidth, previewHeight, cropSize, cropSize,
-            sensorOrientation!!, MAINTAIN_ASPECT)
-    cropToFrameTransform = Matrix()
-    frameToCropTransform.invert(cropToFrameTransform)
+      borderedText = BorderedText(textSizePx)
+      borderedText.setTypeface(Typeface.MONOSPACE)
+      tracker = MultiBoxTracker(this@DetectorActivityBase)
+      previewWidth = size.width
+      previewHeight = size.height
+      sensorOrientation = rotation - screenOrientation
 
-    // View
-    trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
-    trackingOverlay.addCallback { canvas ->
-      tracker!!.draw(canvas)
-      if (isDebug) { tracker!!.drawDebug(canvas)  }
-    }
-    tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
+      LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
+      LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+
+      val cropSize = VM.model.inputSize
+      rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
+      croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
+      frameToCropTransform = ImageUtils.getTransformationMatrix(
+              previewWidth, previewHeight, cropSize, cropSize,
+              sensorOrientation!!, MAINTAIN_ASPECT)
+      cropToFrameTransform = Matrix()
+      frameToCropTransform.invert(cropToFrameTransform)
+
+      // View
+      trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
+      trackingOverlay.addCallback { canvas ->
+        tracker!!.draw(canvas)
+        if (isDebug) { tracker!!.drawDebug(canvas)  }
+      }
+      tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
   }
+
+  fun setupDetector(): Boolean {
+    LOG.I()
+    try {
+      detector = YoloV4Classifier.create(
+              assets,
+              VM.model.modelFilename,
+              VM.model.labelFilePath,
+              VM.model.isQuantized)
+    } catch (e: IOException) {
+      val msg  ="Cant initialize classifier"
+      LOG.E(TAG_METHOD, msg, e)
+      return false
+    }
+    return true
+  }
+
+
 
   override fun processImage() {
     // ViewModel
@@ -146,63 +178,66 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
     }
   }
 
- private fun runDetection(currTimestamp: Long) {
-   LOG.V4(TAG_METHOD, "Running detection on image $currTimestamp")
-   var canvas = Canvas(croppedBitmap)
-   canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
+  private fun runDetection(currTimestamp: Long) {
+    LOG.V4(TAG_METHOD, "Running detection on image $currTimestamp")
+    var canvas = Canvas(croppedBitmap)
+    canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
-   val startTime = SystemClock.uptimeMillis()
-   val results = detector.recognizeImage(croppedBitmap)
-   lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
+    val startTime = SystemClock.uptimeMillis()
+    val results = detector.recognizeImage(croppedBitmap)
+    lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
-   LOG.V3(TAG_METHOD, "Detections: ${results.size}")
-   cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
-   canvas = Canvas(cropCopyBitmap)
-   val paint = Paint()
-   paint.color = Color.RED
-   paint.style = Paint.Style.STROKE
-   paint.strokeWidth = 2.0f
+    LOG.V3(TAG_METHOD, "Detections: ${results.size}")
+    cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
+    canvas = Canvas(cropCopyBitmap)
 
-   val minScore = YoloConstants.MINIMUM_SCORE
-   val minimumConfidence: Float = when (MODE) {
-     DetectorMode.TF_OD_API -> minScore
-   }
+    // Flows here
+    storeResults(results, canvas)
 
-   // Flows here
-   val mappedRecognitions: MutableList<Recognition> = LinkedList()
-   for (result in results) {
-     val location = result.location
-     if (location != null && result.confidence >= minimumConfidence) {
-       canvas.drawRect(location, paint)
-       cropToFrameTransform!!.mapRect(location)
-       result.location = location
-       mappedRecognitions.add(result)
-     }
-   }
+    // finalize detection:
+    // View
+    tracker!!.trackResults(VM.detections.value, currTimestamp)
+    trackingOverlay.postInvalidate()
+    computingDetection = false
 
-   // View
-   tracker!!.trackResults(mappedRecognitions, currTimestamp)
-   trackingOverlay.postInvalidate()
-   computingDetection = false
- }
-
-
-  private fun setupDetector() {
-    LOG.I()
-    try {
-      detector = YoloV4Classifier.create(
-              assets,
-              model.modelFilename,
-              model.labelFilePath,
-              model.isQuantized)
-    } catch (e: IOException) {
-      val msg  ="Cant initialize classifier"
-      LOG.E(TAG_METHOD, msg, e)
-      val toast = Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT)
-      toast.show()
-      finish()
-    }
+    // Can observe detections like so:
+    // lifecycleScope.launch(Dispatchers.IO) {
+    //   VM.detections.collect { detections ->
+    //   }
+    // }
   }
+
+  private val MODE = DetectorMode.TF_OD_API
+  // Which detection model to use:
+  // by default uses Tensorflow Object Detection API frozen checkpoints.
+  private enum class DetectorMode { TF_OD_API }
+
+  fun storeResults(results: MutableList<Classifier.Recognition>, canvas: Canvas) {
+    val minScore = YoloConstants.MINIMUM_SCORE
+    val minimumConfidence: Float = when (MODE) {
+      DetectorMode.TF_OD_API -> minScore
+    }
+
+    val paint = Paint()
+    paint.color = Color.RED
+    paint.style = Paint.Style.STROKE
+    paint.strokeWidth = 2.0f
+
+    val mappedRecognitions: MutableList<Classifier.Recognition> = LinkedList()
+
+    for (result in results) {
+      val location = result.location
+      if (location != null && result.confidence >= minimumConfidence) {
+        canvas.drawRect(location, paint)
+        cropToFrameTransform!!.mapRect(location)
+        result.location = location
+        mappedRecognitions.add(result)
+      }
+    }
+
+    VM.publishRecognitions(mappedRecognitions)
+  }
+
 
   override val layout_camera_fragment: Int
     get() = R.layout.tfe_od_camera_connection_fragment_tracking
@@ -210,9 +245,6 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   override val desiredPreviewFrameSize: Size?
     get() = DESIRED_PREVIEW_SIZE
 
-  // Which detection model to use:
-  // by default uses Tensorflow Object Detection API frozen checkpoints.
-  private enum class DetectorMode { TF_OD_API }
 
   override fun setUseNNAPI(isChecked: Boolean) {
     lifecycleScope.launch(Dispatchers.IO) { detector.setUseNNAPI(isChecked) }
