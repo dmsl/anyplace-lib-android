@@ -84,7 +84,6 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
 
-  private lateinit var detector: Classifier
   private var tracker: MultiBoxTracker? = null
   private lateinit var borderedText: BorderedText
 
@@ -136,7 +135,7 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
   fun setupDetector(): Boolean {
     LOG.I()
     try {
-      detector = YoloV4Classifier.create(
+      VM.detector = YoloV4Classifier.create(
               assets,
               VM.model.modelFilename,
               VM.model.labelFilePath,
@@ -182,7 +181,7 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
     val startTime = SystemClock.uptimeMillis()
-    val results = detector.recognizeImage(croppedBitmap)
+    val results = VM.detector.recognizeImage(croppedBitmap)
     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
     LOG.V3(TAG_METHOD, "Detections: ${results.size}")
@@ -227,7 +226,6 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
         mappedRecognitions.add(result)
       }
     }
-
     return mappedRecognitions
   }
 
@@ -238,10 +236,10 @@ abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener
     get() = DESIRED_PREVIEW_SIZE
 
   override fun setUseNNAPI(isChecked: Boolean) {
-    lifecycleScope.launch(Dispatchers.IO) { detector.setUseNNAPI(isChecked) }
+    lifecycleScope.launch(Dispatchers.IO) { VM.detector.setUseNNAPI(isChecked) }
   }
 
   override fun setNumThreads(numThreads: Int) {
-    lifecycleScope.launch(Dispatchers.IO) { detector.setNumThreads(numThreads) }
+    lifecycleScope.launch(Dispatchers.IO) { VM.detector.setNumThreads(numThreads) }
   }
 }

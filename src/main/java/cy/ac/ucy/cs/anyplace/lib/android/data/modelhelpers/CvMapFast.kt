@@ -6,6 +6,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.models.CvDetection
@@ -263,6 +264,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     return res
   }
 
+  @Deprecated("")
   fun estimatePosition(detectionModel: DetectionModel, detections: List<Detector.Detection>)
           : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
@@ -278,6 +280,35 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
     detections.forEach {
       val idx = labelMap[it.className]!!
+      val cvDetection = CvMapHelper.toCvDetection(it)
+      if (inputMap[idx] == null) {
+        inputMap[idx] = mutableListOf(cvDetection)
+      } else {
+        inputMap[idx]?.add(cvDetection)
+      }
+    }
+
+    LOG.W(TAG, "inputMap: done")
+
+    return NN(inputMap)  // TODO make this an option
+  }
+
+
+  fun estimatePositionNEW(detectionModel: DetectionModel, detections: List<Classifier.Recognition>)
+          : LocalizationResult {
+    LOG.W(TAG, "estimatePosition")
+
+    if (detectionModel.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+      val msg = "Wrong model used"
+      val details = "${detectionModel.modelName} instead of ${cvMap.detectionModel}"
+      LOG.E(TAG, "$msg: $details")
+      return LocalizationResult.Error(msg, details)
+    }
+
+    LOG.W(TAG, "inputMap: generating...")
+    val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
+    detections.forEach {
+      val idx = labelMap[it.title]!!
       val cvDetection = CvMapHelper.toCvDetection(it)
       if (inputMap[idx] == null) {
         inputMap[idx] = mutableListOf(cvDetection)

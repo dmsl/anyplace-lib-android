@@ -137,6 +137,73 @@ open class YoloV4Classifier private constructor() : Classifier {
     private val XYSCALE_TINY = floatArrayOf(1.05f, 1.05f)
     protected const val BATCH_SIZE = 1
     protected const val PIXEL_SIZE = 3
+
+    fun NMS(list: List<Recognition>, labels: List<String>): ArrayList<Recognition> {
+      val nmsList = ArrayList<Recognition>()
+      for (k in labels.indices) {
+        //1.find max confidence per class
+        val pq = PriorityQueue<Recognition>(
+                50
+        ) { lhs, rhs -> // Intentionally reversed to put high confidence at the head of the queue.
+          java.lang.Float.compare(rhs.confidence, lhs.confidence)
+        }
+        for (i in list.indices) {
+          if (list[i].detectedClass == k) {
+            pq.add(list[i])
+          }
+        }
+
+        //2.do non maximum suppression
+        while (pq.size > 0) {
+          //insert detection with max confidence
+          val a = arrayOfNulls<Recognition>(pq.size)
+          val detections: Array<Recognition> = pq.toArray(a)
+          val max = detections[0]
+          nmsList.add(max)
+          pq.clear()
+          for (j in 1 until detections.size) {
+            val detection = detections[j]
+            val b = detection.location
+            if (box_iou(max.location, b) < mNmsThresh) {
+              pq.add(detection)
+            }
+          }
+        }
+      }
+      return nmsList
+    }
+
+    protected var mNmsThresh = 0.6f
+    private fun box_iou(a: RectF, b: RectF): Float {
+      return box_intersection(a, b) / box_union(a, b)
+    }
+
+    private fun box_intersection(a: RectF, b: RectF): Float {
+      val w = overlap(
+              (a.left + a.right) / 2, a.right - a.left,
+              (b.left + b.right) / 2, b.right - b.left
+      )
+      val h = overlap(
+              (a.top + a.bottom) / 2, a.bottom - a.top,
+              (b.top + b.bottom) / 2, b.bottom - b.top
+      )
+      return if (w < 0 || h < 0) 0f else w * h
+    }
+
+    private fun box_union(a: RectF, b: RectF): Float {
+      val i = box_intersection(a, b)
+      return (a.right - a.left) * (a.bottom - a.top) + (b.right - b.left) * (b.bottom - b.top) - i
+    }
+
+    protected fun overlap(x1: Float, w1: Float, x2: Float, w2: Float): Float {
+      val l1 = x1 - w1 / 2
+      val l2 = x2 - w2 / 2
+      val left = if (l1 > l2) l1 else l2
+      val r1 = x1 + w1 / 2
+      val r2 = x2 + w2 / 2
+      val right = if (r1 < r2) r1 else r2
+      return right - left
+    }
   }
 
 
@@ -154,6 +221,7 @@ open class YoloV4Classifier private constructor() : Classifier {
     if (tfLite != null) tfLite!!.setUseNNAPI(isChecked)
   }
   override fun getObjThresh() = YoloConstants.MINIMUM_SCORE
+  override fun getLabels(): List<String> = labels
 
   private var isModelQuantized = false
 
@@ -165,72 +233,13 @@ open class YoloV4Classifier private constructor() : Classifier {
   private lateinit var imgData: ByteBuffer
   private var tfLite: Interpreter? = null
 
-  //non maximum suppression
+  // non maximum suppression
+  /**
+   * Non-maximum Suppression. Removes overlapping bboxes, which is a
+   * side-effect of YOLO's operation.
+   */
   protected fun nms(list: ArrayList<Recognition>): ArrayList<Recognition> {
-    val nmsList = ArrayList<Recognition>()
-    for (k in labels.indices) {
-      //1.find max confidence per class
-      val pq = PriorityQueue<Recognition>(
-        50
-      ) { lhs, rhs -> // Intentionally reversed to put high confidence at the head of the queue.
-        java.lang.Float.compare(rhs.confidence, lhs.confidence)
-      }
-      for (i in list.indices) {
-        if (list[i].detectedClass == k) {
-          pq.add(list[i])
-        }
-      }
-
-      //2.do non maximum suppression
-      while (pq.size > 0) {
-        //insert detection with max confidence
-        val a = arrayOfNulls<Recognition>(pq.size)
-        val detections: Array<Recognition> = pq.toArray(a)
-        val max = detections[0]
-        nmsList.add(max)
-        pq.clear()
-        for (j in 1 until detections.size) {
-          val detection = detections[j]
-          val b = detection.location
-          if (box_iou(max.location, b) < mNmsThresh) {
-            pq.add(detection)
-          }
-        }
-      }
-    }
-    return nmsList
-  }
-
-  protected var mNmsThresh = 0.6f
-  private fun box_iou(a: RectF, b: RectF): Float {
-    return box_intersection(a, b) / box_union(a, b)
-  }
-
-  private fun box_intersection(a: RectF, b: RectF): Float {
-    val w = overlap(
-      (a.left + a.right) / 2, a.right - a.left,
-      (b.left + b.right) / 2, b.right - b.left
-    )
-    val h = overlap(
-      (a.top + a.bottom) / 2, a.bottom - a.top,
-      (b.top + b.bottom) / 2, b.bottom - b.top
-    )
-    return if (w < 0 || h < 0) 0f else w * h
-  }
-
-  private fun box_union(a: RectF, b: RectF): Float {
-    val i = box_intersection(a, b)
-    return (a.right - a.left) * (a.bottom - a.top) + (b.right - b.left) * (b.bottom - b.top) - i
-  }
-
-  protected fun overlap(x1: Float, w1: Float, x2: Float, w2: Float): Float {
-    val l1 = x1 - w1 / 2
-    val l2 = x2 - w2 / 2
-    val left = if (l1 > l2) l1 else l2
-    val r1 = x1 + w1 / 2
-    val r2 = x2 + w2 / 2
-    val right = if (r1 < r2) r1 else r2
-    return right - left
+    return NMS(list, labels)
   }
 
   /**

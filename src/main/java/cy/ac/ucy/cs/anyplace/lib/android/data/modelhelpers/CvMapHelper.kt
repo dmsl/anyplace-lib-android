@@ -8,6 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.models.*
 
@@ -27,6 +28,9 @@ class CvMapHelper(val cvMap: CvMap,
     // val SCORE_LIMIT  = 0.7f
     fun toCvDetection(d: Detector.Detection) =
       CvDetection(d.className, d.boundingBox.width(), d.boundingBox.height(), d.ocr)
+
+    fun toCvDetection(d: Classifier.Recognition) =
+            CvDetection(d.title, d.location.width(), d.location.height(), d.ocr)
 
     fun toCvLocation(latLng: LatLng, cvDetections: List<CvDetection>) =
       CvLocation(latLng.latitude.toString(), latLng.longitude.toString(), cvDetections)
