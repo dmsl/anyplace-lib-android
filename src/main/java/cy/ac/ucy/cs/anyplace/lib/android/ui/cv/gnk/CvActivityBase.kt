@@ -50,7 +50,9 @@ import kotlinx.coroutines.launch
  *
  */
 @AndroidEntryPoint
-abstract class CvActivityBase : AppCompatActivity(), OnMapReadyCallback {
+abstract class CvActivityBase : AppCompatActivity(),
+        OnMapReadyCallback
+{
   companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
     const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9

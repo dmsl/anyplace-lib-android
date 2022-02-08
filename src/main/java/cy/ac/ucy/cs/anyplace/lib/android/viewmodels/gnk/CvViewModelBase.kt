@@ -147,7 +147,7 @@ abstract class CvViewModelBase constructor(
     val usePadding = false
     detector = DetectorFactory.createDetector(
       assetManager,
-      YoloConstants.DETECTION_MODEL,
+      YoloConstants.DETECTION_MODEL_LOGGER,
       YoloConstants.MINIMUM_SCORE,
       usePadding) as YoloV4Detector
 

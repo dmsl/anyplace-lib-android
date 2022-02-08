@@ -3,12 +3,22 @@
   xmlns:tools="http://schemas.android.com/tools"
   package="cy.ac.ucy.cs.anyplace.lib">
 
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+  <uses-permission android:name="android.permission.INTERNET" />
+
+  <!-- AP-CV -->
+  <uses-permission android:name="android.permission.CAMERA" />
+
   <application
     tools:ignore="LockedOrientationActivity">
-    <!--              The API key for Google Maps-based APIs must be safely stored at ProjectRoot:secure.properties -->
+    <!--              The API key for Google Maps-based APIs must be safely stored at:
+    ProjectRoot/local.properties -->
 
     <activity
-        android:name=".android.ui.cv.yolov4tflite.DetectorActivity"
+        android:name=".android.ui.cv.yolov4tflite.example.DetectorActivity"
         android:theme="@style/AppTheme.Compat.ObjectDetection"
         android:screenOrientation="portrait"
         android:exported="true" />
@@ -17,6 +27,14 @@
       android:theme="@style/AppTheme.Compat.ObjectDetection"
       android:screenOrientation="portrait"
       android:exported="true" />
+
+    <activity
+        android:name=".android.ui.cv.yolov4tflite.example.CvMapActivity"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat.ObjectDetection"
+        android:exported="true">
+    </activity>
+
     <activity
       android:name=".android.ui.login.LoginActivity"
       android:exported="true"
@@ -33,15 +51,10 @@
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
     <meta-data
       android:name="com.google.android.geo.API_KEY"
-      android:value="@string/maps_api_key" />
+      android:value="${MAPS_API_KEY}" />
+    <meta-data
+        android:name="com.google.android.gms.version"
+        android:value="@integer/google_play_services_version" />
+
   </application>
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
-  <uses-permission android:name="android.permission.INTERNET" />
-
-  <!-- AP-CV -->
-  <uses-permission android:name="android.permission.CAMERA" />
-
 </manifest>

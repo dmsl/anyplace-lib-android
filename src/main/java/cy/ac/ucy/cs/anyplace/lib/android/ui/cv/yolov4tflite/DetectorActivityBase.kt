@@ -62,7 +62,8 @@ import java.util.*
  * objects.
  */
 @AndroidEntryPoint
-abstract class DetectorActivityBase : CameraActivity(), OnImageAvailableListener {
+abstract class DetectorActivityBase : CameraActivity(),
+        OnImageAvailableListener {
   companion object {
     private const val SAVE_PREVIEW_BITMAP = false // debug option
     private const val MAINTAIN_ASPECT = false

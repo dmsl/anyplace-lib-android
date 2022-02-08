@@ -5,6 +5,8 @@ apply plugin: 'kotlin-parcelize'  // to send safeArgs between different fragment
 apply plugin: "androidx.navigation.safeargs.kotlin"  //id 'androidx.navigation.safeargs'
 apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'maven-publish'  // CHECK:PM needed for jitpack.io?
+// for reading passwords from local.properties
+apply plugin: 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 
 repositories {
   mavenCentral()
@@ -25,15 +27,15 @@ android {
     // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
 
-    // Read the API key from ./secure.properties into R.string.maps_api_key
+
+    // TODO use secrets-gradle-plugin (like w/ gmaps api)
+    // INFO: read keys from secure.properties exports them into strings
     def secureProps = new Properties()
-    if (file("../secure.properties").exists()) {
-      file("../secure.properties")?.withInputStream { secureProps.load(it) }
+    if (file("../local.properties").exists()) {
+      file("../local.properties")?.withInputStream { secureProps.load(it) }
     }
-    resValue "string", "maps_api_key", (secureProps.getProperty("MAPS_API_KEY") ?: "")
     resValue "string", "server_google_oauth_client_id", (
             secureProps.getProperty("SERVER_GOOGLE_OAUTH_CLIENT_ID") ?: "")
-
   }
 
   buildTypes {
@@ -137,6 +139,8 @@ dependencies {
 
   // MISC
   implementation 'pub.devrel:easypermissions:3.0.0'
+
+
 
   /////////////////
   // ANYPLACE CORE (java lib)

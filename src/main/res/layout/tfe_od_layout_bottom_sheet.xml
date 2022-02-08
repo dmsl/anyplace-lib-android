@@ -1,110 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/bottom_sheet_layout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:background="@drawable/cv_bottom_sheet_bg"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="8dp"
-    app:behavior_hideable="true"
-    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
   <androidx.constraintlayout.widget.ConstraintLayout
-      android:id="@+id/gesture_layout"
+      android:id="@+id/bottom_sheet_layout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
+      android:background="@drawable/cv_bottom_sheet_bg"
+      android:gravity="center_horizontal"
       android:orientation="vertical"
-      android:paddingTop="10dp"
-      android:paddingBottom="20dp"
-      app:layout_constraintTop_toTopOf="parent"
-      tools:layout_editor_absoluteX="8dp">
+      android:padding="8dp"
+      app:behavior_hideable="true"
+      app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-    <!--      TODO make this a button-->
-    <ImageView
-        android:id="@+id/bottom_sheet_arrow"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/gesture_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_icon_up"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="vertical"
+        android:paddingTop="10dp"
+        android:paddingBottom="20dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@color/black" />
+        tools:layout_editor_absoluteX="8dp">
+
+      <!--      TODO make this a button-->
+      <ImageView
+          android:id="@+id/bottom_sheet_arrow"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:src="@drawable/ic_icon_up"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          android:backgroundTint="@color/black"
+          />
 
 
-    <TextView
-        android:id="@+id/frame"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Frame"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/bottom_sheet_arrow"
-        android:textColor="@android:color/black" />
+      <TextView
+          android:id="@+id/frame"
+          app:layout_constraintLeft_toLeftOf="parent"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Frame"
+          android:textStyle="bold"
+          app:layout_constraintTop_toBottomOf="@id/bottom_sheet_arrow"
+          android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/frame_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/frame"
-        app:layout_constraintBottom_toBottomOf="@id/frame"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="640*480"
-        android:textColor="@android:color/black" />
+      <TextView
+          android:id="@+id/frame_info"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          app:layout_constraintTop_toTopOf="@id/frame"
+          app:layout_constraintBottom_toBottomOf="@id/frame"
+          app:layout_constraintRight_toRightOf="parent"
+          android:text="640*480"
+          android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/crop"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:text="Crop"
-        app:layout_constraintTop_toBottomOf="@id/frame"
-        android:textColor="@android:color/black" />
+      <TextView
+          android:id="@+id/crop"
+          app:layout_constraintLeft_toLeftOf="parent"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textStyle="bold"
+          android:text="Crop"
+          app:layout_constraintTop_toBottomOf="@id/frame"
+          android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/crop_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/crop"
-        app:layout_constraintBottom_toBottomOf="@id/crop"
-        android:layout_marginTop="10dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:text="640*480"
-        android:textColor="@android:color/black" />
+      <TextView
+          android:id="@+id/crop_info"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          app:layout_constraintTop_toTopOf="@id/crop"
+          app:layout_constraintBottom_toBottomOf="@id/crop"
+          android:layout_marginTop="10dp"
+          app:layout_constraintRight_toRightOf="parent"
+          android:text="640*480"
+          android:textColor="@android:color/black" />
 
 
-    <TextView
-        android:id="@+id/inference"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/crop"
-        android:textStyle="bold"
-        android:text="Inference Time"
-        android:textColor="@android:color/black" />
+      <TextView
+          android:id="@+id/inference"
+          app:layout_constraintLeft_toLeftOf="parent"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          app:layout_constraintTop_toBottomOf="@id/crop"
+          android:textStyle="bold"
+          android:text="Inference Time"
+          android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/inference_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="640*480"
-        app:layout_constraintTop_toTopOf="@id/inference"
-        app:layout_constraintBottom_toBottomOf="@id/inference"
-        app:layout_constraintRight_toRightOf="parent"
+      <TextView
+          android:id="@+id/inference_info"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp"
+          android:text="640*480"
+          app:layout_constraintTop_toTopOf="@id/inference"
+          app:layout_constraintBottom_toBottomOf="@id/inference"
+          app:layout_constraintRight_toRightOf="parent"
 
-        android:textColor="@android:color/black" />
+          android:textColor="@android:color/black" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
   </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

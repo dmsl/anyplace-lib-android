@@ -111,8 +111,10 @@ class LoginActivity : BaseActivity() {
 
   private fun setupGoogleLogin() {
     binding.buttonLoginGoogle.setOnClickListener {
+      // server_google_oauth_client_id is set by from local.properties (project root)
+      // see lib-android's build.gradle
       val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-          .requestIdToken(getString(R.string.server_google_oauth_client_id)) // from secure.properties (project root)
+          .requestIdToken(getString(R.string.server_google_oauth_client_id))
           .requestProfile()
           .requestEmail()
           .build()
