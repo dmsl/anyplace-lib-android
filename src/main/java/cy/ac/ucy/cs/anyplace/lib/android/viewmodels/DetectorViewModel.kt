@@ -51,10 +51,10 @@ import javax.inject.Inject
 open class DetectorViewModel @Inject constructor(application: Application) :
         AndroidViewModel(application) {
 
-  // private val timeUtils by lazy { timeUtils }
-  protected val assetReader by lazy { AssetReader(app.applicationContext) }
+  protected val assetReader by lazy { AssetReader(app) }
+
+  internal lateinit var detector: Classifier
 
   @Deprecated("TODO SETTINGS")
   val model = YoloConstants.DETECTION_MODEL
-  internal lateinit var detector: Classifier
 }

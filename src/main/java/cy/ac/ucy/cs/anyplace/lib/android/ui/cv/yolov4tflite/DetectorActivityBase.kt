@@ -2,11 +2,14 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
 
 import android.graphics.*
 import android.media.ImageReader.OnImageAvailableListener
+import android.os.Bundle
+import android.os.PersistableBundle
 import android.os.SystemClock
 import android.util.Size
 import android.util.TypedValue
 import android.view.View
 import android.widget.Toast
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -21,9 +24,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.tracking.MultiBoxTra
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-
 import java.io.IOException
 import java.util.*
 
@@ -71,66 +72,74 @@ abstract class DetectorActivityBase : CameraActivity(),
     const val TEXT_SIZE_DIP = 10f
   }
 
-  protected lateinit var VM: DetectorViewModel
+  abstract val view_model_class: Class<DetectorViewModel>
+  protected lateinit var _vm: ViewModel
+  private lateinit var VM: DetectorViewModel
+
   private lateinit var rgbFrameBitmap: Bitmap
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
-  protected lateinit var cropCopyBitmap: Bitmap
-
+  lateinit var cropCopyBitmap: Bitmap
   lateinit var trackingOverlay: OverlayView
+  private lateinit var borderedText: BorderedText
+
   private var sensorOrientation: Int? = null
-  protected var lastProcessingTimeMs: Long = 0
+  var lastProcessingTimeMs: Long = 0
 
   private var computingDetection = false
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
 
   private var tracker: MultiBoxTracker? = null
-  private lateinit var borderedText: BorderedText
+
+
+  override fun postCreate() {
+    _vm = ViewModelProvider(this).get(view_model_class)
+    VM = _vm as DetectorViewModel
+  }
+
 
   // TODO: this method is problematic even for the original project.
   // It should run on an IO Dispatcher. Otherwise the app will lag on boot.
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size==null) return
 
-    VM = ViewModelProvider(this).get(DetectorViewModel::class.java)
+    if(!setupDetector()) {
+      val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
+      toast.show()
+      finish()
+    }
 
-      if(!setupDetector()) {
-        val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
-        toast.show()
-        finish()
-      }
+    val textSizePx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
+            app.resources.displayMetrics)
 
-      val textSizePx = TypedValue.applyDimension(
-              TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
-              app.resources.displayMetrics)
+    borderedText = BorderedText(textSizePx)
+    borderedText.setTypeface(Typeface.MONOSPACE)
+    tracker = MultiBoxTracker(this@DetectorActivityBase)
+    previewWidth = size.width
+    previewHeight = size.height
+    sensorOrientation = rotation - screenOrientation
 
-      borderedText = BorderedText(textSizePx)
-      borderedText.setTypeface(Typeface.MONOSPACE)
-      tracker = MultiBoxTracker(this@DetectorActivityBase)
-      previewWidth = size.width
-      previewHeight = size.height
-      sensorOrientation = rotation - screenOrientation
+    LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
+    LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
 
-      LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-      LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+    val cropSize = VM.model.inputSize
+    rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
+    croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
+    frameToCropTransform = ImageUtils.getTransformationMatrix(
+            previewWidth, previewHeight, cropSize, cropSize,
+            sensorOrientation!!, MAINTAIN_ASPECT)
+    cropToFrameTransform = Matrix()
+    frameToCropTransform.invert(cropToFrameTransform)
 
-      val cropSize = VM.model.inputSize
-      rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
-      croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
-      frameToCropTransform = ImageUtils.getTransformationMatrix(
-              previewWidth, previewHeight, cropSize, cropSize,
-              sensorOrientation!!, MAINTAIN_ASPECT)
-      cropToFrameTransform = Matrix()
-      frameToCropTransform.invert(cropToFrameTransform)
-
-      // View
-      trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
-      trackingOverlay.addCallback { canvas ->
-        tracker!!.draw(canvas)
-        if (isDebug) { tracker!!.drawDebug(canvas)  }
-      }
-      tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
+    // View
+    trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
+    trackingOverlay.addCallback { canvas ->
+      tracker!!.draw(canvas)
+      if (isDebug) { tracker!!.drawDebug(canvas)  }
+    }
+    tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
   }
 
   fun setupDetector(): Boolean {

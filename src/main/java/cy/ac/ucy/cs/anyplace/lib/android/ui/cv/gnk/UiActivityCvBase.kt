@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
  *
  * CHECK: add also gmap markers here?
  */
+@Deprecated("")
 open class UiActivityCvBase(
         protected val activity: Activity,
         protected val fragmentManager: FragmentManager,

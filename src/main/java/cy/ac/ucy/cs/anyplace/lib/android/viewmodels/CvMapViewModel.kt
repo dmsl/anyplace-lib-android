@@ -5,9 +5,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
@@ -21,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
@@ -50,20 +51,22 @@ enum class Localization {
 
 /** CvMapViewModel is used by:
  *  - Logger TODO
- *  - Navigator TODO
+ *  - Navigator TODO <- DOING
  *  - SMASS TODO
  *
  *  Other notes:
  *    - floorplan fetching
  *    - gmap markers
  */
-// @HiltViewModel
-abstract class CvMapViewModel constructor(
+@HiltViewModel
+class CvMapViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
         val repository: Repository,
         val retrofitHolder: RetrofitHolder): DetectorViewModel(application) {
+
+  private val C by lazy { CONST(app) }
 
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
@@ -98,7 +101,6 @@ abstract class CvMapViewModel constructor(
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(Error(null))
   /** Holds the functionality of a [CvMap] and can generate the [CvMapFast] */
   var cvMapH: CvMapHelper? = null
-
 
   // FLOOR PLANS
   fun getFloorplanFromRemote(FH: FloorHelper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
@@ -152,10 +154,9 @@ abstract class CvMapViewModel constructor(
     markers?.setLocationMarker(toLatLng(coord))
   }
 
-  fun stopLocalization(mapView: MapView) { // CLR:PM
+  protected fun prefWindowLocalizationMillis(): Int {
+    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS.toInt()
   }
-
-  protected abstract fun prefWindowLocalizationMillis(): Int
 
   /**
    * Update [detections] that are related only to the localization window.
@@ -172,7 +173,9 @@ abstract class CvMapViewModel constructor(
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
           // TODO DEDUPLICATE DETECTIONS
 
-          val detectionsDedup =YoloV4Classifier.NMS(detectionsLocalization.value, detector.labels)
+          val detectionsDedup =
+                  YoloV4Classifier.NMS(detectionsLocalization.value,
+                          detector.labels)
           detectionsLocalization.value = detectionsDedup
 
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")

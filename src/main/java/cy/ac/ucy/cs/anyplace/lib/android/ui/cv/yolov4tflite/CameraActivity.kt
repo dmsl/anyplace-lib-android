@@ -16,10 +16,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
 
 import android.Manifest
-import android.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import android.hardware.Camera.PreviewCallback
-import android.widget.LinearLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -39,7 +37,7 @@ import android.view.View
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.google.android.gms.maps.OnMapReadyCallback
+import androidx.core.view.isVisible
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,22 +61,20 @@ abstract class CameraActivity : AppCompatActivity(),
 
     private fun allPermissionsGranted(grantResults: IntArray): Boolean {
       for (result in grantResults) {
-        if (result != PackageManager.PERMISSION_GRANTED) {
-          return false
-        }
+        if (result != PackageManager.PERMISSION_GRANTED) return false
       }
       return true
     }
   }
 
-  protected lateinit var bottomSheetLayout: ConstraintLayout
-  protected lateinit var gestureLayout: ConstraintLayout
-  protected lateinit var sheetBehavior: BottomSheetBehavior<ConstraintLayout>
+  lateinit var bottomSheetLayout: ConstraintLayout
+  lateinit var gestureLayout: ConstraintLayout
+  lateinit var sheetBehavior: BottomSheetBehavior<ConstraintLayout>
 
   private var rgbBytes: IntArray? = null
 
-  protected var previewWidth = 0
-  protected var previewHeight = 0
+  var previewWidth = 0
+  var previewHeight = 0
   val isDebug = false
   private var handler: Handler? = null
   private var handlerThread: HandlerThread? = null
@@ -105,7 +101,9 @@ abstract class CameraActivity : AppCompatActivity(),
   protected abstract val desiredPreviewFrameSize: Size?
   protected abstract fun setNumThreads(numThreads: Int)
   protected abstract fun setUseNNAPI(isChecked: Boolean)
-  protected abstract fun setupSpecializedUi()
+
+  /** Called by [CameraActivity]'s [onCreate] */
+  protected abstract fun postCreate()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     LOG.V()
@@ -113,7 +111,12 @@ abstract class CameraActivity : AppCompatActivity(),
 
     setupBaseUi()
     checkPermissionsAndConnectCamera()
-    setupSpecializedUi()
+
+    postCreate()
+  }
+
+  fun hideBottomSheet() {
+    bottomSheetLayout.isVisible = false
   }
 
   /**
@@ -128,24 +131,6 @@ abstract class CameraActivity : AppCompatActivity(),
     gestureLayout = findViewById(id_gesture_layout)
 
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-  }
-
-  /**
-   * Opening/Closing UI changes by the bottomsheet
-   */
-  fun setupBottomStageChange(iv: ImageView, @DrawableRes icDown: Int, @DrawableRes icUp: Int) {
-    sheetBehavior.setBottomSheetCallback(
-            object : BottomSheetBehavior.BottomSheetCallback() {
-              override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                  BottomSheetBehavior.STATE_EXPANDED -> { iv.setImageResource(icDown) }
-                  BottomSheetBehavior.STATE_COLLAPSED -> { iv.setImageResource(icUp) }
-                  BottomSheetBehavior.STATE_SETTLING -> iv.setImageResource(icUp)
-                  else -> {}
-                }
-              }
-              override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-            })
   }
 
   fun checkPermissionsAndConnectCamera() {

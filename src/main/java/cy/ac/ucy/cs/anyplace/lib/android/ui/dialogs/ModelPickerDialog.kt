@@ -25,8 +25,7 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import java.lang.IllegalStateException
 
-class ModelPickerDialog(
-        private val dataStoreCv: DataStoreCv):
+class ModelPickerDialog(private val dataStoreCv: DataStoreCv):
         DialogFragment() {
 
   companion object {

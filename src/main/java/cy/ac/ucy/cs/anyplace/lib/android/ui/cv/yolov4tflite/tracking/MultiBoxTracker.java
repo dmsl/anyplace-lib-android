@@ -120,7 +120,7 @@ public class MultiBoxTracker {
   }
 
   public synchronized void trackResults(final List<Recognition> results, final long timestamp) {
-    LOG.D("Processing ${results.size()} results from ${timestamp}");
+    LOG.V3("Processing " + results.size() + " results from " + timestamp);
     processResults(results);
   }
 

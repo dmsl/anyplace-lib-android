@@ -67,6 +67,7 @@ enum class Localization {
  * - floorplan fetching
  * - gmap markers
  */
+@Deprecated("")
 abstract class CvViewModelBase constructor(
   /** [application] is not an [AnyplaceApp], hence it is not a field.
       [AnyplaceApp] can be used within the class as app through an Extension function */

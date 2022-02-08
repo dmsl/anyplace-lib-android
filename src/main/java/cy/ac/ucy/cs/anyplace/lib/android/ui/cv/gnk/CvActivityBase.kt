@@ -50,9 +50,9 @@ import kotlinx.coroutines.launch
  *
  */
 @AndroidEntryPoint
+@Deprecated("")
 abstract class CvActivityBase : AppCompatActivity(),
-        OnMapReadyCallback
-{
+        OnMapReadyCallback {
   companion object {
     const val CAMERA_REQUEST_CODE: Int = 1
     const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
@@ -68,8 +68,8 @@ abstract class CvActivityBase : AppCompatActivity(),
   protected val assetReader by lazy { AssetReader(applicationContext) }
 
   private lateinit var tovCamera: TrackingOverlayView
-  protected lateinit var floorSelector: FloorSelector
   private lateinit var pvCamera: PreviewView
+  protected lateinit var floorSelector: FloorSelector
   protected lateinit var UIB: UiActivityCvBase
 
   override fun onResume() {
