@@ -103,8 +103,8 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache))
       pref?.setOnPreferenceClickListener {
         LOG.W(TAG_METHOD, "TODO clear cache")
-        // ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-        //         repo, dataStoreCv, spaceH, floorsH, floorH)
+        ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
+                repo, dataStoreCv, spaceH, floorsH, floorH)
         true
       }
     }

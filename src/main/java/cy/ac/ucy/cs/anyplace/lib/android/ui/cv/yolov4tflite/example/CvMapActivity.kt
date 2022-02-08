@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
  *  - TODO ViewModel for this??
  */
 @AndroidEntryPoint
-class CvMapActivityLegacy : DetectorActivityBase(), OnMapReadyCallback {
+class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_cvmap

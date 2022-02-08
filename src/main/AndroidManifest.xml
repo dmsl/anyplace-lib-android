@@ -1,60 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  package="cy.ac.ucy.cs.anyplace.lib">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cy.ac.ucy.cs.anyplace.lib" >
 
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- AP-CV -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
-  <uses-permission android:name="android.permission.INTERNET" />
+    <application tools:ignore="LockedOrientationActivity" >
+        <activity
+            android:name=".android.ui.cv.yolov4tflite.example.CvMapActivity"
+            android:exported="false" />
+        <!--
+    The API key for Google Maps-based APIs must be safely stored at:
+    ProjectRoot/local.properties
+        -->
+        <activity
+            android:name=".android.ui.cv.yolov4tflite.example.DetectorActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Compat.ObjectDetection" />
+        <activity
+            android:name=".android.ui.cv.gnk.logger.CvLoggerActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Compat.ObjectDetection" />
+        <activity
+            android:name=".android.ui.cv.yolov4tflite.example.CvMapActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Compat.ObjectDetection" >
+        </activity>
+        <activity
+            android:name=".android.ui.login.LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login" />
+        <activity
+            android:name=".android.ui.settings.SettingsServerActivity"
+            android:exported="true"
+            android:label="Settings: Server" />
+        <activity
+            android:name=".android.ui.settings.SettingsCvLoggerActivity"
+            android:exported="true"
+            android:icon="@drawable/ic_settings"
+            android:label="Logger Settings" />
+        <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
 
-  <!-- AP-CV -->
-  <uses-permission android:name="android.permission.CAMERA" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+    </application>
 
-  <application
-    tools:ignore="LockedOrientationActivity">
-    <!--              The API key for Google Maps-based APIs must be safely stored at:
-    ProjectRoot/local.properties -->
-
-    <activity
-        android:name=".android.ui.cv.yolov4tflite.example.DetectorActivity"
-        android:theme="@style/AppTheme.Compat.ObjectDetection"
-        android:screenOrientation="portrait"
-        android:exported="true" />
-    <activity
-      android:name=".android.ui.cv.gnk.logger.CvLoggerActivity"
-      android:theme="@style/AppTheme.Compat.ObjectDetection"
-      android:screenOrientation="portrait"
-      android:exported="true" />
-
-    <activity
-        android:name=".android.ui.cv.yolov4tflite.example.CvMapActivity"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.Compat.ObjectDetection"
-        android:exported="true">
-    </activity>
-
-    <activity
-      android:name=".android.ui.login.LoginActivity"
-      android:exported="true"
-      android:label="@string/title_activity_login" />
-    <activity
-      android:name=".android.ui.settings.SettingsServerActivity"
-      android:exported="true"
-      android:label="Settings: Server" />
-    <activity
-      android:name=".android.ui.settings.SettingsCvLoggerActivity"
-      android:exported="true"
-        android:icon="@drawable/ic_settings"
-      android:label="Logger Settings" />
-    <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
-    <meta-data
-      android:name="com.google.android.geo.API_KEY"
-      android:value="${MAPS_API_KEY}" />
-    <meta-data
-        android:name="com.google.android.gms.version"
-        android:value="@integer/google_play_services_version" />
-
-  </application>
 </manifest>

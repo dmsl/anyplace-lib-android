@@ -143,6 +143,41 @@
   <string name="chat_header">Chat settings (example)</string>
   <string name="prefs_header_object_recognition">Object Recognition</string>
   <string name="developer_options">Developer Options</string>
+  <string name="tutorial">Tutorial</string>
+  <string name="tutorial_cvscan_start">1. START SCANNING:</string>
+  <string name="tutorial_cvscan_start_details">
+"   - identifies objects for some seconds.
+   - these objects belong to the same \"scan window\".
+  </string>
+  <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
+  <string name="tutorial_cvscan_store_details">
+"   - once the scan window ends, the map is shown
+   - scanned objects must be map-assigned with long-click
+   - once objects are assigned, a new scan starts."
+  </string>
+  <string name="tutorial_cvscan_finish">3. END SCANNING:</string>
+
+
+  <!-- TUTORIALS -->
+  <string name="tutorial_cvscan_finish_details">
+"   - the last scanned window will be discarded.
+   - the \"Object Map\" will be stored locally.
+   - a \"Heat Map\" of the stored detections will updated.
+  </string>
+  <string name="clear">Clear</string>
+  <string name="upper_floor">Upper floor</string>
+  <string name="prefs_header_cvmap">Object Maps</string>
+  <string name="prefs_header_cache">Cache</string>
+  <string name="prefs_header_application">Application</string>
+  <string name="apply_just_to">Apply just to</string>
+  <string name="for_all_spaces">for all spaces</string>
+  <string name="confirm">Confirm</string>
+  <string name="for_var_var">for %1$s %2$s</string>
+  <string name="clear_local_data">Clear local data</string>
+  <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
+  <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
+  <string name="change_cv_model">Change Object Recognition Model</string>
+  <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>
@@ -153,6 +188,7 @@
     <item>1000</item>
     <item>2000</item>
   </string-array>
+
   <string-array name="AlgorithmsFullNames">
     <!-- <item>Radial Basis Function (RBF) C Library </item> -->
     <item>K Nearest Neighbor (KNN) Algorithm</item>
@@ -174,6 +210,7 @@
     <item>The MAP algorithm is a probabilistic approach that estimates the unknown user location by maximizing the conditional probability of each location in the radiomap given the currently observed fingerprint (posterior).</item>
     <item>The MMSE algorithm is a probabilistic approach that estimates the unknown user location by calculating the expected value of the location, which is equivalent to the weighted sum of the loations in the radiomap while the weights are set equal to the conditional probability of each location in the radiomap given the currently observed fingerprint (posterior).</item>
   </string-array>
+
   <string-array name="AlgorithmsNames">
     <!-- <item> Radial Basis Function (RBF)</item> -->
     <item> K Nearest Neighbor (KNN)</item>
@@ -181,42 +218,5 @@
     <item> Maximum A Posteriori (MAP)</item>
     <item> Minimum Mean Square Error (MMSE)</item>
   </string-array>
-
-
-  <!-- TUTORIALS -->
-  <string name="tutorial">Tutorial</string>
-  <string name="tutorial_cvscan_start">1. START SCANNING:</string>
-  <string name="tutorial_cvscan_start_details">
-"   - identifies objects for some seconds.
-   - these objects belong to the same \"scan window\".
-  </string>
-  <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
-  <string name="tutorial_cvscan_store_details">
-"   - once the scan window ends, the map is shown
-   - scanned objects must be map-assigned with long-click
-   - once objects are assigned, a new scan starts."
-  </string>
-  <string name="tutorial_cvscan_finish">3. END SCANNING:</string>
-  <string name="tutorial_cvscan_finish_details">
-"   - the last scanned window will be discarded.
-   - the \"Object Map\" will be stored locally.
-   - a \"Heat Map\" of the stored detections will updated.
-  </string>
-  <string name="clear">Clear</string>
-  <string name="upper_floor">Upper floor</string>
-  <string name="prefs_header_cvmap">Object Maps</string>
-  <string name="prefs_header_cache">Cache</string>
-  <string name="prefs_header_application">Application</string>
-  <string name="apply_just_to">Apply just to</string>
-  <string name="for_all_spaces">for all spaces</string>
-  <string name="confirm">Confirm</string>
-  <string name="for_var_var">for %1$s %2$s</string>
-  <string name="clear_local_data">Clear local data</string>
-
-  <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
-  <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
-  <string name="change_cv_model">Change Object Recognition Model</string>
-
-  <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>
 
 </resources>

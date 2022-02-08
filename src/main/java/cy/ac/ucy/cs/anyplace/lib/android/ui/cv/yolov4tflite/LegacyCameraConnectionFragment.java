@@ -17,7 +17,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite;
  */
 
 import android.annotation.SuppressLint;
-import android.app.Fragment;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -31,6 +30,8 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
 import java.util.List;

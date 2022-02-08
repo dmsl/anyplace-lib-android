@@ -21,8 +21,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -59,6 +57,8 @@ import android.widget.Toast;
 // import org.tensorflow.lite.examples.detection.env.Logger;
 
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +72,7 @@ import cy.ac.ucy.cs.anyplace.lib.R;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview.AutoFitTextureView;
 
-@SuppressLint("ValidFragment")
+// @SuppressLint("ValidFragment")
 public class CameraConnectionFragment extends Fragment {
 
   /**
@@ -170,6 +170,7 @@ public class CameraConnectionFragment extends Fragment {
               }
             }
           };
+
   /**
    * {@link TextureView.SurfaceTextureListener} handles several lifecycle events on a {@link
    * TextureView}.

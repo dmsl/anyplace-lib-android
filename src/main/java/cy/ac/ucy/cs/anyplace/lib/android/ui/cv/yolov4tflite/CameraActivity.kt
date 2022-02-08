@@ -249,12 +249,6 @@ abstract class CameraActivity : AppCompatActivity(),
   }
 
   @Synchronized
-  public override fun onStart() {
-    LOG.E("onStart $this")
-    super.onStart()
-  }
-
-  @Synchronized
   public override fun onResume() {
     LOG.V()
     super.onResume()
@@ -356,8 +350,7 @@ abstract class CameraActivity : AppCompatActivity(),
         // distorted or otherwise broken previews.
         useCamera2API = (facing == CameraCharacteristics.LENS_FACING_EXTERNAL
                 || isHardwareLevelSupported(
-                characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL
-        ))
+                characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL))
         LOG.I("Camera API lv2?: $useCamera2API")
         return cameraId
       }
@@ -369,7 +362,7 @@ abstract class CameraActivity : AppCompatActivity(),
 
   protected fun setFragment() {
     val cameraId = chooseCamera()
-    val fragment: Fragment
+    val fragment: androidx.fragment.app.Fragment
     if (useCamera2API) {
       val camera2Fragment = CameraConnectionFragment.newInstance(
               { size, rotation ->
@@ -386,7 +379,8 @@ abstract class CameraActivity : AppCompatActivity(),
     } else {
       fragment = LegacyCameraConnectionFragment(this, layout_camera_fragment, desiredPreviewFrameSize)
     }
-    fragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
+
+    supportFragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
   }
 
   protected fun fillBytes(planes: Array<Plane>, yuvBytes: Array<ByteArray?>) {
