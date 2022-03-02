@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
+@Deprecated("")
 class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   private lateinit var binding: ActivityCvLoggerBinding
   private lateinit var VM: CvLoggerViewModel
@@ -170,6 +171,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     }
   }
 
+  @Deprecated("") // MERGED partially
   private fun setupButtonsAndUi() {
     checkInternet()
     UI.setupClickCameraTimerCircleButton()

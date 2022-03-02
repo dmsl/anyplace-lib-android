@@ -72,13 +72,13 @@ abstract class CvActivityBase : AppCompatActivity(),
   protected lateinit var floorSelector: FloorSelector
   protected lateinit var UIB: UiActivityCvBase
 
-  override fun onResume() {
+  override fun onResume() { // MERGED
     super.onResume()
     LOG.D3(TAG, "onResume")
     readPrefsAndContinueSetup()
   }
 
-  /**
+  /** MERGED
    * Read [dataStoreCv] preferences
    * TODO load CvModel from here?
    */
@@ -98,6 +98,7 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
   }
 
+  // MERGED (SKIPPED)
   /** Setups the Computer Vision processor using
    * - a [TrackingOverlayView] that shows the detected objects
    * - a [PreviewView] that shows the camera
@@ -116,8 +117,6 @@ abstract class CvActivityBase : AppCompatActivity(),
             tovCamera,
             pvCamera)
   }
-
-
   /**
    * Binds the camera preview once the camera permission was granted
    *
@@ -152,9 +151,7 @@ abstract class CvActivityBase : AppCompatActivity(),
             imageAnalysis,
             preview)
   }
-
   protected abstract fun analyzeImage(image: ImageProxy)
-
   override fun onRequestPermissionsResult(
           requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
     when (requestCode) {
@@ -172,12 +169,10 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
   }
-
   fun setUpImageConverter(image: ImageProxy) {
     LOG.D2("Frame: ${image.width}x${image.height}")
     VMB.setUpImageConverter(baseContext, image)
   }
-
   /**
    * Attaches a map dynamically
    */
@@ -236,12 +231,16 @@ abstract class CvActivityBase : AppCompatActivity(),
     onMapReadySpecialize()
   }
 
+
+  ////// MERGED ////////////////////////////////////////////////////////////////
+
+
   /**
    * callback for additional functionality to the [CvActivityBase]-based classes
    */
   protected abstract fun onMapReadySpecialize()
 
-  private fun loadSpaceAndFloorFromAssets() : Boolean {
+  private fun loadSpaceAndFloorFromAssets() : Boolean { // MERGED
     LOG.V2()
     VMB.space = assetReader.getSpace()
     VMB.floors = assetReader.getFloors()
@@ -265,10 +264,8 @@ abstract class CvActivityBase : AppCompatActivity(),
   /**
    * Loads from assets the Space and the Space's Floors
    * Then it loads the floorplan for [selectedFloorPlan].
-   *
-   * TODO Implement this from network (in an earlier activity), and
-   * pass it here through [SafeArgs] or [Bundle]
    */
+  @Deprecated("MERGED") // MERGED
   fun loadSpaceAndFloor() {
     // TODO: accept this as a bundle!
     if(!loadSpaceAndFloorFromAssets()) return
@@ -285,6 +282,7 @@ abstract class CvActivityBase : AppCompatActivity(),
    * - store the last floor selection (for the relevant [Space])
    * - loads the floor
    */
+  @Deprecated("MERGED") // MERGED
   protected fun observeFloorChanges() {
     LOG.W()
     lifecycleScope.launch{
@@ -308,6 +306,7 @@ abstract class CvActivityBase : AppCompatActivity(),
   /**
    *
    */
+  @Deprecated("MERGED") // MERGED
   private fun lazilyChangeFloor() {
     LOG.W()
     if (floorChangeRequestTime == 0L) {
@@ -340,11 +339,10 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
   }
 
-
-
   /**
    * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
    */
+  @Deprecated("MERGED") // MERGED
   private fun updateAndCacheLastFloor(floor: Floor?) {
     LOG.W(TAG_METHOD, floor?.floorNumber.toString())
     if (floor != null) {
@@ -353,6 +351,7 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
   }
 
+  @Deprecated("MERGED") // MERGED
   protected fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
     var msg = ""
     when {
@@ -364,8 +363,11 @@ abstract class CvActivityBase : AppCompatActivity(),
     Toast.makeText(applicationContext, msg, Toast.LENGTH_LONG).show()
   }
 
+  @Deprecated("MERGED") // MERGED
   private var floorChangeRequestTime : Long = 0
+  @Deprecated("MERGED") // MERGED
   private var isLazilyChangingFloor = false
+  @Deprecated("MERGED") // MERGED
   private val DELAY_CHANGE_FLOOR = 300
 
   /**
@@ -376,6 +378,7 @@ abstract class CvActivityBase : AppCompatActivity(),
    *
    * Must be called each time wee want to load a floor.
    */
+  @Deprecated("MERGED") // MERGED
   private fun loadFloor(FH: FloorHelper) {
     LOG.W(TAG_METHOD, FH.prettyFloorName())
     lifecycleScope.launch {
@@ -391,6 +394,7 @@ abstract class CvActivityBase : AppCompatActivity(),
   /**
    * Reads a floorplan image form the devices cache
    */
+  @Deprecated("MERGED") // MERGED
   protected fun readFloorplanFromCache(FH: FloorHelper) {
     LOG.D(TAG_METHOD, FH.prettyFloorName())
     val localResult =
@@ -408,6 +412,7 @@ abstract class CvActivityBase : AppCompatActivity(),
    *
    * This has to be separate
    */
+  @Deprecated("MERGED") // MERGED
   protected fun observeFloorplanChanges() {
     lifecycleScope.launch {
       VMB.floorplanFlow.collect { response ->
@@ -416,8 +421,8 @@ abstract class CvActivityBase : AppCompatActivity(),
             LOG.W("Loading ${VMB.spaceH.prettyFloorplan}")
           }
           is NetworkResult.Error -> {
-            val msg = "Failed to get $VMB.space"
-            LOG.W(msg)
+            val msg = "Failed to fetch ${VMB.spaceH.prettyType}: ${VMB.space?.name}"
+            LOG.E(msg)
             Toast.makeText(applicationContext, msg, Toast.LENGTH_SHORT).show()
           }
           is NetworkResult.Success -> {
@@ -443,7 +448,7 @@ abstract class CvActivityBase : AppCompatActivity(),
    * - parses it into the optimized [CvMapFast] structure
    * - it renders a heatmap of the detections
    */
-  fun loadCvMapAndHeatmap() {
+  fun loadCvMapAndHeatmap() { // MERGED
     LOG.E()
     val model = VMB.detector.getDetectionModel()
     if (VMB.floorH==null) return
@@ -466,11 +471,13 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
   }
 
+  @Deprecated("") // MERGED
   protected fun renderFloorplan(bitmap: Bitmap?, FH: FloorHelper) {
     LOG.D()
     overlays.drawFloorplan(bitmap, gmap, FH.bounds())
   }
 
+  @Deprecated("") // MERGED
   protected fun checkInternet() {
     if (!app.hasInternetConnection()) {
       // TODO method that updates ui based on internet connectivity: gray out settings button

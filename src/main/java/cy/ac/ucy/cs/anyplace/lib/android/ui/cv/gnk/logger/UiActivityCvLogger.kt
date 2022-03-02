@@ -176,7 +176,6 @@ class UiActivityCvLogger(
     }
   }
 
-
   fun setupClickSettingsMenuButton() {
     LOG.D2()
 
@@ -188,6 +187,7 @@ class UiActivityCvLogger(
       intent.putExtra(SettingsCvLoggerActivity.ARG_FLOOR, VM.floorH.toString())
       activity.startActivity(intent)
     }
+
     // // TODO:PM Settings
     // // Setups a regular button to act as a menu button
     //   binding.buttonSettings.setOnClickListener {

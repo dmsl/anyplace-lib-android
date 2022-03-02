@@ -8,7 +8,6 @@ import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
-import cy.ac.ucy.cs.anyplace.lib.android.di.AppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
@@ -31,6 +30,7 @@ abstract class AnyplaceApp : Application() {
   lateinit var dataStoreCv: DataStoreCv
   /** Preferences for the CvLogger Activity */
   lateinit var dataStoreCvLogger: DataStoreCvLogger
+  lateinit var dataStoreCvNavigation: DataStoreCvNavigation
   lateinit var dataStoreMisc: DataStoreMisc
   lateinit var dataStoreUser: DataStoreUser
 
@@ -53,6 +53,7 @@ abstract class AnyplaceApp : Application() {
     dataStoreServer = DataStoreServer(applicationContext)
     dataStoreCv = DataStoreCv(applicationContext)
     dataStoreCvLogger = DataStoreCvLogger(applicationContext)
+    dataStoreCvNavigation= DataStoreCvNavigation(applicationContext)
     dataStoreMisc = DataStoreMisc(applicationContext)
     dataStoreUser= DataStoreUser(applicationContext)
 

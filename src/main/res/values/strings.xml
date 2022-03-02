@@ -178,6 +178,7 @@
   <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
   <string name="change_cv_model">Change Object Recognition Model</string>
   <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>
+  <string name="summary_map_alpha">Map is %1$s opaque.</string>
   <string-array name="intervalArray">
     <item>0.5 sec</item>
     <item>1 sec</item>

@@ -2,8 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.extensions
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
-import android.widget.RemoteViews
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -35,6 +33,8 @@ val Activity.dataStoreCvLogger: DataStoreCvLogger get() = this.app.dataStoreCvLo
 val Activity.dataStoreCv: DataStoreCv get() = this.app.dataStoreCv
 val Activity.dataStoreMisc: DataStoreMisc get() = this.app.dataStoreMisc
 val Activity.dataStoreUser: DataStoreUser get() = this.app.dataStoreUser
+//// LOCALIZATION APPS
+val Activity.dataStoreCvNavigation: DataStoreCvNavigation get() = this.app.dataStoreCvNavigation
 
 val DialogFragment.app: AnyplaceApp get() = this.activity?.application as AnyplaceApp
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()

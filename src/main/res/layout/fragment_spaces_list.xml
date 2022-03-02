@@ -98,7 +98,9 @@
       app:backgroundTint="@color/colorPrimary"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:tint="@color/white" />
+      app:tint="@color/white"
+        android:contentDescription="Filter"
+        />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

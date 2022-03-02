@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
 import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCv
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvNavigation
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Accepts a serialized [Space] as an argument (using [Bundle]).
+ * Has similarities with [SettingsCvLoggerFragment]
  *
  * TODO Settings:
  * - clear section
@@ -33,27 +34,26 @@ import kotlinx.coroutines.launch
  * -
  */
 @AndroidEntryPoint
-class SettingsCvLoggerActivity: BaseSettingsActivity() {
-
+class SettingsNavigationActivity: BaseSettingsActivity() {
   companion object {
     const val ARG_SPACE = "pref_act_space"
     const val ARG_FLOORS = "pref_act_floors"
     const val ARG_FLOOR = "pref_act_floor"
   }
 
-  private lateinit var settingsFragment: SettingsCvLoggerFragment
+  private lateinit var settingsFragment: SettingsCvNavigationFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvLoggerFragment(dataStoreCvLogger, dataStoreCv, repo)
+    settingsFragment = SettingsCvNavigationFragment(dataStoreCvNavigation, dataStoreCv, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
-    // TODO FIXME:PM not shown!
+    // TODO: icon not shown
     // preferenceScreen.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_settings)
   }
 
-  class SettingsCvLoggerFragment(
-          private val dataStoreCvLogger: DataStoreCvLogger,
+  class SettingsCvNavigationFragment(
+          private val dataStoreCvNavigation: DataStoreCvNavigation,
           private val dataStoreCv: DataStoreCv,
           private val repo: Repository,
   ) : PreferenceFragmentCompat() {
@@ -64,9 +64,9 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
 
     @SuppressLint("ResourceAsColor")
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
-      setPreferencesFromResource(R.xml.preferences_cv_logger, rootKey)
+      setPreferencesFromResource(R.xml.preferences_cv_navigation, rootKey)
 
-      preferenceManager.preferenceDataStore = dataStoreCvLogger // TODO:PM implement ths
+      preferenceManager.preferenceDataStore = dataStoreCvNavigation
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
@@ -75,9 +75,10 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        dataStoreCvLogger.read.first {  prefs ->
-          setNumericInput(R.string.pref_cvlog_window_logging_seconds,
-                  R.string.summary_logging_window, prefs.windowLoggingSeconds)
+        dataStoreCvNavigation.read.first {  prefs ->
+          setPercentageInput(R.string.pref_cvnav_map_alpha,
+                  R.string.summary_map_alpha, prefs.mapAlpha)
+
           setNumericInput(R.string.pref_cv_window_localization_seconds,
                   R.string.summary_localization_window, prefs.windowLocalizationSeconds)
 
@@ -98,8 +99,8 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache))
       pref?.setOnPreferenceClickListener {
         LOG.W(TAG_METHOD, "TODO clear cache")
-        ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repo, dataStoreCv, spaceH, floorsH, floorH)
+        // ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
+        //         repo, dataStoreCv, spaceH, floorsH, floorH)
         true
       }
     }
@@ -107,8 +108,9 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
     private fun setupButtonChangeModel() {
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG_METHOD, "clear cache")
-        // ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dataStoreCv)
+        LOG.W(TAG_METHOD, "TODO change model")
+        // Where the model will be saved?
+        // must be handled for both logger / nav
         true
       }
     }

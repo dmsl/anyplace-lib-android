@@ -30,7 +30,7 @@ import javax.inject.Inject
 /**
 TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
 (e.g. SpaceViewModel, Login)
-
+ This is for Anyplace?
 */
 @HiltViewModel
 class MainViewModel @Inject constructor(

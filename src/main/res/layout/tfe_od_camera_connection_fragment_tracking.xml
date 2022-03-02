@@ -17,12 +17,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview.AutoFitTextureView
+    <cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.AutoFitTextureView
         android:id="@+id/texture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview.OverlayView
+    <cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayView
         android:id="@+id/tracking_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

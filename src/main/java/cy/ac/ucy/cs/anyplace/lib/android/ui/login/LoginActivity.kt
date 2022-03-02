@@ -26,7 +26,7 @@ import com.google.android.gms.common.api.ApiException
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.LoginViewModel
@@ -277,7 +277,7 @@ class LoginActivity : BaseActivity() {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      SettingsDialog().show(supportFragmentManager, SettingsDialog.FROM_LOGIN)
+      MainSettingsDialog().show(supportFragmentManager, MainSettingsDialog.FROM_LOGIN)
     }
     return super.onOptionsItemSelected(item)
   }

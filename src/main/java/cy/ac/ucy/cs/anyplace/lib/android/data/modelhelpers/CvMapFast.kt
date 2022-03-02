@@ -6,7 +6,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.models.CvDetection

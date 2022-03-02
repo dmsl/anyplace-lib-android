@@ -35,7 +35,7 @@ class CONST(ctx: Context) {
 
   val DEFAULT_PREF_SERVER_PROTOCOL = ctx.getString(R.string.default_pref_server_protocol)
   val DEFAULT_PREF_SERVER_HOST = ctx.getString(R.string.default_pref_server_host)
-  val DEFAULT_PREF_SERVER_PORT =ctx.getString(R.string.default_pref_server_port)
+  val DEFAULT_PREF_SERVER_PORT = ctx.getString(R.string.default_pref_server_port)
 
   /** shared settings in cv activities*/
   val PREF_CV = "pref_cv"
@@ -46,17 +46,24 @@ class CONST(ctx: Context) {
 
   val DEFAULT_PREF_MODEL_NAME = "coco"
 
+  // Settings used in both contexts (Logger, Navigator)
+  val PREF_CV_WINDOW_LOCALIZATION_SECONDS = ctx.getString(R.string.pref_cv_window_localization_seconds)
+  val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CVLOG_WINDOW_LOGGING_SECONDS = ctx.getString(R.string.pref_cvlog_window_logging_seconds)
-  val PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = ctx.getString(R.string.pref_cvlog_window_localization_seconds)
-  val PREF_CVLOG_DEV_MODE = ctx.getString(R.string.pref_cvlog_dev_mode)
-  val PREF_CVLOG_EPX_IMG_PADDING = ctx.getString(R.string.pref_cvlog_exp_img_padding)
+  //// Settings for Cv Navigator
+  val PREF_CVNAV = ctx.getString(R.string.pref_cvnav)
+  val PREF_CVNAV_MAP_ALPHA= ctx.getString(R.string.pref_cvnav_map_alpha)
 
+  // COMMON DEFAULTS
+  val DEFAULT_PREF_CV_DEV_MODE = true
+  //// LOCALIZATION
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
-  val DEFAULT_PREF_CVLOG_DEV_MODE = true
-  val DEFAULT_PREF_CVLOG_EXP_IMG_PADDING = false
+  //// NAVIGATOR
+  val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
+  val DEFAULT_PREF_CVNAV_MAP_ALPHA= "100"
 
   //// MISC
   val PREF_MISC_NAME = "pref_misc"

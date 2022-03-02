@@ -1,0 +1,61 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <PreferenceCategory
+      app:title="@string/prefs_header_object_recognition"
+      app:icon="@drawable/ic_settings_cv">
+    <EditTextPreference
+        app:key="@string/pref_cvlog_window_logging_seconds"
+        app:title="Logging Window"
+        app:summary="@string/summary_logging_window"
+        />
+    <EditTextPreference
+        app:key="@string/pref_cv_window_localization_seconds"
+        app:title="Localization Window"
+        app:summary="@string/summary_localization_window"
+        />
+    <DropDownPreference
+        app:key="@string/pref_cv_model"
+        app:title="Change Detection Model"
+        app:enabled="false"
+        app:summary="Pick different Object Detection model"
+        />
+  </PreferenceCategory>
+
+  <PreferenceCategory app:title="@string/prefs_header_cache"
+      app:icon="@drawable/ic_folder">
+    <Preference
+        android:title="Sync local data"
+        android:key="@string/pref_log_sync_local_data"
+        android:summary="Store local ObjectMaps to the server."
+        android:enabled="false"
+        />
+    <Preference
+        android:title="Clear local data"
+        android:key="@string/pref_log_clear_cache"
+        android:summary="Delete Object Maps that were not synced yet."
+        />
+    <Preference
+        android:title="Clear floorplans"
+        android:key="pref_log_clear_cvmaps"
+        android:summary="Delete ...."
+        android:enabled="false"
+        />
+
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      app:title="@string/developer_options"
+      app:icon="@drawable/ic_developer_options"
+      >
+
+    <SwitchPreferenceCompat
+        app:key="@string/pref_cv_dev_mode"
+        android:defaultValue="true"
+        app:title="Show scan details"
+        app:summary="Additional details while scanning (bottomsheet)"
+        />
+  </PreferenceCategory>
+
+
+</PreferenceScreen>

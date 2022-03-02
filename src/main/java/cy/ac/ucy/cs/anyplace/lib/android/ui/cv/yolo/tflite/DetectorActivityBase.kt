@@ -1,9 +1,7 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
 import android.graphics.*
 import android.media.ImageReader.OnImageAvailableListener
-import android.os.Bundle
-import android.os.PersistableBundle
 import android.os.SystemClock
 import android.util.Size
 import android.util.TypedValue
@@ -17,10 +15,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview.OverlayView
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.BorderedText
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.tracking.MultiBoxTracker
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayView
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.BorderedText
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -194,7 +192,7 @@ abstract class DetectorActivityBase : CameraActivity(),
     val results = VM.detector.recognizeImage(croppedBitmap)
     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
-    LOG.V3(TAG_METHOD, "Detections: ${results.size}")
+    LOG.V3(TAG_METHOD, "Detections: ${results?.size}")
     cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
     canvas = Canvas(cropCopyBitmap)
 
@@ -213,7 +211,7 @@ abstract class DetectorActivityBase : CameraActivity(),
   // by default uses Tensorflow Object Detection API frozen checkpoints.
   private enum class DetectorMode { TF_OD_API }
 
-  fun storeResults(results: MutableList<Classifier.Recognition>, canvas: Canvas):
+  fun storeResults(results: List<Classifier.Recognition>, canvas: Canvas):
           MutableList<Classifier.Recognition> {
     val minScore = YoloConstants.MINIMUM_SCORE
     val minimumConfidence: Float = when (MODE) {
@@ -229,7 +227,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     for (result in results) {
       val location = result.location
-      if (location != null && result.confidence >= minimumConfidence) {
+      if (location != null && result.confidence!! >= minimumConfidence) {
         canvas.drawRect(location, paint)
         cropToFrameTransform!!.mapRect(location)
         result.location = location

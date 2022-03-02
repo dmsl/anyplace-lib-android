@@ -1,22 +1,27 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreCv
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.BottomSheetCvMap
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.GmapHandler
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapHandler
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -24,15 +29,15 @@ import kotlinx.coroutines.launch
  * - uses Yolov4 TFLite
  * - Settings
  * - Google Maps TODO
- *   - floor selector?
+ *   - cache mechanism + floor changing TODO
+ *   - floor selector? TODO
  *   - LEFTHERE:
  *     - 1. put google maps
  *     - 2. anything else?
- *     - 3. make this open?!
- *        - to pass google maps?
- *     - or no?
- *       - reuse functionality using Helper UI classes/objects?
- *  - TODO ViewModel for this??
+ *     - 3. make this open?! DONE
+ *        - to pass google maps? DONE
+ *   - reuse functionality using Helper UI classes/objects?
+ *  - ViewModel for this?? DONE
  */
 @AndroidEntryPoint
 open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
@@ -45,9 +50,10 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
-  override val id_bottomsheet: Int get() = R.id.bottom_sheet_cvmap
+  override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   override val id_gesture_layout: Int get() = R.id.gesture_layout
 
+  @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
           CvMapViewModel::class.java as Class<DetectorViewModel>
 
@@ -56,7 +62,8 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvMapViewModel
 
   // UTILITY OBJECTS
-  protected val gmap by lazy { GmapHandler(applicationContext) }
+  // protected val gmap by lazy { GmapHandler(applicationContext) }
+  protected lateinit var gmap: GmapHandler
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected val bottomSheet by lazy { BottomSheetCvMap(this@CvMapActivity) }
@@ -65,17 +72,64 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // protected lateinit var gmap: GoogleMap
   //// COMPONENTS
   protected lateinit var floorSelector: FloorSelector
-  protected lateinit var UIB: UiActivityCvBase
+  protected lateinit var UI: CvMapUi
 
   override fun postCreate() {
     super.postCreate()
     VM = _vm as CvMapViewModel
     LOG.D2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
-    bottomSheet.setup()
-    gmap.attach(this, R.id.mapView)
+    setupButtonsAndUi()
   }
 
+  protected open fun setupButtonsAndUi() {
+    floorSelector = FloorSelector(applicationContext,
+            findViewById(R.id.group_floorSelector),
+            findViewById(R.id.textView_titleFloor),
+            findViewById(R.id.button_selectedFloor),
+            findViewById(R.id.button_floorUp),
+            findViewById(R.id.button_floorDown))
+
+    UI = CvMapUi(VM, lifecycleScope,
+            this@CvMapActivity,
+            supportFragmentManager,
+            overlays, floorSelector)
+    gmap = GmapHandler(applicationContext, lifecycleScope, UI)
+    gmap.attach(VM, this, R.id.mapView)
+
+    bottomSheet.setup()
+
+    checkInternet()
+    // UI.setupClickSettingsMenuButton() // TODO
+    UI.setupOnFloorSelectionClick()
+  }
+
+  override fun onResume() {
+    super.onResume()
+    LOG.E(TAG, "onResume")
+    readPrefsAndContinueSetup()
+  }
+
+  /**
+   * Read [dataStoreCv] preferences
+   */
+  private fun readPrefsAndContinueSetup() {
+    lifecycleScope.launch {
+     LOG.D()
+      dataStoreCv.read.first { prefs ->
+        if (prefs.reloadCvMaps) {
+          LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
+          // refresh CvMap+Heatmap only when needed
+          // TODO do something similar with floorplans when necessary as well
+          // loadCvMapAndHeatmap() // TODO call this..
+          dataStoreCv.setReloadCvMaps(false)
+        } else {
+          LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
+        }
+        true
+      }
+    }
+  }
   override fun onMapReady(googleMap: GoogleMap) {
     gmap.setup(googleMap)
   }
@@ -84,6 +138,13 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.V3()
     lifecycleScope.launch(Dispatchers.Main) {
       bottomSheet.refreshUi()
+    }
+  }
+
+  protected fun checkInternet() {
+    if (!app.hasInternetConnection()) {
+      // TODO method that updates ui based on internet connectivity: gray out settings button
+      Toast.makeText(applicationContext, "No internet connection.", Toast.LENGTH_LONG).show()
     }
   }
 

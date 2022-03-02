@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
 import android.Manifest
 import androidx.appcompat.app.AppCompatActivity
@@ -33,22 +33,23 @@ import android.media.ImageReader
 import android.os.*
 import android.util.Size
 import android.view.Surface
-import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Exception
 
 /**
- * Contains logic related to:
- * 1. The Camera (nothing about detection)
+ * Logic related to:
+ * 1. The Camera
  * 2. The Basic BottomSheet binding:
  *    - it sets it up, and
- *    - knows nothing about the content and structure of the BottomSheet
+ *
+ * It knows nothing about:
+ *  - about detection (what camera will be used)
+ *  - the content and structure of the [BottomSheet]
  */
 @AndroidEntryPoint
 abstract class CameraActivity : AppCompatActivity(),
@@ -85,25 +86,25 @@ abstract class CameraActivity : AppCompatActivity(),
   private var postInferenceCallback: Runnable? = null
   private var imageConverter: Runnable? = null
 
+  ////////////
   // OVERRIDES
   ///// LAYOUT
   protected abstract val layout_activity: Int
   protected abstract val layout_camera_fragment: Int
   protected abstract val id_bottomsheet: Int
   protected abstract val id_gesture_layout: Int
-
   //// CAMERA METHODS
   protected abstract fun processImage()
   protected abstract fun onProcessImageFinished()
   protected abstract fun onPreviewSizeChosen(size: Size?, rotation: Int)
-
   //// OPTIONS
   protected abstract val desiredPreviewFrameSize: Size?
   protected abstract fun setNumThreads(numThreads: Int)
   protected abstract fun setUseNNAPI(isChecked: Boolean)
-
   /** Called by [CameraActivity]'s [onCreate] */
   protected abstract fun postCreate()
+  // end of OVERRIDES
+  ///////////////////
 
   override fun onCreate(savedInstanceState: Bundle?) {
     LOG.V()
@@ -235,7 +236,7 @@ abstract class CameraActivity : AppCompatActivity(),
 
   @Synchronized
   public override fun onResume() {
-    LOG.V()
+    LOG.V3()
     super.onResume()
     handlerThread = HandlerThread("inference")
     handlerThread!!.start()
@@ -244,27 +245,27 @@ abstract class CameraActivity : AppCompatActivity(),
 
   @Synchronized
   public override fun onPause() {
-    LOG.V()
+    LOG.V3()
     handlerThread!!.quitSafely()
     try {
       handlerThread!!.join()
       handlerThread = null
       handler = null
     } catch (e: InterruptedException) {
-      LOG.E("Exception: " + e.message)
+      LOG.E(TAG, "Exception: " + e.message)
     }
     super.onPause()
   }
 
   @Synchronized
   public override fun onStop() {
-    LOG.V()
+    LOG.V3()
     super.onStop()
   }
 
   @Synchronized
   public override fun onDestroy() {
-    LOG.V()
+    LOG.V3()
     super.onDestroy()
   }
 
@@ -336,11 +337,11 @@ abstract class CameraActivity : AppCompatActivity(),
         useCamera2API = (facing == CameraCharacteristics.LENS_FACING_EXTERNAL
                 || isHardwareLevelSupported(
                 characteristics, CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL))
-        LOG.I("Camera API lv2?: $useCamera2API")
+        LOG.I(TAG, "Camera API lv2?: $useCamera2API")
         return cameraId
       }
     } catch (e: CameraAccessException) {
-      LOG.E("Not allowed to access camera: " + e.message)
+      LOG.E(TAG ,"Not allowed to access camera: " + e.message)
     }
     return null
   }
@@ -349,20 +350,21 @@ abstract class CameraActivity : AppCompatActivity(),
     val cameraId = chooseCamera()
     val fragment: androidx.fragment.app.Fragment
     if (useCamera2API) {
+      val connectionCallback = CameraConnectionFragment.ConnectionCallback {
+        size, rotation ->
+          previewHeight = size!!.height
+          previewWidth = size.width
+          onPreviewSizeChosen(size, rotation)
+      }
+
       val camera2Fragment = CameraConnectionFragment.newInstance(
-              { size, rotation ->
-                previewHeight = size.height
-                previewWidth = size.width
-                onPreviewSizeChosen(size, rotation)
-              },
-              this,
+              connectionCallback, this,
               layout_camera_fragment,
-              desiredPreviewFrameSize
-      )
+              desiredPreviewFrameSize!!)
       camera2Fragment.setCamera(cameraId)
       fragment = camera2Fragment
     } else {
-      fragment = LegacyCameraConnectionFragment(this, layout_camera_fragment, desiredPreviewFrameSize)
+      fragment = LegacyCameraConnectionFragment(this, layout_camera_fragment, desiredPreviewFrameSize!!)
     }
 
     supportFragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
@@ -374,16 +376,14 @@ abstract class CameraActivity : AppCompatActivity(),
     for (i in planes.indices) {
       val buffer = planes[i].buffer
       if (yuvBytes[i] == null) {
-        LOG.E(String.format("Initializing buffer %d at size %d", i, buffer.capacity()))
+        LOG.V3(TAG, String.format("Initializing buffer %d at size %d", i, buffer.capacity()))
         yuvBytes[i] = ByteArray(buffer.capacity())
       }
       buffer[yuvBytes[i]]
     }
   }
 
-  protected fun readyForNextImage() {
-    postInferenceCallback?.run()
-  }
+  protected fun readyForNextImage() {  postInferenceCallback?.run() }
 
   protected val screenOrientation: Int
     get() = when (windowManager.defaultDisplay.rotation) {

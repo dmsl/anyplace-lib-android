@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.components
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.annotation.SuppressLint
 import android.view.View
@@ -8,17 +8,15 @@ import android.widget.TextView
 import androidx.annotation.DrawableRes
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 
-class BottomSheetCvMap(private val act: DetectorActivityBase) {
+class BottomSheetCvMap(private val act: DetectorActivityBase,
+                       private val showBottomSheet: Boolean = false) {
 
   lateinit var frameValueTextView: TextView
   lateinit var cropValueTextView: TextView
   lateinit var inferenceTimeTextView: TextView
   lateinit var bottomSheetArrowImageView: ImageView
-
-  @Deprecated("TODO: make option")
-  val showBottomSheet = false
 
   fun setup() {
     if (!showBottomSheet) act.hideBottomSheet()

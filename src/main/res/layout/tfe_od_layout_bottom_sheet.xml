@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
   <androidx.constraintlayout.widget.ConstraintLayout
-      android:id="@+id/bottom_sheet_layout"
+      android:id="@+id/tfe_bottom_sheet_layout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
@@ -92,7 +92,7 @@
           android:textColor="@android:color/black" />
 
       <TextView
-          android:id="@+id/inference_info"
+          android:id="@+id/time_info"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="10dp"

@@ -9,16 +9,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier.Recognition
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier.Recognition
 import android.graphics.RectF
 import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.Utils
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.Utils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.gpu.GpuDelegate
@@ -40,7 +40,8 @@ import kotlin.math.sqrt
  * - https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md
  * - https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/running_on_mobile_tensorflowlite.md#running-our-model-on-android
  */
-open class YoloV4Classifier private constructor() : Classifier {
+open class YoloV4Classifier private constructor()
+  : Classifier {
   companion object {
 
     /**
@@ -143,9 +144,8 @@ open class YoloV4Classifier private constructor() : Classifier {
       for (k in labels.indices) {
         //1.find max confidence per class
         val pq = PriorityQueue<Recognition>(
-                50
-        ) { lhs, rhs -> // Intentionally reversed to put high confidence at the head of the queue.
-          java.lang.Float.compare(rhs.confidence, lhs.confidence)
+                50) { lhs, rhs -> // Intentionally reversed to put high confidence at the head of the queue.
+          java.lang.Float.compare(rhs.confidence!!, lhs.confidence!!)
         }
         for (i in list.indices) {
           if (list[i].detectedClass == k) {
@@ -163,8 +163,8 @@ open class YoloV4Classifier private constructor() : Classifier {
           pq.clear()
           for (j in 1 until detections.size) {
             val detection = detections[j]
-            val b = detection.location
-            if (box_iou(max.location, b) < mNmsThresh) {
+            val b = detection.location!!
+            if (box_iou(max.location!!, b) < mNmsThresh) {
               pq.add(detection)
             }
           }
@@ -208,9 +208,9 @@ open class YoloV4Classifier private constructor() : Classifier {
 
 
   override fun enableStatLogging(logStats: Boolean) {}
-  override fun getStatString(): String {
-    return ""
-  }
+  // override fun getStatString(): String {
+  //   return ""
+  // }
 
   override fun close() {}
   override fun setNumThreads(num_threads: Int) {
@@ -220,23 +220,22 @@ open class YoloV4Classifier private constructor() : Classifier {
   override fun setUseNNAPI(isChecked: Boolean) {
     if (tfLite != null) tfLite!!.setUseNNAPI(isChecked)
   }
-  override fun getObjThresh() = YoloConstants.MINIMUM_SCORE
-  override fun getLabels(): List<String> = labels
 
   private var isModelQuantized = false
 
   // Config values.
   // Pre-allocated buffers.
-  // private val labels = Vector<String>()
-  private lateinit var labels: List<String>
+  override lateinit var labels: List<String>
+  override var objThresh = YoloConstants.MINIMUM_SCORE
+  override var statString = ""
+
   private lateinit var intValues: IntArray
   private lateinit var imgData: ByteBuffer
   private var tfLite: Interpreter? = null
 
-  // non maximum suppression
   /**
-   * Non-maximum Suppression. Removes overlapping bboxes, which is a
-   * side-effect of YOLO's operation.
+   * Non-maximum Suppression.
+   * Removes overlapping bboxes, which is a side-effect of YOLO's operation.
    */
   protected fun nms(list: ArrayList<Recognition>): ArrayList<Recognition> {
     return NMS(list, labels)

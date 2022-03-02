@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;

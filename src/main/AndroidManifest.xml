@@ -16,7 +16,7 @@
         android:exported="false"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
     <activity
-        android:name=".android.ui.cv.yolov4tflite.example.DetectorActivity"
+        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.example.DetectorActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
@@ -39,6 +39,10 @@
         android:icon="@drawable/ic_settings"
         android:label="Logger Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
+    <activity
+        android:name=".android.ui.settings.SettingsNavigationActivity"
+        android:exported="true"
+        android:label="Settings: Localization" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

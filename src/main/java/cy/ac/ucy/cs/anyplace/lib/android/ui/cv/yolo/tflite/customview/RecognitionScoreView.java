@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -25,7 +25,7 @@ import android.view.View;
 
 import java.util.List;
 
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier.Recognition;
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier.Recognition;
 
 public class RecognitionScoreView extends View implements ResultsView {
   private static final float TEXT_SIZE_DIP = 14;

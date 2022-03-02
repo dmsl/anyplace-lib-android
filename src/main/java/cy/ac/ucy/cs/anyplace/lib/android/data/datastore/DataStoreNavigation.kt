@@ -1,7 +1,10 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.datastore
 
 import android.content.Context
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
@@ -15,30 +18,29 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 /**
- * Computer Vision DataStore
- * TODO SETTINGS:
- * - image
+ * Navigation settings:
+ * - used by Smass
+ * - TODO use by regular Navigator app
  */
 @Singleton
-class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx: Context)
+class DataStoreCvNavigation @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
   private val C by lazy { CONST(ctx) }
-  private val Context.dataStoreCvLogger by preferencesDataStore(name = C.PREF_CVLOG)
-  val datastore = ctx.dataStoreCvLogger
+  private val Context.dataStoreCvNavigation by preferencesDataStore(name = C.PREF_CVNAV)
+  val datastore = ctx.dataStoreCvNavigation
 
   private val validKeys = setOf(
-          C.PREF_CVLOG_WINDOW_LOGGING_SECONDS,
           C.PREF_CV_WINDOW_LOCALIZATION_SECONDS,
           C.PREF_CV_DEV_MODE,
+          C.PREF_CVNAV_MAP_ALPHA,
   )
 
   private class Keys(c: CONST) {
-    val windowLoggingSeconds = stringPreferencesKey(c.PREF_CVLOG_WINDOW_LOGGING_SECONDS)
     val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_SECONDS)
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
+    val mapAlpha = stringPreferencesKey(c.PREF_CVNAV_MAP_ALPHA)
   }
   private val KEY = Keys(C)
 
@@ -70,10 +72,10 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     runBlocking {
       datastore.edit {
         when (key) {
-          C.PREF_CVLOG_WINDOW_LOGGING_SECONDS -> it[KEY.windowLoggingSeconds] =
-                  value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
           C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] =
-                  value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+                  value ?: C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
+          C.PREF_CVNAV_MAP_ALPHA-> it[KEY.mapAlpha] = value ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
+
         }
       }
     }
@@ -95,35 +97,32 @@ class DataStoreCvLogger @Inject constructor(@ApplicationContext private val ctx:
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        C.PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSeconds
         C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
+        C.PREF_CVNAV_MAP_ALPHA-> prefs.mapAlpha
         else -> null
       }
     }
   }
 
-  val read: Flow<CvLoggerPrefs> = ctx.dataStoreCvLogger.data
+  val read: Flow<CvNavigationPrefs> = ctx.dataStoreCvNavigation.data
           .catch { exception ->
             if (exception is IOException) {
               emit(emptyPreferences())
             } else { throw exception }
           }
           .map { preferences ->
-            val windowLoggingSeconds = preferences[KEY.windowLoggingSeconds] ?:
-            C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
             val windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?:
-            C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+            C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
+            val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
-
-            val prefs = CvLoggerPrefs(windowLoggingSeconds, windowLocalizationSeconds, devMode)
+            val prefs = CvNavigationPrefs(windowLocalizationSeconds, mapAlpha, devMode)
             LOG.D2(TAG, "read prefs: $prefs")
-
             prefs
           }
 }
 
-data class CvLoggerPrefs(
-        val windowLoggingSeconds: String,
+data class CvNavigationPrefs(
         val windowLocalizationSeconds: String,
+        val mapAlpha: String, /** visibility of the google maps layer */
         val devMode: Boolean,
 )

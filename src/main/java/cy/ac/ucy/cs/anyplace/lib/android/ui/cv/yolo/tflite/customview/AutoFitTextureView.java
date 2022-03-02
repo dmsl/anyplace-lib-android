@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview;
 
 import android.content.Context;
 import android.util.AttributeSet;

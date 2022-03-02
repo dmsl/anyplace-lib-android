@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
-class SettingsDialog : DialogFragment() {
+class MainSettingsDialog : DialogFragment() {
 
   companion object {
     val KEY_FROM = "key.from"
@@ -31,7 +31,7 @@ class SettingsDialog : DialogFragment() {
     fun SHOW(fragmentManager: FragmentManager, from: String) {
       val args = Bundle()
       args.putString(KEY_FROM, from)
-      val dialog = SettingsDialog()
+      val dialog = MainSettingsDialog()
       dialog.arguments = args
       // val test = dialog.requireArguments().getString(KEY_FROM)
       dialog.show(fragmentManager, from)
@@ -40,7 +40,6 @@ class SettingsDialog : DialogFragment() {
 
   var _binding : DialogMainSettingsBinding ?= null
   private val binding get() = _binding!!
-
   var fromCvLogger = true
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -54,7 +53,6 @@ class SettingsDialog : DialogFragment() {
       builder.setView(binding.root)
       val dialog = builder.create()
       dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
       setup()
 
       return dialog
@@ -124,6 +122,7 @@ class SettingsDialog : DialogFragment() {
       setupServerSettings()
       setupUser()
     } else {
+      // TODO handle this centrally
       binding.buttonLogout.isEnabled = false
       binding.buttonHelpAndFeedback.isEnabled = false
       binding.buttonSettingsServer.isEnabled = false

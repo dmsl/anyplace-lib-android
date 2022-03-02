@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <!-- TODO: use only those in CONST.kt -->
+  <!-- TODO: CONST.kt must only rely on XML strings like below: -->
   <string name="pref_cat_space">pref_cat_space</string>
-  <string name="pref_cvlog_model">pref_cvlog_model</string>
+  <string name="pref_cv_model">pref_cv_model</string>
   <string name="pref_cat_floor">pref_cat_floor</string>
   <string name="pref_log_clear_cache">pref_log_clear_cache</string>
   <string name="pref_log_sync_local_data">pref_log_sync_local_data</string>
 
-
+  <!-- PREFERENCES: COMMON KEYS -->
+  <!--  NOTE: these are just common keys. they are stored in different apps though. -->
+  <string name="pref_cv_dev_mode">pref_cv_dev_mode</string>
+  <string name="pref_cv_window_localization_seconds">pref_cvlog_window_localization_seconds</string>
   <!-- PREFERENCES: CV LOGGER -->
   <string name="pref_cvlog">pref_cvlog</string>
-  <string name="pref_cvlog_window_localization_seconds">pref_cvlog_window_localization_seconds</string>
-  <string name="pref_cvlog_window_logging_seconds">pref_cvlog_window_logging_seconds</string>
-  <string name="pref_cvlog_dev_mode">pref_cvlog_dev_mode</string>
-  <string name="pref_cvlog_exp_img_padding">pref_cvlog_exp_img_padding</string>
-
+  <string name="pref_cvlog_window_logging_seconds">pref_cv_window_logging_seconds</string>
+  <!-- PREFERENCES: CV NAVIGATOR-->
+  <string name="pref_cvnav">pref_cvnav</string>
+  <string name="pref_cvnav_map_alpha">pref_cvnav_map_alpha</string>
 
   <!-- PREFERENCES -->
   <!-- TODO: the below comment is now outdated. Context is now injected in CONST,

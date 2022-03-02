@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.tracking;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -38,9 +38,9 @@ import java.util.List;
 import java.util.Queue;
 
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier.Recognition;
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.BorderedText;
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env.ImageUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier.Recognition;
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.BorderedText;
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils;
 
 // TODO:ATH make this kotlin
 

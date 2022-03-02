@@ -195,9 +195,6 @@
             app:layout_constraintTop_toBottomOf="@id/tv_titleCV"
             tools:text="000x000" />
 
-        <!--app:layout_constraintTop_toBottomOf="@id/tv_titleDevSlidingWindow"-->
-
-
         <TextView
             android:id="@+id/crop"
             android:layout_width="30dp"

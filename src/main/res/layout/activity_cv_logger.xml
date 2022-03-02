@@ -205,7 +205,7 @@
     <!-- 8 StatusUpdater: WARNING OVERLAY -->
 
 
-    <!--   TODO:PM make this style: IconButton -->
+<!--    START OF FLOOR SELECTOR-->
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_floorSelector"
         android:layout_width="wrap_content"
@@ -284,6 +284,7 @@
         android:text="floor"
         app:outlineWidth="0.5dp"
         />
+    <!--    END OF FLOOR SELECTOR-->
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_demoNavigation"

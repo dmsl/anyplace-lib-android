@@ -17,11 +17,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.YoloV4Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
-import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
@@ -59,7 +58,7 @@ enum class Localization {
  *    - gmap markers
  */
 @HiltViewModel
-class CvMapViewModel @Inject constructor(
+open class CvMapViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
@@ -82,7 +81,7 @@ class CvMapViewModel @Inject constructor(
   val location: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
   /** Selected [Space] */
   var space: Space? = null
-  /** All floors of the selected [space]*/
+  /** All floors of the selected [space] */
   var floors: Floors? = null
   /** Selected [Space] ([SpaceHelper]) */
   lateinit var spaceH: SpaceHelper
@@ -154,7 +153,7 @@ class CvMapViewModel @Inject constructor(
     markers?.setLocationMarker(toLatLng(coord))
   }
 
-  protected fun prefWindowLocalizationMillis(): Int {
+  protected open fun prefWindowLocalizationMillis(): Int {
     return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS.toInt()
   }
 
@@ -201,8 +200,10 @@ class CvMapViewModel @Inject constructor(
     }
   }
 
+  // TODO in new class
   // /** Go one floor up */
   fun floorGoUp() {
+    LOG.E()
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoUp(floorNumStr)) {
       val to = floorsH.getFloorAbove(floorNumStr)
@@ -215,6 +216,7 @@ class CvMapViewModel @Inject constructor(
 
   /** Go one floor down */
   fun floorGoDown() {
+    LOG.E()
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoDown(floorNumStr)) {
       val to = floorsH.getFloorBelow(floorNumStr)
@@ -226,14 +228,16 @@ class CvMapViewModel @Inject constructor(
   }
 
 
-  /**
+  /** TODO in new class
    * Selects the first available floor, or the last floor that was picked
    * for a particular space.
    */
   fun selectInitialFloor(ctx: Context) {
     LOG.E()
-    // val spaceH = spaceH!!
-    // val floorsH = floorsH!!
+    // val spaceH = spaceH!! CLR?
+    // val floorsH = floorsH!! CLR?
+
+    LOG.E(TAG,"FloorsH: ${floorsH}")
 
     if (!floorsH.hasFloors()) {  // space has no floors
       val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."

@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.customview;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview;
 
 import java.util.List;
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.Classifier;
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier;
 
 public interface ResultsView {
   void setResults(final List<Classifier.Recognition> results);

@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolov4tflite.env;
+package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
