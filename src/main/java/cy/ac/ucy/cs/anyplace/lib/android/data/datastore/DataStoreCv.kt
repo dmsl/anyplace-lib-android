@@ -18,8 +18,13 @@ import javax.inject.Singleton
 
 /**
  * Computer Vision DataStore
- * TODO SETTINGS:
- * - image
+ * Stores:
+ * - deep-learning model
+ * - whether to reload it
+ * - CV Map Fingerprints
+ * - Floorplans
+ *
+ * Shared between Logger / Navigator / Localization apps
  */
 @Singleton
 class DataStoreCv @Inject constructor(@ApplicationContext private val ctx: Context)
@@ -106,7 +111,7 @@ class DataStoreCv @Inject constructor(@ApplicationContext private val ctx: Conte
   fun setReloadCvMaps(value: Boolean) = putBoolean(C.PREF_RELOAD_CVMAPS, value)
   fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_FLOORPLAN, value)
 
-  val read: Flow<CvActivitiesPrefs> = ctx.dataStoreCv.data
+  val read: Flow<CvPrefs> = ctx.dataStoreCv.data
           .catch { exception ->
             if (exception is IOException) {
               emit(emptyPreferences())
@@ -118,11 +123,11 @@ class DataStoreCv @Inject constructor(@ApplicationContext private val ctx: Conte
             val reloadCvMaps= preferences[KEY.reloadCvMaps] ?: false
             val reloadFloorplan = preferences[KEY.reloadFloorplans] ?: false
 
-            CvActivitiesPrefs(modelName, reloadModel, reloadCvMaps, reloadFloorplan)
+            CvPrefs(modelName, reloadModel, reloadCvMaps, reloadFloorplan)
           }
 }
 
-data class CvActivitiesPrefs(
+data class CvPrefs(
         val modelName: String,
         val reloadModel: Boolean,
         val reloadCvMaps: Boolean,

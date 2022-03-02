@@ -140,7 +140,6 @@
   <string name="inference">Inference</string>
   <string name="objects">Objects</string>
   <string name="current_window">Current Window:</string>
-  <string name="chat_header">Chat settings (example)</string>
   <string name="prefs_header_object_recognition">Object Recognition</string>
   <string name="developer_options">Developer Options</string>
   <string name="tutorial">Tutorial</string>
@@ -173,7 +172,7 @@
   <string name="for_all_spaces">for all spaces</string>
   <string name="confirm">Confirm</string>
   <string name="for_var_var">for %1$s %2$s</string>
-  <string name="clear_local_data">Clear local data</string>
+  <string name="clear_local_cv_maps">Clear local CV maps</string>
   <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
   <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
   <string name="change_cv_model">Change Object Recognition Model</string>

@@ -80,14 +80,19 @@ class ClearCachesDialog(
       val dialog = builder.create()
       dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-      setupRadioButton()
+      setupRadioButtons()
       setupConfirmButton()
 
       return dialog
     }?: throw IllegalStateException("$TAG Activity is null.")
   }
 
-  private fun setupRadioButton() {
+  /**
+   * Shows additional radio buttons when:
+   * - space is not null
+   * - floor is not null
+   */
+  private fun setupRadioButtons() {
     val bundle = requireArguments()
     if (bundle.containsKey(KEY_SPACE)) {
       spaceH = IntentExtras.getSpace(requireActivity(), repo, bundle, KEY_SPACE)
@@ -117,13 +122,15 @@ class ClearCachesDialog(
    val btn = binding.buttonClearCaches
     btn.setOnClickListener {
       when {
+        // clear all
         binding.radioButtonAll.isChecked -> { Cache(requireActivity()).deleteCvMapsLocal() }
+        // clear all floors
         binding.radioButtonSpace.isChecked -> { floorsH?.clearCacheCvMaps() }
+        // clear specified floor
         binding.radioButtonFloor.isChecked -> { floorH?.clearCacheCvMaps() }
       }
 
       dataStoreCv.setReloadCvMaps(true)
-
       dismiss()
     }
   }

@@ -9,6 +9,8 @@ import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvNavigationPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
@@ -51,7 +53,7 @@ enum class Localization {
 /** CvMapViewModel is used by:
  *  - Logger TODO
  *  - Navigator TODO <- DOING
- *  - SMASS TODO
+ *  - SMAS TODO
  *
  *  Other notes:
  *    - floorplan fetching
@@ -67,6 +69,8 @@ open class CvMapViewModel @Inject constructor(
 
   private val C by lazy { CONST(app) }
 
+  lateinit var prefsCV: CvPrefs
+  lateinit var prefsNav: CvNavigationPrefs
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
   val localizationFlow = localization.asStateFlow()

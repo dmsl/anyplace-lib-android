@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 /**
  * Encapsulating UI operations for the [CvLoggerActivity]
  */
+@Deprecated("")
 class UiActivityCvLogger(
         activity: Activity,
         fragmentManager: FragmentManager,

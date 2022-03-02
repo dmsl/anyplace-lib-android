@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="0dp"
-        android:text="@string/clear_local_data"
+        android:text="@string/clear_local_cv_maps"
         android:textColor="@color/black"
         android:textSize="22sp"
         app:layout_constraintTop_toTopOf="@id/constraintLayout"

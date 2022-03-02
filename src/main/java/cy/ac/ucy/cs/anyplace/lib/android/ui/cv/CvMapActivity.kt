@@ -1,15 +1,14 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreCv
+import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
@@ -40,13 +39,15 @@ import kotlinx.coroutines.launch
  *  - ViewModel for this?? DONE
  */
 @AndroidEntryPoint
-open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
+abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   companion object {
     // const val CAMERA_REQUEST_CODE: Int = 1
     // const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
     const val OPACITY_MAP_LOGGING = 0f
     const val ANIMATION_DELAY : Long = 100
   }
+
+  protected abstract val id_gmap: Int
 
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
@@ -100,7 +101,6 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     bottomSheet.setup()
 
     checkInternet()
-    // UI.setupClickSettingsMenuButton() // TODO
     UI.setupOnFloorSelectionClick()
   }
 
@@ -111,25 +111,52 @@ open class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   /**
-   * Read [dataStoreCv] preferences
+   * Read [DataStoreCv] preferences: model, cvmaps. floorplans,
+   * Read [DataStoreNav]: map opacity, localization interval, etc
    */
   private fun readPrefsAndContinueSetup() {
     lifecycleScope.launch {
-     LOG.D()
+      LOG.D()
       dataStoreCv.read.first { prefs ->
-        if (prefs.reloadCvMaps) {
-          LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
-          // refresh CvMap+Heatmap only when needed
-          // TODO do something similar with floorplans when necessary as well
-          // loadCvMapAndHeatmap() // TODO call this..
-          dataStoreCv.setReloadCvMaps(false)
-        } else {
-          LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
-        }
+        VM.prefsCV= prefs
+        onCvPrefsLoaded(prefs)
+        true
+      }
+
+      dataStoreCvNavigation.read.first { prefs ->
+        VM.prefsNav = prefs
+        onNavPrefsLoaded()
         true
       }
     }
   }
+
+  private fun onCvPrefsLoaded(cvPrefs: CvPrefs) {
+    if (cvPrefs.reloadCvMaps) {
+      LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
+      // refresh CvMap+Heatmap only when needed
+      // TODO do something similar with floorplans when necessary as well
+      // loadCvMapAndHeatmap() // TODO call this..
+      dataStoreCv.setReloadCvMaps(false)
+    } else {
+      LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
+    }
+  }
+
+  private fun onNavPrefsLoaded() {
+    setMapOpacity()
+  }
+
+  private fun setMapOpacity() {
+    val view = findViewById<View>(id_gmap)
+    val value =VM.prefsNav.mapAlpha.toInt()
+    view.alpha=value/100f
+  }
+
+
+  /** Setup the Google Map:
+   * - TODO finalize floorplans
+   */
   override fun onMapReady(googleMap: GoogleMap) {
     gmap.setup(googleMap)
   }

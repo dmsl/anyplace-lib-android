@@ -32,7 +32,7 @@
 
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="@string/chat_header">
+  <PreferenceCategory app:title="Test Header">
 
     <SwitchPreferenceCompat
       app:key="sync"

@@ -77,7 +77,8 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
       lifecycleScope.launch {
         dataStoreCvNavigation.read.first {  prefs ->
           setPercentageInput(R.string.pref_cvnav_map_alpha,
-                  R.string.summary_map_alpha, prefs.mapAlpha)
+                  R.string.summary_map_alpha, prefs.mapAlpha,
+          "Map is fully opaque", "Map is fully transparent")
 
           setNumericInput(R.string.pref_cv_window_localization_seconds,
                   R.string.summary_localization_window, prefs.windowLocalizationSeconds)
@@ -87,7 +88,6 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
           true
         }
       }
-
       setupButtonClearCache(spaceH, floorsH, floorH)
       setupButtonChangeModel()
     }
@@ -98,9 +98,9 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
             floorH: FloorHelper?) {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache))
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG_METHOD, "TODO clear cache")
-        // ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-        //         repo, dataStoreCv, spaceH, floorsH, floorH)
+        LOG.D(TAG_METHOD)
+        ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
+                repo, dataStoreCv, spaceH, floorsH, floorH)
         true
       }
     }

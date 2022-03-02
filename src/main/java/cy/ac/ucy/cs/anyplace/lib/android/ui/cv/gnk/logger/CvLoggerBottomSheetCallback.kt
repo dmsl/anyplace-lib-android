@@ -5,6 +5,7 @@ import android.widget.ImageView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
 
+@Deprecated("")
 class CvLoggerBottomSheetCallback(
   private val ivArrow: ImageView
 ) : BottomSheetBehavior.BottomSheetCallback() {
