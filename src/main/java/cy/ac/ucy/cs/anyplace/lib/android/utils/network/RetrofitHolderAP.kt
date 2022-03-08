@@ -3,12 +3,18 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils.network
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.API
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.ServerPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.ServerPrefs
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-data class RetrofitHolder(
+/**
+ * Retrofit Holder For Anyplace.
+ * It's purpose:
+ * - enable dynamical changes of backend URLs
+ * - DI (DepInjection) alone would have stale data)
+ */
+data class RetrofitHolderAP(
         val ctx: Context,
         val okHttpClient: OkHttpClient,
         val gsonConverterFactory: GsonConverterFactory)  {
@@ -36,7 +42,7 @@ data class RetrofitHolder(
       = "${protocol}://${host}:${port}"
 
   fun set(prefs: ServerPrefs) = set(getBaseUrl(prefs))
-  fun set(baseUrl: String) : RetrofitHolder {
+  fun set(baseUrl: String) : RetrofitHolderAP {
     this.baseURL = baseUrl
     this.retrofit = Retrofit.Builder()
         .baseUrl(this.baseURL)

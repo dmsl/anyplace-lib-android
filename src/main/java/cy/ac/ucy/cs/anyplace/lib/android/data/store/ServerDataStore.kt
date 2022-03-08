@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.datastore
+package cy.ac.ucy.cs.anyplace.lib.android.data.store
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
@@ -19,10 +19,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Backend Server settings, such as host url, port, etc.
+ * Anyplace Backend settings:
+ * - host url, port, etc.
  */
 @Singleton // INFO cannot be ViewModelScoped, as it is used by NetworkModule
-class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: Context)
+class ServerDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
   private val C by lazy { CONST(ctx) }
@@ -43,12 +44,8 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
     val port = stringPreferencesKey(c.PREF_SERVER_PORT)
   }
   private val KEY = Keys(C)
-
   val datastore = ctx.dataStoreServer
-
-  private fun ignoreKey(key: String?): Boolean {
-    return  ignoreKeys.contains(key)
-  }
+  private fun ignoreKey(key: String?) = ignoreKeys.contains(key)
 
   private fun validKey(key: String?): Boolean {
     if (ignoreKey(key)) return false
@@ -81,7 +78,7 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
   override fun getString(key: String?, defValue: String?): String? {
     if (!validKey(key)) return null
     return runBlocking(Dispatchers.IO) {
-      val prefs = readServerPrefs.first()
+      val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_SERVER_HOST -> prefs.host
         C.PREF_SERVER_PORT -> prefs.port
@@ -92,10 +89,9 @@ class DataStoreServer @Inject constructor(@ApplicationContext private val ctx: C
   }
 
   override fun putBoolean(key: String?, value: Boolean) { }
-
   override fun getBoolean(key: String?, defValue: Boolean): Boolean { return false }
 
-  val readServerPrefs: Flow<ServerPrefs> = ctx.dataStoreServer.data
+  val read: Flow<ServerPrefs> = ctx.dataStoreServer.data
       .catch { exception ->
         if (exception is IOException) {
           emit(emptyPreferences())

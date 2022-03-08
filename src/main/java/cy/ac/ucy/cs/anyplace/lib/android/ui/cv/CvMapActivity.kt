@@ -7,7 +7,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
@@ -111,19 +111,19 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   /**
-   * Read [DataStoreCv] preferences: model, cvmaps. floorplans,
+   * Read [VM.prefsCV] preferences: model, cvmaps. floorplans,
    * Read [DataStoreNav]: map opacity, localization interval, etc
    */
   private fun readPrefsAndContinueSetup() {
     lifecycleScope.launch {
       LOG.D()
-      dataStoreCv.read.first { prefs ->
+      cvDataStoreDS.read.first { prefs ->
         VM.prefsCV= prefs
         onCvPrefsLoaded(prefs)
         true
       }
 
-      dataStoreCvNavigation.read.first { prefs ->
+      cvNavDS.read.first { prefs ->
         VM.prefsNav = prefs
         onNavPrefsLoaded()
         true
@@ -137,7 +137,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       // refresh CvMap+Heatmap only when needed
       // TODO do something similar with floorplans when necessary as well
       // loadCvMapAndHeatmap() // TODO call this..
-      dataStoreCv.setReloadCvMaps(false)
+      cvDataStoreDS.setReloadCvMaps(false)
     } else {
       LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
     }

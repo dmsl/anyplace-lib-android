@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.login
+package cy.ac.ucy.cs.anyplace.lib.android.ui.user
 
 import android.app.Activity
 import android.content.Intent
@@ -25,6 +25,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
@@ -40,7 +42,6 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : BaseActivity() {
-  private val TAG = "ap_"+LoginActivity::class.java.simpleName
 
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
@@ -57,7 +58,7 @@ class LoginActivity : BaseActivity() {
     val password = binding.password
     val localLogin = binding.buttonLoginLocal
 
-    loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
+    loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
     loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
       val loginState = it ?: return@Observer
 
@@ -210,8 +211,8 @@ class LoginActivity : BaseActivity() {
    * as the backend returns the same, compatible user object
    */
   private fun observeUserLoginResponse() {
-    loginViewModel.userLoginResponse.observe(this@LoginActivity,  { response ->
-      LOG.D3(TAG, "observeUserLoginResponse: ${response.message}")
+    loginViewModel.userLoginResponse.observe(this@LoginActivity) { response ->
+      LOG.D3(TAG_METHOD, "${response.message}")
       when (response) {
         is NetworkResult.Success -> {
           binding.loading.visibility = View.GONE
@@ -223,7 +224,7 @@ class LoginActivity : BaseActivity() {
             val user = response.data?.user
             user?.let {
               Toast.makeText(this@LoginActivity, "Welcome: " + user.name, Toast.LENGTH_SHORT).show()
-              app.dataStoreUser.storeUser(user)
+              app.userDS.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()
             }
@@ -242,7 +243,7 @@ class LoginActivity : BaseActivity() {
           binding.textViewError.visibility = View.INVISIBLE
         }
       }
-    })
+    }
   }
 
   /**

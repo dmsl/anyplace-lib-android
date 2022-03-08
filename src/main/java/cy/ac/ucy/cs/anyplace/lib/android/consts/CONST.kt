@@ -5,7 +5,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 
-class CONST(ctx: Context) {
+open class CONST(ctx: Context) {
 
   //// ROOM
   companion object {
@@ -52,34 +52,24 @@ class CONST(ctx: Context) {
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CVLOG_WINDOW_LOGGING_SECONDS = ctx.getString(R.string.pref_cvlog_window_logging_seconds)
-  //// Settings for Cv Navigator
-  val PREF_CVNAV = ctx.getString(R.string.pref_cvnav)
-  val PREF_CVNAV_MAP_ALPHA= ctx.getString(R.string.pref_cvnav_map_alpha)
 
   // COMMON DEFAULTS
   val DEFAULT_PREF_CV_DEV_MODE = true
   //// LOCALIZATION
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
-  //// NAVIGATOR
+
+  //// Settings for Cv Navigator/Localization apps
+  val PREF_CVNAV = ctx.getString(R.string.pref_cvnav)
+  val PREF_CVNAV_MAP_ALPHA= ctx.getString(R.string.pref_cvnav_map_alpha)
+  //// NAVIGATION
   val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
-  val DEFAULT_PREF_CVNAV_MAP_ALPHA= "100"
+  val DEFAULT_PREF_CVNAV_MAP_ALPHA= "90"
 
   //// MISC
   val PREF_MISC_NAME = "pref_misc"
   val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
   val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
-
-
-
-
-
-
-
-
-
-
-
 
   //// USER
   val PREF_USER = "pref_user"

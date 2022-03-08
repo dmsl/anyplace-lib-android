@@ -47,8 +47,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import cy.ac.ucy.cs.anyplace.lib.Anyplace;
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisNav;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 

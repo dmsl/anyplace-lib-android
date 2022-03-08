@@ -14,11 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.SpaceTypeConverter.Companion.entityToSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.dataStoreUser
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.userDataStoreDS
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
@@ -69,7 +68,7 @@ class SpaceListFragment : Fragment() {
     if(mainViewModel.backFromSettings) {
       LOG.D2(TAG, "handleBackToFragment: from settings")
       lifecycleScope.launch {
-        val user = requireActivity().dataStoreUser.readUser.first()
+        val user = requireActivity().userDataStoreDS.readUser.first()
         if (user.accessToken.isBlank()) {
           requireActivity().finish()
         } else {

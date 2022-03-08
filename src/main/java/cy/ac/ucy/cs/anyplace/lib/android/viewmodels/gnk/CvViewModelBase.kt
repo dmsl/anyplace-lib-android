@@ -24,7 +24,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4De
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageToBitmapConverter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.RenderScriptImageToBitmapConverter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
@@ -36,7 +36,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
@@ -69,11 +69,11 @@ enum class Localization {
  */
 @Deprecated("")
 abstract class CvViewModelBase constructor(
-  /** [application] is not an [AnyplaceApp], hence it is not a field.
+        /** [application] is not an [AnyplaceApp], hence it is not a field.
       [AnyplaceApp] can be used within the class as app through an Extension function */
   application: Application,
-  val repository: Repository,
-  val retrofitHolder: RetrofitHolder): AndroidViewModel(application) {
+        val repoAP: RepoAP,
+        val retrofitHolderAP: RetrofitHolderAP): AndroidViewModel(application) {
 
   companion object {
     /** Surface.ROTATION_0: portrait, Surface.ROTATION_270: landscape */
@@ -209,7 +209,7 @@ abstract class CvViewModelBase constructor(
         FH.cacheFloorplan(bitmap)
       } else {
         val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
-        "Base URL: ${retrofitHolder.retrofit.baseUrl()}"
+        "Base URL: ${retrofitHolderAP.retrofit.baseUrl()}"
         LOG.E(msg)
         floorplanFlow.value = Error(msg)
       }

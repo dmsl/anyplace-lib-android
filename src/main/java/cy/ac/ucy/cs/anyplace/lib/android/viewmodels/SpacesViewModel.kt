@@ -3,21 +3,19 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
 import android.app.Application
 import androidx.lifecycle.*
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreMisc
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.MiscDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -26,10 +24,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SpacesViewModel @Inject constructor(
-  app: Application,
-  private val repository: Repository,
-  private val dataStoreMisc: DataStoreMisc,
-  private val retrofitHolder: RetrofitHolder) : AndroidViewModel(app) {
+        app: Application,
+        private val repoAP: RepoAP,
+        private val miscDataStore: MiscDataStore,
+        private val retrofitHolderAP: RetrofitHolderAP) : AndroidViewModel(app) {
 
   val searchViewData: MutableLiveData<String> = MutableLiveData()
 
@@ -41,11 +39,11 @@ class SpacesViewModel @Inject constructor(
    * Persistently saves the query (in Misc DataStore)
    */
   fun saveQueryTypeDataStore() =
-    viewModelScope.launch(Dispatchers.IO) { dataStoreMisc.saveQuerySpace(querySelectSpace) }
+    viewModelScope.launch(Dispatchers.IO) { miscDataStore.saveQuerySpace(querySelectSpace) }
 
   fun resetQuery() =
     viewModelScope.launch(Dispatchers.IO) {
-      dataStoreMisc.saveQuerySpace(QuerySelectSpace())
+      miscDataStore.saveQuerySpace(QuerySelectSpace())
     }
 
   /**
@@ -61,7 +59,7 @@ class SpacesViewModel @Inject constructor(
 
   private fun saveQuerySpaceName(newText: String) {
     querySelectSpace.spaceName = newText
-    readSpacesQuery = repository.local.querySpaces(querySelectSpace).asLiveData()
+    readSpacesQuery = repoAP.local.querySpaces(querySelectSpace).asLiveData()
     loadedSpaces=false
   }
 
@@ -72,13 +70,13 @@ class SpacesViewModel @Inject constructor(
   var readSpacesQuery: LiveData<List<SpaceEntity>> = MutableLiveData()
 
   // will be collected when applying a space query
-  var storedSpaceQuery = dataStoreMisc.readQuerySpace
+  var storedSpaceQuery = miscDataStore.readQuerySpace
 
   private fun insertSpaces(spaces: Spaces, ownership: UserOwnership) =
     viewModelScope.launch(Dispatchers.IO) {
       LOG.D(TAG, "insertSpaces: total: " + spaces.spaces.size)
       spaces.spaces.forEach { space ->
-        repository.local.insertSpace(space, ownership)
+        repoAP.local.insertSpace(space, ownership)
       }
     }
 
@@ -91,7 +89,7 @@ class SpacesViewModel @Inject constructor(
     spacesResponse.value = NetworkResult.Loading()
     if (app.hasInternetConnection()) {
       try {
-        val response = repository.remote.getSpacesPublic()
+        val response = repoAP.remote.getSpacesPublic()
         LOG.D2(TAG, "Spaces msg: ${response.message()}" )
         spacesResponse.value = handleSpacesResponse(response)
         // LOG.E(TAG, "getSpaces: aft: handleSpacesResponse")
@@ -99,10 +97,10 @@ class SpacesViewModel @Inject constructor(
         val spaces = spacesResponse.value!!.data
         if (spaces != null) { offlineCacheSpaces(spaces, UserOwnership.PUBLIC) }
       } catch(ce: ConnectException) {
-        val msg = "Connection failed:\n${retrofitHolder.retrofit.baseUrl()}"
+        val msg = "Connection failed:\n${retrofitHolderAP.retrofit.baseUrl()}"
         handleSafecallError(msg, ce)
       } catch(e: Exception) {
-        val msg = "Indoor Spaces Not Found." + "\nURL: ${retrofitHolder.retrofit.baseUrl()}"
+        val msg = "Indoor Spaces Not Found." + "\nURL: ${retrofitHolderAP.retrofit.baseUrl()}"
         handleSafecallError(msg, e)
       }
     } else {
@@ -141,7 +139,7 @@ class SpacesViewModel @Inject constructor(
   fun runFirstQuery() {
     if (!firstQuery) {
       LOG.D(TAG, "runFirstQuery: ${querySelectSpace.spaceType}")
-      readSpacesQuery = repository.local.querySpaces(querySelectSpace).asLiveData()
+      readSpacesQuery = repoAP.local.querySpaces(querySelectSpace).asLiveData()
     }
     firstQuery = true
   }

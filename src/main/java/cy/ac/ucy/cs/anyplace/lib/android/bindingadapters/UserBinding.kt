@@ -10,9 +10,8 @@ import cy.ac.ucy.cs.anyplace.lib.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.models.User
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 
-class UserSettingsBinding {
+class UserBinding {
   companion object {
-
     @BindingAdapter("readUsername", requireAll = true)
     @JvmStatic
     fun readUserName(
@@ -61,6 +60,7 @@ class UserSettingsBinding {
       }
     }
 
+    @Deprecated("use EXT: setTextOrHide")
     private fun setText(tv: TextView, value: String?, title:String) {
       if(value!=null) {
         if (title.isNotEmpty()) {

@@ -39,7 +39,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.os.AsyncTask
 import com.google.android.gms.maps.model.LatLng
-import cy.ac.ucy.cs.anyplace.lib.Anyplace
+import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
@@ -106,7 +106,11 @@ class FetchBuildingsByBuidTask(
       val pref = ctx.getSharedPreferences("LoggerPreferences", Context.MODE_PRIVATE)
       val host = pref.getString("server_ip_address", "ap.cs.ucy.ac.cy")
       val port = pref.getString("server_port", "443")
-      val client = Anyplace(host, port, ctx.cacheDir.absolutePath)
+      val client = Anyplace(
+        host,
+        port,
+        ctx.cacheDir.absolutePath
+      )
       response = client.buildingsByBuildingCode(mbuid)
       val json = JSONObject(response)
       if (json.has("status") && json.getString("status").equals("1", ignoreCase = true)) {

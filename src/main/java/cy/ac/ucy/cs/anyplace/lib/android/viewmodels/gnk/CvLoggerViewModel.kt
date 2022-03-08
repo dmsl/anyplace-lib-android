@@ -9,12 +9,12 @@ import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4Detector
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvLoggerPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvLoggerPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -42,11 +42,11 @@ enum class TimerAnimation {
  */
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
-  application: Application,
-  repository: Repository,
+        application: Application,
+        repoAP: RepoAP,
   // dataStoreCvLogger: DataStoreCvLogger,
-  retrofitHolder: RetrofitHolder):
-  CvViewModelBase(application, repository, retrofitHolder) {
+        retrofitHolderAP: RetrofitHolderAP):
+  CvViewModelBase(application, repoAP, retrofitHolderAP) {
 
   // var longClickFinished: Boolean = false
   var circleTimerAnimation: TimerAnimation = TimerAnimation.paused

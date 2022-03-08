@@ -38,7 +38,9 @@ class Markers(private val ctx: Context,
   }
 
   fun addCvMarker(latLng: LatLng, msg: String) {
-    active.add(map.addMarker(cvMarker(latLng, msg)))
+    map.addMarker(cvMarker(latLng, msg))?.let {
+      active.add(it)
+    }
   }
 
   fun hideActiveMakers() {

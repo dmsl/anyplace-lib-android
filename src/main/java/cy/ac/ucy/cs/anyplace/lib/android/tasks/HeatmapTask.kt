@@ -10,6 +10,7 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.legacy.MapTileProvider
 import java.io.File
 
@@ -28,8 +29,6 @@ class HeatmapTask(private val activity: Activity,
                   private var tileProvider: HeatmapTileProvider?,
                   private var gmap: GoogleMap?)
 : AsyncTask<File?, Int?, Collection<WeightedLatLng>?>() {
-
-  val TAG = HeatmapTask::class.java.simpleName
 
   override fun doInBackground(vararg params: File?): Collection<WeightedLatLng>? {
     if (DBG.D1) {
@@ -62,6 +61,8 @@ class HeatmapTask(private val activity: Activity,
     }
     LOG.D2(TAG, "Adding heatmap: " + result!!.size)
     // CHECK
-    val mHeapOverlay = gmap?.addTileOverlay(TileOverlayOptions().tileProvider(tileProvider).zIndex(1f))
+    if (tileProvider != null) {
+      val mHeapOverlay = gmap?.addTileOverlay(TileOverlayOptions().tileProvider(tileProvider!!).zIndex(1f))
+    }
   }
 }

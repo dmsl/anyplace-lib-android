@@ -1,19 +1,18 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data
+package cy.ac.ucy.cs.anyplace.lib.android.data.source
 
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.AnyplaceDao
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.SpaceTypeConverter.Companion.spaceToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class LocalDataSource @Inject constructor(
+class DataSourceLocal @Inject constructor(
   private val anyplaceDao: AnyplaceDao) {
 
   // TODO must be converted to multiple objects...

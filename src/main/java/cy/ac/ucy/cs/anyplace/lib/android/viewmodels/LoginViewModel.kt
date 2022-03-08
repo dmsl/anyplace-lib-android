@@ -10,11 +10,11 @@ import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.LoginFormState
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginResponse
@@ -27,9 +27,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-  application: Application,
-  private val repository: Repository,
-  private val retrofitHolder: RetrofitHolder) : AndroidViewModel(application) {
+        application: Application,
+        private val repoAP: RepoAP,
+        private val retrofitHolderAP: RetrofitHolderAP) : AndroidViewModel(application) {
 
   private val C by lazy { CONST(application.applicationContext) }
   private val _loginForm = MutableLiveData<LoginFormState>()
@@ -51,7 +51,7 @@ class LoginViewModel @Inject constructor(
     // var userResponse : NetworkResult<UserResponse>? = null
       if (app.hasInternetConnection()) {
       try {
-        val response = repository.remote.userLoginLocal(userLoginLocalForm)
+        val response = repoAP.remote.userLoginLocal(userLoginLocalForm)
         userLoginResponse.value = handleUserLoginResponse(response, null)
 
         if (userLoginResponse.value is NetworkResult.Error) {
@@ -93,7 +93,7 @@ class LoginViewModel @Inject constructor(
     var exception : Exception? = null
     if (app.hasInternetConnection()) {
       try {
-        val response = repository.remote.userLoginGoogle(obj)
+        val response = repoAP.remote.userLoginGoogle(obj)
         userLoginResponse.value = handleUserLoginResponse(response, photoUri)
 
         if (userLoginResponse.value is NetworkResult.Error) {

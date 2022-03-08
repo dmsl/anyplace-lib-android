@@ -6,35 +6,24 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.RadioButton
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCv
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
-import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import java.lang.IllegalStateException
 
-class ModelPickerDialog(private val dataStoreCv: DataStoreCv):
+class ModelPickerDialog(private val cvDataStore: CvDataStore):
         DialogFragment() {
 
   companion object {
 
     /** Creating the dialog. */
-    fun SHOW(fragmentManager: FragmentManager, dataStoreCv: DataStoreCv) {
+    fun SHOW(fragmentManager: FragmentManager, cvDataStore: CvDataStore) {
       val args = Bundle()
 
-      val dialog = ModelPickerDialog(dataStoreCv)
+      val dialog = ModelPickerDialog(cvDataStore)
       dialog.arguments = args
       dialog.show(fragmentManager, "")
     }

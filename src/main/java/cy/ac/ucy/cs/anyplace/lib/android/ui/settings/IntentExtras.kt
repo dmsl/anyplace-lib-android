@@ -3,16 +3,15 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 import android.app.Activity
 import android.os.Bundle
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 
 object IntentExtras {
 
-  fun getSpace(activity: Activity, repo: Repository, extras: Bundle?, key: String) : SpaceHelper? {
+  fun getSpace(activity: Activity, repo: RepoAP, extras: Bundle?, key: String) : SpaceHelper? {
     val spaceStr = extras?.getString(key)
     return if (spaceStr != null) {
       val space = SpaceHelper.parse(spaceStr)

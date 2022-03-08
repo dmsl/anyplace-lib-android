@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.datastore
+package cy.ac.ucy.cs.anyplace.lib.android.data.store
 
 import android.content.Context
 import androidx.datastore.preferences.core.*
@@ -27,7 +27,7 @@ import javax.inject.Singleton
  * Shared between Logger / Navigator / Localization apps
  */
 @Singleton
-class DataStoreCv @Inject constructor(@ApplicationContext private val ctx: Context)
+class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
   private val C by lazy { CONST(ctx) }

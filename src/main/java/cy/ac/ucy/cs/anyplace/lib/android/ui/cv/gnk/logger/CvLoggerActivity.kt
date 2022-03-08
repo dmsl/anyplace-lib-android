@@ -89,13 +89,13 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   }
 
   /**
-   * Read [dataStoreCvLogger] preferences, as some UI elements depend on them:
+   * Read [cvLogDSDataStore] preferences, as some UI elements depend on them:
    * - Developer Stats -> [binding.bottomUi]
    */
   private fun readPrefsAndContinueSetup() {
     LOG.D4(TAG, "readPrefsAndSetupBottomSheet")
     lifecycleScope.launch {
-      dataStoreCvLogger.read.first { prefs ->
+      cvLogDSDataStore.read.first { prefs ->
         VM.prefs = prefs
         // set up that depends on preferences
         UI.setUpBottomSheet()

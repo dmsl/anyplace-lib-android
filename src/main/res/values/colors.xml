@@ -33,9 +33,9 @@
   <color name="colorPrimaryDark">@color/darkBlue</color>
   <color name="colorAccent">@color/lightBlue</color>
 
+  <color name="white">#FFFFFF</color>
   <color name="white_70">#70FFFFFF</color>
   <color name="white_B0">#B0FFFFFF</color>
-  <color name="white">#FFFFFF</color>
   <color name="lightGray">#F9F9F9</color>
   <color name="mediumGray">#D1D1D1</color>
   <color name="lightMediumGray">#80D1D1D1</color>

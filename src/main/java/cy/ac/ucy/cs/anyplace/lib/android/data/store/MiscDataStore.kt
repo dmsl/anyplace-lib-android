@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.datastore
+package cy.ac.ucy.cs.anyplace.lib.android.data.store
 
 import android.content.Context
 import androidx.datastore.preferences.core.*
@@ -18,7 +18,7 @@ import javax.inject.Singleton
  * Miscellaneous preferences
  */
 @Singleton
-class DataStoreMisc @Inject constructor(@ApplicationContext private val ctx: Context) {
+class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreMisc by preferencesDataStore(name = C.PREF_MISC_NAME)

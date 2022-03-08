@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.CvNavigationPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavigationPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
@@ -23,7 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
@@ -64,8 +64,8 @@ open class CvMapViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
-        val repository: Repository,
-        val retrofitHolder: RetrofitHolder): DetectorViewModel(application) {
+        val repoAP: RepoAP,
+        val retrofitHolderAP: RetrofitHolderAP): DetectorViewModel(application) {
 
   private val C by lazy { CONST(app) }
 
@@ -131,7 +131,7 @@ open class CvMapViewModel @Inject constructor(
         FH.cacheFloorplan(bitmap)
       } else {
         val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
-        "Base URL: ${retrofitHolder.retrofit.baseUrl()}"
+        "Base URL: ${retrofitHolderAP.retrofit.baseUrl()}"
         LOG.E(msg)
         floorplanFlow.value = Error(msg)
       }

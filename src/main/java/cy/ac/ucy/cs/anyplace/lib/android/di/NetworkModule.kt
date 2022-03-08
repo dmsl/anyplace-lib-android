@@ -1,8 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.di
 
 import android.app.Application
-import android.content.Context
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +20,9 @@ class NetworkModule {
   @Provides  // External class
   fun provideHttpClient(): OkHttpClient {
     return OkHttpClient.Builder()
-        .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .build()
+            .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .build()
   }
 
   @Singleton
@@ -39,9 +38,9 @@ class NetworkModule {
           app: Application, // injected from ContextModule
           okHttpClient: OkHttpClient,
           gsonConverterFactory: GsonConverterFactory,
-  ): RetrofitHolder {
-    val baseUrl = RetrofitHolder.getDefaultBaseUrl(app)
-    return RetrofitHolder(app, okHttpClient, gsonConverterFactory).set(baseUrl)
+  ): RetrofitHolderAP {
+    val baseUrl = RetrofitHolderAP.getDefaultBaseUrl(app)
+    return RetrofitHolderAP(app, okHttpClient, gsonConverterFactory).set(baseUrl)
   }
 
 }

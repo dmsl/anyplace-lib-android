@@ -26,13 +26,13 @@
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
     <activity
-        android:name=".android.ui.login.LoginActivity"
+        android:name=".android.ui.user.LoginActivity"
         android:exported="true"
         android:label="@string/title_activity_login" />
     <activity
         android:name=".android.ui.settings.SettingsServerActivity"
         android:exported="true"
-        android:label="Settings: Server" />
+        android:label="Server Settings" />
     <activity
         android:name=".android.ui.settings.SettingsCvLoggerActivity"
         android:exported="true"
@@ -42,7 +42,7 @@
     <activity
         android:name=".android.ui.settings.SettingsNavigationActivity"
         android:exported="true"
-        android:label="Settings: Localization" />
+        android:label="Localization Settings" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

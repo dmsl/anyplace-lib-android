@@ -1,21 +1,15 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.resizeTo
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.setColor
@@ -26,7 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.models.Space
  * Extra functionality on top of the [Space] data class.
  */
 class SpaceHelper(val ctx: Context,
-                  val repo: Repository,
+                  val repo: RepoAP,
                   val space: Space) {
 
   override fun toString(): String = Gson().toJson(space, Space::class.java)

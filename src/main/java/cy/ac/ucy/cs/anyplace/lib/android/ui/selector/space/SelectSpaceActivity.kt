@@ -13,7 +13,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.login.LoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.user.LoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel

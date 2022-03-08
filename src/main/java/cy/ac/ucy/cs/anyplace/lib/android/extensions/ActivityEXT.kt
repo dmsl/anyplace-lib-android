@@ -10,36 +10,28 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
-
-// CLR:PM
-// fun AppCompatActivity.getViewModelFactory(): ViewModelFactory {
-//     return ViewModelFactory(this)
-// }
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
 
 fun ComponentActivity.registerForActivityResult(
-        callback: ActivityResultCallback<ActivityResult>
-): ActivityResultLauncher<Intent> {
+        callback: ActivityResultCallback<ActivityResult>):ActivityResultLauncher<Intent> {
   return this.registerForActivityResult(
-          ActivityResultContracts.StartActivityForResult(),
-          callback
-  )
+          ActivityResultContracts.StartActivityForResult(), callback)
 }
 
 // EXTENSION FUNCTIONS
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
-val Activity.dataStoreServer: DataStoreServer get() = this.app.dataStoreServer
-val Activity.dataStoreCvLogger: DataStoreCvLogger get() = this.app.dataStoreCvLogger
-val Activity.dataStoreCv: DataStoreCv get() = this.app.dataStoreCv
-val Activity.dataStoreMisc: DataStoreMisc get() = this.app.dataStoreMisc
-val Activity.dataStoreUser: DataStoreUser get() = this.app.dataStoreUser
+val Activity.serverDS: ServerDataStore get() = this.app.serverDS
+val Activity.cvLogDSDataStore: CvLoggerDataStore get() = this.app.cvLogDSDataStore
+val Activity.cvDataStoreDS: CvDataStore get() = this.app.cvDataStoreDS
+val Activity.miscDS: MiscDataStore get() = this.app.miscDS
+val Activity.userDataStoreDS: UserDataStore get() = this.app.userDS
 //// LOCALIZATION APPS
-val Activity.dataStoreCvNavigation: DataStoreCvNavigation get() = this.app.dataStoreCvNavigation
+val Activity.cvNavDS: CvNavDataStore get() = this.app.cvNavDS
 
 val DialogFragment.app: AnyplaceApp get() = this.activity?.application as AnyplaceApp
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
 
-val TAG_ANYPLACE = "anyplace"
+const val TAG_ANYPLACE = "anyplace"
 
 // Extending Any (Java Object): name convention for loggin: ap_<className>
 // val Any.TAG : String get() = "ap_${this::class.java.simpleName}"

@@ -12,8 +12,8 @@ import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCv
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
@@ -24,8 +24,8 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import java.lang.IllegalStateException
 
 class ClearCachesDialog(
-        private val repo: Repository,
-        private val dataStoreCv: DataStoreCv):
+        private val repo: RepoAP,
+        private val cvDataStore: CvDataStore):
         DialogFragment() {
 
   companion object {
@@ -41,8 +41,8 @@ class ClearCachesDialog(
      * - Once the dialog is created they are deserialized to provide additional clear cache options
      */
     fun SHOW(fragmentManager: FragmentManager,
-             repo: Repository,
-             dataStoreCv: DataStoreCv,
+             repo: RepoAP,
+             cvDataStore: CvDataStore,
              SH: SpaceHelper?,
              FSH: FloorsHelper?,
              FH: FloorHelper?) {
@@ -54,7 +54,7 @@ class ClearCachesDialog(
         FH?.let { args.putString(KEY_FLOOR, it.toString()) }
       }
 
-      val dialog = ClearCachesDialog(repo, dataStoreCv)
+      val dialog = ClearCachesDialog(repo, cvDataStore)
       dialog.arguments = args
       // val test = dialog.requireArguments().getString(KEY_FROM)
       dialog.show(fragmentManager, "")
@@ -130,7 +130,7 @@ class ClearCachesDialog(
         binding.radioButtonFloor.isChecked -> { floorH?.clearCacheCvMaps() }
       }
 
-      dataStoreCv.setReloadCvMaps(true)
+      cvDataStore.setReloadCvMaps(true)
       dismiss()
     }
   }

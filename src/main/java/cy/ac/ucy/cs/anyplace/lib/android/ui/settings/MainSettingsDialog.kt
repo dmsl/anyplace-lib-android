@@ -77,7 +77,7 @@ class MainSettingsDialog : DialogFragment() {
 
   private fun setupUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val user = app.dataStoreUser.readUser.first()
+      val user = app.userDS.readUser.first()
       if (user.accessToken.isNotBlank()) {
         binding.user = user
       }
@@ -87,13 +87,13 @@ class MainSettingsDialog : DialogFragment() {
   }
 
   private fun setupUserLogout() {
-    binding.buttonLogout.setOnClickListener {
+    binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val user = app.dataStoreUser.readUser.first()
+        val user = app.userDS.readUser.first()
         if (user.accessToken.isNotBlank()) {
-          msg = "Logging out ${app.dataStoreUser.readUser.first().name}.."
-          app.dataStoreUser.deleteUser()
+          msg = "Logging out ${app.userDS.readUser.first().name}.."
+          app.userDS.deleteUser()
           dialog?.dismiss()
         } else {
           msg = "No logged in user."
@@ -123,10 +123,10 @@ class MainSettingsDialog : DialogFragment() {
       setupUser()
     } else {
       // TODO handle this centrally
-      binding.buttonLogout.isEnabled = false
+      binding.btnLogout.isEnabled = false
       binding.buttonHelpAndFeedback.isEnabled = false
       binding.buttonSettingsServer.isEnabled = false
-      binding.buttonLogout.alpha = .5f
+      binding.btnLogout.alpha = .5f
       binding.buttonHelpAndFeedback.alpha= .5f
       binding.buttonSettingsServer.alpha= .5f
     }

@@ -7,9 +7,9 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCv
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvLogger
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvLoggerDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
  * -
  */
 @AndroidEntryPoint
-class SettingsCvLoggerActivity: BaseSettingsActivity() {
+class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
 
   companion object {
     const val ARG_SPACE = "pref_act_space"
@@ -45,7 +45,7 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvLoggerFragment(dataStoreCvLogger, dataStoreCv, repo)
+    settingsFragment = SettingsCvLoggerFragment(cvLogDSDataStore, cvDataStoreDS, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO FIXME:PM not shown!
@@ -53,9 +53,9 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
   }
 
   class SettingsCvLoggerFragment(
-          private val dataStoreCvLogger: DataStoreCvLogger,
-          private val dataStoreCv: DataStoreCv,
-          private val repo: Repository,
+          private val cvLoggerDataStore: CvLoggerDataStore,
+          private val cvDataStore: CvDataStore,
+          private val repo: RepoAP,
   ) : PreferenceFragmentCompat() {
 
     var spaceH : SpaceHelper? = null
@@ -66,7 +66,7 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
       setPreferencesFromResource(R.xml.preferences_cv_logger, rootKey)
 
-      preferenceManager.preferenceDataStore = dataStoreCvLogger // TODO:PM implement ths
+      preferenceManager.preferenceDataStore = cvLoggerDataStore // TODO:PM implement ths
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
@@ -75,7 +75,7 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        dataStoreCvLogger.read.first {  prefs ->
+        cvLoggerDataStore.read.first { prefs ->
           setNumericInput(R.string.pref_cvlog_window_logging_seconds,
                   R.string.summary_logging_window, prefs.windowLoggingSeconds)
           setNumericInput(R.string.pref_cv_window_localization_seconds,
@@ -99,7 +99,7 @@ class SettingsCvLoggerActivity: BaseSettingsActivity() {
       pref?.setOnPreferenceClickListener {
         LOG.W(TAG_METHOD, "TODO clear cache")
         ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repo, dataStoreCv, spaceH, floorsH, floorH)
+                repo, cvDataStore, spaceH, floorsH, floorH)
         true
       }
     }

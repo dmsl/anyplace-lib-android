@@ -9,13 +9,13 @@ import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AnyplaceUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GenUtils
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
+import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.models.Version
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,38 +34,38 @@ TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
 */
 @HiltViewModel
 class MainViewModel @Inject constructor(
-  app: Application,
-  private val repository: Repository,
-  private val retrofitHolder: RetrofitHolder,
-  dataStoreServer: DataStoreServer,
-  dataStoreUser: DataStoreUser,
-  private val dataStoreMisc: DataStoreMisc,
+        app: Application,
+        private val repoAP: RepoAP,
+        private val retrofitHolderAP: RetrofitHolderAP,
+        serverDS: ServerDataStore,
+        userDataStoreDS: UserDataStore,
+        private val miscDS: MiscDataStore,
   ): AndroidViewModel(app) {
 
   private val C by lazy { CONST(app.applicationContext) }
 
   // PREFERENCES
-  val serverPreferences = dataStoreServer.readServerPrefs
+  val prefsServer = serverDS.read
 
   //// RETROFIT
   ////// Mutable Data
-  val versionResponse: MutableLiveData<NetworkResult<Version>> = MutableLiveData()
+  val versionResp: MutableLiveData<NetworkResult<Version>> = MutableLiveData()
 
   var networkStatus = false
   /** normal var, filled by the observer (SelectSpaceActivity) */
   var backOnline = false
   // TODO:PM: bind this when connectivity status changes
-  var readBackOnline = dataStoreMisc.readBackOnline.asLiveData()
-  var readUserLoggedIn = dataStoreUser.readUser.asLiveData()
+  var readBackOnline = miscDS.readBackOnline.asLiveData()
+  var readUserLoggedIn = userDataStoreDS.readUser.asLiveData()
 
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
-  var readBackFromSettings= dataStoreMisc.readBackFromSettings.asLiveData()
+  var readBackFromSettings= miscDS.readBackFromSettings.asLiveData()
 
   fun displayBackendVersion(versionPreferences: Preference?) =
     viewModelScope.launch { displayBackendVersionSafeCall(versionPreferences) }
 
   private suspend fun displayBackendVersionSafeCall(versionPreferences: Preference?) {
-    LOG.D4(TAG, "getVersionSafeCall: ${retrofitHolder.baseURL}")
+    LOG.D4(TAG, "getVersionSafeCall: ${retrofitHolderAP.baseURL}")
     versionPreferences?.summary = "reaching server .."
 
     var msg = ""
@@ -74,9 +74,9 @@ class MainViewModel @Inject constructor(
     
     if (app.hasInternetConnection()) {
       try {
-        val response = repository.remote.getVersion()
-        versionResponse.value = handleVersionResponse(response)
-        val version = versionResponse.value!!.data
+        val response = repoAP.remote.getVersion()
+        versionResp.value = handleVersionResponse(response)
+        val version = versionResp.value!!.data
         if (version != null) {
           val prettyVersion = AnyplaceUtils.prettyVersion(version)
           msg = "$prettyVersion (connected: ${GenUtils.prettyTime()})"
@@ -91,7 +91,7 @@ class MainViewModel @Inject constructor(
           if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
             exception = Exception(C.MSG_ERR_ONLY_SSL)
           }
-          versionResponse.value = NetworkResult.Error(e.message)
+          versionResp.value = NetworkResult.Error(e.message)
         }
       } catch(e: Exception) {
         LOG.E(TAG, "EXCEPTION: ${e.message}")
@@ -99,7 +99,7 @@ class MainViewModel @Inject constructor(
           is NullPointerException -> Exception(C.MSG_ERR_NPE)
           else -> e
         }
-        versionResponse.value = NetworkResult.Error(exception?.message)
+        versionResp.value = NetworkResult.Error(exception?.message)
       }
     } else {
       exception = Exception("No internet connection.")
@@ -140,12 +140,12 @@ class MainViewModel @Inject constructor(
 
   private fun saveBackOnline(value: Boolean) =
     viewModelScope.launch(Dispatchers.IO) {
-      dataStoreMisc.saveBackOnline(value)
+      miscDS.saveBackOnline(value)
     }
 
   fun setBackFromSettings() = saveBackFromSettings(true)
   fun unsetBackFromSettings() = saveBackFromSettings(false)
 
   private fun saveBackFromSettings(value: Boolean) =
-    viewModelScope.launch(Dispatchers.IO) {  dataStoreMisc.saveBackFromSettings(value) }
+    viewModelScope.launch(Dispatchers.IO) {  miscDS.saveBackFromSettings(value) }
 }

@@ -40,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -52,7 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-import cy.ac.ucy.cs.anyplace.lib.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.LOG;
 
 import android.app.ProgressDialog;

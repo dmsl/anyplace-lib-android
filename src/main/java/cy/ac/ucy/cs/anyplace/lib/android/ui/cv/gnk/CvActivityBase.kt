@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -79,18 +78,18 @@ abstract class CvActivityBase : AppCompatActivity(),
   }
 
   /** MERGED
-   * Read [dataStoreCv] preferences
+   * Read [cvDataStoreDS] preferences
    * TODO load CvModel from here?
    */
   private fun readPrefsAndContinueSetup() {
     lifecycleScope.launch {
-      dataStoreCv.read.first { prefs->
+      cvDataStoreDS.read.first { prefs->
         if (prefs.reloadCvMaps) {
           LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
           // refresh CvMap+Heatmap only when needed
           // TODO do something similar with floorplans when necessary as well
           loadCvMapAndHeatmap()
-          dataStoreCv.setReloadCvMaps(false)
+          cvDataStoreDS.setReloadCvMaps(false)
         }
 
         true
@@ -210,15 +209,16 @@ abstract class CvActivityBase : AppCompatActivity(),
     // restrict screen to current bounds.
     lifecycleScope.launch {
       delay(500) // CHECK does this fix it?
-      // delay(500) // CLR:PM
-      // if (floorH == null) { // BUGFIX CLR:PM
-      //   LOG.E("floorH is null")
-      // }
 
-      gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VMB.floorH?.bounds(), 0))
-      val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
-      LOG.D2("bounds: ${floorOnScreenBounds.center}")
-      gmap.setLatLngBoundsForCameraTarget(VMB.floorH?.bounds())
+      if (VMB.floorH != null) {
+        val bounds = VMB.floorH!!.bounds()
+        gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
+        val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
+        LOG.D2("bounds: ${floorOnScreenBounds.center}")
+        gmap.setLatLngBoundsForCameraTarget(bounds)
+      } else {
+        LOG.E(TAG, "Bounds were null. Space: ${VMB.space?.name} Floor: ${VMB.floorH?.prettyFloorName()}")
+      }
     }
 
     gmap.uiSettings.apply {
@@ -250,7 +250,7 @@ abstract class CvActivityBase : AppCompatActivity(),
       return false
     }
 
-    VMB.spaceH = SpaceHelper(applicationContext, VMB.repository, VMB.space!!)
+    VMB.spaceH = SpaceHelper(applicationContext, VMB.repoAP, VMB.space!!)
     VMB.floorsH = FloorsHelper(VMB.floors!!, VMB.spaceH)
     val prettySpace = VMB.spaceH.prettyTypeCapitalize
     val prettyFloors= VMB.spaceH.prettyFloors

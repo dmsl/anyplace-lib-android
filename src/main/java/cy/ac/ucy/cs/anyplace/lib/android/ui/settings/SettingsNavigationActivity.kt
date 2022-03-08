@@ -7,9 +7,9 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.Repository
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCv
-import cy.ac.ucy.cs.anyplace.lib.android.data.datastore.DataStoreCvNavigation
+import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
  * -
  */
 @AndroidEntryPoint
-class SettingsNavigationActivity: BaseSettingsActivity() {
+class SettingsNavigationActivity: AnyplaceSettingsActivity() {
   companion object {
     const val ARG_SPACE = "pref_act_space"
     const val ARG_FLOORS = "pref_act_floors"
@@ -45,7 +45,7 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvNavigationFragment(dataStoreCvNavigation, dataStoreCv, repo)
+    settingsFragment = SettingsCvNavigationFragment(cvNavDS, cvDataStoreDS, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO: icon not shown
@@ -53,9 +53,9 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
   }
 
   class SettingsCvNavigationFragment(
-          private val dataStoreCvNavigation: DataStoreCvNavigation,
-          private val dataStoreCv: DataStoreCv,
-          private val repo: Repository,
+          private val cvNavDataStore: CvNavDataStore,
+          private val cvDataStore: CvDataStore,
+          private val repo: RepoAP,
   ) : PreferenceFragmentCompat() {
 
     var spaceH : SpaceHelper? = null
@@ -66,7 +66,7 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
       setPreferencesFromResource(R.xml.preferences_cv_navigation, rootKey)
 
-      preferenceManager.preferenceDataStore = dataStoreCvNavigation
+      preferenceManager.preferenceDataStore = cvNavDataStore
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
@@ -75,7 +75,7 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        dataStoreCvNavigation.read.first {  prefs ->
+        cvNavDataStore.read.first { prefs ->
           setPercentageInput(R.string.pref_cvnav_map_alpha,
                   R.string.summary_map_alpha, prefs.mapAlpha,
           "Map is fully opaque", "Map is fully transparent")
@@ -100,7 +100,7 @@ class SettingsNavigationActivity: BaseSettingsActivity() {
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
         ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repo, dataStoreCv, spaceH, floorsH, floorH)
+                repo, cvDataStore, spaceH, floorsH, floorH)
         true
       }
     }

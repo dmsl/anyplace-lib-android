@@ -56,14 +56,14 @@
         android:layout_marginEnd="6dp"
         android:contentDescription="User"
         android:scaleType="fitXY"
-        app:layout_constraintEnd_toStartOf="@+id/textView_userName"
+        app:layout_constraintEnd_toStartOf="@+id/tv_username"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView_logoAnyplace"
         app:srcCompat="@drawable/ic_user_focused" />
 
 
       <TextView
-        android:id="@+id/textView_userName"
+        android:id="@+id/tv_username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
@@ -84,8 +84,8 @@
         android:text="alan@turing.com"
         readEmail="@{user}"
         android:textColor="@color/darkGray"
-        app:layout_constraintStart_toStartOf="@+id/textView_userName"
-        app:layout_constraintTop_toBottomOf="@+id/textView_userName" />
+        app:layout_constraintStart_toStartOf="@+id/tv_username"
+        app:layout_constraintTop_toBottomOf="@+id/tv_username" />
 
       <TextView
         android:id="@+id/textView_userType"
@@ -98,7 +98,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView_userEmail" />
 
       <TextView
-        android:id="@+id/textView_accountType"
+        android:id="@+id/tv_accountType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -117,7 +117,7 @@
           unless the tint is set to null.-->
 
       <Button
-        android:id="@+id/button_Logout"
+        android:id="@+id/btn_Logout"
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginStart="45dp"
@@ -131,7 +131,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView_accountType"
+        app:layout_constraintTop_toBottomOf="@+id/tv_accountType"
         app:layout_constraintVertical_bias="0.0"
 
         app:backgroundTint="@null" />
@@ -150,11 +150,11 @@
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/button_Logout"
+      app:layout_constraintTop_toBottomOf="@+id/btn_Logout"
       app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-      android:id="@+id/textView_titleSettings"
+      android:id="@+id/tv_titleSettings"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginStart="0dp"
@@ -175,7 +175,7 @@
       android:text="Server"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/textView_titleSettings"
+      app:layout_constraintTop_toBottomOf="@+id/tv_titleSettings"
       style="@style/SettingsButton"
 
       app:layout_constraintVertical_bias="0.0"

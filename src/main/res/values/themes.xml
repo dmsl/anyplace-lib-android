@@ -27,10 +27,12 @@
     <item name="colorAccent">@color/colorAccent</item>
   </style>
 
-  <style name="AppTheme.Compat.ObjectDetection" parent="AppTheme.Compat">
+  <style name="AppTheme.Compat.Fullscreen" parent="AppTheme.Compat">
     <item name="windowActionBar">false</item>
     <item name="windowNoTitle">true</item>
-    <item name="android:windowFullscreen">true</item>
+  </style>
+
+  <style name="AppTheme.Compat.ObjectDetection" parent="AppTheme.Compat.Fullscreen">
   </style>
 
 </resources>

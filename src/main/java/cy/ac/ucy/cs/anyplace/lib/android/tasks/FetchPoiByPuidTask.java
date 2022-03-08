@@ -45,7 +45,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import cy.ac.ucy.cs.anyplace.lib.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;

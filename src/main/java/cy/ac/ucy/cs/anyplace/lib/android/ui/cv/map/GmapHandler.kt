@@ -123,7 +123,7 @@ class GmapHandler(private val ctx: Context,
       return false
     }
 
-    VM.spaceH = SpaceHelper(ctx, VM.repository, VM.space!!)
+    VM.spaceH = SpaceHelper(ctx, VM.repoAP, VM.space!!)
     VM.floorsH = FloorsHelper(VM.floors!!, VM.spaceH)
     val prettySpace = VM.spaceH.prettyTypeCapitalize
     val prettyFloors= VM.spaceH.prettyFloors

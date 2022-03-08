@@ -26,7 +26,7 @@
       app:useSimpleSummaryProvider="true" />
 
     <Preference
-      app:key="pref_server_version"
+      app:key="@string/pref_server_version"
       app:title="@string/connection_status"
       />
 
