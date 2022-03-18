@@ -24,21 +24,21 @@ import javax.inject.Inject
  */
 abstract class AnyplaceApp : Application() {
 
+  @Inject lateinit var serverDS: ServerDataStore
+  @Inject lateinit var retrofitHolderAP: RetrofitHolderAP
+  @Inject lateinit var cvNavDS: CvNavDataStore
+  @Inject lateinit var miscDS: MiscDataStore
+  @Inject lateinit var userDS: UserDataStore
+  @Inject lateinit var cvLogDSDataStore: CvLoggerDataStore
+  @Inject lateinit var cvDataStoreDS: CvDataStore
+
   // TODO:PM: inject all those. otherwise we might have constructor issues.
   // they must be singleton, but after app ctx is created
   // example:
   // @Inject lateinit var serverDS: ServerDataStore
-  lateinit var serverDS: ServerDataStore
-  /** Preferences for Cv Activities */
-  lateinit var cvDataStoreDS: CvDataStore
-  /** Preferences for the CvLogger Activity */
-  lateinit var cvLogDSDataStore: CvLoggerDataStore
-  lateinit var cvNavDS: CvNavDataStore
-  lateinit var miscDS: MiscDataStore
-  lateinit var userDS: UserDataStore
 
-  @Inject
-  lateinit var retrofitHolderAP: RetrofitHolderAP
+  /** Preferences for Cv Activities */
+  /** Preferences for the CvLogger Activity */
 
   // CLR:PM are these not needed
   @Deprecated("")  lateinit var prefs: Preferences
@@ -49,15 +49,6 @@ abstract class AnyplaceApp : Application() {
     super.onCreate()
     LOG.D2(TAG, "onCreate")
     DaggerAppComponent.builder().application(this).build()
-
-    val ctx = applicationContext
-    serverDS = ServerDataStore(ctx)
-
-    cvDataStoreDS = CvDataStore(ctx)
-    cvLogDSDataStore = CvLoggerDataStore(ctx)
-    cvNavDS= CvNavDataStore(ctx)
-    miscDS = MiscDataStore(ctx)
-    userDS= UserDataStore(ctx)
 
     observeServerPrefs()
 
@@ -83,7 +74,7 @@ abstract class AnyplaceApp : Application() {
   }
 
   //// MISC
-  fun hasInternetConnection(): Boolean {
+  fun hasInternet(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val activeNetwork = connectivityManager.activeNetwork?: return false
     val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)?:return false

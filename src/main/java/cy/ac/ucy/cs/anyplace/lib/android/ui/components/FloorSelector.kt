@@ -8,8 +8,8 @@ import androidx.constraintlayout.widget.Group
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
@@ -23,7 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Encapsulating the Floor Selection UI component.
+ * Encapsulating all functionality of the Floor Selection UI component.
  */
 class FloorSelector(
         private val ctx: Context,
@@ -32,17 +32,21 @@ class FloorSelector(
         /** this is not treated as a button. used a button just for the background color.. */
         private val btnSelectedFloor: Button,
         private val btnFloorUp: MaterialButton,
-        private val btnFloorDown: MaterialButton) {
+        private val btnFloorDown: MaterialButton,
+) {
+
+  abstract class Callback {
+    /** Right after a floor is selected. For rendering new elements. */
+    abstract fun before()
+    /** Right before a floor is selected. For doing cleanups */
+    abstract fun after()
+  }
 
   private val fpLoader by lazy { FloorplanLoader() }
+  var callback : Callback ?= null
 
   fun updateFloorSelector(floor: Floor?, FH: FloorsHelper) {
-   if (true)  return
-    // LEFTHERE: crashes
-    // LEFTHERE: crashes
-    // LEFTHERE: crashes
-
-    // TODO if it has floors, then fade in..
+    // if it has floors, then fade in..
     if (groupFloorSelector.visibility != View.VISIBLE) groupFloorSelector.fadeIn()
 
     if (floor == null) {
@@ -88,33 +92,34 @@ class FloorSelector(
     }
 
     LOG.W()
-    val FH= VM.floorH!!
+    // val FH= VM.floorH!!
     if (floorChangeRequestTime == 0L) {
       floorChangeRequestTime = System.currentTimeMillis()
-      loadFloor(VM, FH, scope)
+      loadFloor(VM, scope)
       return
     }
 
     floorChangeRequestTime = System.currentTimeMillis()
-    LOG.W(TAG_METHOD, "isChanging: $isLazilyChangingFloor")
 
     scope.launch(Dispatchers.IO) {
       if (!isLazilyChangingFloor) {
-        LOG.W(LOG.TAG, "will change to floor: ${FH.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Might change to floor: ${VM.floorH!!.prettyFloorName()}")
         isLazilyChangingFloor = true
         do {
           val curTime = System.currentTimeMillis()
           val diff = curTime-floorChangeRequestTime
-          LOG.D(LOG.TAG, "delay: $diff")
-          delay(100)
+          LOG.D3(TAG_METHOD, "delay: $diff")
+          delay(200)
         } while(diff < DELAY_CHANGE_FLOOR)
 
-        LOG.W(LOG.TAG, "changing to floor: ${FH.prettyFloorName()} (after delay)")
+        LOG.D2(TAG_METHOD, "changing to floor: ${VM.floorH!!.prettyFloorName()} (after delay)")
 
-        loadFloor(VM, FH, scope)
         isLazilyChangingFloor = false
+
+        // BUG: VM or FH has the wrong floor number?
+        loadFloor(VM, scope)
       } else {
-        LOG.E(LOG.TAG, "skipping floor: ${FH.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Skipping floor: ${VM.floorH!!.prettyFloorName()}")
       }
     }
   }
@@ -127,7 +132,15 @@ class FloorSelector(
    *
    * Must be called each time wee want to load a floor.
    */
-  private fun loadFloor(VM: CvMapViewModel, FH: FloorHelper, scope: CoroutineScope) {
+  private fun loadFloor(VM: CvMapViewModel, scope: CoroutineScope) {
+    callback?.before()
+
+    if (VM.floorH==null) {
+      LOG.E(TAG_METHOD, "floor is null.")
+      return
+    }
+
+    val FH = VM.floorH!!
     LOG.W(TAG_METHOD, FH.prettyFloorName())
     scope.launch {
       if (FH.hasFloorplanCached()) {
@@ -137,6 +150,8 @@ class FloorSelector(
         VM.getFloorplanFromRemote(FH)
       }
     }
+
+    callback?.after()
   }
 
 }

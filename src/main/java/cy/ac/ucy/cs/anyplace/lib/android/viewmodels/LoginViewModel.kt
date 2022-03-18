@@ -49,7 +49,7 @@ class LoginViewModel @Inject constructor(
     userLoginResponse.value = NetworkResult.Loading() // TODO
     var exception : Exception? = null
     // var userResponse : NetworkResult<UserResponse>? = null
-      if (app.hasInternetConnection()) {
+      if (app.hasInternet()) {
       try {
         val response = repoAP.remote.userLoginLocal(userLoginLocalForm)
         userLoginResponse.value = handleUserLoginResponse(response, null)
@@ -66,9 +66,9 @@ class LoginViewModel @Inject constructor(
         val msg = "Login failed"
         handleSafecallError(msg, e)
         e.let {
-          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+          if (e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true) {
             exception = Exception(C.MSG_ERR_ONLY_SSL)
-          } else if (e.message?.contains(C.EXCEPTION_MSG_ILLEGAL_STATE) == true) {
+          } else if (e.message?.contains(C.ERR_MSG_ILLEGAL_STATE) == true) {
             exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
           } else if (e.message?.contains(C.EXCEPTION_MSG_NPE) == true) {
             exception = Exception(C.MSG_ERR_NPE)
@@ -91,7 +91,7 @@ class LoginViewModel @Inject constructor(
   private suspend fun loginGoogleUserSafeCall(obj: UserLoginGoogleData, photoUri: Uri?) {
     userLoginResponse.value = NetworkResult.Loading()
     var exception : Exception? = null
-    if (app.hasInternetConnection()) {
+    if (app.hasInternet()) {
       try {
         val response = repoAP.remote.userLoginGoogle(obj)
         userLoginResponse.value = handleUserLoginResponse(response, photoUri)
@@ -104,9 +104,9 @@ class LoginViewModel @Inject constructor(
         val msg = "Google Login failed"
         handleSafecallError(msg, e)
         e.let {
-          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+          if (e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true) {
             exception = Exception(C.MSG_ERR_ONLY_SSL)
-          } else if (e.message?.contains(C.EXCEPTION_MSG_ILLEGAL_STATE) == true) {
+          } else if (e.message?.contains(C.ERR_MSG_ILLEGAL_STATE) == true) {
             exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
           } else if (e.message?.contains(C.EXCEPTION_MSG_NPE) == true) {
             exception = Exception(C.MSG_ERR_NPE)

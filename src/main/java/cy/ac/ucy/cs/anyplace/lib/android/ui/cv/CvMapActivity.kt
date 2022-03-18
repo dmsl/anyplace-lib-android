@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -20,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -64,10 +66,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   // UTILITY OBJECTS
   // protected val gmap by lazy { GmapHandler(applicationContext) }
-  protected lateinit var gmap: GmapHandler
+  protected lateinit var mapH: GmapHandler
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
-  protected val bottomSheet by lazy { BottomSheetCvMap(this@CvMapActivity) }
+  protected lateinit var bottomSheet : BottomSheetCvMap
+  // protected val bottomSheet by lazy { BottomSheetCvMap(this@CvMapActivity) }
 
   // UI
   // protected lateinit var gmap: GoogleMap
@@ -79,42 +82,21 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.postCreate()
     VM = _vm as CvMapViewModel
     LOG.D2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
-
-    setupButtonsAndUi()
-  }
-
-  protected open fun setupButtonsAndUi() {
-    floorSelector = FloorSelector(applicationContext,
-            findViewById(R.id.group_floorSelector),
-            findViewById(R.id.textView_titleFloor),
-            findViewById(R.id.button_selectedFloor),
-            findViewById(R.id.button_floorUp),
-            findViewById(R.id.button_floorDown))
-
-    UI = CvMapUi(VM, lifecycleScope,
-            this@CvMapActivity,
-            supportFragmentManager,
-            overlays, floorSelector)
-    gmap = GmapHandler(applicationContext, lifecycleScope, UI)
-    gmap.attach(VM, this, R.id.mapView)
-
-    bottomSheet.setup()
-
-    checkInternet()
-    UI.setupOnFloorSelectionClick()
   }
 
   override fun onResume() {
     super.onResume()
     LOG.E(TAG, "onResume")
-    readPrefsAndContinueSetup()
+
+    readPrefsAndContinue()
   }
 
   /**
-   * Read [VM.prefsCV] preferences: model, cvmaps. floorplans,
-   * Read [DataStoreNav]: map opacity, localization interval, etc
+   * Read preferences and continue setup:
+   * -[VM.prefsCV] preferences: model, cvmaps. floorplans,
+   * -[DataStoreNav]: map opacity, localization interval, etc
    */
-  private fun readPrefsAndContinueSetup() {
+  private fun readPrefsAndContinue() {
     lifecycleScope.launch {
       LOG.D()
       cvDataStoreDS.read.first { prefs ->
@@ -144,7 +126,54 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   private fun onNavPrefsLoaded() {
+    setupButtonsAndUi()
     setMapOpacity()
+  }
+
+  protected open fun setupButtonsAndUi() {
+    floorSelector = FloorSelector(applicationContext,
+            findViewById(R.id.group_floorSelector),
+            findViewById(R.id.textView_titleFloor),
+            findViewById(R.id.button_selectedFloor),
+            findViewById(R.id.button_floorUp),
+            findViewById(R.id.button_floorDown))
+
+    UI = CvMapUi(VM, lifecycleScope,
+            this@CvMapActivity,
+            supportFragmentManager,
+            overlays, floorSelector)
+    mapH = GmapHandler(applicationContext, lifecycleScope, UI)
+    mapH.attach(VM, this, R.id.mapView)
+
+    /** Updates on the mapH after a floor has changed */
+    val floorSelectorCallback = object: FloorSelector.Callback() {
+      override fun before() {
+        LOG.D4(TAG_METHOD, "remove user locations")
+        // clear any overlays
+        UI.removeHeatmap()
+        mapH.removeUserLocations()
+
+        // [Overlays.drawFloorplan] removes any previous floorplan
+        // before drawing a new one so it doesn't need anything.
+      }
+
+      override fun after() {
+      }
+    }
+
+    floorSelector.callback = floorSelectorCallback
+
+    bottomSheet = BottomSheetCvMap(this@CvMapActivity, VM.prefsNav.devMode)
+
+    // keep reacting to  settings updates
+    lifecycleScope.launch {
+      app.cvNavDS.read.collect {
+        bottomSheet.setup()
+      }
+    }
+
+    checkInternet()
+    UI.setupOnFloorSelectionClick()
   }
 
   private fun setMapOpacity() {
@@ -158,7 +187,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    gmap.setup(googleMap)
+    mapH.setup(googleMap)
   }
 
   override fun onProcessImageFinished() {
@@ -169,7 +198,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   protected fun checkInternet() {
-    if (!app.hasInternetConnection()) {
+    if (!app.hasInternet()) {
       // TODO method that updates ui based on internet connectivity: gray out settings button
       Toast.makeText(applicationContext, "No internet connection.", Toast.LENGTH_LONG).show()
     }

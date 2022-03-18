@@ -10,6 +10,13 @@
         app:title="Localization Window"
         app:summary="@string/summary_logging_window"
         />
+
+    <EditTextPreference
+        app:key="@string/pref_smas_location_refresh"
+        app:title="Refresh Locations"
+        app:summary="@string/summary_refresh_locations"
+        />
+
     <DropDownPreference
         app:key="@string/pref_cv_model"
         app:title="Change Detection Model"
@@ -36,8 +43,7 @@
 
   <PreferenceCategory
       app:title="@string/developer_options"
-      app:icon="@drawable/ic_developer_options"
-      >
+      app:icon="@drawable/ic_developer_options">
 
     <EditTextPreference
         app:key="@string/pref_cvnav_map_alpha"
@@ -51,6 +57,13 @@
         app:title="Show scan details"
         app:summary="Additional details while scanning (bottomsheet)"
         />
+
+    <Preference
+        android:title="Anyplace Settings"
+        android:key="@string/pref_anyplace_server"
+        android:summary="Options related to the Anyplace Server."
+        />
+
   </PreferenceCategory>
 
 

@@ -11,11 +11,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4Detector
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvLoggerPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
-import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
@@ -188,7 +188,7 @@ class CvLoggerViewModel @Inject constructor(
   }
 
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
-  fun getElapsedSecondsStr(): String { return uTime.getSecondsPretty(getElapsedSeconds()) }
+  fun getElapsedSecondsStr(): String { return utlTime.getSecondsPretty(getElapsedSeconds()) }
 
   fun resetLoggingWindow() {
     objectsWindowUnique=0

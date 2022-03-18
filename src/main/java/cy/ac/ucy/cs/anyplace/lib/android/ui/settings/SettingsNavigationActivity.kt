@@ -1,6 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
@@ -10,9 +11,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
 import cy.ac.ucy.cs.anyplace.lib.models.Space
@@ -31,7 +32,8 @@ import kotlinx.coroutines.launch
  * - clear cvmaps
  *
  * TODO: Datastore Settings:
- * -
+ *
+ * NOTE: this should have been in the SMAS source code
  */
 @AndroidEntryPoint
 class SettingsNavigationActivity: AnyplaceSettingsActivity() {
@@ -80,6 +82,9 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
                   R.string.summary_map_alpha, prefs.mapAlpha,
           "Map is fully opaque", "Map is fully transparent")
 
+          setNumericInput(R.string.pref_smas_location_refresh,
+                  R.string.summary_refresh_locations, prefs.locationRefresh)
+
           setNumericInput(R.string.pref_cv_window_localization_seconds,
                   R.string.summary_localization_window, prefs.windowLocalizationSeconds)
 
@@ -88,9 +93,21 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
           true
         }
       }
+
       setupButtonClearCache(spaceH, floorsH, floorH)
       setupButtonChangeModel()
+      setupButtonServerSettings()
     }
+
+    private fun setupButtonServerSettings() {
+      val pref = findPreference<Preference>(getString(R.string.pref_anyplace_server))
+      pref?.setOnPreferenceClickListener {
+        LOG.D(TAG_METHOD)
+        startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
+        true
+      }
+    }
+
 
     private fun setupButtonClearCache(
             spaceH: SpaceHelper?,

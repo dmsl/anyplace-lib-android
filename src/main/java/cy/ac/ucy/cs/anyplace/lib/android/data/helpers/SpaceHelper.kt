@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
 
 import android.content.Context
 import android.graphics.drawable.Drawable

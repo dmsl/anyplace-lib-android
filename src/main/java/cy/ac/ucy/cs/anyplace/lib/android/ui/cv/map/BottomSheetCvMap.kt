@@ -30,7 +30,7 @@ class BottomSheetCvMap(private val act: DetectorActivityBase,
               override fun onGlobalLayout() {
                 act.gestureLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 val height = act.gestureLayout.measuredHeight
-                act.sheetBehavior.peekHeight = height/3
+                act.sheetBehavior.peekHeight = height/10
               }
             })
 
@@ -40,8 +40,7 @@ class BottomSheetCvMap(private val act: DetectorActivityBase,
     cropValueTextView = act.findViewById(R.id.crop_info)
     inferenceTimeTextView = act.findViewById(R.id.time_info)
 
-    setupStatechanges(bottomSheetArrowImageView,
-            R.drawable.ic_icon_down, R.drawable.ic_icon_up)
+    setupStatechanges(bottomSheetArrowImageView, R.drawable.ic_icon_down, R.drawable.ic_icon_up)
   }
 
   /**

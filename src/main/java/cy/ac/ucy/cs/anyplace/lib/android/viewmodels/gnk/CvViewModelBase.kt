@@ -25,10 +25,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageToB
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.RenderScriptImageToBitmapConverter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -202,7 +202,7 @@ abstract class CvViewModelBase constructor(
   private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
     floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
-    if (app.hasInternetConnection()) {
+    if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
         floorplanFlow.value = NetworkResult.Success(bitmap)
@@ -224,7 +224,7 @@ abstract class CvViewModelBase constructor(
   }
 
   fun hideActiveMarkers() {
-    markers?.hideActiveMakers()
+    markers?.hideCvObjMarkers()
   }
 
   /**
@@ -277,15 +277,14 @@ abstract class CvViewModelBase constructor(
         LOG.D5(TAG_METHOD, "append: ${appendedDetections.size}")
       }
     }
-
   }
 
   /** Go one floor up */
   fun floorGoUp() {
     val floorNumStr = floor.value?.floorNumber.toString()
-    if (floorsH.canGoUp(floorNumStr) == true) {
+    if (floorsH.canGoUp(floorNumStr)) {
       val to = floorsH.getFloorAbove(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      LOG.D(TAG_METHOD, "from: ${floor.value?.floorNumber} to: $to")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further up.")
@@ -295,9 +294,9 @@ abstract class CvViewModelBase constructor(
   /** Go one floor down */
   fun floorGoDown() {
     val floorNumStr = floor.value?.floorNumber.toString()
-    if (floorsH.canGoDown(floorNumStr) == true) {
+    if (floorsH.canGoDown(floorNumStr)) {
       val to = floorsH.getFloorBelow(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      LOG.D(TAG_METHOD, "from: ${floor.value?.floorName} to: $to")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further down.")

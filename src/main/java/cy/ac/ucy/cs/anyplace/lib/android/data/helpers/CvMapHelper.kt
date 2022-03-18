@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng

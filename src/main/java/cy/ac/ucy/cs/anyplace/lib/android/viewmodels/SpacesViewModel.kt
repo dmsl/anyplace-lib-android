@@ -87,7 +87,7 @@ class SpacesViewModel @Inject constructor(
   fun getSpaces() = viewModelScope.launch { getSpacesSafeCall() }
   private suspend fun getSpacesSafeCall() {
     spacesResponse.value = NetworkResult.Loading()
-    if (app.hasInternetConnection()) {
+    if (app.hasInternet()) {
       try {
         val response = repoAP.remote.getSpacesPublic()
         LOG.D2(TAG, "Spaces msg: ${response.message()}" )

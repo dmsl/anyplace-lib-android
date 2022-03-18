@@ -21,7 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
-import cy.ac.ucy.cs.anyplace.lib.android.utils.uTime
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.*
@@ -68,7 +68,7 @@ class UiActivityCvLogger(
     if (remaining>0) {
       val windowSecs = VM.prefs.windowLoggingSeconds.toInt()
       setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
-      btn.text = uTime.getSecondsRounded(remaining, windowSecs)
+      btn.text = utlTime.getSecondsRounded(remaining, windowSecs)
     } else {
       progressBar.visibility = View.INVISIBLE
       btn.text = ""

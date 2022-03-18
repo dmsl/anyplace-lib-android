@@ -6,7 +6,7 @@ import androidx.camera.core.*
 import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector

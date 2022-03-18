@@ -32,20 +32,17 @@
 
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="Test Header">
-
-    <SwitchPreferenceCompat
-      app:key="sync"
-      android:defaultValue="true"
-      app:title="@string/sync_msg_title" />
-
-    <!--<SwitchPreferenceCompat-->
-    <!--  app:dependency="sync"-->
-    <!--  app:key="attachment"-->
-    <!--  app:summaryOff="@string/attachment_summary_off"-->
-    <!--  app:summaryOn="@string/attachment_summary_on"-->
-    <!--  app:title="@string/attachment_title" />-->
-
-  </PreferenceCategory>
+<!--  <PreferenceCategory app:title="Test Header">-->
+<!--    &lt;!&ndash;    <SwitchPreferenceCompat&ndash;&gt;-->
+<!--    &lt;!&ndash;      app:key="sync"&ndash;&gt;-->
+<!--    &lt;!&ndash;      android:defaultValue="true"&ndash;&gt;-->
+<!--    &lt;!&ndash;      app:title="@string/sync_msg_title" />&ndash;&gt;-->
+<!--    &lt;!&ndash;<SwitchPreferenceCompat&ndash;&gt;-->
+<!--    &lt;!&ndash;  app:dependency="sync"&ndash;&gt;-->
+<!--    &lt;!&ndash;  app:key="attachment"&ndash;&gt;-->
+<!--    &lt;!&ndash;  app:summaryOff="@string/attachment_summary_off"&ndash;&gt;-->
+<!--    &lt;!&ndash;  app:summaryOn="@string/attachment_summary_on"&ndash;&gt;-->
+<!--    &lt;!&ndash;  app:title="@string/attachment_title" />&ndash;&gt;-->
+<!--  </PreferenceCategory>-->
 
 </PreferenceScreen>

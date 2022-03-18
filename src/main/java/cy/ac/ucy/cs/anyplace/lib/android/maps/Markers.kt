@@ -6,20 +6,23 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.iconFromShape
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.iconFromVector
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class Markers(private val ctx: Context,
               private val map: GoogleMap) {
 
   /** GMap markers used in detections */
-  var active: MutableList<Marker> = mutableListOf()
+  var cvObjects: MutableList<Marker> = mutableListOf()
   // TODO:PM show storedMarkers with green color
   var stored: MutableList<Marker> = mutableListOf()
   var lastLocationMarker : Marker? = null
 
+  /** Active users on the map */
+  var users: MutableList<Marker> = mutableListOf()
 
   /** Last Location marker */
   private fun locationMarker(latLng: LatLng) : MarkerOptions  {
@@ -39,15 +42,25 @@ class Markers(private val ctx: Context,
 
   fun addCvMarker(latLng: LatLng, msg: String) {
     map.addMarker(cvMarker(latLng, msg))?.let {
-      active.add(it)
+      cvObjects.add(it)
     }
   }
 
-  fun hideActiveMakers() {
-    active.forEach {
-      it.remove()
+  /** User marker */
+  private fun userMarker(latLng: LatLng, msg: String) : MarkerOptions  {
+    return MarkerOptions().position(latLng).title(msg)
+            .iconFromShape(ctx, R.drawable.marker_user)
+  }
+
+  fun addUserMarker(latLng: LatLng, msg: String, scope: CoroutineScope) {
+    scope.launch(Dispatchers.Main) {
+      map.addMarker(userMarker(latLng, msg))?.let { users.add(it) }
     }
   }
+
+  fun hideCvObjMarkers() { cvObjects.forEach { it.remove() } }
+
+  fun hideUserMarkers() { users.forEach { it.remove() } }
 
   /**
    * Updates the user's location to position [latLng]

@@ -42,7 +42,7 @@
     <activity
         android:name=".android.ui.settings.SettingsNavigationActivity"
         android:exported="true"
-        android:label="Localization Settings" />
+        android:label="Map Settings" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

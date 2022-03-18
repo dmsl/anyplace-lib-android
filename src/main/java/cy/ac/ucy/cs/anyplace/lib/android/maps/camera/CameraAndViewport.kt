@@ -18,7 +18,7 @@ class CameraAndViewport {
     fun loggerCamera(latLng: LatLng, maxZoomLevel: Float) : CameraPosition {
       return CameraPosition.builder()
           .target(latLng)
-          .zoom(maxZoomLevel-2)
+          .zoom(maxZoomLevel)
           .bearing(0f)
           .tilt(0f)
           .build()

@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 import android.graphics.Bitmap
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel

@@ -34,6 +34,9 @@ class Overlays(private val ctx: Context) {
     return null
   }
 
+  /**
+   * Removes the previous floorplan before drawing a new one
+   */
   fun drawFloorplan(bitmap: Bitmap?, map: GoogleMap, bounds: LatLngBounds) {
     if (bitmap != null) {
       if (floorplanOverlay != null) {

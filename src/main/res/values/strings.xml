@@ -90,7 +90,7 @@
   <string name="town_">Town:</string>
   <string name="country_">Country:</string>
   <string name="indoor_space">Indoor Space</string>
-  <string name="server_header">Server</string>
+  <string name="server_header">Anyplace Server</string>
   <string name="server_host_url_title">Host address</string>
   <string name="server_protocol_title">Protocol</string>
   <string name="user_header">User</string>
@@ -98,7 +98,6 @@
   <string name="server_port_title">Port number</string>
 
   <!-- TODO: Remove or change this placeholder text -->
-  <string name="sync_msg_title">Sync messages periodically</string>
   <string name="attachment_title">Download incoming images</string>
 
   <!-- Preference Titles -->
@@ -174,6 +173,7 @@
   <string name="for_var_var">for %1$s %2$s</string>
   <string name="clear_local_cv_maps">Clear local CV maps</string>
   <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
+  <string name="summary_refresh_locations">Every %1$s seconds it pulls updated user locations.</string>
   <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
   <string name="change_cv_model">Change Object Recognition Model</string>
   <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>
@@ -224,9 +224,10 @@
   <string name="user">User</string>
   <string name="logout">Logout</string>
   <string name="miscellaneous">Miscellaneous</string>
-  <string name="cv_localization">CV Localization</string>
+  <string name="map_settings">Map Settings</string>
   <string name="account">Account:</string>
   <string name="username">Username:</string>
   <string name="url_anyplace_about">https://anyplace.cs.ucy.ac.cy/#about</string>
+  <string name="pref_anyplace_server">pref_anyplace_server</string>
 
 </resources>

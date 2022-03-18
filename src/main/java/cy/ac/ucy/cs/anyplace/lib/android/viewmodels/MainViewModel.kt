@@ -72,7 +72,7 @@ class MainViewModel @Inject constructor(
     var exception : Exception? = null
     var versionColor : ForegroundColorSpan? = null
     
-    if (app.hasInternetConnection()) {
+    if (app.hasInternet()) {
       try {
         val response = repoAP.remote.getVersion()
         versionResp.value = handleVersionResponse(response)
@@ -88,7 +88,7 @@ class MainViewModel @Inject constructor(
         LOG.E(TAG, "EXCEPTION: ${e.message}")
         exception = e
         e.let {
-          if (e.message?.contains(C.EXCEPTION_MSG_HTTP_FORBIDEN) == true) {
+          if (e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true) {
             exception = Exception(C.MSG_ERR_ONLY_SSL)
           }
           versionResp.value = NetworkResult.Error(e.message)

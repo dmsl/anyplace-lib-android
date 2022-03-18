@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
@@ -222,7 +222,7 @@ abstract class CvActivityBase : AppCompatActivity(),
     }
 
     gmap.uiSettings.apply {
-      isZoomControlsEnabled = false
+      isZoomControlsEnabled = true
       isMapToolbarEnabled = false
       isTiltGesturesEnabled = false
       isCompassEnabled = false
@@ -479,7 +479,7 @@ abstract class CvActivityBase : AppCompatActivity(),
 
   @Deprecated("") // MERGED
   protected fun checkInternet() {
-    if (!app.hasInternetConnection()) {
+    if (!app.hasInternet()) {
       // TODO method that updates ui based on internet connectivity: gray out settings button
       Toast.makeText(applicationContext, "No internet connection.", Toast.LENGTH_LONG).show()
     }

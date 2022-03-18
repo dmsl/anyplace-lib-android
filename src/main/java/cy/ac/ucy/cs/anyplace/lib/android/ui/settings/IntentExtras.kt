@@ -4,9 +4,9 @@ import android.app.Activity
 import android.os.Bundle
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 
 object IntentExtras {

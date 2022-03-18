@@ -7,7 +7,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.*
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
@@ -18,6 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Floors
 import cy.ac.ucy.cs.anyplace.lib.models.Space
+import cy.ac.ucy.cs.anyplace.lib.models.UserLocation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,7 +34,6 @@ class GmapHandler(private val ctx: Context,
 
   private val assetReader by lazy { AssetReader(ctx) }
   protected val overlays by lazy { Overlays(ctx) }
-
   protected val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
 
   /** Dynamically attach a [GoogleMap] */
@@ -62,10 +63,9 @@ class GmapHandler(private val ctx: Context,
     // along with Space/Floors loading (that also needs implementation).
     scope.launch(Dispatchers.IO) { VM.floorsH.fetchAllFloorplans() }
 
-    // place some restrictions on the map
-    gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
-            CameraAndViewport.loggerCamera(VM.spaceH.latLng(), maxZoomLevel)))
     gmap.setMinZoomPreference(maxZoomLevel-3)
+    // place some restrictions on the map
+    LOG.E(TAG, "MAX ZOOM: $maxZoomLevel")
 
     // restrict screen to current bounds.
     scope.launch {
@@ -76,7 +76,13 @@ class GmapHandler(private val ctx: Context,
         return@launch
       }
 
-      gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VM.floorH?.bounds()!!, 0))
+      // zoom ins to include the floorplan
+      // gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VM.floorH?.bounds()!!, 0))
+
+      // zooms to the center of the floorplan
+      gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
+              CameraAndViewport.loggerCamera(VM.floorH?.bounds()!!.center, maxZoomLevel-2)))
+
       val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
       gmap.setLatLngBoundsForCameraTarget(VM.floorH?.bounds())
@@ -87,7 +93,7 @@ class GmapHandler(private val ctx: Context,
       isMapToolbarEnabled = false
       isTiltGesturesEnabled = false
       isCompassEnabled = false
-      isIndoorLevelPickerEnabled = true
+      isIndoorLevelPickerEnabled = false
     }
 
     onMapRreadySpecialize()
@@ -134,9 +140,6 @@ class GmapHandler(private val ctx: Context,
     return true
   }
 
-
-
-
   private fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
     var msg = ""
     when {
@@ -146,5 +149,19 @@ class GmapHandler(private val ctx: Context,
     }
     LOG.E(msg)
     Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+  }
+
+  fun removeUserLocations() {
+    scope.launch(Dispatchers.Main) {
+      VM.hideUserMarkers()
+    }
+  }
+
+  fun renderUserLocations(userLocation: List<UserLocation>) {
+    removeUserLocations() // TODO: update instead of hiding and rendering again..
+    scope.launch(Dispatchers.Main) {
+      // TODO:OPT add all markers at once
+      VM.addUserMarkers(userLocation, scope)
+    }
   }
 }

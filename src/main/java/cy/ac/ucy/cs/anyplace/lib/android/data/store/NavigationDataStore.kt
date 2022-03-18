@@ -9,7 +9,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -27,6 +26,10 @@ import javax.inject.Singleton
 class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
+  companion object {
+    private val TAG = CvNavDataStore.javaClass.simpleName
+  }
+
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreCvNavigation by preferencesDataStore(name = C.PREF_CVNAV)
   val datastore = ctx.dataStoreCvNavigation
@@ -35,12 +38,14 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_WINDOW_LOCALIZATION_SECONDS,
           C.PREF_CV_DEV_MODE,
           C.PREF_CVNAV_MAP_ALPHA,
+          C.PREF_SMAS_LOCATION_REFRESH,
   )
 
   private class Keys(c: CONST) {
     val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_SECONDS)
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
     val mapAlpha = stringPreferencesKey(c.PREF_CVNAV_MAP_ALPHA)
+    val locationRefresh = stringPreferencesKey(c.PREF_SMAS_LOCATION_REFRESH)
   }
   private val KEY = Keys(C)
 
@@ -72,10 +77,9 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     runBlocking {
       datastore.edit {
         when (key) {
-          C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] =
-                  value ?: C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
+          C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] = value ?: C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
           C.PREF_CVNAV_MAP_ALPHA-> it[KEY.mapAlpha] = value ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
-
+          C.PREF_SMAS_LOCATION_REFRESH-> it[KEY.locationRefresh] = value ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH
         }
       }
     }
@@ -99,6 +103,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
       return@runBlocking when (key) {
         C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
         C.PREF_CVNAV_MAP_ALPHA-> prefs.mapAlpha
+        C.PREF_SMAS_LOCATION_REFRESH-> prefs.locationRefresh
         else -> null
       }
     }
@@ -115,14 +120,19 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
-            val prefs = CvNavigationPrefs(windowLocalizationSeconds, mapAlpha, devMode)
-            LOG.D2(TAG, "read prefs: $prefs")
+            val locationRefresh= preferences[KEY.locationRefresh] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH
+
+            val prefs = CvNavigationPrefs(windowLocalizationSeconds, mapAlpha, devMode, locationRefresh)
+            LOG.D4(TAG, "read prefs: $prefs")
             prefs
           }
 }
 
 data class CvNavigationPrefs(
         val windowLocalizationSeconds: String,
-        val mapAlpha: String, /** visibility of the google maps layer */
+        /** visibility of the google maps layer */
+        val mapAlpha: String,
         val devMode: Boolean,
+        /** how often to fetch nearby users location (in seconds) */
+        val locationRefresh: String,
 )

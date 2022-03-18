@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
 
 import cy.ac.ucy.cs.anyplace.lib.android.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
@@ -39,21 +39,6 @@ class CoordClass(
     return coord.lat.hashCode() + coord.lon.hashCode() + classId.hashCode()
   }
 
-  // CLR:PM
-  // @Override
-  // public boolean equals(Object o) {
-  //   if (this == o)
-  //     return true;
-  //   if (o == null || getClass() != o.getClass())
-  //     return false;
-  //   Coordinate that = (Coordinate) o;
-  //   return x == that.x && y == that.y;
-  // }
-  //
-  // @Override
-  // public int hashCode() {
-  //   return this.hashCode;
-  // }
 }
 
 /**
@@ -368,7 +353,6 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
 
 
   /**
-   *
    * Calculates the Euclidean Distance between a [CvMapFast] [row] and
    * an [inputMap] [HashMap] of detections.
    *

@@ -1,13 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.widget.Toast
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapFast
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapFast
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
@@ -78,8 +77,10 @@ open class FloorHandler(
         // update FloorHelper & FloorSelector
         VM.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VM.spaceH) else null
         UI.floorSelector.updateFloorSelector(selectedFloor, VM.floorsH)
-        LOG.E(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor?.floorNumber}")
+        LOG.E(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
+          LOG.W(TAG,
+                  "observeFloorChanges: -> updating cache: floor: ${VM.floor.value?.floorNumber}")
           updateAndCacheLastFloor(VM.floor.value)
           LOG.W(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
           UI.floorSelector.lazilyChangeFloor(VM, scope)
@@ -92,7 +93,7 @@ open class FloorHandler(
    * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
    */
   private fun updateAndCacheLastFloor(floor: Floor?) {
-    val w = LOG.W(TAG_METHOD, floor?.floorNumber.toString())
+    LOG.W(TAG_METHOD, floor?.floorNumber.toString())
     if (floor != null) {
       VM.lastValSpaces.lastFloor=floor.floorNumber
       VM.spaceH.cacheLastValues(VM.lastValSpaces)

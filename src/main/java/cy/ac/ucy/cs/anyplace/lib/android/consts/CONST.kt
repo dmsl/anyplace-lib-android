@@ -16,8 +16,10 @@ open class CONST(ctx: Context) {
   val STATUS_OK = 200
 
   // EXCEPTIONS (messages set by 3rd party libs)
-  val EXCEPTION_MSG_HTTP_FORBIDEN = "not permitted by network security policy"
-  val EXCEPTION_MSG_ILLEGAL_STATE = "java.lang.IllegalStateException"
+  val ERR_MSG_NO_INTERNET= "No Internet Connection."
+
+  val ERR_MSG_HTTP_FORBIDEN = "not permitted by network security policy"
+  val ERR_MSG_ILLEGAL_STATE = "java.lang.IllegalStateException"
   val MSG_ERR_ONLY_SSL = "Only SSL connections allowed (HTTPS)"
   val EXCEPTION_MSG_NPE = "NullPointerException"
   val MSG_ERR_COMMUNICATION = "Failed to communicate"
@@ -54,7 +56,7 @@ open class CONST(ctx: Context) {
   val PREF_CVLOG_WINDOW_LOGGING_SECONDS = ctx.getString(R.string.pref_cvlog_window_logging_seconds)
 
   // COMMON DEFAULTS
-  val DEFAULT_PREF_CV_DEV_MODE = true
+  val DEFAULT_PREF_CV_DEV_MODE = false
   //// LOCALIZATION
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
@@ -65,6 +67,11 @@ open class CONST(ctx: Context) {
   //// NAVIGATION
   val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
   val DEFAULT_PREF_CVNAV_MAP_ALPHA= "90"
+
+  //// SMASS
+  // this should have been in separate SMAS settings
+  val PREF_SMAS_LOCATION_REFRESH= ctx.getString(R.string.pref_smas_location_refresh)
+  val DEFAULT_PREF_SMAS_LOCATION_REFRESH= "2"
 
   //// MISC
   val PREF_MISC_NAME = "pref_misc"
@@ -81,7 +88,6 @@ open class CONST(ctx: Context) {
   val PREF_USER_ACCOUNT = "pref_user_account"
   val PREF_USER_ID = "pref_user_id"
   val PREF_USER_USERNAME = "pref_user_username"
-
 
   // public, accessible, owned
   val PREF_MISC_QUERY_SPACE_OWNERSHIP = "pref_misc_queryType_space_ownership"

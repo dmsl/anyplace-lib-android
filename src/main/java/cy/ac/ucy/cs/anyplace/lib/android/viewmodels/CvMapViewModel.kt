@@ -11,10 +11,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavigationPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.modelhelpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -30,6 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult.Error
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -64,12 +66,15 @@ open class CvMapViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
+        navDS: CvNavDataStore,
         val repoAP: RepoAP,
         val retrofitHolderAP: RetrofitHolderAP): DetectorViewModel(application) {
 
   private val C by lazy { CONST(app) }
 
   lateinit var prefsCV: CvPrefs
+  // lateinit var prefsNav: CvNavigationPrefs
+  val navDS= navDS.read
   lateinit var prefsNav: CvNavigationPrefs
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
@@ -124,7 +129,7 @@ open class CvMapViewModel @Inject constructor(
   private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
     floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
-    if (app.hasInternetConnection()) {
+    if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
         floorplanFlow.value = Success(bitmap)
@@ -141,12 +146,22 @@ open class CvMapViewModel @Inject constructor(
   }
 
   //// GOOGLE MAPS
-  fun addMarker(latLng: LatLng, msg: String) {
+  fun addCvMarker(latLng: LatLng, msg: String) {
     markers?.addCvMarker(latLng, msg)
   }
 
-  fun hideActiveMarkers() {
-    markers?.hideActiveMakers()
+  fun hideCvMarkers() {
+    markers?.hideCvObjMarkers()
+  }
+
+  fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
+    userLocation.forEach {
+      markers?.addUserMarker(LatLng(it.x, it.y), it.uid, scope)
+    }
+  }
+
+  fun hideUserMarkers() {
+    markers?.hideUserMarkers()
   }
 
   /**
@@ -205,13 +220,13 @@ open class CvMapViewModel @Inject constructor(
   }
 
   // TODO in new class
-  // /** Go one floor up */
+  /** Go one floor up */
   fun floorGoUp() {
     LOG.E()
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoUp(floorNumStr)) {
       val to = floorsH.getFloorAbove(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      LOG.D(TAG_METHOD, "from: ${floor.value?.floorNumber} to: $to")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further up.")
@@ -224,7 +239,7 @@ open class CvMapViewModel @Inject constructor(
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoDown(floorNumStr)) {
       val to = floorsH.getFloorBelow(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value} to: $to")
+      LOG.D(TAG_METHOD, "from: ${floor.value?.floorNumber} to: $to")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further down.")
@@ -241,7 +256,7 @@ open class CvMapViewModel @Inject constructor(
     // val spaceH = spaceH!! CLR?
     // val floorsH = floorsH!! CLR?
 
-    LOG.E(TAG,"FloorsH: ${floorsH}")
+    LOG.E(TAG,"FloorsH.sz: ${floorsH.size}")
 
     if (!floorsH.hasFloors()) {  // space has no floors
       val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."
