@@ -25,6 +25,8 @@ object utlTime {
 
   /**
    * [epoch]: not in ms
+   *
+   *  TODO:PM [timezone] read from /smas/version endpoint (preserve it in misc?)
    */
   @SuppressLint("SimpleDateFormat")
   fun getPrettyEpoch(epoch: Long, timezone: String): String {
@@ -36,5 +38,16 @@ object utlTime {
     sdf.timeZone = TimeZone.getTimeZone(timezone)
 
     return sdf.format(date)
+  }
+
+  /** Get epoch in seconds (just like in Unix) */
+  fun epoch(): Long = System.currentTimeMillis()/1000
+
+  fun secondsElapsed(time: Long) : Long {
+    return epoch() - time
+  }
+
+  fun minutesElapsed(time: Long) : Long {
+    return secondsElapsed(time)/60
   }
 }

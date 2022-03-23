@@ -68,7 +68,7 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
   val DEFAULT_PREF_CVNAV_MAP_ALPHA= "90"
 
-  //// SMASS
+  //// SMAS
   // this should have been in separate SMAS settings
   val PREF_SMAS_LOCATION_REFRESH= ctx.getString(R.string.pref_smas_location_refresh)
   val DEFAULT_PREF_SMAS_LOCATION_REFRESH= "2"

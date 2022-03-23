@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -21,9 +21,9 @@ import cy.ac.ucy.cs.anyplace.lib.models.Space
  */
 class SpaceHelper(val ctx: Context,
                   val repo: RepoAP,
-                  val space: Space) {
+                  val obj: Space) {
 
-  override fun toString(): String = Gson().toJson(space, Space::class.java)
+  override fun toString(): String = Gson().toJson(obj, Space::class.java)
 
   companion object {
     const val TP_BUILDING = "building"
@@ -36,7 +36,7 @@ class SpaceHelper(val ctx: Context,
 
   val prettyType: String
     get() {
-      return space.type
+      return obj.type
     }
 
   val prettyTypeCapitalize: String
@@ -46,7 +46,7 @@ class SpaceHelper(val ctx: Context,
 
   val prettyFloor : String
     get() {
-      return when (space.type) {
+      return when (obj.type) {
         TP_BUILDING -> "floor"
         TP_VESSEL -> "deck"
         else -> "floor"
@@ -60,7 +60,7 @@ class SpaceHelper(val ctx: Context,
 
   /** Returns an icon resized according to the [Space] typ */
   fun getIcon(ctx: Context, @ColorRes colorRes: Int?, size: Int?): Drawable? {
-    val icon = when (space.type) {
+    val icon = when (obj.type) {
       TP_VESSEL -> ContextCompat.getDrawable(ctx, R.drawable.ic_vessel)
       else -> ContextCompat.getDrawable(ctx, R.drawable.ic_building)  // TP_BUILDING case
     } ?: return null
@@ -80,22 +80,22 @@ class SpaceHelper(val ctx: Context,
   val prettyFloorplan : String get() = "${prettyFloor}plan"
   val prettyFloorplans : String get() = "${prettyFloorplan}s"
 
-  fun isBuilding() : Boolean = space.type == TP_BUILDING
-  fun isVessel() : Boolean = space.type == TP_VESSEL
+  fun isBuilding() : Boolean = obj.type == TP_BUILDING
+  fun isVessel() : Boolean = obj.type == TP_VESSEL
 
   fun latLng() : LatLng {
-    val lat = space.coordinatesLat.toDouble()
-    val lon = space.coordinatesLon.toDouble()
+    val lat = obj.coordinatesLat.toDouble()
+    val lon = obj.coordinatesLon.toDouble()
     return LatLng(lat, lon)
   }
 
   fun cacheLastValues(lastValSpaces: LastValSpaces) {
-    cache.saveSpaceLastValues(space, lastValSpaces)
+    cache.saveSpaceLastValues(obj, lastValSpaces)
   }
 
-  fun hasLastValuesCached() = cache.hasSpaceLastValues(space)
+  fun hasLastValuesCached() = cache.hasSpaceLastValues(obj)
   fun loadLastValues() : LastValSpaces {
-    val lastVal = cache.readSpaceLastValues(space)
+    val lastVal = cache.readSpaceLastValues(obj)
     return if (lastVal != null) {
       LOG.D2(TAG_METHOD, "${prettyFloor}: ${lastVal.lastFloor}")
       lastVal

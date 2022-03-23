@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 
-object buttonUtils {
+object utlButton {
 
   /**
    * Works for [MaterialButton]

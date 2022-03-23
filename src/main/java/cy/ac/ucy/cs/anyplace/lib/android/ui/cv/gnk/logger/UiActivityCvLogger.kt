@@ -22,7 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Localization
@@ -75,9 +75,9 @@ class UiActivityCvLogger(
       progressBar.progress = 100
 
       if (!VM.detectionsLogging.value.isNullOrEmpty()) {
-        buttonUtils.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
+        utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
       } else {   // no results, hide the timer
-        buttonUtils.removeMaterialButtonIcon(btn)
+        utlButton.removeMaterialButtonIcon(btn)
         btn.fadeOut()
       }
     }
@@ -278,29 +278,29 @@ class UiActivityCvLogger(
   }
 
   fun startLocalization(mapView: MapView) {
-    val btnDemoNav = binding.buttonDemoNavigation
+    val btnDemoNav = binding.btnDemoNavigation
     btnDemoNav.isEnabled = false
     VM.currentTime = System.currentTimeMillis()
     VM.windowStart = VM.currentTime
     VM.localization.value = Localization.running
     statusUpdater.setStatus("scanning..")
     btnDemoNav.visibility = View.VISIBLE
-    buttonUtils.changeBackgroundButton(btnDemoNav, ctx, R.color.colorPrimary)
+    utlButton.changeBackgroundButton(btnDemoNav, ctx, R.color.colorPrimary)
     mapView.alpha = 0.90f // TODO:PM no alpha..
   }
 
   fun endLocalization(mapView: MapView) {
     LOG.D2()
-    val btnDemoNav = binding.buttonDemoNavigation
+    val btnDemoNav = binding.btnDemoNavigation
     statusUpdater.clearStatus()
-    buttonUtils.changeBackgroundButton(btnDemoNav, ctx, R.color.darkGray)
+    utlButton.changeBackgroundButton(btnDemoNav, ctx, R.color.darkGray)
     btnDemoNav.isEnabled = true
     mapView.alpha = 1f
     VM.localization.tryEmit(Localization.stopped)
   }
 
   fun setupClickDemoNavigation(mapView: MapView) {
-    binding.buttonDemoNavigation.setOnClickListener {
+    binding.btnDemoNavigation.setOnClickListener {
       when (VM.logging.value) {
         Logging.stopped,
         Logging.stoppedMustStore -> {  // enter demo-nav mode
@@ -317,7 +317,7 @@ class UiActivityCvLogger(
     }
 
     // CLR:PM TRIAL remove this functionality..
-    binding.buttonDemoNavigation.setOnLongClickListener {
+    binding.btnDemoNavigation.setOnLongClickListener {
       if (!longClickClearCvMap) {
         scope.launch {
           statusUpdater.showWarningAutohide("Delete CvMap?", "long-click again", 2000L)

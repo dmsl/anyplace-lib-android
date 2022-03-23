@@ -21,14 +21,14 @@ fun ComponentActivity.registerForActivityResult(
 // EXTENSION FUNCTIONS
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.serverDS: ServerDataStore get() = this.app.serverDS
-val Activity.cvLogDSDataStore: CvLoggerDataStore get() = this.app.cvLogDSDataStore
+val Activity.cvLogDS: CvLoggerDataStore get() = this.app.cvLogDSDataStore
 val Activity.cvDataStoreDS: CvDataStore get() = this.app.cvDataStoreDS
 val Activity.miscDS: MiscDataStore get() = this.app.miscDS
 val Activity.userDataStoreDS: UserDataStore get() = this.app.userDS
 //// LOCALIZATION APPS
 val Activity.cvNavDS: CvNavDataStore get() = this.app.cvNavDS
 
-val DialogFragment.app: AnyplaceApp get() = this.activity?.application as AnyplaceApp
+val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
 
 const val TAG_ANYPLACE = "anyplace"
@@ -55,7 +55,7 @@ val Any.TAG: String get()  {
         className.endsWith("LOG\$Companion") ||
                 className.startsWith("kotlin") -> { }
         // this kotlin file
-        simpleClassName == "ActivityExtensionsKt" -> { }
+        simpleClassName == "ActivityEXT" -> { }
         else -> { return simpleClassName
         }
       }

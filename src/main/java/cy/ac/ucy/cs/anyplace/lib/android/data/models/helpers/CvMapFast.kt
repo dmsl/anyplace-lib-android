@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import cy.ac.ucy.cs.anyplace.lib.android.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.LOG

@@ -44,10 +44,10 @@ This is important as they are serialized/deserialized often:
 Path:
 `/clients/core/lib/src/main/java/cy/ac/ucy/cs/anyplace/lib/models/`
 
-[ModelHelpers](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/helpers) accept a `Model` as a parameter and can provide any needed functionality.
+[ModelHelpers](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/models/helpers) accept a `Model` as a parameter and can provide any needed functionality.
 The convention is to use `modelH` for the `ModelHelper` variable.
 
 Examples:
-- [SpaceHelper](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/helpers/SpaceHelper.kt)
+- [SpaceHelper](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/models/helpers/SpaceHelper.kt)
 
 </details>

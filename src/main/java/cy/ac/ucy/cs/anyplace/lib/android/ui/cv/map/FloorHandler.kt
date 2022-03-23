@@ -4,9 +4,9 @@ import android.content.Context
 import android.widget.Toast
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapFast
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapFast
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays

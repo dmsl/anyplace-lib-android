@@ -15,9 +15,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButton
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.changeBackgroundButtonCompat
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils.removeMaterialButtonIcon
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonCompat
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.removeMaterialButtonIcon
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Localization
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Logging
@@ -89,13 +89,13 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   }
 
   /**
-   * Read [cvLogDSDataStore] preferences, as some UI elements depend on them:
+   * Read [cvLogDS] preferences, as some UI elements depend on them:
    * - Developer Stats -> [binding.bottomUi]
    */
   private fun readPrefsAndContinueSetup() {
     LOG.D4(TAG, "readPrefsAndSetupBottomSheet")
     lifecycleScope.launch {
-      cvLogDSDataStore.read.first { prefs ->
+      cvLogDS.read.first { prefs ->
         VM.prefs = prefs
         // set up that depends on preferences
         UI.setUpBottomSheet()
@@ -186,7 +186,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   private fun updateLoggingUi(status: Logging) {
     LOG.D4(TAG_METHOD, "status: $status")
     val btnLogging = binding.bottomUi.buttonLogging
-    val btnDemoNav= binding.buttonDemoNavigation
+    val btnDemoNav= binding.btnDemoNavigation
     val btnTimer = binding.bottomUi.buttonCameraTimer
     binding.bottomUi.groupTutorial.visibility = View.GONE
     btnLogging.visibility = View.VISIBLE // hidden only by demo-nav

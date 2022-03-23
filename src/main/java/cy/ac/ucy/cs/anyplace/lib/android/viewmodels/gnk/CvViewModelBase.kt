@@ -25,10 +25,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageToB
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.RenderScriptImageToBitmapConverter
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app

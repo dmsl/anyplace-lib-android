@@ -7,7 +7,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
@@ -159,9 +159,7 @@ class GmapHandler(private val ctx: Context,
 
   fun renderUserLocations(userLocation: List<UserLocation>) {
     removeUserLocations() // TODO: update instead of hiding and rendering again..
-    scope.launch(Dispatchers.Main) {
-      // TODO:OPT add all markers at once
+    // TODO:OPT add all markers at once
       VM.addUserMarkers(userLocation, scope)
-    }
   }
 }

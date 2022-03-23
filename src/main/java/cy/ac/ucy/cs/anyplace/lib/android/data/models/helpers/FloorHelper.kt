@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -16,10 +16,10 @@ import retrofit2.Response
 /**
  * Extra functionality on top of the [Floor] data class.
  */
-class FloorHelper(val floor: Floor,
+class FloorHelper(val obj: Floor,
                   val spaceH: SpaceHelper) {
 
-  override fun toString(): String = Gson().toJson(floor, Floor::class.java)
+  override fun toString(): String = Gson().toJson(obj, Floor::class.java)
 
   companion object {
     fun parse(str: String): Floor = Gson().fromJson(str, Floor::class.java)
@@ -27,19 +27,19 @@ class FloorHelper(val floor: Floor,
 
   private val cache by lazy { Cache(spaceH.ctx) }
 
-  fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${floor.floorNumber}"
-  fun prettyFloorNumber() = "${spaceH.prettyFloor}${floor.floorName}"
-  fun prettyFloorName() = "${spaceH.prettyFloor} ${floor.floorName}"
+  fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${obj.floorNumber}"
+  fun prettyFloorNumber() = "${spaceH.prettyFloor}${obj.floorName}"
+  fun prettyFloorName() = "${spaceH.prettyFloor} ${obj.floorName}"
 
   fun northEast() : LatLng {
-    val latNE = floor.topRightLat.toDouble()
-    val lonNE = floor.topRightLng.toDouble()
+    val latNE = obj.topRightLat.toDouble()
+    val lonNE = obj.topRightLng.toDouble()
     return LatLng(latNE, lonNE)
   }
 
   fun southWest() : LatLng {
-    val latSW = floor.bottomLeftLat.toDouble()
-    val lonSW = floor.bottomLeftLng.toDouble()
+    val latSW = obj.bottomLeftLat.toDouble()
+    val lonSW = obj.bottomLeftLng.toDouble()
     return LatLng(latSW, lonSW)
   }
 
@@ -47,20 +47,20 @@ class FloorHelper(val floor: Floor,
     return LatLngBounds(southWest(), northEast())
   }
 
-  fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(floor) }
-  fun loadFromCache() : Bitmap? { return cache.readFloorplan(floor) }
-  fun clearCacheFloorplan() { cache.deleteFloorplan(floor) }
+  fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(obj) }
+  fun loadFromCache() : Bitmap? { return cache.readFloorplan(obj) }
+  fun clearCacheFloorplan() { cache.deleteFloorplan(obj) }
   // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
   /** Deletes the cvmap folder that might contain several CvMaps
    * created with different [DetectionModel]s */
-  fun clearCacheCvMaps() { cache.deleteFloorCvMapsLocal(floor) }
+  fun clearCacheCvMaps() { cache.deleteFloorCvMapsLocal(obj) }
   fun clearCache() {
     clearCacheFloorplan()
     clearCacheCvMaps()
   }
-  fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(floor, bitmap) } }
-  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModelLocal(floor, model)
-  fun loadCvMapFromCache(model: DetectionModel) = cache.readFloorCvMap(floor, model)
+  fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(obj, bitmap) } }
+  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModelLocal(obj, model)
+  fun loadCvMapFromCache(model: DetectionModel) = cache.readFloorCvMap(obj, model)
 
   // CLR:PM
   // https://ap-dev.cs.ucy.ac.cy:9001/api/floorplans64/vessel_9bdb1052-ff23-4f9b-b9f9-aae5095af468_1634646807927/-2
@@ -68,8 +68,8 @@ class FloorHelper(val floor: Floor,
    * Request and cache a [Bitmap]
    */
   suspend fun requestRemoteFloorplan() : Bitmap? {
-    LOG.D2("requestRemoteFloorplan: ${floor.buid}: ${floor.floorNumber}")
-    val response = spaceH.repo.remote.getFloorplanBase64(floor.buid, floor.floorNumber)
+    LOG.D2("requestRemoteFloorplan: ${obj.buid}: ${obj.floorNumber}")
+    val response = spaceH.repo.remote.getFloorplanBase64(obj.buid, obj.floorNumber)
     return handleResponse(response)
   }
 

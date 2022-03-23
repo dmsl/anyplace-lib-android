@@ -14,9 +14,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
@@ -98,9 +98,9 @@ class ClearCachesDialog(
       spaceH = IntentExtras.getSpace(requireActivity(), repo, bundle, KEY_SPACE)
       if (spaceH != null) {
         val SH = spaceH!!
-        LOG.D(TAG_METHOD, "Space is ${SH.space.name}")
+        LOG.D(TAG_METHOD, "Space is ${SH.obj.name}")
         floorsH=IntentExtras.getFloors(spaceH, bundle, KEY_FLOORS)
-        binding.radioButtonSpace.text=getString(R.string.for_var_var, SH.prettyType, SH.space.name)
+        binding.radioButtonSpace.text=getString(R.string.for_var_var, SH.prettyType, SH.obj.name)
         binding.radioButtonSpace.visibility=View.VISIBLE
         binding.radioButtonFloor.isChecked = true
 
@@ -108,7 +108,7 @@ class ClearCachesDialog(
         if (floorH!=null) {
           LOG.D(TAG_METHOD, "Floor ${floorH?.prettyFloorNumber()}")
           binding.radioButtonFloor.text = getString(R.string.for_var_var,
-                  floorH?.prettyFloorNumber(), " of ${SH.space.name}")
+                  floorH?.prettyFloorNumber(), " of ${SH.obj.name}")
           binding.radioButtonFloor.visibility=View.VISIBLE
           binding.radioButtonFloor.isChecked = true
         }

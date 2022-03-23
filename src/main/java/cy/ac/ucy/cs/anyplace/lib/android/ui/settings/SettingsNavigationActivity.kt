@@ -11,9 +11,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
 import cy.ac.ucy.cs.anyplace.lib.models.Space

@@ -8,13 +8,13 @@ import androidx.constraintlayout.widget.Group
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.FloorplanLoader
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.buttonUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import kotlinx.coroutines.CoroutineScope
@@ -68,10 +68,10 @@ class FloorSelector(
   private fun updateSelectionButton(btn: MaterialButton, ctx: Context, enable: Boolean) {
     if (enable) {
       btn.isClickable=true
-      buttonUtils.changeMaterialButtonIcon(btn, ctx, R.drawable.arrow_up)
+      utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.arrow_up)
     } else {
       btn.isClickable= false
-      buttonUtils.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_arrow_up_disabled)
+      utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_arrow_up_disabled)
     }
   }
 

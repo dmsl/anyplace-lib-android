@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
@@ -11,26 +11,26 @@ import java.lang.Exception
 /**
  * Extra functionality on top of the [Floors] data class.
  */
-class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
+class FloorsHelper(val unsortedObj: Floors, val spaceH: SpaceHelper) {
 
   /** Parses this sorted BUGFIX: wrapping on a new object */
-  override fun toString(): String = Gson().toJson(Floors(floors), Floors::class.java)
+  override fun toString(): String = Gson().toJson(Floors(obj), Floors::class.java)
   companion object {
     fun parse(str: String): Floors = Gson().fromJson(str, Floors::class.java)
   }
 
-  private val floors: List<Floor> = (unsortedFloors.floors.sortedBy { floor ->
+  private val obj: List<Floor> = (unsortedObj.floors.sortedBy { floor ->
     floor.floorNumber.toInt()
   })
 
-  val size : Int get() = floors.size
-  fun hasFloors()  = floors.isNotEmpty()
-  fun getFirstFloor() = floors[0]
-  fun getLastFloor() = floors[floors.size-1]
+  val size : Int get() = obj.size
+  fun hasFloors()  = obj.isNotEmpty()
+  fun getFirstFloor() = obj[0]
+  fun getLastFloor() = obj[obj.size-1]
 
   fun getFloor(num: Int) = getFloor(num.toString())
   fun getFloor(str: String) : Floor? {
-    floors.forEach { floor ->
+    obj.forEach { floor ->
       if (floor.floorNumber == str) return floor
     }
     LOG.E(TAG, "${spaceH.prettyFloor} not found: $str")
@@ -38,8 +38,8 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
   }
 
   fun getFloorIdx(str: String) : Int {
-    for (i in floors.indices) {
-      if (floors[i].floorNumber == str) return i
+    for (i in obj.indices) {
+      if (obj[i].floorNumber == str) return i
     }
     return -10
   }
@@ -54,7 +54,7 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
   fun clearCaches() = clearCache("all") { clearCache() }
 
   private fun clearCache(msg: String, method: FloorHelper.() -> Unit) {
-    floors.forEach { floor ->
+    obj.forEach { floor ->
       val FH = FloorHelper(floor, spaceH)
       FH.method()
       LOG.D5(TAG, "clearCache:$msg: ${FH.prettyFloorplanNumber()}.")
@@ -67,7 +67,7 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
    */
   suspend fun fetchAllFloorplans() {
     var alreadyCached=""
-    floors.forEach { floor ->
+    obj.forEach { floor ->
       val FH = FloorHelper(floor, spaceH)
       if (!FH.hasFloorplanCached()) {
         val bitmap = FH.requestRemoteFloorplan()
@@ -76,7 +76,7 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
           LOG.D("Downloaded: ${FH.prettyFloorplanNumber()}.")
         }
       } else {
-        alreadyCached+="${FH.floor.floorNumber}, "
+        alreadyCached+="${FH.obj.floorNumber}, "
       }
     }
 
@@ -108,19 +108,19 @@ class FloorsHelper(val unsortedFloors: Floors, val spaceH: SpaceHelper) {
   fun getFloorAbove(curFloorStr: String): Floor? {
     val idx = getFloorIdx(curFloorStr) +1
     LOG.D5(TAG_METHOD, "IDX: $idx")
-    return if (idx>=0 && idx<floors.size) floors[idx] else null
+    return if (idx>=0 && idx<obj.size) obj[idx] else null
   }
 
   private fun printFloors() {
-    for (i in floors.indices) {
-      LOG.D(TAG_METHOD, "floor: $i, ${floors[i].floorNumber}")
+    for (i in obj.indices) {
+      LOG.D(TAG_METHOD, "floor: $i, ${obj[i].floorNumber}")
     }
   }
 
   fun getFloorBelow(curFloorStr: String): Floor? {
     val idx = getFloorIdx(curFloorStr) + -1
     LOG.D5(TAG_METHOD, "IDX: $idx")
-    return if (idx>=0 && idx<floors.size) floors[idx] else null
+    return if (idx>=0 && idx<obj.size) obj[idx] else null
   }
 
 }

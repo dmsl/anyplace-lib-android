@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.helpers
+package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
@@ -52,8 +52,8 @@ class CvMapHelper(val cvMap: CvMap,
       }
 
       return CvMap(model.modelName,
-              floorH.spaceH.space.id,
-              floorH.floor.floorNumber,
+              floorH.spaceH.obj.id,
+              floorH.obj.floorNumber,
               cvLocations, CvMap.SCHEMA)
     }
 

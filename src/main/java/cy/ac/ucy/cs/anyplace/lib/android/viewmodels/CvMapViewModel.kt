@@ -11,10 +11,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavigationPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -32,6 +32,7 @@ import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult.Error
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -156,7 +157,9 @@ open class CvMapViewModel @Inject constructor(
 
   fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
     userLocation.forEach {
-      markers?.addUserMarker(LatLng(it.x, it.y), it.uid, scope)
+      scope.launch(Dispatchers.Main) {
+        markers?.addUserMarker(LatLng(it.x, it.y), it.uid, scope, it.alert, it.time)
+      }
     }
   }
 

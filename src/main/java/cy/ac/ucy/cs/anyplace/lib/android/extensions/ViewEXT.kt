@@ -38,6 +38,10 @@ fun View.flashOut(alphaStart: Float, delay: Long = 1000) {
   }
 }
 
+fun View.flashingLoop() {
+  val anim= AnimationUtils.loadAnimation(context, R.anim.flash_fade40)
+  startAnimation(anim)
+}
 
 fun View.flashView(delay: Long = 200) {
   alpha=0f

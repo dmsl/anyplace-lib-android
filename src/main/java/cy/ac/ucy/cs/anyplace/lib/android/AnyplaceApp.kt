@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
@@ -12,6 +14,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.supervisorScope
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -24,8 +29,10 @@ import javax.inject.Inject
  */
 abstract class AnyplaceApp : Application() {
 
-  @Inject lateinit var serverDS: ServerDataStore
   @Inject lateinit var retrofitHolderAP: RetrofitHolderAP
+
+  // DATASTORES (Preferences/Settings)
+  @Inject lateinit var serverDS: ServerDataStore
   @Inject lateinit var cvNavDS: CvNavDataStore
   @Inject lateinit var miscDS: MiscDataStore
   @Inject lateinit var userDS: UserDataStore
@@ -71,6 +78,13 @@ abstract class AnyplaceApp : Application() {
       retrofitHolderAP.set(prefs)
       LOG.V5(TAG, "Updated backend url: ${retrofitHolderAP.baseURL}")
     }
+  }
+
+  private var toast: Toast ?= null
+  fun showToast(msg: String, len: Int) {
+    if (toast != null) toast!!.cancel()
+    toast = Toast.makeText(this, msg, len)
+    toast!!.show()
   }
 
   //// MISC

@@ -6,14 +6,17 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.iconFromShape
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class Markers(private val ctx: Context,
               private val map: GoogleMap) {
+  companion object {
+    private val TAG = Markers::class.java.simpleName
+  }
 
   /** GMap markers used in detections */
   var cvObjects: MutableList<Marker> = mutableListOf()
@@ -24,6 +27,7 @@ class Markers(private val ctx: Context,
   /** Active users on the map */
   var users: MutableList<Marker> = mutableListOf()
 
+  // TODO:PM size is set in iconFromShape
   /** Last Location marker */
   private fun locationMarker(latLng: LatLng) : MarkerOptions  {
     return MarkerOptions().position(latLng)
@@ -34,6 +38,7 @@ class Markers(private val ctx: Context,
     return MarkerOptions().position(latLng).title(msg)
         .iconFromShape(ctx, R.drawable.marker_objects)
   }
+
   /** Computer Vision stored marker */
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
@@ -47,14 +52,36 @@ class Markers(private val ctx: Context,
   }
 
   /** User marker */
-  private fun userMarker(latLng: LatLng, msg: String) : MarkerOptions  {
+  private fun userMarker(latLng: LatLng, msg: String) : MarkerOptions {
     return MarkerOptions().position(latLng).title(msg)
             .iconFromShape(ctx, R.drawable.marker_user)
   }
 
-  fun addUserMarker(latLng: LatLng, msg: String, scope: CoroutineScope) {
+  /** User marker in alert mode */
+  private fun userAlertMarker(latLng: LatLng, msg: String) : MarkerOptions  {
+    return MarkerOptions().position(latLng).title(msg)
+            .iconFromShape(ctx, R.drawable.marker_user_alert)
+  }
+
+  /** User marker in alert mode */
+  private fun userInactiveMarker(latLng: LatLng, msg: String) : MarkerOptions {
+    return MarkerOptions().position(latLng).title(msg)
+            .iconFromShape(ctx, R.drawable.marker_user_inactive)
+  }
+
+  fun addUserMarker(latLng: LatLng, msg: String, scope: CoroutineScope, alert: Int, time: Long) {
     scope.launch(Dispatchers.Main) {
-      map.addMarker(userMarker(latLng, msg))?.let { users.add(it) }
+      val MAX_SECONDS = 10
+      val secondsElapsed = utlTime.secondsElapsed(time)
+      val detailedMsg= "$msg ${secondsElapsed}s"
+      val marker = when {
+        alert == 1 -> userAlertMarker(latLng, detailedMsg)
+        secondsElapsed > MAX_SECONDS -> userInactiveMarker(latLng, detailedMsg)
+        else -> userMarker(latLng, detailedMsg)
+      }
+      // TODO:PMX
+      val marker2 = userMarker(latLng, detailedMsg)
+      map.addMarker(marker2)?.let { users.add(it) }
     }
   }
 
@@ -68,10 +95,10 @@ class Markers(private val ctx: Context,
   fun setLocationMarker(latLng: LatLng) {
     LOG.D2()
     if (lastLocationMarker == null) {
-      LOG.D2(TAG_METHOD, "initial marker")
+      LOG.D2(TAG, "setLocationMarker: initial marker")
       lastLocationMarker = map.addMarker(locationMarker(latLng))
     } else {
-      LOG.D2(TAG_METHOD, "updated marker")
+      LOG.D2(TAG, "setLocationMarker: updated marker")
       lastLocationMarker?.position = latLng
       // CLR:PM
       // lastLocationMarker?.remove()
@@ -90,8 +117,6 @@ class Markers(private val ctx: Context,
                             latLng, map.cameraPosition.zoom,
                             // don't alter tilt/bearing
                             map.cameraPosition.tilt,
-                            map.cameraPosition.bearing)
-            )
-    )
+                            map.cameraPosition.bearing)))
   }
 }

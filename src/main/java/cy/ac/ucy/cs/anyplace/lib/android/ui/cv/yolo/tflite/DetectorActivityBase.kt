@@ -119,8 +119,8 @@ abstract class DetectorActivityBase : CameraActivity(),
     previewHeight = size.height
     sensorOrientation = rotation - screenOrientation
 
-    LOG.V(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-    LOG.V(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+    LOG.V3(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
+    LOG.V3(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
 
     val cropSize = VM.model.inputSize
     rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
