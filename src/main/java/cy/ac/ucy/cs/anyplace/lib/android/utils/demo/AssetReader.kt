@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.models.Space
 import java.io.IOException
 import java.lang.Exception
 
-class AssetReader(val ctx: Context) {
+open class AssetReader(val ctx: Context) {
   private val gson = Gson()
 
   private val SPACE_UCY_CS = "demo/spaces/building/ucy"
@@ -55,7 +55,7 @@ class AssetReader(val ctx: Context) {
     return getJsonDataFromAsset(ctx, "$SELECTED_SPACE/floorplan3.base64")
   }
 
-  private fun getJsonDataFromAsset(context: Context, filename: String): String? {
+  protected fun getJsonDataFromAsset(context: Context, filename: String): String? {
     val jsonString: String
     try {
       jsonString = context.assets.open(filename).bufferedReader().use { it.readText() }
