@@ -20,7 +20,6 @@
     <DropDownPreference
         app:key="@string/pref_cv_model"
         app:title="Change Detection Model"
-        app:enabled="false"
         app:summary="Pick different Object Detection model"
         />
   </PreferenceCategory>

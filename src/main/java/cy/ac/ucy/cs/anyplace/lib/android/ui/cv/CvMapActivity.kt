@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -167,7 +166,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     // keep reacting to  settings updates
     lifecycleScope.launch {
-      app.cvNavDS.read.collect {
+      app.dsCvNav.read.collect {
         bottomSheet.setup()
       }
     }

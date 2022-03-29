@@ -36,7 +36,6 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
   // TODO:TRIAL
   private val validKeys = setOf(
           C.PREF_MODEL_NAME,
-          C.PREF_RELOAD_MODEL,
           C.PREF_RELOAD_CVMAPS,
           C.PREF_RELOAD_FLOORPLAN,
   )
@@ -45,7 +44,6 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
     val modelName= stringPreferencesKey(c.PREF_MODEL_NAME)
     val reloadCvMaps = booleanPreferencesKey(c.PREF_RELOAD_CVMAPS)
     val reloadFloorplans = booleanPreferencesKey(c.PREF_RELOAD_FLOORPLAN)
-    val reloadModel = booleanPreferencesKey(c.PREF_RELOAD_MODEL)
   }
   private val KEY = Keys(C)
 
@@ -62,7 +60,6 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
     runBlocking {
       datastore.edit {
         when (key) {
-          C.PREF_RELOAD_MODEL -> it[KEY.reloadModel] = value
           C.PREF_RELOAD_CVMAPS-> it[KEY.reloadCvMaps] = value
           C.PREF_RELOAD_FLOORPLAN-> it[KEY.reloadFloorplans] = value
         }
@@ -87,7 +84,6 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        C.PREF_RELOAD_MODEL -> prefs.reloadModel
         C.PREF_RELOAD_CVMAPS -> prefs.reloadCvMaps
         C.PREF_RELOAD_FLOORPLAN -> prefs.reloadFloorplan
         else -> false
@@ -106,8 +102,9 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
     }
   }
 
-  fun setModelName(value: String) = putString(C.PREF_MODEL_NAME, value)
-  fun setReloadModel(value: Boolean) = putBoolean(C.PREF_RELOAD_MODEL, value)
+  fun setModelName(value: String) {
+    putString(C.PREF_MODEL_NAME, value)
+  }
   fun setReloadCvMaps(value: Boolean) = putBoolean(C.PREF_RELOAD_CVMAPS, value)
   fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_FLOORPLAN, value)
 
@@ -119,17 +116,16 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
           }
           .map { preferences ->
             val modelName = preferences[KEY.modelName] ?: C.DEFAULT_PREF_MODEL_NAME
-            val reloadModel = preferences[KEY.reloadModel] ?: false
             val reloadCvMaps= preferences[KEY.reloadCvMaps] ?: false
             val reloadFloorplan = preferences[KEY.reloadFloorplans] ?: false
 
-            CvPrefs(modelName, reloadModel, reloadCvMaps, reloadFloorplan)
+            CvPrefs(modelName, reloadCvMaps, reloadFloorplan)
           }
 }
 
 data class CvPrefs(
         val modelName: String,
-        val reloadModel: Boolean,
+        /** The model has changed so it has to be reloaded */
         val reloadCvMaps: Boolean,
         val reloadFloorplan: Boolean,
 )

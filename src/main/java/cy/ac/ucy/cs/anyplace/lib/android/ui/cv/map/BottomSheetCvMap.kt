@@ -30,7 +30,7 @@ class BottomSheetCvMap(private val act: DetectorActivityBase,
               override fun onGlobalLayout() {
                 act.gestureLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 val height = act.gestureLayout.measuredHeight
-                act.sheetBehavior.peekHeight = height/10
+                act.sheetBehavior.peekHeight = height/8
               }
             })
 

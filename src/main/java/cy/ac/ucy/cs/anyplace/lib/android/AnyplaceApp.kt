@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace
@@ -14,9 +13,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.supervisorScope
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -29,15 +25,15 @@ import javax.inject.Inject
  */
 abstract class AnyplaceApp : Application() {
 
-  @Inject lateinit var retrofitHolderAP: RetrofitHolderAP
+  @Inject lateinit var RH: RetrofitHolderAP
 
   // DATASTORES (Preferences/Settings)
-  @Inject lateinit var serverDS: ServerDataStore
-  @Inject lateinit var cvNavDS: CvNavDataStore
-  @Inject lateinit var miscDS: MiscDataStore
-  @Inject lateinit var userDS: UserDataStore
-  @Inject lateinit var cvLogDSDataStore: CvLoggerDataStore
-  @Inject lateinit var cvDataStoreDS: CvDataStore
+  @Inject lateinit var dsServer: ServerDataStore
+  @Inject lateinit var dsUser: UserDataStore
+  @Inject lateinit var dsMisc: MiscDataStore
+  @Inject lateinit var csCvLog: CvLoggerDataStore
+  @Inject lateinit var dsCv: CvDataStore
+  @Inject lateinit var dsCvNav: CvNavDataStore
 
   // TODO:PM: inject all those. otherwise we might have constructor issues.
   // they must be singleton, but after app ctx is created
@@ -73,10 +69,10 @@ abstract class AnyplaceApp : Application() {
    * Instead we are manually setting/injecting again a new instance through the RetrofitHolder.
    */
   private fun observeServerPrefs() {
-    val serverPref = serverDS.read
+    val serverPref = dsServer.read
     serverPref.asLiveData().observeForever { prefs ->
-      retrofitHolderAP.set(prefs)
-      LOG.V5(TAG, "Updated backend url: ${retrofitHolderAP.baseURL}")
+      RH.set(prefs)
+      LOG.V5(TAG, "Updated backend url: ${RH.baseURL}")
     }
   }
 

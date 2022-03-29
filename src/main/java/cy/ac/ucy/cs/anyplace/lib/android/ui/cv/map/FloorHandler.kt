@@ -63,16 +63,24 @@ open class FloorHandler(
     }
   }
 
+
+  /** loading the very first floor */
+  var initialFloor = true
   /**
    * Observe when [VMB.floor] changes and react accordingly:
    * - update [floorSelector] UI (the up/down buttons)
    * - store the last floor selection (for the relevant [Space])
    * - loads the floor
    */
-  fun observeFloorChanges() {
+  fun observeFloorChanges(gmapH: GmapHandler) {
     LOG.W()
     scope.launch{
       VM.floor.collect { selectedFloor ->
+
+        if (initialFloor) {
+          gmapH.onFloorLoaded()
+          initialFloor = false
+        }
 
         // update FloorHelper & FloorSelector
         VM.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VM.spaceH) else null

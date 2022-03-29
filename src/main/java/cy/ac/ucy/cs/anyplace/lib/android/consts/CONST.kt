@@ -14,7 +14,6 @@ open class CONST(ctx: Context) {
   val DB_NAME = "anyplace_db"
 
   val STATUS_OK = 200
-
   // EXCEPTIONS (messages set by 3rd party libs)
   val ERR_MSG_NO_INTERNET= "No Internet Connection."
 
@@ -42,7 +41,6 @@ open class CONST(ctx: Context) {
   /** shared settings in cv activities*/
   val PREF_CV = "pref_cv"
   val PREF_MODEL_NAME = "pref_cv_model_name"
-  val PREF_RELOAD_MODEL = "pref_cv_reload_model"
   val PREF_RELOAD_CVMAPS = "pref_cv_reload_cvmaps"
   val PREF_RELOAD_FLOORPLAN = "pref_cv_reload_floorplans"  // TODO
 

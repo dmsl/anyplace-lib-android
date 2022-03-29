@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -22,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTrac
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.*
@@ -61,7 +63,7 @@ import java.util.*
  * objects.
  */
 @AndroidEntryPoint
-abstract class DetectorActivityBase : CameraActivity(),
+abstract class DetectorActivityBase() : CameraActivity(),
         OnImageAvailableListener {
   companion object {
     private const val SAVE_PREVIEW_BITMAP = false // debug option
@@ -102,54 +104,60 @@ abstract class DetectorActivityBase : CameraActivity(),
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size==null) return
 
-    if(!setupDetector()) {
-      val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
-      toast.show()
-      finish()
+    lifecycleScope.launch {
+      if(!setupDetector()) {
+        val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
+        toast.show()
+        finish()
+      }
+
+      val textSizePx = TypedValue.applyDimension(
+              TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
+              app.resources.displayMetrics)
+
+      borderedText = BorderedText(textSizePx)
+      borderedText.setTypeface(Typeface.MONOSPACE)
+      tracker = MultiBoxTracker(this@DetectorActivityBase)
+      previewWidth = size.width
+      previewHeight = size.height
+      sensorOrientation = rotation - screenOrientation
+
+      LOG.V3(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
+      LOG.V3(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+
+      val cropSize = VM.model.inputSize
+      rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
+      croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
+      frameToCropTransform = ImageUtils.getTransformationMatrix(
+              previewWidth, previewHeight, cropSize, cropSize,
+              sensorOrientation!!, MAINTAIN_ASPECT)
+      cropToFrameTransform = Matrix()
+      frameToCropTransform.invert(cropToFrameTransform)
+
+      // View
+      trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
+      trackingOverlay.addCallback { canvas ->
+        tracker!!.draw(canvas)
+        if (isDebug) { tracker!!.drawDebug(canvas)  }
+      }
+      tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
     }
-
-    val textSizePx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
-            app.resources.displayMetrics)
-
-    borderedText = BorderedText(textSizePx)
-    borderedText.setTypeface(Typeface.MONOSPACE)
-    tracker = MultiBoxTracker(this@DetectorActivityBase)
-    previewWidth = size.width
-    previewHeight = size.height
-    sensorOrientation = rotation - screenOrientation
-
-    LOG.V3(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-    LOG.V3(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
-
-    val cropSize = VM.model.inputSize
-    rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
-    croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
-    frameToCropTransform = ImageUtils.getTransformationMatrix(
-            previewWidth, previewHeight, cropSize, cropSize,
-            sensorOrientation!!, MAINTAIN_ASPECT)
-    cropToFrameTransform = Matrix()
-    frameToCropTransform.invert(cropToFrameTransform)
-
-    // View
-    trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
-    trackingOverlay.addCallback { canvas ->
-      tracker!!.draw(canvas)
-      if (isDebug) { tracker!!.drawDebug(canvas)  }
-    }
-    tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
   }
 
-  fun setupDetector(): Boolean {
+  suspend fun setupDetector(): Boolean {
     LOG.I()
     try {
+
+     val modelName = VM.dsCv.read.first().modelName
+      VM.setModel(modelName)
+
       VM.detector = YoloV4Classifier.create(
               assets,
               VM.model.modelFilename,
               VM.model.labelFilePath,
               VM.model.isQuantized)
     } catch (e: IOException) {
-      val msg  ="Cant initialize classifier"
+      val msg = "Cant initialize classifier"
       LOG.E(TAG_METHOD, msg, e)
       return false
     }

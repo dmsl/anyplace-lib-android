@@ -10,12 +10,13 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -45,6 +46,16 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
   private lateinit var settingsFragment: SettingsCvNavigationFragment
 
+  override fun onBackPressed() {
+    super.onBackPressed()
+    LOG.D4(TAG, "SettingsNav on backPressed")
+  }
+
+  override fun onResume() {
+    super.onResume()
+    LOG.D4(TAG, "SettingsNav on resume")
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     settingsFragment = SettingsCvNavigationFragment(cvNavDS, cvDataStoreDS, repo)
@@ -55,10 +66,15 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvNavigationFragment(
-          private val cvNavDataStore: CvNavDataStore,
-          private val cvDataStore: CvDataStore,
+          private val dsCvNav: CvNavDataStore,
+          private val dsCv: CvDataStore,
           private val repo: RepoAP,
   ) : PreferenceFragmentCompat() {
+
+    override fun onResume() {
+      super.onResume()
+      LOG.D4(TAG, "SettingsNav: FRAGMENT on resume")
+    }
 
     var spaceH : SpaceHelper? = null
     var floorsH: FloorsHelper? = null
@@ -68,7 +84,7 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
       setPreferencesFromResource(R.xml.preferences_cv_navigation, rootKey)
 
-      preferenceManager.preferenceDataStore = cvNavDataStore
+      preferenceManager.preferenceDataStore = dsCvNav
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
@@ -77,10 +93,10 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        cvNavDataStore.read.first { prefs ->
+        dsCvNav.read.first { prefs ->
           setPercentageInput(R.string.pref_cvnav_map_alpha,
                   R.string.summary_map_alpha, prefs.mapAlpha,
-          "Map is fully opaque", "Map is fully transparent")
+                  "Map is fully opaque", "Map is fully transparent")
 
           setNumericInput(R.string.pref_smas_location_refresh,
                   R.string.summary_refresh_locations, prefs.locationRefresh)
@@ -92,11 +108,13 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
           true
         }
-      }
 
-      setupButtonClearCache(spaceH, floorsH, floorH)
-      setupButtonChangeModel()
-      setupButtonServerSettings()
+        setupButtonClearCache(spaceH, floorsH, floorH)
+
+        val modelName = dsCv.read.first().modelName
+        setupButtonChangeModel(modelName)
+        setupButtonServerSettings()
+      }
     }
 
     private fun setupButtonServerSettings() {
@@ -117,17 +135,15 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
         ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repo, cvDataStore, spaceH, floorsH, floorH)
+                repo, dsCv, spaceH, floorsH, floorH)
         true
       }
     }
 
-    private fun setupButtonChangeModel() {
+    private fun setupButtonChangeModel(modelName: String) {
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG_METHOD, "TODO change model")
-        // Where the model will be saved?
-        // must be handled for both logger / nav
+        // TODO:PM Change CV Model
         true
       }
     }

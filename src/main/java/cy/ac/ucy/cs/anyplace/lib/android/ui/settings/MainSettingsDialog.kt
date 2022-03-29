@@ -77,7 +77,7 @@ class MainSettingsDialog : DialogFragment() {
 
   private fun setupUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val user = app.userDS.readUser.first()
+      val user = app.dsUser.readUser.first()
       if (user.accessToken.isNotBlank()) {
         binding.user = user
       }
@@ -90,10 +90,10 @@ class MainSettingsDialog : DialogFragment() {
     binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val user = app.userDS.readUser.first()
+        val user = app.dsUser.readUser.first()
         if (user.accessToken.isNotBlank()) {
-          msg = "Logging out ${app.userDS.readUser.first().name}.."
-          app.userDS.deleteUser()
+          msg = "Logging out ${app.dsUser.readUser.first().name}.."
+          app.dsUser.deleteUser()
           dialog?.dismiss()
         } else {
           msg = "No logged in user."

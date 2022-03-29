@@ -224,7 +224,7 @@ class LoginActivity : BaseActivity() {
             val user = response.data?.user
             user?.let {
               Toast.makeText(this@LoginActivity, "Welcome: " + user.name, Toast.LENGTH_SHORT).show()
-              app.userDS.storeUser(user)
+              app.dsUser.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()
             }

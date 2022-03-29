@@ -2,7 +2,10 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
@@ -20,13 +23,27 @@ import javax.inject.Inject
  *  Initialized by [DetectorActivityBase.onPreviewSizeChosen]
  */
 @HiltViewModel
-open class DetectorViewModel @Inject constructor(application: Application) :
-        AndroidViewModel(application) {
+open class DetectorViewModel @Inject constructor(
+        application: Application,
+        val dsCv: CvDataStore,
+) : AndroidViewModel(application) {
 
   protected val assetReader by lazy { AssetReader(app) }
 
   internal lateinit var detector: Classifier
 
-  @Deprecated("TODO SETTINGS")
-  val model = YoloConstants.DETECTION_MODEL
+  lateinit var model: DetectionModel
+
+  fun setModel(modelName: String) {
+    model = getModel(modelName)
+  }
+
+  private fun getModel(modelName: String) : DetectionModel {
+    return when (modelName.lowercase()) {
+      "coco" -> DetectionModel.COCO
+      "lashco" -> DetectionModel.LASHCO
+      "ucyco" -> DetectionModel.UCYCO
+      else -> { DetectionModel.COCO }
+    }
+  }
 }

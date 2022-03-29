@@ -29,12 +29,12 @@ class GmapHandler(private val ctx: Context,
                   private val scope: CoroutineScope,
                   private val UI: CvMapUi) {
 
-  lateinit var gmap: GoogleMap
+  lateinit var obj: GoogleMap
   lateinit var VM: CvMapViewModel
 
   private val assetReader by lazy { AssetReader(ctx) }
-  protected val overlays by lazy { Overlays(ctx) }
-  protected val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
+  private val overlays by lazy { Overlays(ctx) }
+  private val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
 
   /** Dynamically attach a [GoogleMap] */
   fun attach(VM: CvMapViewModel, act: CvMapActivity, layout_id: Int) {
@@ -50,20 +50,40 @@ class GmapHandler(private val ctx: Context,
   fun setup(googleMap: GoogleMap) {
     LOG.D()
 
-    gmap = googleMap
-    VM.markers = Markers(ctx, gmap)
+    obj = googleMap
+    VM.markers = Markers(ctx, obj)
 
-    val maxZoomLevel = gmap.maxZoomLevel // may be different from device to device
+    // ON FLOOR LOADED....
+    obj.uiSettings.apply {
+      isZoomControlsEnabled = false
+      isMapToolbarEnabled = false
+      isTiltGesturesEnabled = false
+      isCompassEnabled = false
+      isIndoorLevelPickerEnabled = false
+    }
+
+    onMapRreadySpecialize()
 
     // TODO Space must be sent here using some SelectSpaceActivity (w/ SafeArgs?)
     // (maybe using Bundle is easier/better)
     loadSpaceAndFloor()
 
+    // async continues by [onFloorLoaded]
+  }
+
+  /**
+   * when the [Floor] is loaded, it continues the setup by:
+   * - bringing the floor plans (downloading or from cache)
+   * - setting up zoom preferences
+   */
+  fun onFloorLoaded() {
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
     scope.launch(Dispatchers.IO) { VM.floorsH.fetchAllFloorplans() }
 
-    gmap.setMinZoomPreference(maxZoomLevel-3)
+    val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
+
+    obj.setMinZoomPreference(maxZoomLevel-3)
     // place some restrictions on the map
     LOG.E(TAG, "MAX ZOOM: $maxZoomLevel")
 
@@ -80,23 +100,13 @@ class GmapHandler(private val ctx: Context,
       // gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VM.floorH?.bounds()!!, 0))
 
       // zooms to the center of the floorplan
-      gmap.moveCamera(CameraUpdateFactory.newCameraPosition(
+      obj.moveCamera(CameraUpdateFactory.newCameraPosition(
               CameraAndViewport.loggerCamera(VM.floorH?.bounds()!!.center, maxZoomLevel-2)))
 
-      val floorOnScreenBounds = gmap.projection.visibleRegion.latLngBounds
+      val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
-      gmap.setLatLngBoundsForCameraTarget(VM.floorH?.bounds())
+      obj.setLatLngBoundsForCameraTarget(VM.floorH?.bounds())
     }
-
-    gmap.uiSettings.apply {
-      isZoomControlsEnabled = false
-      isMapToolbarEnabled = false
-      isTiltGesturesEnabled = false
-      isCompassEnabled = false
-      isIndoorLevelPickerEnabled = false
-    }
-
-    onMapRreadySpecialize()
   }
 
   protected fun onMapRreadySpecialize() {
@@ -115,8 +125,8 @@ class GmapHandler(private val ctx: Context,
 
     VM.selectInitialFloor(ctx)
 
-    fHandler.observeFloorChanges()
-    fHandler.observeFloorplanChanges(gmap)
+    fHandler.observeFloorChanges(this)
+    fHandler.observeFloorplanChanges(obj)
   }
 
   private fun loadSpaceAndFloorFromAssets() : Boolean {
@@ -129,7 +139,7 @@ class GmapHandler(private val ctx: Context,
       return false
     }
 
-    VM.spaceH = SpaceHelper(ctx, VM.repoAP, VM.space!!)
+    VM.spaceH = SpaceHelper(ctx, VM.repo, VM.space!!)
     VM.floorsH = FloorsHelper(VM.floors!!, VM.spaceH)
     val prettySpace = VM.spaceH.prettyTypeCapitalize
     val prettyFloors= VM.spaceH.prettyFloors

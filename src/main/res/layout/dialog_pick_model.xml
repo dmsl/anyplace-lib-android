@@ -40,7 +40,7 @@
     </RadioGroup>
 
     <Button
-        android:id="@+id/button_clearCaches"
+        android:id="@+id/btn_confirm"
         android:layout_width="0dp"
         android:layout_height="45dp"
         android:layout_marginStart="40dp"

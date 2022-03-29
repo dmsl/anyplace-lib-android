@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -67,15 +68,16 @@ open class CvMapViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
-        navDS: CvNavDataStore,
-        val repoAP: RepoAP,
-        val retrofitHolderAP: RetrofitHolderAP): DetectorViewModel(application) {
+        dsCv: CvDataStore,
+        dsCvNav: CvNavDataStore,
+        val repo: RepoAP,
+        val RH: RetrofitHolderAP): DetectorViewModel(application, dsCv) {
 
   private val C by lazy { CONST(app) }
 
   lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs
-  val navDS= navDS.read
+  val navDS= dsCvNav.read
   lateinit var prefsNav: CvNavigationPrefs
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
@@ -137,7 +139,7 @@ open class CvMapViewModel @Inject constructor(
         FH.cacheFloorplan(bitmap)
       } else {
         val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
-        "Base URL: ${retrofitHolderAP.retrofit.baseUrl()}"
+        "Base URL: ${RH.retrofit.baseUrl()}"
         LOG.E(msg)
         floorplanFlow.value = Error(msg)
       }
@@ -256,10 +258,8 @@ open class CvMapViewModel @Inject constructor(
    */
   fun selectInitialFloor(ctx: Context) {
     LOG.E()
-    // val spaceH = spaceH!! CLR?
-    // val floorsH = floorsH!! CLR?
 
-    LOG.E(TAG,"FloorsH.sz: ${floorsH.size}")
+    LOG.E(TAG,"${spaceH.prettyFloors}: ${floorsH.size}")
 
     if (!floorsH.hasFloors()) {  // space has no floors
       val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."

@@ -119,7 +119,7 @@ class ClearCachesDialog(
   // TODO: on CvLoggerActivity (or fragment) resume: redraw the heatmap
   // (or set a boolean if we must redraw)
   private fun setupConfirmButton() {
-   val btn = binding.buttonClearCaches
+   val btn = binding.btnConfirm
     btn.setOnClickListener {
       when {
         // clear all
