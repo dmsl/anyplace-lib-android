@@ -24,8 +24,8 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
-  private lateinit var mainViewModel: MainViewModel
-  private lateinit var spacesViewModel: SpacesViewModel
+  private lateinit var VM: MainViewModel
+  private lateinit var VMspaces: SpacesViewModel
 
   private var queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
   private var queryOwnershipId = 0
@@ -35,9 +35,9 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    mainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
-    spacesViewModel = ViewModelProvider(requireActivity()).get(SpacesViewModel::class.java)
-
+    val activity = requireActivity()
+    VM = ViewModelProvider(activity)[MainViewModel::class.java]
+    VMspaces = ViewModelProvider(activity)[SpacesViewModel::class.java]
   }
 
   override fun onCreateView(
@@ -47,14 +47,14 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
 
-    spacesViewModel.storedSpaceQuery.asLiveData().observe(viewLifecycleOwner) { value ->
+    VMspaces.storedSpaceQuery.asLiveData().observe(viewLifecycleOwner) { value ->
       queryOwnershipStr = value.ownership.toString()
       querySpaceTypeStr = value.spaceType.toString()
       val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
       // initialize the query
-      spacesViewModel.saveQueryTypeTemp(
+      VMspaces.saveQueryTypeTemp(
               queryOwnership, queryOwnershipId,
               querySpaceType, querySpaceTypeId)
 
@@ -82,14 +82,15 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
       // CHECK storing temp, and below permanent (datastore).
       // must do: if query is null, then don't store it.
-      spacesViewModel.saveQueryTypeTemp(
+      VMspaces.saveQueryTypeTemp(
         queryOwnership, queryOwnershipId,
         querySpaceType, querySpaceTypeId)
 
       // TODO: if query does not return empty results, then store it.. (after it's performed)
       // or: keep the previous query and swap it
-      spacesViewModel.saveQueryTypeDataStore()
+      VMspaces.saveQueryTypeDataStore()
 
+      // LOG.E(TAG, "BUG: SpaceFilterBottomSheetDirections might be using obsolete code")
       val action = SpaceFilterBottomSheetDirections
           .actionSpaceFilterBottomSheetToSpacesListFragment(true)
       findNavController().navigate(action)

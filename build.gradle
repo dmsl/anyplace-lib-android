@@ -1,24 +1,24 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-parcelize'  // to send safeArgs between different fragments we must parcelize
-apply plugin: "androidx.navigation.safeargs.kotlin"  //id 'androidx.navigation.safeargs'
+apply plugin: 'kotlin-parcelize'  // for safeArgs between different fragments
+apply plugin: "androidx.navigation.safeargs.kotlin"  // id 'androidx.navigation.safeargs'
 apply plugin: 'dagger.hilt.android.plugin'
-apply plugin: 'maven-publish'  // CHECK:PM needed for jitpack.io?
-// reading passwords from local.properties
-apply plugin: 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+apply plugin: 'maven-publish'  // CHECK needed for jitpack.io?
+apply plugin: 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' // BuildConfig
 
 repositories {
   mavenCentral()
   google()
   maven { url 'https://jitpack.io' } // for publishing
-//  mavenCentral()
 }
 
 android {
   compileSdkVersion 31
 
-    defaultConfig {
+  namespace 'cy.ac.ucy.cs.anyplace.lib'
+
+  defaultConfig {
     minSdkVersion 28
     //noinspection OldTargetApi,ExpiredTargetSdkVersion
     targetSdkVersion 30
@@ -26,14 +26,15 @@ android {
     // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
 
-    // TODO use secrets-gradle-plugin (like w/ gmaps api)
-    // INFO: read keys from secure.properties exports them into strings
-    def secureProps = new Properties()
-    if (file("../local.properties").exists()) {
-      file("../local.properties")?.withInputStream { secureProps.load(it) }
-    }
-    resValue "string", "server_google_oauth_client_id", (
-            secureProps.getProperty("SERVER_GOOGLE_OAUTH_CLIENT_ID") ?: "")
+    // CLR
+//    // TODO use secrets-gradle-plugin (like w/ gmaps api)
+//    // INFO: read keys from secure.properties exports them into strings
+//    def secureProps = new Properties()
+//    if (file("../local.properties").exists()) {
+//      file("../local.properties")?.withInputStream { secureProps.load(it) }
+//    }
+//    resValue "string", "server_google_oauth_client_id", (
+//            secureProps.getProperty("SERVER_GOOGLE_OAUTH_CLIENT_ID") ?: "")
   }
 
   buildTypes {
@@ -48,8 +49,8 @@ android {
     }
   }
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
   }
   kotlinOptions {
     jvmTarget = '11'
@@ -61,7 +62,6 @@ android {
   androidResources {
     noCompress 'tflite'
   }
-  namespace 'cy.ac.ucy.cs.anyplace.lib'
 }
 
 dependencies {
@@ -93,9 +93,9 @@ dependencies {
 
 
   //// DEPENDENCY INJECTION (dagger/hilt)
-  implementation "com.google.dagger:hilt-android:2.40.5"
-  kapt 'com.google.dagger:hilt-compiler:2.40.5'
-  //  kapt "com.google.dagger:hilt-android-compiler:2.35"
+  implementation "com.google.dagger:hilt-android:$ver_hilt"
+  kapt "com.google.dagger:hilt-compiler:$ver_hilt"
+  kapt "com.google.dagger:dagger-android-processor:$ver_hilt"
 
   implementation 'androidx.legacy:legacy-support-v4:1.0.0'
   implementation 'androidx.preference:preference-ktx:1.2.0'
@@ -107,7 +107,7 @@ dependencies {
   implementation 'com.google.android.gms:play-services-location:19.0.1'
   //// GOOGLE MAPS & UTILS
   implementation 'com.google.android.gms:play-services-maps:18.0.2'
-  implementation 'com.google.maps.android:android-maps-utils:2.2.2' // updated from 0.3 !
+  implementation 'com.google.maps.android:android-maps-utils:2.3.0' // updated from 0.3 !
 
   // Material Components
   // was 1.4.0-rc01, 1.6 is still in alpha
@@ -143,7 +143,7 @@ dependencies {
 
   implementation 'gov.nist.math:jama:1.0.3'
   implementation 'com.google.http-client:google-http-client-jackson2:1.39.2'
-  implementation 'com.google.code.gson:gson:2.8.6'
+  implementation 'com.google.code.gson:gson:2.9.0'
   implementation 'org.apache.httpcomponents:httpmime:4.5.13'
 
   // Shimmer

@@ -23,6 +23,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -115,7 +116,7 @@ class LoginActivity : BaseActivity() {
       // server_google_oauth_client_id is set by from local.properties (project root)
       // see lib-android's build.gradle
       val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-          .requestIdToken(getString(R.string.server_google_oauth_client_id))
+          .requestIdToken(BuildConfig.SERVER_GOOGLE_OAUTH_CLIENT_ID)
           .requestProfile()
           .requestEmail()
           .build()

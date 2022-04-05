@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -16,12 +15,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import java.lang.IllegalStateException
 
 class ModelPickerDialog(private val dsCV: CvDataStore,
-private val originalModel: String):
+                        private val originalModel: String):
         DialogFragment() {
 
   companion object {
@@ -63,23 +61,29 @@ private val originalModel: String):
   @SuppressLint("SetTextI18n")
   private fun setupRadioButtons() {
     val rbGroup = binding.radioGroupOptions
-      LOG.E(TAG, "ORIGINAL MODEL: $originalModel")
-      DetectionModel.list.forEach {
-        val rb = RadioButton(context)
-        val modelName = it.uppercase()
-        rb.tag = modelName
-        rb.text = "${it.uppercase()}: ${DetectionModel.getDescription(modelName)}"
-        rbGroup.addView(rb)
-      }
+    LOG.E(TAG, "ORIGINAL MODEL: $originalModel")
+    DetectionModel.list.forEach {
+      val rb = RadioButton(context)
+      val modelName = it.uppercase()
+      rb.tag = modelName
+      rb.text = "${it.uppercase()}: ${DetectionModel.getDescription(modelName)}"
+      rbGroup.addView(rb)
+    }
 
-      rbGroup.forEach {
-        val rb = it as RadioButton
-        val modelName = originalModel.lowercase()
-        if  (rb.text.toString().lowercase() == modelName) {
-          rb.isChecked = true
-          return@forEach
-        }
+
+    // LEFTHERE:
+    // 1. build and publish AGP upgrade
+    // 2. fix change MODEL (broken this..)
+    // 3. IMPLEMENT: DELAY artificial...
+
+    rbGroup.forEach {
+      val rb = it as RadioButton
+      val modelName = originalModel.lowercase()
+      if  (rb.text.toString().lowercase() == modelName) {
+        rb.isChecked = true
+        return@forEach
       }
+    }
   }
 
   private fun setupButtonConfirm(dialog: AlertDialog) {
