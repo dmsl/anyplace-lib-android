@@ -27,7 +27,7 @@ class SpaceHelper(val ctx: Context,
 
   companion object {
     const val TP_BUILDING = "building"
-    const val TP_VESSEL = "vessel"
+    const val TP_VESSEL = "lashco"
 
     fun parse(str: String): Space  = Gson().fromJson(str, Space::class.java)
   }

@@ -291,11 +291,11 @@ abstract class CvActivityBase : AppCompatActivity(),
         // update FloorHelper & FloorSelector
         VMB.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VMB.spaceH) else null
         floorSelector.updateFloorSelector(selectedFloor, VMB.floorsH)
-        LOG.E(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor?.floorNumber}")
+        LOG.D3(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
 
           updateAndCacheLastFloor(VMB.floor.value)
-          LOG.W(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
+          LOG.D2(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
           lazilyChangeFloor()
         }
       }

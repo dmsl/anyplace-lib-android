@@ -9,6 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -21,6 +22,8 @@ import javax.inject.Singleton
  * Navigation settings:
  * - used by Smas
  * - TODO use by regular Navigator app
+ *
+ * Make this extend (or merge) with CvDataStore?
  */
 @Singleton
 class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
@@ -36,6 +39,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
   private val validKeys = setOf(
           C.PREF_CV_WINDOW_LOCALIZATION_SECONDS,
+          C.PREF_CV_SCAN_DELAY,
           C.PREF_CV_DEV_MODE,
           C.PREF_CVNAV_MAP_ALPHA,
           C.PREF_SMAS_LOCATION_REFRESH,
@@ -43,6 +47,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
   private class Keys(c: CONST) {
     val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_SECONDS)
+    val scanDelay = stringPreferencesKey(c.PREF_CV_SCAN_DELAY)
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
     val mapAlpha = stringPreferencesKey(c.PREF_CVNAV_MAP_ALPHA)
     val locationRefresh = stringPreferencesKey(c.PREF_SMAS_LOCATION_REFRESH)
@@ -78,6 +83,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
       datastore.edit {
         when (key) {
           C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] = value ?: C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
+          C.PREF_CV_SCAN_DELAY-> { it[KEY.scanDelay] = value ?: C.DEFAULT_PREF_CV_SCAN_DELAY }
           C.PREF_CVNAV_MAP_ALPHA-> it[KEY.mapAlpha] = value ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
           C.PREF_SMAS_LOCATION_REFRESH-> it[KEY.locationRefresh] = value ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH
         }
@@ -88,6 +94,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
   override fun getBoolean(key: String?, defValue: Boolean): Boolean {
     if (!validKey(key)) return false
     return runBlocking(Dispatchers.IO) {
+      LOG.D(TAG, "CvNavDS: getBoolean: calls read")
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_DEV_MODE -> prefs.devMode
@@ -99,9 +106,11 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
   override fun getString(key: String?, defValue: String?): String? {
     if (!validKey(key)) return null
     return runBlocking(Dispatchers.IO) {
+      LOG.D(TAG, "CvNavDS: getString: calls read")
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
+        C.PREF_CV_SCAN_DELAY-> { prefs.scanDelay }
         C.PREF_CVNAV_MAP_ALPHA-> prefs.mapAlpha
         C.PREF_SMAS_LOCATION_REFRESH-> prefs.locationRefresh
         else -> null
@@ -119,10 +128,11 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?:
             C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
+            val scanDelay= preferences[KEY.scanDelay] ?: C.DEFAULT_PREF_CV_SCAN_DELAY
+            LOG.E(TAG,"SCAN: Read pref: ${preferences[KEY.scanDelay]}")
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
             val locationRefresh= preferences[KEY.locationRefresh] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH
-
-            val prefs = CvNavigationPrefs(windowLocalizationSeconds, mapAlpha, devMode, locationRefresh)
+            val prefs = CvNavigationPrefs(windowLocalizationSeconds, scanDelay, mapAlpha, devMode, locationRefresh)
             LOG.D4(TAG, "read prefs: $prefs")
             prefs
           }
@@ -130,6 +140,8 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
 data class CvNavigationPrefs(
         val windowLocalizationSeconds: String,
+        /** Save power by introducing artificial delay between CV scans */
+        val scanDelay: String,
         /** visibility of the google maps layer */
         val mapAlpha: String,
         val devMode: Boolean,

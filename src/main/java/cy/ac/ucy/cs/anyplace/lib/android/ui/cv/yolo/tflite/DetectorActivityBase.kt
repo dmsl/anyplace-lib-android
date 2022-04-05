@@ -12,8 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayView
@@ -63,7 +63,7 @@ import java.util.*
  * objects.
  */
 @AndroidEntryPoint
-abstract class DetectorActivityBase() : CameraActivity(),
+abstract class DetectorActivityBase : CameraActivity(),
         OnImageAvailableListener {
   companion object {
     private const val SAVE_PREVIEW_BITMAP = false // debug option
@@ -98,19 +98,18 @@ abstract class DetectorActivityBase() : CameraActivity(),
     VM = _vm as DetectorViewModel
   }
 
-
   // TODO: this method is problematic even for the original project.
   // It should run on an IO Dispatcher. Otherwise the app will lag on boot.
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size==null) return
 
     lifecycleScope.launch {
+
       if(!setupDetector()) {
         val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
         toast.show()
         finish()
       }
-
       val textSizePx = TypedValue.applyDimension(
               TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
               app.resources.displayMetrics)
@@ -144,16 +143,45 @@ abstract class DetectorActivityBase() : CameraActivity(),
     }
   }
 
+  // private var scanDelay : Long = 100
+  // private var lastScan : Long = 0L
+  // private fun delayPassed() : Boolean {
+  //   LOG.E(TAG, "SCAN: delayPassed")
+  //   val currentTime = System.currentTimeMillis()
+  //   when (lastScan) {
+  //     0L -> {
+  //       lastScan = currentTime
+  //       LOG.E(TAG, "SCAN: first one: true")
+  //       return true
+  //     }
+  //     else -> {
+  //       val elapsedTime = currentTime - lastScan
+  //       if (elapsedTime >= scanDelay) {
+  //         lastScan = currentTime
+  //         LOG.E(TAG, "SCAN: elapsed: true (elapsed $elapsedTime/$scanDelay)")
+  //         return true
+  //       }
+  //       LOG.D2(TAG, "SCAN: dropping frame (elapsed $elapsedTime/$scanDelay)")
+  //       return false
+  //     }
+  //   }
+  // }
+
   suspend fun setupDetector(): Boolean {
     LOG.I()
     try {
 
-     val modelName = VM.dsCv.read.first().modelName
-      VM.setModel(modelName)
+      // Read DS Preferences:
+      val prefsCv = VM.dsCv.read.first()
+      VM.setModel(prefsCv.modelName)
+      LOG.D(TAG, "setupDetector: calls read")
+      val prefsCvNav = VM.dsCvNav.read.first()
+      setScanDelay(prefsCvNav.scanDelay.toLong())
+      // scanDelay = prefsCvNav.scanDelay.toLong()
 
       VM.detector = YoloV4Classifier.create(
               assets,
-              VM.model.modelFilename,
+              VM.model.filename,
               VM.model.labelFilePath,
               VM.model.isQuantized)
     } catch (e: IOException) {
@@ -165,6 +193,10 @@ abstract class DetectorActivityBase() : CameraActivity(),
   }
 
   override fun processImage() {
+    // TODO: LEFTHERE..
+    LOG.D5(TAG, "SCAN: processImage:")
+
+
     // ViewModel
     ++timestamp
     trackingOverlay.postInvalidate()
@@ -174,6 +206,14 @@ abstract class DetectorActivityBase() : CameraActivity(),
       readyForNextImage()
       return
     }
+
+    // No mutex needed as this method is not reentrant.
+    // if (delayPassed()) {
+    //   LOG.W(TAG, "SCAN: SKIPPING...")
+    //   readyForNextImage()
+    //   return
+    // }
+
 
     val currTimestamp = timestamp
     computingDetection = true

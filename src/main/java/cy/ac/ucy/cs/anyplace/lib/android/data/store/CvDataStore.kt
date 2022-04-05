@@ -33,7 +33,6 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreCv by preferencesDataStore(name = C.PREF_CV)
 
-  // TODO:TRIAL
   private val validKeys = setOf(
           C.PREF_MODEL_NAME,
           C.PREF_RELOAD_CVMAPS,
@@ -51,7 +50,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
 
   private fun validKey(key: String?): Boolean {
     val found = validKeys.contains(key)
-    if(!found) LOG.W(TAG, "Unknown key: $key")
+    if(!found) LOG.W(TAG, "CvDS: Unknown key: '$key'")
     return found
   }
 
@@ -68,7 +67,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
   }
 
   override fun putString(key: String?, value: String?) {
-    LOG.D3(TAG, "putString: $key = $value")
+    LOG.E(TAG, "SCAN putString: $key = $value")
     if (!validKey(key)) return
     runBlocking {
       datastore.edit {
@@ -102,9 +101,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
     }
   }
 
-  fun setModelName(value: String) {
-    putString(C.PREF_MODEL_NAME, value)
-  }
+  fun setModelName(value: String) { putString(C.PREF_MODEL_NAME, value) }
   fun setReloadCvMaps(value: Boolean) = putBoolean(C.PREF_RELOAD_CVMAPS, value)
   fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_FLOORPLAN, value)
 
@@ -116,9 +113,9 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
           }
           .map { preferences ->
             val modelName = preferences[KEY.modelName] ?: C.DEFAULT_PREF_MODEL_NAME
+
             val reloadCvMaps= preferences[KEY.reloadCvMaps] ?: false
             val reloadFloorplan = preferences[KEY.reloadFloorplans] ?: false
-
             CvPrefs(modelName, reloadCvMaps, reloadFloorplan)
           }
 }

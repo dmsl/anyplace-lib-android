@@ -26,16 +26,19 @@ import javax.inject.Inject
 open class DetectorViewModel @Inject constructor(
         application: Application,
         val dsCv: CvDataStore,
+        val dsCvNav: CvNavDataStore,
 ) : AndroidViewModel(application) {
 
   protected val assetReader by lazy { AssetReader(app) }
 
   internal lateinit var detector: Classifier
 
+  var modelLoaded = false
   lateinit var model: DetectionModel
 
   fun setModel(modelName: String) {
     model = getModel(modelName)
+    modelLoaded = true
   }
 
   private fun getModel(modelName: String) : DetectionModel {
@@ -46,4 +49,5 @@ open class DetectorViewModel @Inject constructor(
       else -> { DetectionModel.COCO }
     }
   }
+
 }

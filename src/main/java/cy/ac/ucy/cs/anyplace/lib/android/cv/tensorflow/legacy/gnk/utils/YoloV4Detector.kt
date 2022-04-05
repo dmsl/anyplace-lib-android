@@ -177,7 +177,7 @@ internal class YoloV4Detector(
             }
         }
 
-        return assetManager.openFd(detectionModel.modelFilename).use { fileDescriptor ->
+        return assetManager.openFd(detectionModel.filename).use { fileDescriptor ->
             val fileInputStream = FileInputStream(fileDescriptor.fileDescriptor)
             val fileByteBuffer = fileInputStream.channel.map(
                 FileChannel.MapMode.READ_ONLY,

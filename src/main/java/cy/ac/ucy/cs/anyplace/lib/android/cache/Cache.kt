@@ -115,7 +115,7 @@ class Cache(val ctx: Context) {
   //// CV Detection Maps
   ////// Filenames for CvModels: its the model-name.json
   fun filenameCvMapModel(model: String) : String {  return "${model}.json" }
-  fun filenameCvMapModel(model: DetectionModel) : String {  return "${model.modelName}.json" }
+  fun filenameCvMapModel(model: DetectionModel) : String {  return "${model.model}.json" }
   fun filenameCvMapModel(cvMap: CvMap) : String {  return "${cvMap.detectionModel}.json" }
 
   /** Directory (per [Floor] of [CvMap]s. */

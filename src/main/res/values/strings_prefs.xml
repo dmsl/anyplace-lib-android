@@ -12,6 +12,7 @@
   <!--  NOTE: these are just common keys. they are stored in different apps though. -->
   <string name="pref_cv_dev_mode">pref_cv_dev_mode</string>
   <string name="pref_cv_window_localization_seconds">pref_cvlog_window_localization_seconds</string>
+  <string name="pref_cv_scan_delay">pref_cv_scan_delay</string>
   <!-- PREFERENCES: CV LOGGER -->
   <string name="pref_cvlog">pref_cvlog</string>
   <string name="pref_cvlog_window_logging_seconds">pref_cv_window_logging_seconds</string>

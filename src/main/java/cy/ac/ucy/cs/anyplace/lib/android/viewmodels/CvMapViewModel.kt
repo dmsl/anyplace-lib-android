@@ -71,13 +71,13 @@ open class CvMapViewModel @Inject constructor(
         dsCv: CvDataStore,
         dsCvNav: CvNavDataStore,
         val repo: RepoAP,
-        val RH: RetrofitHolderAP): DetectorViewModel(application, dsCv) {
+        val RH: RetrofitHolderAP): DetectorViewModel(application, dsCv, dsCvNav) {
 
   private val C by lazy { CONST(app) }
 
   lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs
-  val navDS= dsCvNav.read
+  val prefsCvNav = dsCvNav.read
   lateinit var prefsNav: CvNavigationPrefs
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)

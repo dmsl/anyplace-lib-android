@@ -69,7 +69,7 @@ class SpacesBinding {
         if (space.type.lowercase() == "building") {
           val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_building)
           iv.setImageDrawable(drawableCompat)
-        } else if (space.type.lowercase() == "vessel-wrong") {
+        } else if (space.type.lowercase() == "lashco-wrong") {
           val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_vessel)
           iv.setImageDrawable(drawableCompat)
         }

@@ -13,8 +13,14 @@
 
     <EditTextPreference
         app:key="@string/pref_smas_location_refresh"
-        app:title="Refresh Locations"
+        app:title="Refresh Locations (seconds)"
         app:summary="@string/summary_refresh_locations"
+        />
+
+    <EditTextPreference
+        app:key="@string/pref_cv_scan_delay"
+        app:title="Delay between CV scans (millis)"
+        app:summary="@string/summary_cv_scan_delay"
         />
 
     <DropDownPreference

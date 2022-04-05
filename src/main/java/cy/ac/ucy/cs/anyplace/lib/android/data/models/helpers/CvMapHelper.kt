@@ -51,7 +51,7 @@ class CvMapHelper(val cvMap: CvMap,
         cvLocations.add(toCvLocation(latLng, cvDetections))
       }
 
-      return CvMap(model.modelName,
+      return CvMap(model.model,
               floorH.spaceH.obj.id,
               floorH.obj.floorNumber,
               cvLocations, CvMap.SCHEMA)

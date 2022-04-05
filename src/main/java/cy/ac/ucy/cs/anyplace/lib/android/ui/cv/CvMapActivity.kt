@@ -104,6 +104,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         true
       }
 
+      LOG.D(TAG, "CvMapActivity: readPrefsAndContinue: calls read")
       cvNavDS.read.first { prefs ->
         VM.prefsNav = prefs
         onNavPrefsLoaded()
@@ -167,6 +168,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // keep reacting to  settings updates
     lifecycleScope.launch {
       app.dsCvNav.read.collect {
+        LOG.D(TAG, "CvMapAct: reacting for BottomSheet")
         bottomSheet.setup()
       }
     }

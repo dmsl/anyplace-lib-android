@@ -254,9 +254,9 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
           : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (detectionModel.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (detectionModel.model.lowercase() != cvMap.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${detectionModel.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${detectionModel.model} instead of ${cvMap.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }
@@ -283,9 +283,9 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
           : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (detectionModel.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (detectionModel.model.lowercase() != cvMap.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${detectionModel.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${detectionModel.model} instead of ${cvMap.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }

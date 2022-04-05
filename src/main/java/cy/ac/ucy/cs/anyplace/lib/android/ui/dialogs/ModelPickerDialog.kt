@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
@@ -12,8 +13,10 @@ import androidx.core.view.forEach
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import java.lang.IllegalStateException
 
@@ -25,8 +28,7 @@ private val originalModel: String):
     /** Creating the dialog. */
     fun SHOW(fragmentManager: FragmentManager,
              cvDataStore: CvDataStore,
-             originalModel: String
-    ) {
+             originalModel: String) {
       val args = Bundle()
 
       val dialog = ModelPickerDialog(cvDataStore, originalModel)
@@ -58,19 +60,22 @@ private val originalModel: String):
 
   /**
    */
+  @SuppressLint("SetTextI18n")
   private fun setupRadioButtons() {
     val rbGroup = binding.radioGroupOptions
-    val modelList = listOf("lashco", "ucyco", "coco")
       LOG.E(TAG, "ORIGINAL MODEL: $originalModel")
-      modelList.forEach {
+      DetectionModel.list.forEach {
         val rb = RadioButton(context)
-        rb.text = it.uppercase()
+        val modelName = it.uppercase()
+        rb.tag = modelName
+        rb.text = "${it.uppercase()}: ${DetectionModel.getDescription(modelName)}"
         rbGroup.addView(rb)
       }
 
       rbGroup.forEach {
         val rb = it as RadioButton
-        if  (rb.text.toString().lowercase() == originalModel.lowercase()) {
+        val modelName = originalModel.lowercase()
+        if  (rb.text.toString().lowercase() == modelName) {
           rb.isChecked = true
           return@forEach
         }
@@ -85,7 +90,6 @@ private val originalModel: String):
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(rbSelectedId)
       val selectedModel = rb.text.toString().lowercase()
       LOG.W(TAG, "Selected new DNN Model: $selectedModel")
-
       dsCV.setModelName(selectedModel)
       dialog.dismiss()
     }

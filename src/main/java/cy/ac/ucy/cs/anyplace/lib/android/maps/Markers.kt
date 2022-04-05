@@ -73,7 +73,8 @@ class Markers(private val ctx: Context,
     scope.launch(Dispatchers.Main) {
       val MAX_SECONDS = 10
       val secondsElapsed = utlTime.secondsElapsed(time)
-      val detailedMsg= "$msg ${secondsElapsed}s"
+      // val detailedMsg= "$msg ${secondsElapsed}s"
+      val detailedMsg= "$msg" // TODO:PMX
       val marker = when {
         alert == 1 -> userAlertMarker(latLng, detailedMsg)
         secondsElapsed > MAX_SECONDS -> userInactiveMarker(latLng, detailedMsg)

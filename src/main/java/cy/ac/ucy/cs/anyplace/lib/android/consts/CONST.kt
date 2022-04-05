@@ -48,6 +48,7 @@ open class CONST(ctx: Context) {
 
   // Settings used in both contexts (Logger, Navigator)
   val PREF_CV_WINDOW_LOCALIZATION_SECONDS = ctx.getString(R.string.pref_cv_window_localization_seconds)
+  val PREF_CV_SCAN_DELAY = ctx.getString(R.string.pref_cv_scan_delay)
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
@@ -55,6 +56,7 @@ open class CONST(ctx: Context) {
 
   // COMMON DEFAULTS
   val DEFAULT_PREF_CV_DEV_MODE = false
+  val DEFAULT_PREF_CV_SCAN_DELAY= "500"
   //// LOCALIZATION
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
@@ -91,7 +93,7 @@ open class CONST(ctx: Context) {
   val PREF_MISC_QUERY_SPACE_OWNERSHIP = "pref_misc_queryType_space_ownership"
   val PREF_MISC_QUERY_SPACE_OWNERSHIP_ID = "pref_misc_queryType_space_ownershipId"
 
-  // building or vessel-wrong
+  // building or lashco-wrong
   val PREF_MISC_QUERY_SPACE_TYPE = "pref_misc_queryType_space_type"
   val PREF_MISC_QUERY_SPACE_TYPE_ID = "pref_misc_queryType_space_typeId"
 

@@ -35,6 +35,9 @@ import kotlinx.coroutines.launch
  * TODO: Datastore Settings:
  *
  * NOTE: this should have been in the SMAS source code
+ *
+ *
+ * CvNavDS
  */
 @AndroidEntryPoint
 class SettingsNavigationActivity: AnyplaceSettingsActivity() {
@@ -66,7 +69,11 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvNavigationFragment(
-          private val dsCvNav: CvNavDataStore,
+          /** Only this is binded to the activity */
+          private val ds: CvNavDataStore,
+          /** NOT binded to this activity. Only used to independently change (Dialog UI)
+           * the Model
+           */
           private val dsCv: CvDataStore,
           private val repo: RepoAP,
   ) : PreferenceFragmentCompat() {
@@ -84,7 +91,7 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
       setPreferencesFromResource(R.xml.preferences_cv_navigation, rootKey)
 
-      preferenceManager.preferenceDataStore = dsCvNav
+      preferenceManager.preferenceDataStore = ds
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
@@ -93,21 +100,24 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        dsCvNav.read.first { prefs ->
-          setPercentageInput(R.string.pref_cvnav_map_alpha,
-                  R.string.summary_map_alpha, prefs.mapAlpha,
-                  "Map is fully opaque", "Map is fully transparent")
+        LOG.D(TAG, "SNAct: calls read")
+        val prefs = ds.read.first()
+        LOG.E(TAG, "SCAN: SNAct: scanDelay: ${prefs.scanDelay}")
+        // val prefsCvNav= DS.read.first()
+        setPercentageInput(R.string.pref_cvnav_map_alpha,
+                R.string.summary_map_alpha, prefs.mapAlpha,
+                "Map is fully opaque", "Map is fully transparent")
 
-          setNumericInput(R.string.pref_smas_location_refresh,
-                  R.string.summary_refresh_locations, prefs.locationRefresh)
+        setNumericInput(R.string.pref_smas_location_refresh,
+                R.string.summary_refresh_locations, prefs.locationRefresh)
 
-          setNumericInput(R.string.pref_cv_window_localization_seconds,
-                  R.string.summary_localization_window, prefs.windowLocalizationSeconds)
+        setNumericInput(R.string.pref_cv_scan_delay,
+                R.string.summary_cv_scan_delay, prefs.scanDelay)
 
-          setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
+        setNumericInput(R.string.pref_cv_window_localization_seconds,
+                R.string.summary_localization_window, prefs.windowLocalizationSeconds)
 
-          true
-        }
+        setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
 
         setupButtonClearCache(spaceH, floorsH, floorH)
 
@@ -126,7 +136,6 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
       }
     }
 
-
     private fun setupButtonClearCache(
             spaceH: SpaceHelper?,
             floorsH: FloorsHelper?,
@@ -143,7 +152,8 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
     private fun setupButtonChangeModel(modelName: String) {
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
       pref?.setOnPreferenceClickListener {
-        // TODO:PM Change CV Model
+        LOG.W(TAG, "Changing CV model")
+        ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dsCv, modelName)
         true
       }
     }

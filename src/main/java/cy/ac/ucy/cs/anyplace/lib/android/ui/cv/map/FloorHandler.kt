@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -115,8 +116,16 @@ open class FloorHandler(
    * - parses it into the optimized [CvMapFast] structure
    * - it renders a heatmap of the detections
    */
-  fun loadCvMapAndHeatmap(gmap: GoogleMap) {
+  suspend fun loadCvMapAndHeatmap(gmap: GoogleMap) {
     LOG.E()
+
+    // BUGFIX: artificial delay (workaround).
+    // This might have to be properly implemented
+   while (!VM.modelLoaded) {
+     LOG.E(TAG, "loadCvMapAndHeatmap: waiting for model to be loaded..")
+     delay(100)
+   }
+
     val model = VM.model // TODO
     if (VM.floorH==null) return
     val FH = VM.floorH!!
