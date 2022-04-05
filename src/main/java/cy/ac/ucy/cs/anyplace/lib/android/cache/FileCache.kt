@@ -7,6 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import org.json.JSONObject
 import java.io.File
 
+@kotlin.Deprecated("dont use")
 class FileCache(private val prefs: Preferences) {
   companion object {
     const val JS_BUILDINGS_ALL = "buildings.json"
