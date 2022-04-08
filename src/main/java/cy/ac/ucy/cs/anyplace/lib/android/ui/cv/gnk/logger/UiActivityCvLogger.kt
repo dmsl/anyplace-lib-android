@@ -12,7 +12,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
@@ -260,8 +260,8 @@ class UiActivityCvLogger(
       }
     }
 
-    // CHECK:PM CLR:PM SIMPLIFY
-    //logging button long clicked: forcing store?!
+    // CLR:PM SIMPLIFY
+    // logging button long clicked: forcing store?!
     binding.bottomUi.buttonLogging.setOnLongClickListener {
       // val btnTimer = binding.bottomUi.buttonCameraTimer
       // VM.longClickFinished = true // CLR:PM remove this variable
@@ -270,7 +270,7 @@ class UiActivityCvLogger(
       binding.mapView.animateAlpha(1f, CvActivityBase.ANIMATION_DELAY)
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
-      // LEFTHERE: test this
+      // this needs testing?
       statusUpdater.showInfoAutohide("stored ${VM.storedDetections.size} locations", 3000)
       handleStoreDetections(gmap)
       true
@@ -316,7 +316,7 @@ class UiActivityCvLogger(
       }
     }
 
-    // CLR:PM TRIAL remove this functionality..
+    // CHECK remove this functionality?
     binding.btnDemoNavigation.setOnLongClickListener {
       if (!longClickClearCvMap) {
         scope.launch {

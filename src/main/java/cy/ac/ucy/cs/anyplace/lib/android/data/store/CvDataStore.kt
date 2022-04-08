@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -112,8 +112,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
             } else { throw exception }
           }
           .map { preferences ->
-            val modelName = preferences[KEY.modelName] ?: C.DEFAULT_PREF_MODEL_NAME
-
+            val modelName = (preferences[KEY.modelName] ?: C.DEFAULT_PREF_MODEL_NAME).lowercase()
             val reloadCvMaps= preferences[KEY.reloadCvMaps] ?: false
             val reloadFloorplan = preferences[KEY.reloadFloorplans] ?: false
             CvPrefs(modelName, reloadCvMaps, reloadFloorplan)

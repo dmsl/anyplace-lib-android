@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.*
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.QuerySelectSpace

@@ -38,7 +38,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.tasks
 import android.app.Activity
 import android.app.ProgressDialog
 import android.os.AsyncTask
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.nav.FloorModel

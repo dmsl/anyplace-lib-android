@@ -20,13 +20,12 @@ fun ComponentActivity.registerForActivityResult(
 
 // EXTENSION FUNCTIONS
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
-val Activity.serverDS: ServerDataStore get() = this.app.dsServer
-val Activity.cvLogDS: CvLoggerDataStore get() = this.app.csCvLog
-val Activity.cvDataStoreDS: CvDataStore get() = this.app.dsCv
-val Activity.miscDS: MiscDataStore get() = this.app.dsMisc
-val Activity.userDataStoreDS: UserDataStore get() = this.app.dsUser
-//// LOCALIZATION APPS
-val Activity.cvNavDS: CvNavDataStore get() = this.app.dsCvNav
+val Activity.dsServer: ServerDataStore get() = this.app.dsServer
+val Activity.dsCv: CvDataStore get() = this.app.dsCv
+val Activity.dsCvLog: CvLoggerDataStore get() = this.app.csCvLog
+val Activity.dsCvNav: CvNavDataStore get() = this.app.dsCvNav
+val Activity.dsMisc: MiscDataStore get() = this.app.dsMisc
+val Activity.dsUser: UserDataStore get() = this.app.dsUser
 
 val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()

@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -129,11 +129,9 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             C.DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
             val scanDelay= preferences[KEY.scanDelay] ?: C.DEFAULT_PREF_CV_SCAN_DELAY
-            LOG.E(TAG,"SCAN: Read pref: ${preferences[KEY.scanDelay]}")
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
             val locationRefresh= preferences[KEY.locationRefresh] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH
             val prefs = CvNavigationPrefs(windowLocalizationSeconds, scanDelay, mapAlpha, devMode, locationRefresh)
-            LOG.D4(TAG, "read prefs: $prefs")
             prefs
           }
 }

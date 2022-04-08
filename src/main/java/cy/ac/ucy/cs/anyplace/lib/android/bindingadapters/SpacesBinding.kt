@@ -78,7 +78,6 @@ class SpacesBinding {
       // view.text = space?.type ?: "unknown"
     }
 
-
     // TODO:PM
     // // two attributes because we have 2 vars (apiRes, db)
     // @BindingAdapter("readApiResponse", "readDatabase", requireAll = true)

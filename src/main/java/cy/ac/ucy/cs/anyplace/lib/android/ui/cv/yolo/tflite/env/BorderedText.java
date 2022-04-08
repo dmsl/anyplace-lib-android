@@ -29,7 +29,6 @@ import java.util.Vector;
 public class BorderedText {
   private final Paint interiorPaint;
   private final Paint exteriorPaint;
-
   private final float textSize;
 
   /**

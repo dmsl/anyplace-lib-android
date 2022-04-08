@@ -6,7 +6,7 @@ import android.graphics.Paint.Join
 import android.util.DisplayMetrics
 import android.util.Pair
 import android.util.TypedValue
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector.Detection
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageUtils.getTransformationMatrix
 import java.util.concurrent.locks.Lock

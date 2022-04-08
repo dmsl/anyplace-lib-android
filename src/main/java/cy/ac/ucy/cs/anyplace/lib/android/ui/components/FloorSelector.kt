@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.Group
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG

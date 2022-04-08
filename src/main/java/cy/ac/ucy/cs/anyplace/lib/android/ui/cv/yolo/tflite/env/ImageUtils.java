@@ -22,14 +22,13 @@ import android.os.Environment;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 
 /** Utility class for manipulating images. */
 public class ImageUtils {
   // This value is 2 ^ 18 - 1, and is used to clamp the RGB values before their ranges
   // are normalized to eight bits.
   static final int kMaxChannelValue = 262143;
-
 
   /**
    * Utility method to compute the allocated size in bytes of a YUV420SP image of the given

@@ -1,5 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.utils.network
 
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.isNumber
+
 class NetUtils {
 
   companion object {

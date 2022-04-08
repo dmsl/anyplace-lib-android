@@ -2,9 +2,9 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils
 
 import android.content.Context
 import android.content.pm.PackageManager
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 
+@Deprecated("Use BuildConfig")
 class AppInfo(private val ctx: Context) {
 
   val version : String? get() {

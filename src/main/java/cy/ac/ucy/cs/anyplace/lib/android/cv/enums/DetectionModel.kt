@@ -4,8 +4,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.CONFIG.Companion.INPUT_SIZE
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.CONFIG.Companion.OUTPUT_WIDTH_TINY
 
 /**
- * TODO:PM Deprecate. download online.
  * Enum which describes tflite models used by Detector.
+ *
+ * TODO:PM download online.
  */
 enum class DetectionModel(
         /** model's name */
@@ -35,7 +36,6 @@ enum class DetectionModel(
           false,
           "objects on ro-ro ships."
   ),
-
   UCYCO(
           "ucyco",
           "models/ucyco/model.tflite",
@@ -48,7 +48,12 @@ enum class DetectionModel(
 
   companion object {
      val list = listOf(LASHCO.model, UCYCO.model, COCO.model)
-    fun getDescription(modelName: String) : String {
+
+    fun getModelAndDescription(modelName: String) : String {
+      return "${modelName.uppercase()}: ${getDescription(modelName)}"
+    }
+
+    private fun getDescription(modelName: String) : String {
       val detModel =  when (modelName.lowercase()) {
       "coco" -> COCO
       "lashco" -> LASHCO

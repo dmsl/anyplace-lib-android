@@ -46,7 +46,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 
 /**
  * The Positioning class handles the sensor data reception from sensor fusion

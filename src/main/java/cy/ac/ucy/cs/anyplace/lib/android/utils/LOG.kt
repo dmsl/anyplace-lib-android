@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android
+package cy.ac.ucy.cs.anyplace.lib.android.utils
 
 import android.util.Log
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -12,15 +12,13 @@ class DBG {
     const val D3 = LEVEL >= 3
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
-
-    // TODO: put debug settings (legacy AnyplaceDebug?)
   }
 }
 
 class LOG {
   companion object {
     const val TAG = "anyplace"
-    private fun _tag(tag: String ) : String = "${TAG}/${tag}"
+    private fun _tag(tag: String ) : String = "$TAG/${tag}"
 
     @JvmStatic fun I(tag: String, message: String) = Log.i(_tag(tag), message)
     @JvmStatic fun I(lvl: Int, message: String): () -> Unit = { if (lvl == DBG.LEVEL) Log.i(TAG, message) }

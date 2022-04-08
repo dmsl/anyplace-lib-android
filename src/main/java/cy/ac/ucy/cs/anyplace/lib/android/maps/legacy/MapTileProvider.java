@@ -58,7 +58,7 @@ import com.google.android.gms.maps.model.Tile;
 import com.google.android.gms.maps.model.TileProvider;
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 
 public class MapTileProvider implements TileProvider {
   private static final String TAG = MapTileProvider.class.getSimpleName();

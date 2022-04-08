@@ -6,7 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
@@ -20,7 +20,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -28,26 +27,13 @@ import kotlinx.coroutines.launch
  * It uses:
  * - uses Yolov4 TFLite
  * - Settings
- * - Google Maps TODO
- *   - cache mechanism + floor changing TODO
- *   - floor selector? TODO
- *   - LEFTHERE:
- *     - 1. put google maps
- *     - 2. anything else?
- *     - 3. make this open?! DONE
- *        - to pass google maps? DONE
+ * - Google Maps
+ *   - cache mechanism + floor changing
+ *
  *   - reuse functionality using Helper UI classes/objects?
- *  - ViewModel for this?? DONE
  */
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
-  companion object {
-    // const val CAMERA_REQUEST_CODE: Int = 1
-    // const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
-    const val OPACITY_MAP_LOGGING = 0f
-    const val ANIMATION_DELAY : Long = 100
-  }
-
   protected abstract val id_gmap: Int
 
   // PROVIDE TO BASE CLASS [CameraActivity]:
@@ -64,15 +50,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvMapViewModel
 
   // UTILITY OBJECTS
-  // protected val gmap by lazy { GmapHandler(applicationContext) }
-  protected lateinit var mapH: GmapHandler
+  protected lateinit var maph: GmapHandler
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected lateinit var bottomSheet : BottomSheetCvMap
-  // protected val bottomSheet by lazy { BottomSheetCvMap(this@CvMapActivity) }
 
   // UI
-  // protected lateinit var gmap: GoogleMap
   //// COMPONENTS
   protected lateinit var floorSelector: FloorSelector
   protected lateinit var UI: CvMapUi
@@ -98,14 +81,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun readPrefsAndContinue() {
     lifecycleScope.launch {
       LOG.D()
-      cvDataStoreDS.read.first { prefs ->
+      dsCv.read.first { prefs ->
         VM.prefsCV= prefs
         onCvPrefsLoaded(prefs)
         true
       }
 
       LOG.D(TAG, "CvMapActivity: readPrefsAndContinue: calls read")
-      cvNavDS.read.first { prefs ->
+      dsCvNav.read.first { prefs ->
         VM.prefsNav = prefs
         onNavPrefsLoaded()
         true
@@ -119,7 +102,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       // refresh CvMap+Heatmap only when needed
       // TODO do something similar with floorplans when necessary as well
       // loadCvMapAndHeatmap() // TODO call this..
-      cvDataStoreDS.setReloadCvMaps(false)
+      dsCv.setReloadCvMaps(false)
     } else {
       LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
     }
@@ -142,8 +125,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             this@CvMapActivity,
             supportFragmentManager,
             overlays, floorSelector)
-    mapH = GmapHandler(applicationContext, lifecycleScope, UI)
-    mapH.attach(VM, this, R.id.mapView)
+    maph = GmapHandler(applicationContext, lifecycleScope, UI)
+    maph.attach(VM, this, R.id.mapView)
 
     /** Updates on the mapH after a floor has changed */
     val floorSelectorCallback = object: FloorSelector.Callback() {
@@ -151,7 +134,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
         UI.removeHeatmap()
-        mapH.removeUserLocations()
+        maph.removeUserLocations()
 
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
@@ -188,7 +171,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    mapH.setup(googleMap)
+    maph.setup(googleMap)
   }
 
   override fun onProcessImageFinished() {

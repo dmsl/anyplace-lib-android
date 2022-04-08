@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays

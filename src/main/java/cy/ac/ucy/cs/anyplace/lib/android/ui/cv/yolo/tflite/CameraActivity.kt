@@ -19,7 +19,7 @@ import android.Manifest
 import androidx.appcompat.app.AppCompatActivity
 import android.hardware.Camera.PreviewCallback
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.R
 import android.view.WindowManager
 import android.media.Image.Plane
@@ -74,9 +74,6 @@ abstract class CameraActivity : AppCompatActivity(),
 
   private var rgbBytes: IntArray? = null
 
-  /** in MS to save battery */
-  private var scanDelay : Long = 100
-
   var previewWidth = 0
   var previewHeight = 0
   val isDebug = false
@@ -119,13 +116,6 @@ abstract class CameraActivity : AppCompatActivity(),
     postCreate()
   }
 
-  /**
-   * Set an artificial delay between CV Detections
-   */
-  fun setScanDelay(delay: Long) {
-    scanDelay = delay
-  }
-
   fun hideBottomSheet() {
     bottomSheetLayout.isVisible = false
   }
@@ -145,7 +135,6 @@ abstract class CameraActivity : AppCompatActivity(),
   }
 
   fun checkPermissionsAndConnectCamera() {
-    LOG.E(TAG, "SCAN: checkPermissionsAndConnectCamera")
     if (hasCameraPermission()) {
       setFragment()
     } else {
@@ -160,39 +149,12 @@ abstract class CameraActivity : AppCompatActivity(),
 
   protected val luminance: ByteArray? get() = yuvBytes[0]
 
-  private var lastScan : Long = 0L
-  private fun delayPassed() : Boolean {
-    LOG.E(TAG, "SCAN: delayPassed")
-    val currentTime = System.currentTimeMillis()
-    when (lastScan) {
-      0L -> {
-        lastScan = currentTime
-        LOG.E(TAG, "SCAN: first one: true")
-        return true
-      }
-      else -> {
-       val elapsedTime = currentTime - lastScan
-        if (elapsedTime >= scanDelay) {
-         lastScan = currentTime
-          LOG.E(TAG, "SCAN: elapsed: true (elapsed $elapsedTime/$scanDelay)")
-          return true
-        }
-        LOG.D2(TAG, "SCAN: dropping frame (elapsed $elapsedTime/$scanDelay)")
-        return false
-      }
-    }
-  }
-
   /** Callback for android.hardware.Camera API  */
   override fun onPreviewFrame(bytes: ByteArray, camera: Camera) {
-    LOG.E(TAG, "SCAN: onPreviewFrame: scanDelay: $scanDelay")
     if (isProcessingFrame) {
       LOG.V3(TAG_METHOD, "Dropping frame!")
       return
     }
-
-    // LOG.E(TAG, "SCAN: onPreviewFrame:")
-    // if (!delayPassed()) return
 
     try {
       // Initialize the storage bitmaps once when the resolution is known.
@@ -226,9 +188,6 @@ abstract class CameraActivity : AppCompatActivity(),
 
   /** Callback for Camera2 API  */
   override fun onImageAvailable(reader: ImageReader) {
-    // LOG.E(TAG, "SCAN: onImageAvailable:")
-    // if (!delayPassed()) return
-
     // We need wait until we have some size from onPreviewSizeChosen
     if (previewWidth == 0 || previewHeight == 0) {
       return
@@ -242,10 +201,6 @@ abstract class CameraActivity : AppCompatActivity(),
         image.close()
         return
       }
-
-      // TODO replicate also on the other entrypoint
-      // LOG.E(TAG, "SCAN: onPreviewFrame: acq img:")
-      // if (!delayPassed()) return
 
       isProcessingFrame = true
       Trace.beginSection("imageAvailable")

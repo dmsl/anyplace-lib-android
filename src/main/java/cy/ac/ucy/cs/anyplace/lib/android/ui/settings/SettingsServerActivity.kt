@@ -6,10 +6,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.ServerDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.serverDS
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsServer
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,7 +23,7 @@ class SettingsServerActivity: AnyplaceSettingsActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    settingsFragment = SettingsServerFragment(mainViewModel, retrofitHolderAP, serverDS)
+    settingsFragment = SettingsServerFragment(mainViewModel, retrofitHolderAP, dsServer)
     setupFragment(settingsFragment, savedInstanceState)
   }
 

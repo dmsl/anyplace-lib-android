@@ -56,8 +56,8 @@ import android.content.Context;
 import android.widget.Toast;
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
-import cy.ac.ucy.cs.anyplace.lib.android.DBG;
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated.BackgroundFetch;
 import cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated.BackgroundFetchListener;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;

@@ -2,14 +2,14 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
-import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.models.*
 
 /**
@@ -75,7 +75,7 @@ class CvMapHelper(val cvMap: CvMap,
       // key is the location. If a key exists, then append the [CvDetection] list
       val combined: MutableMap<LatLng, MutableList<CvDetection>> = HashMap()
       cvm1.locations.forEach { cvLoc ->
-       val latLng = toLatLng(cvLoc)
+       val latLng = utlLoc.toLatLng(cvLoc)
         if (combined.containsKey(latLng)) {
           combined[latLng]?.addAll(cvLoc.detections)
         } else {
@@ -83,7 +83,7 @@ class CvMapHelper(val cvMap: CvMap,
         }
       }
       cvm2.locations.forEach { cvLoc ->
-        val latLng = toLatLng(cvLoc)
+        val latLng = utlLoc.toLatLng(cvLoc)
         if (combined.containsKey(latLng)) {
           combined[latLng]?.addAll(cvLoc.detections)
         } else {
@@ -114,7 +114,7 @@ class CvMapHelper(val cvMap: CvMap,
   private val cache by lazy { Cache(floorH.spaceH.ctx) }
 
   fun getLocationList() : List<LatLng> {
-    var locations : MutableList<LatLng> = mutableListOf()
+    val locations : MutableList<LatLng> = mutableListOf()
     cvMap.locations.forEach { cvLoc ->
       try {
         locations.add(LatLng(cvLoc.lat.toDouble(), cvLoc.lon.toDouble()))

@@ -8,7 +8,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.AutoFitTex
 import android.view.TextureView.SurfaceTextureListener
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.CameraConnectionFragment
 import android.os.HandlerThread
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,7 +17,7 @@ import android.view.Surface
 import android.view.View
 import androidx.fragment.app.Fragment
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import java.io.IOException
 

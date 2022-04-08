@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers
 
 import com.google.gson.Gson
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.Floor

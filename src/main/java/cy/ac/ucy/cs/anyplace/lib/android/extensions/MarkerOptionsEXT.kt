@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DimenRes
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -23,10 +24,15 @@ fun MarkerOptions.iconFromVector(context: Context, @DrawableRes vectorDrawable: 
   return this
 }
 
-fun MarkerOptions.iconFromShape(ctx: Context, @DrawableRes id: Int, sizeInDp: Int = 18): MarkerOptions {
+fun MarkerOptions.userIcon(ctx: Context, @DrawableRes id: Int): MarkerOptions {
+  return iconFromShape(ctx, id, R.dimen.map_user_marker_size)
+}
+
+fun MarkerOptions.iconFromShape(ctx: Context, @DrawableRes id: Int, @DimenRes sizeInDp: Int = 0): MarkerOptions {
   this.icon(ContextCompat.getDrawable(ctx, id)?.run {
     val iconGen = IconGenerator(ctx)
-    val shapeSize = ctx.resources.getDimensionPixelSize(R.dimen.map_dot_marker_size)
+    val dimenRes = if (sizeInDp == 0) R.dimen.map_dot_marker_size else sizeInDp
+    val shapeSize = ctx.resources.getDimensionPixelSize(dimenRes)
     val shapeDrawable = ResourcesCompat.getDrawable(ctx.resources, id, null)
     iconGen.setBackground(shapeDrawable)
 

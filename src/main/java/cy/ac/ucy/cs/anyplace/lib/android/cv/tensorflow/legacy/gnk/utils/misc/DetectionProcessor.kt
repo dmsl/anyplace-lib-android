@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.misc
 
 import android.graphics.*
 import android.util.DisplayMetrics
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.MultiBoxTracker

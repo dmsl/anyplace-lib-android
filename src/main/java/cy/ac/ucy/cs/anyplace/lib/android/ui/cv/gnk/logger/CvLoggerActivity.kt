@@ -10,7 +10,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.CameraPosition
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
@@ -27,7 +27,6 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvLoggerBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,13 +88,13 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
   }
 
   /**
-   * Read [cvLogDS] preferences, as some UI elements depend on them:
+   * Read [dsCvLog] preferences, as some UI elements depend on them:
    * - Developer Stats -> [binding.bottomUi]
    */
   private fun readPrefsAndContinueSetup() {
     LOG.D4(TAG, "readPrefsAndSetupBottomSheet")
     lifecycleScope.launch {
-      cvLogDS.read.first { prefs ->
+      dsCvLog.read.first { prefs ->
         VM.prefs = prefs
         // set up that depends on preferences
         UI.setUpBottomSheet()
@@ -202,7 +201,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
       //   btnTimer.fadeOut()
       //   btnLogging.text = "Stored"
       //   changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.green)
-      //   // TODO:TRIAL LEFTHERE: new logic?
+      //   // TODO:TRIAL new logic?
       //   // TODO:TRIAL onMapLongClick store on long-click
       //   // VM.circleTimerAnimation = TimerAnimation.reset
       //   // DetectionMapHelper.generate(storedDetections)

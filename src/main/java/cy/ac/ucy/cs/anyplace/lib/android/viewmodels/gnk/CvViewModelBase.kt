@@ -15,7 +15,7 @@ import androidx.camera.view.PreviewView
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.misc.DetectionProcessor
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
@@ -33,10 +33,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ImgUtils
-import cy.ac.ucy.cs.anyplace.lib.android.utils.converters.toLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
@@ -188,7 +188,7 @@ abstract class CvViewModelBase constructor(
   private fun loadFloorplanFromAsset() {
     LOG.W(TAG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
-    val bitmap = base64?.let { ImgUtils.stringToBitmap(it) }
+    val bitmap = base64?.let { utlImg.stringToBitmap(it) }
     floorplanFlow.value =
       when (bitmap) {
         null -> Error("Cant read asset deckplan.")
@@ -232,7 +232,7 @@ abstract class CvViewModelBase constructor(
    */
   fun setUserLocation(coord: Coord) {
     LOG.D(TAG, "setUserLocation")
-   markers?.setLocationMarker(toLatLng(coord))
+   markers?.setLocationMarker(utlLoc.toLatLng(coord))
   }
 
   // fun stopLocalization(mapView: MapView) { // CLR:PM

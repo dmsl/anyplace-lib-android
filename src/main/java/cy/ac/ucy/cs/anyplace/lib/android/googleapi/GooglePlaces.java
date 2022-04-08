@@ -52,7 +52,7 @@ import org.apache.http.client.HttpResponseException;
 
 import java.io.IOException;
 
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.GeoPoint;
 
 

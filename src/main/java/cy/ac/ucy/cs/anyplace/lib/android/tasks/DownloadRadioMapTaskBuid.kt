@@ -38,9 +38,8 @@ package cy.ac.ucy.cs.anyplace.lib.android.tasks
 import android.app.Activity
 import android.os.AsyncTask
 import android.os.Handler
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ResponseUtils
 import org.json.JSONObject
 import java.io.File
 import java.io.FileWriter
@@ -146,7 +145,7 @@ class DownloadRadioMapTaskBuid(private var activity: Activity,
       val accessToken = activity.app.prefs.access_token
       val response = activity.app.apiOld.radiomapMeanByBuildingFloor(accessToken, buid, floorNum)
       LOG.D2(TAG, "response: $response")
-      ResponseUtils.process(activity, response)
+      // ReponseUtil.process(activity, response)
 
       // val filename_radiomap_download: String = AnyplaceUtils1.getRadioMapFileName(mFloor_number)
       val radiomapFilename = activity.app.fileCache.radiomapFilename(floorNum)

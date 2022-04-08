@@ -36,19 +36,13 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.utils;
 
-import java.io.File;
-
-import android.content.Context;
-
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
-import cy.ac.ucy.cs.anyplace.lib.android.LOG;
-
 /**
  * CHECK:PM merge with FileCache ?
  * also this: https://developer.android.com/about/versions/11/privacy/storage
  *
  * CHECK:PM how to share downloaded data between navigator, and logger
  */
+@Deprecated
 public class AnyplaceUtils1 {
 
 	// public static File getFolderRootFolder(Context ctx, String folder) throws Exception {

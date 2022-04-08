@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 import android.content.Context
 import android.widget.Toast
 import com.google.android.gms.maps.GoogleMap
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapFast
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
@@ -17,7 +17,6 @@ import cy.ac.ucy.cs.anyplace.lib.models.Space
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 open class FloorHandler(

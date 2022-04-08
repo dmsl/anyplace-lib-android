@@ -8,4 +8,5 @@
   <dimen name="bottom_sheet_cv_logging_top_padding">8dp</dimen>
 
   <dimen name="map_dot_marker_size">18dp</dimen>
+  <dimen name="map_user_marker_size">22dp</dimen>
 </resources>

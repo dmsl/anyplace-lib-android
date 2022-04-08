@@ -38,6 +38,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils;
 
 import org.jetbrains.annotations.NotNull;
 
+// TODO this is a data class
 public class LogRecord {
 
 	private String bssid;

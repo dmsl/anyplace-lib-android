@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import cy.ac.ucy.cs.anyplace.lib.android.utils.SpacesDiffUtil
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
 import cy.ac.ucy.cs.anyplace.lib.databinding.SpaceRowLayoutBinding
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import cy.ac.ucy.cs.anyplace.lib.models.Spaces
@@ -42,14 +42,20 @@ class SpacesAdapter: RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
     return spaces.size
   }
 
+  /**
+   * [DiffUtil]: optimization: update only the changess
+   *
+   *  - notifyDataSetChanged():
+   *    - naive approach. overkill.
+   *    - updates the whole RV.
+   */
   fun setData(newSpaces: Spaces) {
-    // DiffUtil: to update only the changes:
-    val spacesDiffUtil = SpacesDiffUtil(spaces, newSpaces.spaces)
-    val diffUtilResult = DiffUtil.calculateDiff(spacesDiffUtil)
+    val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
+    val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
 
     spaces = newSpaces.spaces.toList()
-    // notifyDataSetChanged() // is overkill (updates the whole RV)
     diffUtilResult.dispatchUpdatesTo(this)
+
   }
 
   fun clearData() {

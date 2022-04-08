@@ -5,8 +5,9 @@ import android.content.SharedPreferences
 import cy.ac.ucy.cs.anyplace.lib.android.consts.DEFAULT
 
 /**
- * DEPRECATE: also these: Anyplace_Preferences (UnifiedNav/ Navigator)
+ * also deprecate these: Anyplace_Preferences (UnifiedNav/ Navigator)
  */
+@Deprecated("")
 class Preferences(private val ctx: Context) {
   companion object {
     const val SERVER_IP = "server_ip_address"

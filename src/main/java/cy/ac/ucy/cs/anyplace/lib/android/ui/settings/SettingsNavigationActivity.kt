@@ -7,7 +7,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
@@ -19,6 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.models.Space
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -61,7 +63,7 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvNavigationFragment(cvNavDS, cvDataStoreDS, repo)
+    settingsFragment = SettingsCvNavigationFragment(dsCvNav, dsCv, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO: icon not shown
@@ -121,8 +123,7 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
 
         setupButtonClearCache(spaceH, floorsH, floorH)
 
-        val modelName = dsCv.read.first().modelName
-        setupButtonChangeModel(modelName)
+        setupButtonChangeModel()
         setupButtonServerSettings()
       }
     }
@@ -149,13 +150,21 @@ class SettingsNavigationActivity: AnyplaceSettingsActivity() {
       }
     }
 
-    private fun setupButtonChangeModel(modelName: String) {
+    private fun setupButtonChangeModel() {
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
-      pref?.setOnPreferenceClickListener {
-        LOG.W(TAG, "Changing CV model")
-        ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dsCv, modelName)
-        true
+      lifecycleScope.launch {
+        pref?.setOnPreferenceClickListener {
+          LOG.W(TAG, "Changing CV model")
+          ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dsCv)
+          true
+        }
+
+
+        dsCv.read.collectLatest { prefs ->
+          pref?.summary = DetectionModel.getModelAndDescription(prefs.modelName)
+        }
       }
+
     }
   }  // PreferenceFragmentCompat
 }

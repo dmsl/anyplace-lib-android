@@ -7,15 +7,15 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.AnyplaceUtils
-import cy.ac.ucy.cs.anyplace.lib.android.utils.GenUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.models.Version
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -78,8 +78,8 @@ class MainViewModel @Inject constructor(
         versionResp.value = handleVersionResponse(response)
         val version = versionResp.value!!.data
         if (version != null) {
-          val prettyVersion = AnyplaceUtils.prettyVersion(version)
-          msg = "$prettyVersion (connected: ${GenUtils.prettyTime()})"
+          val prettyVersion = utlAP.prettyVersion(version)
+          msg = "$prettyVersion (connected: ${utlTime.currentTimePretty()})"
           versionPreferences?.icon = null
         } else {
           exception = Exception("Failed to get version.")

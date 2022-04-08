@@ -17,7 +17,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.common.util.concurrent.ListenableFuture
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.visualization.TrackingOverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -36,7 +36,6 @@ import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -78,18 +77,18 @@ abstract class CvActivityBase : AppCompatActivity(),
   }
 
   /** MERGED
-   * Read [cvDataStoreDS] preferences
+   * Read [dsCv] preferences
    * TODO load CvModel from here?
    */
   private fun readPrefsAndContinueSetup() {
     lifecycleScope.launch {
-      cvDataStoreDS.read.first { prefs->
+      dsCv.read.first { prefs->
         if (prefs.reloadCvMaps) {
           LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
           // refresh CvMap+Heatmap only when needed
           // TODO do something similar with floorplans when necessary as well
           loadCvMapAndHeatmap()
-          cvDataStoreDS.setReloadCvMaps(false)
+          dsCv.setReloadCvMaps(false)
         }
 
         true

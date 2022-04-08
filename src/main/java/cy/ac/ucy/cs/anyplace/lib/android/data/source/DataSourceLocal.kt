@@ -1,6 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.source
 
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.AnyplaceDao
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.SpaceTypeConverter.Companion.spaceToEntity

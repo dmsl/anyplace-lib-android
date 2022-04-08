@@ -25,7 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class LoginActivity : BaseActivity() {
 
-  private lateinit var loginViewModel: LoginViewModel
+  private lateinit var VMlogin: LoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
   private var _binding: ActivityLoginBinding ?= null
   private val binding get() = _binding!!
@@ -59,8 +59,8 @@ class LoginActivity : BaseActivity() {
     val password = binding.password
     val localLogin = binding.buttonLoginLocal
 
-    loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
-    loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
+    VMlogin = ViewModelProvider(this)[LoginViewModel::class.java]
+    VMlogin.loginFormState.observe(this@LoginActivity, Observer {
       val loginState = it ?: return@Observer
 
       // disable login button unless both username / password is valid
@@ -94,7 +94,7 @@ class LoginActivity : BaseActivity() {
           account.displayName?.let { name ->
             LOG.D("DIS NAME: " + account.displayName)
             val googleData = UserLoginGoogleData("google", name, account.idToken)
-            loginViewModel.loginUserGoogle(googleData, account.photoUrl)
+            VMlogin.loginUserGoogle(googleData, account.photoUrl)
           } ?: run {
             throw Exception("can't get user's name")
           }
@@ -123,20 +123,15 @@ class LoginActivity : BaseActivity() {
 
       mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-      // LEFTHERE:
+      // TODO:
       // 1: Implement the logout (for local user or other user..)
       // 2. on logout, if google account, then replace with the below
       // 3. on logged in, update the settings UI its load..
       // 4. remove the logic of logout below (and in the StartActivity maybe..)
       // 5. THINK about this: we could logout google user immediately.. but do we want this?
-
-      // TODO on Settings Dialog: if from LoginActivity, send parameters..
+      // on Settings Dialog: if from LoginActivity, send parameters..
       // so if login pressed it will hide stuff..
-
       // TODOs from previous times:
-      // TODO: 7: Add on the settings XML: put on top some things about login..
-      // TODO: 8: maybe make it an activity.. with all the settings in it..
-      // TODO: 9: GoogleMaps
 
       val acct = GoogleSignIn.getLastSignedInAccount(this)
       if (acct != null) {
@@ -155,12 +150,12 @@ class LoginActivity : BaseActivity() {
 
     val loading = binding.loading
     username.afterTextChanged {
-      loginViewModel.loginDataChanged(username.text.toString(), password.text.toString())
+      VMlogin.loginDataChanged(username.text.toString(), password.text.toString())
     }
 
     password.apply {
       afterTextChanged {
-        loginViewModel.loginDataChanged(username.text.toString(), password.text.toString())
+        VMlogin.loginDataChanged(username.text.toString(), password.text.toString())
       }
 
       // submitted from keyboard
@@ -169,7 +164,7 @@ class LoginActivity : BaseActivity() {
           EditorInfo.IME_ACTION_DONE -> {
             val user = username.text.toString()
             val pass = password.text.toString()
-            loginViewModel.loginUserLocal(UserLoginLocalForm(user, pass))
+            VMlogin.loginUserLocal(UserLoginLocalForm(user, pass))
           }
         }
         false
@@ -180,7 +175,7 @@ class LoginActivity : BaseActivity() {
         loading.visibility = View.VISIBLE
         val user = username.text.toString()
         val pass = password.text.toString()
-        loginViewModel.loginUserLocal(UserLoginLocalForm(user, pass))
+        VMlogin.loginUserLocal(UserLoginLocalForm(user, pass))
       }
 
       setOnTouchListener { _, event ->
@@ -212,7 +207,7 @@ class LoginActivity : BaseActivity() {
    * as the backend returns the same, compatible user object
    */
   private fun observeUserLoginResponse() {
-    loginViewModel.userLoginResponse.observe(this@LoginActivity) { response ->
+    VMlogin.userLoginResponse.observe(this@LoginActivity) { response ->
       LOG.D3(TAG_METHOD, "${response.message}")
       when (response) {
         is NetworkResult.Success -> {

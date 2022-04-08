@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -143,41 +143,50 @@ abstract class DetectorActivityBase : CameraActivity(),
     }
   }
 
-  // private var scanDelay : Long = 100
-  // private var lastScan : Long = 0L
-  // private fun delayPassed() : Boolean {
-  //   LOG.E(TAG, "SCAN: delayPassed")
-  //   val currentTime = System.currentTimeMillis()
-  //   when (lastScan) {
-  //     0L -> {
-  //       lastScan = currentTime
-  //       LOG.E(TAG, "SCAN: first one: true")
-  //       return true
-  //     }
-  //     else -> {
-  //       val elapsedTime = currentTime - lastScan
-  //       if (elapsedTime >= scanDelay) {
-  //         lastScan = currentTime
-  //         LOG.E(TAG, "SCAN: elapsed: true (elapsed $elapsedTime/$scanDelay)")
-  //         return true
-  //       }
-  //       LOG.D2(TAG, "SCAN: dropping frame (elapsed $elapsedTime/$scanDelay)")
-  //       return false
-  //     }
-  //   }
-  // }
+  /** Artificial delay between inference calls (in ms) to save battery */
+  private var scanDelay : Long = 100
+  private var lastScan : Long = 0L
+
+  /**
+   * Allowing only one scan in a [scanDelay] window.
+   *
+   * TODO this has to be adjusted. It's not good enough.
+   * We might have to take: 5-6 consecutive scans, every N seconds,
+   * and not a single scan every N seconds
+   * (we need a few consecutive ones to get a better pic of the environment)
+   *
+   * We might introduce another mode that will disable scanning also..
+   *
+   */
+  private fun delayPassed() : Boolean {
+    // LOG.E(TAG, "SCAN: delayPassed:")
+    val currentTime = System.currentTimeMillis()
+    when (lastScan) {
+      0L -> { // first scan
+        lastScan = currentTime
+        return true
+      }
+      else -> {
+        val elapsedTime = currentTime - lastScan
+        if (elapsedTime >= scanDelay) {
+          lastScan = currentTime
+          return true
+        }
+        // dropping frame
+        return false
+      }
+    }
+  }
 
   suspend fun setupDetector(): Boolean {
     LOG.I()
     try {
-
       // Read DS Preferences:
       val prefsCv = VM.dsCv.read.first()
       VM.setModel(prefsCv.modelName)
       LOG.D(TAG, "setupDetector: calls read")
       val prefsCvNav = VM.dsCvNav.read.first()
-      setScanDelay(prefsCvNav.scanDelay.toLong())
-      // scanDelay = prefsCvNav.scanDelay.toLong()
+      scanDelay = prefsCvNav.scanDelay.toLong()
 
       VM.detector = YoloV4Classifier.create(
               assets,
@@ -193,10 +202,6 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   override fun processImage() {
-    // TODO: LEFTHERE..
-    LOG.D5(TAG, "SCAN: processImage:")
-
-
     // ViewModel
     ++timestamp
     trackingOverlay.postInvalidate()
@@ -208,12 +213,13 @@ abstract class DetectorActivityBase : CameraActivity(),
     }
 
     // No mutex needed as this method is not reentrant.
-    // if (delayPassed()) {
-    //   LOG.W(TAG, "SCAN: SKIPPING...")
-    //   readyForNextImage()
-    //   return
-    // }
+    if (!delayPassed()) {
+      LOG.V2(TAG_METHOD, "Skipping inference..")
+      readyForNextImage()
+      return
+    }
 
+    LOG.V2(TAG_METHOD, "Running inference..")
 
     val currTimestamp = timestamp
     computingDetection = true

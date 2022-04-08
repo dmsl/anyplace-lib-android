@@ -36,15 +36,6 @@
 
 package cy.ac.ucy.cs.anyplace.lib.android.utils;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
 import org.json.JSONObject;
 
 import android.app.Activity;
@@ -59,6 +50,7 @@ import androidx.core.app.ActivityCompat;
 
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
 
+@Deprecated
 public class AndroidUtils {
 
   public static void showExplanation(String title,
@@ -301,7 +293,6 @@ public class AndroidUtils {
 		return new GeoPoint(lat, lon);
 
 	}
-
 
 	// CLR: WHY IS THIS DUPLICATED HERE?!?!?!
   // public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;

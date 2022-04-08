@@ -9,6 +9,13 @@ import java.util.*
 /** Time Utils */
 object utlTime {
 
+  fun currentTimePretty() : String {
+    val formatter= SimpleDateFormat("HH:mm:ss")
+    // formatter.set
+    val date = Date()
+    return  formatter.format(date)
+  }
+
   fun getSecondsRounded(num: Float, maxAllowed: Int): String {
     var rounded = num.toInt() + 1
     if (rounded > maxAllowed) rounded = maxAllowed

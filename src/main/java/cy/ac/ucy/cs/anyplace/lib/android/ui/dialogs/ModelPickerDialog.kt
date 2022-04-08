@@ -6,30 +6,30 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.widget.RadioButton
 import androidx.core.view.forEach
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import androidx.lifecycle.lifecycleScope
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
-class ModelPickerDialog(private val dsCV: CvDataStore,
-                        private val originalModel: String):
+class ModelPickerDialog(private val dsCv: CvDataStore):
         DialogFragment() {
 
   companion object {
     /** Creating the dialog. */
     fun SHOW(fragmentManager: FragmentManager,
-             cvDataStore: CvDataStore,
-             originalModel: String) {
+             dsCv: CvDataStore) {
       val args = Bundle()
 
-      val dialog = ModelPickerDialog(cvDataStore, originalModel)
+      val dialog = ModelPickerDialog(dsCv)
       dialog.arguments = args
       dialog.show(fragmentManager, "")
     }
@@ -41,7 +41,8 @@ class ModelPickerDialog(private val dsCV: CvDataStore,
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return activity?.let {
-      _binding = DialogPickModelBinding.inflate(LayoutInflater.from(context))
+      _binding = DialogPickModelBinding.inflate(layoutInflater)
+      // _binding = DialogPickModelBinding.inflate(LayoutInflater.from(context)) // CLR:PM
       val builder= AlertDialog.Builder(it)
 
       // isCancelable = true
@@ -61,27 +62,20 @@ class ModelPickerDialog(private val dsCV: CvDataStore,
   @SuppressLint("SetTextI18n")
   private fun setupRadioButtons() {
     val rbGroup = binding.radioGroupOptions
-    LOG.E(TAG, "ORIGINAL MODEL: $originalModel")
-    DetectionModel.list.forEach {
-      val rb = RadioButton(context)
-      val modelName = it.uppercase()
-      rb.tag = modelName
-      rb.text = "${it.uppercase()}: ${DetectionModel.getDescription(modelName)}"
-      rbGroup.addView(rb)
-    }
+    lifecycleScope.launch {
+      val selectedModel = dsCv.read.first().modelName
+      LOG.D2(TAG, "setupRadioButtons: selected model: $selectedModel")
 
+      DetectionModel.list.forEach {
+        val rb = RadioButton(context)
+        rb.tag = it.lowercase()
+        rb.text = DetectionModel.getModelAndDescription(rb.tag.toString())
+        rbGroup.addView(rb)
+      }
 
-    // LEFTHERE:
-    // 1. build and publish AGP upgrade
-    // 2. fix change MODEL (broken this..)
-    // 3. IMPLEMENT: DELAY artificial...
-
-    rbGroup.forEach {
-      val rb = it as RadioButton
-      val modelName = originalModel.lowercase()
-      if  (rb.text.toString().lowercase() == modelName) {
-        rb.isChecked = true
-        return@forEach
+      rbGroup.forEach {
+        val rb = it as RadioButton
+        rb.isChecked = rb.tag.toString() == selectedModel
       }
     }
   }
@@ -92,9 +86,9 @@ class ModelPickerDialog(private val dsCV: CvDataStore,
     binding.btnConfirm.setOnClickListener {
       val rbSelectedId = rbGroup.checkedRadioButtonId
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(rbSelectedId)
-      val selectedModel = rb.text.toString().lowercase()
+      val selectedModel = rb.tag.toString().lowercase()
       LOG.W(TAG, "Selected new DNN Model: $selectedModel")
-      dsCV.setModelName(selectedModel)
+      dsCv.setModelName(selectedModel)
       dialog.dismiss()
     }
   }

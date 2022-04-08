@@ -4,11 +4,17 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import com.google.android.gms.maps.model.LatLng
+import cy.ac.ucy.cs.anyplace.lib.models.Coord
+import cy.ac.ucy.cs.anyplace.lib.models.CvLocation
 import java.util.*
 
 // TODO:PM Request permissions then call from onStart and onConnected.
 // TODO:PM Move all fake gps here?
-object utlLocation {
+object utlLoc {
+
+  fun toLatLng(coord: Coord) = LatLng(coord.lat, coord.lon)
+  fun toLatLng(cvLoc: CvLocation) = LatLng(cvLoc.lat.toDouble(), cvLoc.lon.toDouble())
 
   /**
    * Returns an address (nullable) given a location

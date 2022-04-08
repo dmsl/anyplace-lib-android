@@ -5,8 +5,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.iconFromShape
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,22 +27,21 @@ class Markers(private val ctx: Context,
   /** Active users on the map */
   var users: MutableList<Marker> = mutableListOf()
 
-  // TODO:PM size is set in iconFromShape
   /** Last Location marker */
   private fun locationMarker(latLng: LatLng) : MarkerOptions  {
     return MarkerOptions().position(latLng)
-            .iconFromShape(ctx, R.drawable.marker_objects_stored)
+            .userIcon(ctx, R.drawable.marker_objects_stored)
   }
   /** Computer Vision marker */
   private fun cvMarker(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
-        .iconFromShape(ctx, R.drawable.marker_objects)
+        .userIcon(ctx, R.drawable.marker_objects)
   }
 
   /** Computer Vision stored marker */
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
-        .iconFromShape(ctx, R.drawable.marker_objects)
+        .userIcon(ctx, R.drawable.marker_objects)
   }
 
   fun addCvMarker(latLng: LatLng, msg: String) {
@@ -54,19 +53,19 @@ class Markers(private val ctx: Context,
   /** User marker */
   private fun userMarker(latLng: LatLng, msg: String) : MarkerOptions {
     return MarkerOptions().position(latLng).title(msg)
-            .iconFromShape(ctx, R.drawable.marker_user)
+            .userIcon(ctx, R.drawable.marker_user)
   }
 
   /** User marker in alert mode */
   private fun userAlertMarker(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
-            .iconFromShape(ctx, R.drawable.marker_user_alert)
+            .userIcon(ctx, R.drawable.marker_user_alert)
   }
 
   /** User marker in alert mode */
   private fun userInactiveMarker(latLng: LatLng, msg: String) : MarkerOptions {
     return MarkerOptions().position(latLng).title(msg)
-            .iconFromShape(ctx, R.drawable.marker_user_inactive)
+            .userIcon(ctx, R.drawable.marker_user_inactive)
   }
 
   fun addUserMarker(latLng: LatLng, msg: String, scope: CoroutineScope, alert: Int, time: Long) {

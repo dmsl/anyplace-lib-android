@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.cache
 // DEPRECATE
 
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import org.json.JSONObject

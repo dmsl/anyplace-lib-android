@@ -38,18 +38,19 @@ package cy.ac.ucy.cs.anyplace.lib.android.tasks
 import android.app.Activity
 import android.app.ProgressDialog
 import android.os.AsyncTask
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.*
+import java.lang.Deprecated
 
 /**
  * Returns the POIs according to a given Building and Floor
  */
+@Deprecated
 class FetchPoisByBuidTask: AsyncTask<Void?, Void?, String> {
   private val TAG = FetchPoisByBuidTask::class.java.simpleName
 

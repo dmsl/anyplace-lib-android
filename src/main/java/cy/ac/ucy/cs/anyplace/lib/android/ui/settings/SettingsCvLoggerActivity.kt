@@ -6,7 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvLoggerDataStore
@@ -45,7 +45,7 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvLoggerFragment(cvLogDS, cvDataStoreDS, repo)
+    settingsFragment = SettingsCvLoggerFragment(dsCvLog, dsCv, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO FIXME:PM not shown!

@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.example
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
