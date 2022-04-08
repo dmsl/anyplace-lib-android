@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
 
-object ImgUtils {
+object utlImg {
     /**
      * Accepts a string in [Base64] format and converts it to a bitmap
      */
