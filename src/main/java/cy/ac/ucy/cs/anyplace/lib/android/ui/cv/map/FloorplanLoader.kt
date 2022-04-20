@@ -24,7 +24,7 @@ class FloorplanLoader {
   }
 
   fun render(overlays: Overlays, gmap: GoogleMap, bitmap: Bitmap?, FH: FloorHelper) {
-    LOG.D()
+    LOG.V3()
     overlays.drawFloorplan(bitmap, gmap, FH.bounds())
   }
 }

@@ -78,7 +78,7 @@ abstract class AnyplaceApp : Application() {
   }
 
   private var toast: Toast ?= null
-  fun showToast(msg: String, len: Int) {
+  fun showToast(msg: String, len: Int = Toast.LENGTH_SHORT) {
     if (toast != null) toast!!.cancel()
     toast = Toast.makeText(this, msg, len)
     toast!!.show()

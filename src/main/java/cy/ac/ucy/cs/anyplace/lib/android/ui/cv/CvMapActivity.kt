@@ -151,7 +151,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // keep reacting to  settings updates
     lifecycleScope.launch {
       app.dsCvNav.read.collect {
-        LOG.D(TAG, "CvMapAct: reacting for BottomSheet")
+        LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
         bottomSheet.setup()
       }
     }

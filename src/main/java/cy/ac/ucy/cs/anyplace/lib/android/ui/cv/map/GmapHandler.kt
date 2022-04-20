@@ -83,9 +83,9 @@ class GmapHandler(private val ctx: Context,
 
     val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
 
-    obj.setMinZoomPreference(maxZoomLevel-3)
+    obj.setMinZoomPreference(maxZoomLevel-4)
     // place some restrictions on the map
-    LOG.E(TAG, "MAX ZOOM: $maxZoomLevel")
+    LOG.D2(TAG, "MAX ZOOM: $maxZoomLevel (restriction)")
 
     // restrict screen to current bounds.
     scope.launch {

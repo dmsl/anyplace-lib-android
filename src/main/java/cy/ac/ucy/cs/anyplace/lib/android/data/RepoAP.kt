@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @Singleton
 class RepoAP @Inject constructor(
         dataSourceRemote: DataSourceRemote,
-        dataSourceLocal: DataSourceLocal) {
+        dsLocal: DataSourceLocal) {
   val remote = dataSourceRemote
-  val local = dataSourceLocal
+  val local = dsLocal
 }

@@ -85,7 +85,7 @@ open class FloorHandler(
         // update FloorHelper & FloorSelector
         VM.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VM.spaceH) else null
         UI.floorSelector.updateFloorSelector(selectedFloor, VM.floorsH)
-        LOG.E(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
+        LOG.W(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
           LOG.W(TAG,
                   "observeFloorChanges: -> updating cache: floor: ${VM.floor.value?.floorNumber}")
@@ -116,7 +116,7 @@ open class FloorHandler(
    * - it renders a heatmap of the detections
    */
   suspend fun loadCvMapAndHeatmap(gmap: GoogleMap) {
-    LOG.E()
+    LOG.V3()
 
     // BUGFIX: artificial delay (workaround).
     // This might have to be properly implemented
@@ -131,7 +131,7 @@ open class FloorHandler(
     val cvMap = if (FH.hasFloorCvMap(model)) VM.floorH?.loadCvMapFromCache(model) else null
     UI.removeHeatmap()
     when {
-      !FH.hasFloorCvMap(model) -> { LOG.W(TAG, "No local CvMap") }
+      !FH.hasFloorCvMap(model) -> { LOG.V3(TAG, "No local CvMap") }
       cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
       cvMap.schema < CvMap.SCHEMA -> {
         LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMap.SCHEMA}")

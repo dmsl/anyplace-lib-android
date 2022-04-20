@@ -1,9 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.db
 import androidx.room.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceEntity
-// import com.example.foody.data.db.entities.FavouritesEntity
-// import com.example.foody.data.db.entities.FoodJokeEntity
-// import com.example.foody.data.db.entities.RecipesEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

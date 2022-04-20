@@ -132,7 +132,7 @@ class Cache(val ctx: Context) {
   fun jsonFloorCvMapModelLocal(cvm: CvMap) : String {  return "${dirFloorCvMapsLocal(cvm)}/${filenameCvMapModel(cvm)}" }
 
   fun hasJsonFloorCvMapModelLocal(f: Floor, m: String): Boolean { return File(jsonFloorCvMapModelLocal(f, m)).exists() }
-  fun printJsonFloorCvMapModelLocal(f: Floor, m: DetectionModel) { LOG.W(TAG, jsonFloorCvMapModelLocal(f, m)) }
+  fun printJsonFloorCvMapModelLocal(f: Floor, m: DetectionModel) { LOG.V4(TAG, jsonFloorCvMapModelLocal(f, m)) }
   fun hasJsonFloorCvMapModelLocal(f: Floor, m: DetectionModel): Boolean {
     printJsonFloorCvMapModelLocal(f, m)
     return File(jsonFloorCvMapModelLocal(f, m)).exists() }
