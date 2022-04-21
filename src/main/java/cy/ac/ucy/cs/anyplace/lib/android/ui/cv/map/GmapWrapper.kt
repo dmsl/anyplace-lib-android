@@ -25,7 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GmapHandler(private val ctx: Context,
+class GmapWrapper(private val ctx: Context,
                   private val scope: CoroutineScope,
                   private val UI: CvMapUi) {
 
@@ -121,7 +121,7 @@ class GmapHandler(private val ctx: Context,
    * TODO Implement this from network (@earlier), and pass it w/[SafeArgs] / [Bundle]
    */
   fun loadSpaceAndFloor() {
-    LOG.E()
+    LOG.V2()
 
     if(!loadSpaceAndFloorFromAssets()) return
 

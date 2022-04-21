@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.models.CvMap
@@ -56,11 +57,11 @@ open class Cache(val ctx: Context) {
       val fw= FileWriter(File(filename))
       Gson().toJson(lastVal, fw)
       fw.close()
-      LOG.D2(TAG, "saveSpaceLastValues: $lastVal")
-      LOG.D2(TAG, "saveSpaceLastValues: $filename")
+      LOG.V3(TAG, "$METHOD: $lastVal")
+      LOG.V3(TAG, "$METHOD: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "saveSpaceLastValues: $filename: ${e.message}")
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
       false
     }
   }

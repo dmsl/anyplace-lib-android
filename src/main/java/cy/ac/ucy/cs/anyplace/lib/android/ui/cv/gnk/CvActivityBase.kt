@@ -343,7 +343,7 @@ abstract class CvActivityBase : AppCompatActivity(),
    */
   @Deprecated("MERGED") // MERGED
   private fun updateAndCacheLastFloor(floor: Floor?) {
-    LOG.W(TAG_METHOD, floor?.floorNumber.toString())
+    LOG.V2(TAG_METHOD, floor?.floorNumber.toString())
     if (floor != null) {
       VMB.lastValSpaces.lastFloor=floor.floorNumber
       VMB.spaceH.cacheLastValues(VMB.lastValSpaces)

@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
  *
  * TODO:
  * // More functionality from GmapHandler
- * // OR break up [GmapHandler] to:
+ * // OR break up [GmapWrapper] to:
  * - floors
  * - floorplans
  */

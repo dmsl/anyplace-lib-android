@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapHandler
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
@@ -50,7 +50,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvMapViewModel
 
   // UTILITY OBJECTS
-  protected lateinit var maph: GmapHandler
+  protected lateinit var wMap: GmapWrapper
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected lateinit var bottomSheet : BottomSheetCvMap
@@ -63,12 +63,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   override fun postCreate() {
     super.postCreate()
     VM = _vm as CvMapViewModel
-    LOG.D2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
+    LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
   }
 
   override fun onResume() {
     super.onResume()
-    LOG.E(TAG, "onResume")
+    LOG.V2(TAG, "onResume")
 
     readPrefsAndContinue()
   }
@@ -80,7 +80,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   private fun readPrefsAndContinue() {
     lifecycleScope.launch(Dispatchers.IO) {
-      LOG.D()
+      LOG.V()
       dsCv.read.first { prefs ->
         VM.prefsCV= prefs
         onCvPrefsLoaded(prefs)
@@ -125,8 +125,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             this@CvMapActivity,
             supportFragmentManager,
             overlays, floorSelector)
-    maph = GmapHandler(applicationContext, lifecycleScope, UI)
-    maph.attach(VM, this, R.id.mapView)
+    wMap = GmapWrapper(applicationContext, lifecycleScope, UI)
+    wMap.attach(VM, this, R.id.mapView)
 
     /** Updates on the mapH after a floor has changed */
     val floorSelectorCallback = object: FloorSelector.Callback() {
@@ -134,7 +134,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
         UI.removeHeatmap()
-        maph.removeUserLocations()
+        wMap.removeUserLocations()
 
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
@@ -167,11 +167,18 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
 
+  /**
+   * GMap is created by [CvMapActivity].
+   * This is a callback that can be used sub-classes.
+   */
+  protected abstract fun onMapReadyCallback()
+
   /** Setup the Google Map:
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    maph.setup(googleMap)
+    wMap.setup(googleMap)
+    onMapReadyCallback()
   }
 
   override fun onProcessImageFinished() {

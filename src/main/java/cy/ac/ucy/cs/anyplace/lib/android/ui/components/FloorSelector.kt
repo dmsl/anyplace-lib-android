@@ -61,7 +61,7 @@ class FloorSelector(
 
       val isLastFloor = floor.floorNumber==FH.getLastFloor().floorNumber
       updateSelectionButton(btnFloorUp, ctx, !isLastFloor)
-      LOG.D(TAG_METHOD, "floors: ${FH.getFirstFloor().floorNumber} - ${FH.getLastFloor().floorNumber}")
+      LOG.V2(TAG_METHOD, "floors: ${FH.getFirstFloor().floorNumber} - ${FH.getLastFloor().floorNumber}")
     }
   }
 
@@ -91,8 +91,7 @@ class FloorSelector(
       return
     }
 
-    LOG.W()
-    // val FH= VM.floorH!!
+    LOG.V2()
     if (floorChangeRequestTime == 0L) {
       floorChangeRequestTime = System.currentTimeMillis()
       loadFloor(VM, scope)
@@ -112,7 +111,7 @@ class FloorSelector(
           delay(200)
         } while(diff < DELAY_CHANGE_FLOOR)
 
-        LOG.D2(TAG_METHOD, "changing to floor: ${VM.floorH!!.prettyFloorName()} (after delay)")
+        LOG.V2(TAG, "lazilyChangeFloor: to floor: ${VM.floorH!!.prettyFloorName()} (after delay)")
 
         isLazilyChangingFloor = false
 
@@ -141,7 +140,7 @@ class FloorSelector(
     }
 
     val FH = VM.floorH!!
-    LOG.W(TAG_METHOD, FH.prettyFloorName())
+    LOG.V2(TAG_METHOD, FH.prettyFloorName())
     // TODO:PMX OPT
     scope.launch(Dispatchers.IO) {
       if (FH.hasFloorplanCached()) {

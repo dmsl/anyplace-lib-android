@@ -308,10 +308,7 @@ abstract class CvViewModelBase constructor(
    * for a particular space.
    */
   fun selectInitialFloor(ctx: Context) {
-    LOG.E()
-    // val spaceH = spaceH!!
-    // val floorsH = floorsH!!
-
+    LOG.V3()
     if (!floorsH.hasFloors()) {  // space has no floors
       val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."
       LOG.E(TAG_METHOD, msg)
@@ -325,18 +322,18 @@ abstract class CvViewModelBase constructor(
     if (spaceH.hasLastValuesCached()) {
       val lastVal = spaceH.loadLastValues()
       if (lastVal.lastFloor!=null) {
-        LOG.D2(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
+        LOG.V2(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
         floor.value = floorsH.getFloor(lastVal.lastFloor!!)
       }
       lastValSpaces = lastVal
     }
 
     if (floor.value == null)  {
-      LOG.D2(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
+      LOG.D3(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
       floor.value = floorsH.getFirstFloor()
     }
 
-    LOG.D(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
+    LOG.V2(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
   }
 
 }

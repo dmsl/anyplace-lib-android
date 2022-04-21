@@ -229,11 +229,11 @@ open class CvMapViewModel @Inject constructor(
   // TODO in new class
   /** Go one floor up */
   fun floorGoUp() {
-    LOG.E()
+    LOG.V3()
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoUp(floorNumStr)) {
       val to = floorsH.getFloorAbove(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value?.floorNumber} to: $to")
+      LOG.V2(TAG_METHOD, "from: ${floor.value?.floorNumber} to: ${to?.floorNumber}")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further up.")
@@ -242,11 +242,11 @@ open class CvMapViewModel @Inject constructor(
 
   /** Go one floor down */
   fun floorGoDown() {
-    LOG.E()
+    LOG.V3()
     val floorNumStr = floor.value?.floorNumber.toString()
     if (floorsH.canGoDown(floorNumStr)) {
       val to = floorsH.getFloorBelow(floorNumStr)
-      LOG.D(TAG_METHOD, "from: ${floor.value?.floorNumber} to: $to")
+      LOG.V2(TAG_METHOD, "from: ${floor.value?.floorNumber} to: ${to?.floorNumber}")
       floor.value = to
     } else {
       LOG.W(TAG_METHOD, "Cannot go further down.")
@@ -259,13 +259,12 @@ open class CvMapViewModel @Inject constructor(
    * for a particular space.
    */
   fun selectInitialFloor(ctx: Context) {
-    LOG.E()
-
-    LOG.E(TAG,"${spaceH.prettyFloors}: ${floorsH.size}")
+    LOG.V2()
+    LOG.V2(TAG,"${spaceH.prettyFloors}: ${floorsH.size}")
 
     if (!floorsH.hasFloors()) {  // space has no floors
       val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."
-      LOG.E(TAG_METHOD, msg)
+      LOG.W(TAG_METHOD, msg)
       Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
       floor.value = null
     }
@@ -276,17 +275,17 @@ open class CvMapViewModel @Inject constructor(
     if (spaceH.hasLastValuesCached()) {
       val lastVal = spaceH.loadLastValues()
       if (lastVal.lastFloor!=null) {
-        LOG.D2(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
+        LOG.V3(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
         floor.value = floorsH.getFloor(lastVal.lastFloor!!)
       }
       lastValSpaces = lastVal
     }
 
     if (floor.value == null)  {
-      LOG.D2(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
+      LOG.V3(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
       floor.value = floorsH.getFirstFloor()
     }
 
-    LOG.D(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
+    LOG.V2(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
   }
 }

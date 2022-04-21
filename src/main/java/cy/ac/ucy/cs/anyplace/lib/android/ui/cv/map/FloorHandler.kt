@@ -7,8 +7,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapFast
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.models.CvMap
@@ -46,6 +46,7 @@ open class FloorHandler(
           is NetworkResult.Error -> {
             val msg = "Failed to fetch ${VM.spaceH.prettyType}: ${VM.space?.name}"
             LOG.E(msg)
+            LOG.E(TAG, "Error: ${response.message}")
             Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
           }
           is NetworkResult.Success -> {
@@ -72,8 +73,8 @@ open class FloorHandler(
    * - store the last floor selection (for the relevant [Space])
    * - loads the floor
    */
-  fun observeFloorChanges(gmapH: GmapHandler) {
-    LOG.W()
+  fun observeFloorChanges(gmapH: GmapWrapper) {
+    LOG.D3()
     scope.launch{
       VM.floor.collect { selectedFloor ->
 
@@ -85,12 +86,12 @@ open class FloorHandler(
         // update FloorHelper & FloorSelector
         VM.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VM.spaceH) else null
         UI.floorSelector.updateFloorSelector(selectedFloor, VM.floorsH)
-        LOG.W(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
+        LOG.V3(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
-          LOG.W(TAG,
+          LOG.V2(TAG,
                   "observeFloorChanges: -> updating cache: floor: ${VM.floor.value?.floorNumber}")
           updateAndCacheLastFloor(VM.floor.value)
-          LOG.W(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
+          LOG.V2(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
           UI.floorSelector.lazilyChangeFloor(VM, scope)
         }
       }
@@ -101,7 +102,7 @@ open class FloorHandler(
    * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
    */
   private fun updateAndCacheLastFloor(floor: Floor?) {
-    LOG.W(TAG_METHOD, floor?.floorNumber.toString())
+    LOG.V2(TAG, "$METHOD: ${floor?.floorNumber.toString()}")
     if (floor != null) {
       VM.lastValSpaces.lastFloor=floor.floorNumber
       VM.spaceH.cacheLastValues(VM.lastValSpaces)

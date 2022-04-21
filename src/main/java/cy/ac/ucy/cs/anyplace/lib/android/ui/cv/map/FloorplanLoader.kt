@@ -14,7 +14,7 @@ class FloorplanLoader {
    * Reads a floorplan image form the devices cache
    */
   fun readFromCache(VM: CvMapViewModel, FH: FloorHelper) {
-    LOG.D(TAG_METHOD, FH.prettyFloorName())
+    LOG.V3(TAG_METHOD, FH.prettyFloorName())
     val localResult =
             when (val bitmap = FH.loadFromCache()) {
               null -> NetworkResult.Error("Failed to load from local cache")
