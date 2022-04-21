@@ -48,7 +48,7 @@ import android.text.TextPaint;
 
 import androidx.core.app.ActivityCompat;
 
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
 
 @Deprecated
 public class AndroidUtils {

@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.di
 
 import android.app.Application
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

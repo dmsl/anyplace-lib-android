@@ -24,7 +24,7 @@ import java.io.FileWriter
  * Structure:
  * - TODO:PM
  */
-class Cache(val ctx: Context) {
+open class Cache(val ctx: Context) {
 
   companion object {
     // FILES
@@ -36,7 +36,9 @@ class Cache(val ctx: Context) {
     const val PNG_FLOORPLAN = "f.png"
   }
 
-  val spacesDir get() = "${ctx.filesDir}/spaces"
+  val baseDir get() = "${ctx.filesDir}"
+
+  val spacesDir get() = "$baseDir/spaces"
 
   // SPACES
   fun dirSpace(space: Space) : String {  return "$spacesDir/${space.id}"  }

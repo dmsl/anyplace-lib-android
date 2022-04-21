@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject

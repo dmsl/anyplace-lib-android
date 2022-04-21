@@ -73,7 +73,7 @@ class FloorsHelper(val unsortedObj: Floors, val spaceH: SpaceHelper) {
         val bitmap = FH.requestRemoteFloorplan()
         if (bitmap != null) {
           FH.cacheFloorplan(bitmap)
-          LOG.D("Downloaded: ${FH.prettyFloorplanNumber()}.")
+          LOG.V2("Downloaded: ${FH.prettyFloorplanNumber()}.")
         }
       } else {
         alreadyCached+="${FH.obj.floorNumber}, "
@@ -81,7 +81,7 @@ class FloorsHelper(val unsortedObj: Floors, val spaceH: SpaceHelper) {
     }
 
     if (alreadyCached.isNotEmpty()) {
-      LOG.D2(TAG_METHOD, "already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
+      LOG.V3(TAG_METHOD, "already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
     }
   }
 

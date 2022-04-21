@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.utils.network
+package cy.ac.ucy.cs.anyplace.lib.android.utils.net
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.API

@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.ServerDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsServer
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay

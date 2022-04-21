@@ -44,7 +44,9 @@ class GmapHandler(private val ctx: Context,
             .beginTransaction()
             .add(layout_id, mapFragment)
             .commit()
-    mapFragment.getMapAsync(act)
+    scope.launch(Dispatchers.Main) {
+      mapFragment.getMapAsync(act)
+    }
   }
 
   fun setup(googleMap: GoogleMap) {

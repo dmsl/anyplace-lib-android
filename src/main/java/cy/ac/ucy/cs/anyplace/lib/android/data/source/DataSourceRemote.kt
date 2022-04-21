@@ -1,6 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.source
 
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.models.*
 import retrofit2.Response
 import javax.inject.Inject

@@ -63,7 +63,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.deprecated.BackgroundFetchListene
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
 import cy.ac.ucy.cs.anyplace.lib.android.tasks.FetchBuildingsTask;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
 
 
 /**

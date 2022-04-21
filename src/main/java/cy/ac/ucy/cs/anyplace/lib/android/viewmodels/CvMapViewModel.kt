@@ -23,8 +23,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.models.*
@@ -78,7 +78,9 @@ open class CvMapViewModel @Inject constructor(
   lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs
   val prefsCvNav = dsCvNav.read
+
   lateinit var prefsNav: CvNavigationPrefs
+
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
   val localizationFlow = localization.asStateFlow()
@@ -118,7 +120,7 @@ open class CvMapViewModel @Inject constructor(
   private fun loadFloorplanFromAsset() {
     LOG.W(TAG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
-    val bitmap = base64?.let { utlImg.stringToBitmap(it) }
+    val bitmap = base64?.let { utlImg.decodeBase64(it) }
     floorplanFlow.value =
             when (bitmap) {
               null -> Error("Cant read asset deckplan.")

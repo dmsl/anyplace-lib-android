@@ -10,6 +10,8 @@ import android.util.Base64
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import okhttp3.ResponseBody
 import retrofit2.Response
 
@@ -68,7 +70,7 @@ class FloorHelper(val obj: Floor,
    * Request and cache a [Bitmap]
    */
   suspend fun requestRemoteFloorplan() : Bitmap? {
-    LOG.D2("requestRemoteFloorplan: ${obj.buid}: ${obj.floorNumber}")
+    LOG.D3(TAG,"$METHOD: ${obj.buid}: ${obj.floorNumber}")
     val response = spaceH.repo.remote.getFloorplanBase64(obj.buid, obj.floorNumber)
     return handleResponse(response)
   }

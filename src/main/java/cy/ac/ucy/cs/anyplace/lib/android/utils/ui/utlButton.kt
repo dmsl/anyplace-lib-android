@@ -13,6 +13,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 
+/**
+ * Button Utils (some provide backwards compatibility)
+ */
 object utlButton {
 
   /**

@@ -79,7 +79,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * -[DataStoreNav]: map opacity, localization interval, etc
    */
   private fun readPrefsAndContinue() {
-    lifecycleScope.launch {
+    lifecycleScope.launch(Dispatchers.IO) {
       LOG.D()
       dsCv.read.first { prefs ->
         VM.prefsCV= prefs
@@ -149,7 +149,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     bottomSheet = BottomSheetCvMap(this@CvMapActivity, VM.prefsNav.devMode)
 
     // keep reacting to  settings updates
-    lifecycleScope.launch {
+    lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvNav.read.collect {
         LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
         bottomSheet.setup()

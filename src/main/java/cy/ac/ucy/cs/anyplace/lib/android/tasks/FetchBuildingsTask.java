@@ -55,7 +55,7 @@ import com.google.android.gms.maps.model.LatLng;
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
 
 @Deprecated
 public class FetchBuildingsTask extends AsyncTask<Void, Void, String> {

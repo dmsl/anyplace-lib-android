@@ -14,7 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.LoginFormState
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.models.UserLoginResponse

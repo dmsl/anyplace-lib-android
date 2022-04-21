@@ -142,7 +142,8 @@ class FloorSelector(
 
     val FH = VM.floorH!!
     LOG.W(TAG_METHOD, FH.prettyFloorName())
-    scope.launch {
+    // TODO:PMX OPT
+    scope.launch(Dispatchers.IO) {
       if (FH.hasFloorplanCached()) {
         fpLoader.readFromCache(VM, FH)
       } else {

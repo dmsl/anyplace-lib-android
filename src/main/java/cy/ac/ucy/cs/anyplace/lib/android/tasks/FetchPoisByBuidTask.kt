@@ -42,7 +42,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Deprecated

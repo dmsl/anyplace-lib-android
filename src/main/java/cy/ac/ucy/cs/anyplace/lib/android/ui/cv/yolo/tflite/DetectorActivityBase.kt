@@ -103,6 +103,7 @@ abstract class DetectorActivityBase : CameraActivity(),
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size==null) return
 
+    // TODO:PMX OPT
     lifecycleScope.launch {
 
       if(!setupDetector()) {

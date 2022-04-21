@@ -94,7 +94,8 @@ dependencies {
 
   //// DEPENDENCY INJECTION (dagger/hilt)
   implementation "com.google.dagger:hilt-android:$ver_hilt"
-  kapt "com.google.dagger:hilt-compiler:$ver_hilt"
+    implementation 'androidx.exifinterface:exifinterface:1.3.2'
+    kapt "com.google.dagger:hilt-compiler:$ver_hilt"
   kapt "com.google.dagger:dagger-android-processor:$ver_hilt"
 
   implementation 'androidx.legacy:legacy-support-v4:1.0.0'

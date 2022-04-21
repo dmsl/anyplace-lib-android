@@ -48,7 +48,7 @@ import android.os.AsyncTask;
 import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.PoisModel;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
 
 import static android.content.Context.MODE_PRIVATE;
 

@@ -42,7 +42,7 @@ import org.json.JSONObject;
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
-import cy.ac.ucy.cs.anyplace.lib.android.utils.network.OLDNetworkUtils;
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
 import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
 
 public class Algo1Server extends FloorSelector {
