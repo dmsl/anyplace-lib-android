@@ -14,6 +14,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -78,10 +81,12 @@ abstract class AnyplaceApp : Application() {
   }
 
   private var toast: Toast ?= null
-  fun showToast(msg: String, len: Int = Toast.LENGTH_SHORT) {
-    if (toast != null) toast!!.cancel()
-    toast = Toast.makeText(this, msg, len)
-    toast!!.show()
+  fun showToast(scope: CoroutineScope, msg: String, len: Int = Toast.LENGTH_SHORT) {
+    scope.launch(Dispatchers.Main) {
+      if (toast != null) toast!!.cancel()
+      toast = Toast.makeText(this@AnyplaceApp, msg, len)
+      toast!!.show()
+    }
   }
 
   //// MISC
