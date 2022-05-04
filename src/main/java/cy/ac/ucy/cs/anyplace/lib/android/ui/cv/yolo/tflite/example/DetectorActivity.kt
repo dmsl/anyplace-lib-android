@@ -44,7 +44,7 @@ class DetectorActivity : DetectorActivityBase() {
   override fun onProcessImageFinished() {
     LOG.V4()
     lifecycleScope.launch(Dispatchers.Main) {
-      bottomSheet.refreshUi()
+      bottomSheet.refreshUi(lifecycleScope)
     }
   }
 

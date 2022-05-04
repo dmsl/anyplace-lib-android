@@ -20,6 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -183,16 +184,25 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onProcessImageFinished() {
     LOG.V3()
-    lifecycleScope.launch(Dispatchers.Main) {
-      bottomSheet.refreshUi()
-    }
+    bottomSheet.refreshUi(lifecycleScope)
   }
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
       // TODO method that updates ui based on internet connectivity: gray out settings button
-      Toast.makeText(applicationContext, "No internet connection.", Toast.LENGTH_LONG).show()
+      Toast.makeText(applicationContext, "No internet.", Toast.LENGTH_LONG).show()
     }
+  }
+
+  fun observerDetections() {
+    lifecycleScope.launch {
+      VM.detectionsLocalization.collectLatest {
+        it.forEach { rec ->
+          LOG.E(TAG, "Detection: ${rec.id} ${rec.title}")
+        }
+      }
+    }
+    // detectionsLocalization.coll
   }
 
 }

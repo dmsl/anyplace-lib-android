@@ -47,7 +47,9 @@ object utlTime {
     return sdf.format(date)
   }
 
-  /** Get epoch in seconds (just like in Unix) */
+
+  fun getPrettyEpochCY(epoch: Long) = getPrettyEpoch(epoch, TIMEZONE_CY)
+
   fun epoch(): Long = System.currentTimeMillis()/1000
 
   fun secondsElapsed(time: Long) : Long {

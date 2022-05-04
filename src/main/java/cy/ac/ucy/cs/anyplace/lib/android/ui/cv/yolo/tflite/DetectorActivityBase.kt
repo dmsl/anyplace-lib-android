@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTrac
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -94,7 +95,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
 
   override fun postCreate() {
-    _vm = ViewModelProvider(this).get(view_model_class)
+    _vm = ViewModelProvider(this)[view_model_class]
     VM = _vm as DetectorViewModel
   }
 
@@ -105,7 +106,6 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // TODO:PMX OPT
     lifecycleScope.launch {
-
       if(!setupDetector()) {
         val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
         toast.show()
@@ -247,7 +247,11 @@ abstract class DetectorActivityBase : CameraActivity(),
     val results = VM.detector.recognizeImage(croppedBitmap)
     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
-    LOG.V3(TAG_METHOD, "Detections: ${results?.size}")
+    LOG.V3(TAG_METHOD, "Detections: ${results.size}")
+    results.forEach { rec ->
+      LOG.V3(TAG, "Detection: ${rec.detectedClass} ${rec.title}")
+    }
+
     cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
     canvas = Canvas(cropCopyBitmap)
 

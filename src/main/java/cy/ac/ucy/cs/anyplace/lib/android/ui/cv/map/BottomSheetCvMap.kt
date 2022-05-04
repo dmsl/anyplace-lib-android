@@ -6,9 +6,13 @@ import android.view.ViewTreeObserver
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class BottomSheetCvMap(private val act: DetectorActivityBase,
                        private val showBottomSheet: Boolean = false) {
@@ -62,13 +66,14 @@ class BottomSheetCvMap(private val act: DetectorActivityBase,
   }
 
   @SuppressLint("SetTextI18n")
-  fun refreshUi() {
+  fun refreshUi(scope: LifecycleCoroutineScope) {
     if (!showBottomSheet) return
-
-    frameValueTextView.text = "${act.previewWidth}x${act.previewHeight}"
-    val w = act.cropCopyBitmap.width
-    val h = act.cropCopyBitmap.height
-    cropValueTextView.text = "${w}x${h}"
-    inferenceTimeTextView.text =  "${act.lastProcessingTimeMs}ms"
+    scope.launch(Dispatchers.Main) {
+      frameValueTextView.text = "${act.previewWidth}x${act.previewHeight}"
+      val w = act.cropCopyBitmap.width
+      val h = act.cropCopyBitmap.height
+      cropValueTextView.text = "${w}x${h}"
+      inferenceTimeTextView.text =  "${act.lastProcessingTimeMs}ms"
+    }
   }
 }

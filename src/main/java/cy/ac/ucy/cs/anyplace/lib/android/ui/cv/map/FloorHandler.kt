@@ -119,11 +119,10 @@ open class FloorHandler(
   suspend fun loadCvMapAndHeatmap(gmap: GoogleMap) {
     LOG.V3()
 
-    // BUGFIX: artificial delay (workaround).
-    // This might have to be properly implemented
+    // BUGFIX: artificial delay workaround; could implement this better)
    while (!VM.modelLoaded) {
-     LOG.E(TAG, "loadCvMapAndHeatmap: waiting for model to be loaded..")
-     delay(100)
+     LOG.W(TAG, "$METHOD: waiting for model to be loaded..")
+     delay(200)
    }
 
     val model = VM.model // TODO
