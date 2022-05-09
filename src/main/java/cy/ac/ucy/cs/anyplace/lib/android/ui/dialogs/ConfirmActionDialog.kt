@@ -1,0 +1,84 @@
+package cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs
+
+import android.app.AlertDialog
+import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.view.LayoutInflater
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.databinding.DialogConfirmActionBinding
+import java.lang.IllegalStateException
+
+open class ConfirmActionDialog(
+        val title: String,
+        val callback: () -> Unit,
+        val subtitle: String?,
+        val cancellable: Boolean) :
+        DialogFragment() {
+
+  companion object {
+
+    /**
+     * Creating the dialog.
+     * It gets a [SpaceHelper], [FloorsHelper], and a [FloorHelper] and:
+     * - if each object is not null:
+     *   - it is serialized (into a [String]) and put into the bundle
+     * - Once the dialog is created they are deserialized to provide additional clear cache options
+     *
+     * - TODO pass method over here
+     */
+    fun SHOW(fragmentManager: FragmentManager,
+             title: String,
+             /** optional subtitle */
+             subtitle: String?=null,
+             /** cancel the dialog when clicking outside of it */
+             cancellable: Boolean = true,
+             /** method to run when confirmed */
+             callback: () -> Unit) {
+
+      val dialog = ConfirmActionDialog(title, callback, subtitle, cancellable)
+
+      val args = Bundle()
+      dialog.arguments = args
+      dialog.show(fragmentManager, "")
+    }
+  }
+
+  var _binding : DialogConfirmActionBinding?= null
+  private val binding get() = _binding!!
+
+  override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    return activity?.let {
+      _binding = DialogConfirmActionBinding.inflate(LayoutInflater.from(context))
+
+      val builder= AlertDialog.Builder(it)
+      isCancelable = cancellable
+      builder.setView(binding.root)
+      val dialog = builder.create()
+      dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+      binding.tvTitle.text = title
+      subtitle?.let { binding.tvSubtitle.text = subtitle }
+
+      setupConfirmButton()
+
+      return dialog
+    }?: throw IllegalStateException("$TAG Activity is null.")
+  }
+
+  private fun setupConfirmButton() {
+    val btn = binding.btnConfirm
+    btn.setOnClickListener {
+      callback()
+      dismiss()
+    }
+  }
+}

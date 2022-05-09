@@ -10,10 +10,12 @@ import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.di.DaggerAppComponent
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
