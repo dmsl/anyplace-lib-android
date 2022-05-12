@@ -21,7 +21,7 @@ object utlButton {
   /**
    * Works for [MaterialButton]
    */
-  fun changeBackgroundButton(btn: Button, ctx: Context, colorId: Int) {
+  fun changeBackgroundButtonDONT_USE(btn: Button, ctx: Context, colorId: Int) {
     val compatColor = ContextCompat.getColor(ctx, colorId)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       btn.setBackgroundColor(compatColor)

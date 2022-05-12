@@ -285,7 +285,7 @@ class UiActivityCvLogger(
     VM.localization.value = Localization.running
     statusUpdater.setStatus("scanning..")
     btnDemoNav.visibility = View.VISIBLE
-    utlButton.changeBackgroundButton(btnDemoNav, ctx, R.color.colorPrimary)
+    utlButton.changeBackgroundButtonDONT_USE(btnDemoNav, ctx, R.color.colorPrimary)
     mapView.alpha = 0.90f // TODO:PM no alpha..
   }
 
@@ -293,7 +293,7 @@ class UiActivityCvLogger(
     LOG.D2()
     val btnDemoNav = binding.btnDemoNavigation
     statusUpdater.clearStatus()
-    utlButton.changeBackgroundButton(btnDemoNav, ctx, R.color.darkGray)
+    utlButton.changeBackgroundButtonDONT_USE(btnDemoNav, ctx, R.color.darkGray)
     btnDemoNav.isEnabled = true
     mapView.alpha = 1f
     VM.localization.tryEmit(Localization.stopped)

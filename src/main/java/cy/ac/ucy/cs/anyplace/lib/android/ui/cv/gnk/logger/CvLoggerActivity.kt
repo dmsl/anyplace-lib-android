@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonDONT_USE
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.removeMaterialButtonIcon
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel
@@ -217,7 +217,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         btnLogging.text = "pause"
         removeMaterialButtonIcon(btnTimer)
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.darkGray)
-        changeBackgroundButton(btnTimer, applicationContext, R.color.redDark)
+        changeBackgroundButtonDONT_USE(btnTimer, applicationContext, R.color.redDark)
         btnTimer.fadeIn()
         binding.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
@@ -236,7 +236,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         }
         changeBackgroundButtonCompat(btnLogging, applicationContext, R.color.colorPrimary)
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        changeBackgroundButton(btnTimer, applicationContext, R.color.darkGray)
+        changeBackgroundButtonDONT_USE(btnTimer, applicationContext, R.color.darkGray)
       }
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
         btnDemoNav.visibility = View.GONE
@@ -255,7 +255,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
         LOG.D(TAG_METHOD, "stopped must store: visible")
 
         binding.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        changeBackgroundButton(btnTimer, applicationContext, R.color.yellowDark)
+        changeBackgroundButtonDONT_USE(btnTimer, applicationContext, R.color.yellowDark)
 
         val storedDetections = VM.storedDetections.size
         val noDetections = storedDetections == 0
@@ -364,7 +364,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     delay(delayMs)
     statusUpdater.hideStatus()
     removeMaterialButtonIcon(binding.bottomUi.buttonCameraTimer)
-    changeBackgroundButton(binding.bottomUi.buttonCameraTimer, applicationContext, R.color.darkGray)
+    changeBackgroundButtonDONT_USE(binding.bottomUi.buttonCameraTimer, applicationContext, R.color.darkGray)
     changeBackgroundButtonCompat(
             binding.bottomUi.buttonLogging,
             applicationContext,
