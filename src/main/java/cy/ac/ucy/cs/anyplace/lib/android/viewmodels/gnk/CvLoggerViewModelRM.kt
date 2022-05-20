@@ -1,5 +1,5 @@
+// MERGED?
 // package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk
-//
 // import android.annotation.SuppressLint
 // import android.app.Application
 // import android.graphics.Bitmap

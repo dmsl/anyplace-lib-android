@@ -109,7 +109,7 @@ open class CvMapViewModel @Inject constructor(
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
   /** Initialized onMapReady */
-  var markers : Markers? = null
+  lateinit var markers : Markers
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(Error(null))
   /** Holds the functionality of a [CvMap] and can generate the [CvMapFast] */
   var cvMapH: CvMapHelper? = null

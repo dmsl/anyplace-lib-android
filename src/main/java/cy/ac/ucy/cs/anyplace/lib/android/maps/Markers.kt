@@ -85,6 +85,7 @@ class Markers(private val ctx: Context,
     }
   }
 
+  // TODO:PM hide LoggerMarkers?
   fun hideCvObjMarkers() { cvObjects.forEach { it.remove() } }
 
   fun hideUserMarkers() { users.forEach { it.remove() } }
