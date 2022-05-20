@@ -14,11 +14,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBaseRM
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonDONT_USE
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.removeMaterialButtonIcon
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModelRM
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Localization
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.TimerAnimation
@@ -33,48 +33,44 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 @Deprecated("")
-class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
-  private lateinit var binding: ActivityCvLoggerBinding
-  private lateinit var VM: CvLoggerViewModel
-  private lateinit var statusUpdater: StatusUpdater
-  private lateinit var UI: UiActivityCvLogger
+class CvLoggerActivityRM : CvActivityBaseRM(), OnMapReadyCallback {
 
   // FRAGMENTS
   /** kept here (not in viewModel) as we want this to be reset on lifecycle updates */
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    binding = ActivityCvLoggerBinding.inflate(layoutInflater)
-    setContentView(binding.root)
-    VM = ViewModelProvider(this).get(CvLoggerViewModel::class.java)
-    VMB = VM
+    // binding = ActivityCvLoggerBinding.inflate(layoutInflater)
+    // setContentView(binding.root)
+    // VM = ViewModelProvider(this).get(CvLoggerViewModelRM::class.java)
+    // VMB = VM
 
-    statusUpdater = StatusUpdater(
-            applicationContext,
-            lifecycleScope,
-            binding.tvStatusSticky,
-            binding.tvMsgTitle,
-            binding.tvMsgSubtitle,
-            binding.viewStatusBackground,
-            binding.viewWarning)
+    // statusUpdater = StatusUpdater( // MERGED
+    //         applicationContext,
+    //         lifecycleScope,
+    //         binding.tvStatusSticky,
+    //         binding.tvMsgTitle,
+    //         binding.tvMsgSubtitle,
+    //         binding.viewStatusBackground,
+    //         binding.viewWarning)
 
-    floorSelector = FloorSelector(
-            applicationContext,
-            binding.groupFloorSelector,
-            binding.textViewTitleFloor,
-            binding.buttonSelectedFloor,
-            binding.buttonFloorUp,
-            binding.buttonFloorDown)
+    // floorSelector = FloorSelector( // MERGED: (possible. at CvMapActivity; parent of CvLog/SmasMain)
+    //         applicationContext,
+    //         binding.groupFloorSelector,
+    //         binding.textViewTitleFloor,
+    //         binding.buttonSelectedFloor,
+    //         binding.buttonFloorUp,
+    //         binding.buttonFloorDown)
 
-    UI = UiActivityCvLogger(
-            this@CvLoggerActivity,
-            supportFragmentManager,
-            lifecycleScope,
-            statusUpdater,
-            floorSelector,
-            overlays,
-            VM,
-            binding)
-    UIB = UI
+    // UI = UiActivityCvLogger(
+    //         this@CvLoggerActivityRM,
+    //         supportFragmentManager,
+    //         lifecycleScope,
+    //         statusUpdater,
+    //         floorSelector,
+    //         overlays,
+    //         VM,
+    //         binding)
+    // UIB = UI
 
     setupComputerVision()
     setupMap()
@@ -104,71 +100,71 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
     }
   }
 
-  private fun setupComputerVision() {
-    super.setupComputerVision(binding.tovCamera, binding.pvCamera)
-    observeObjectDetections()
-    observeLoggingStatus()
+  // private fun setupComputerVision() {
+  //   super.setupComputerVision(binding.tovCamera, binding.pvCamera)
+  //   observeObjectDetections()
+  //   observeLoggingStatus()
+  //
+  //   // there is demo localization in Logger too,
+  //   // to validate findings according to the latest CvMap
+  //   collectLocalizationStatus()
+  //   collectLocation()
+  // }
 
-    // there is demo localization in Logger too,
-    // to validate findings according to the latest CvMap
-    collectLocalizationStatus()
-    collectLocation()
-  }
+  // /**
+  //  * Observes [VM.objectDetectionsAll] changes and updates
+  //  * [binding.bottomUi.buttonCameraTimer] accordingly.
+  //  */
+  // private fun observeObjectDetections() {
+  //   VM.objectsWindowAll.observeForever { detections ->
+  //     binding.bottomUi.tvWindowObjectsAll.text = detections.toString()
+  //   }
+  // }
+  //
+  // private fun observeLoggingStatus() {
+  //   VM.logging.observeForever { status ->
+  //     LOG.D(TAG_METHOD, "logging: $status")
+  //     updateLoggingUi(status)
+  //   }
+  // }
 
-  /**
-   * Observes [VM.objectDetectionsAll] changes and updates
-   * [binding.bottomUi.buttonCameraTimer] accordingly.
-   */
-  private fun observeObjectDetections() {
-    VM.objectsWindowAll.observeForever { detections ->
-      binding.bottomUi.tvWindowObjectsAll.text = detections.toString()
-    }
-  }
+  // private fun collectLocation() {
+  //   lifecycleScope.launch{
+  //     VM.location.collect { result ->
+  //       when (result) {
+  //         is LocalizationResult.Unset -> { }
+  //         is LocalizationResult.Error -> {
+  //           val msg = result.message.toString()
+  //           val details = result.details
+  //           if (details != null) {
+  //             statusUpdater.showErrorAutohide(msg, details, 4000L)
+  //           } else {
+  //             statusUpdater.showErrorAutohide(msg, 4000L)
+  //           }
+  //         }
+  //         is LocalizationResult.Success -> {
+  //           result.coord?.let { VM.setUserLocation(it) }
+  //           statusUpdater.showInfoAutohide("Found loc","XY: ${result.details}.", 3000L)
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
-  private fun observeLoggingStatus() {
-    VM.logging.observeForever { status ->
-      LOG.D(TAG_METHOD, "logging: $status")
-      updateLoggingUi(status)
-    }
-  }
-
-  private fun collectLocation() {
-    lifecycleScope.launch{
-      VM.location.collect { result ->
-        when (result) {
-          is LocalizationResult.Unset -> { }
-          is LocalizationResult.Error -> {
-            val msg = result.message.toString()
-            val details = result.details
-            if (details != null) {
-              statusUpdater.showErrorAutohide(msg, details, 4000L)
-            } else {
-              statusUpdater.showErrorAutohide(msg, 4000L)
-            }
-          }
-          is LocalizationResult.Success -> {
-            result.coord?.let { VM.setUserLocation(it) }
-            statusUpdater.showInfoAutohide("Found loc","XY: ${result.details}.", 3000L)
-          }
-        }
-      }
-    }
-  }
-
-  private fun collectLocalizationStatus() {
-      lifecycleScope.launch{
-      VM.localization.collect { status ->
-        LOG.W(TAG_METHOD, "status: $status")
-        when(status) {
-          Localization.stopped -> {
-            UI.endLocalization(binding.mapView)
-            VM.logging.postValue(Logging.stopped)
-          }
-          else ->  {}
-        }
-      }
-    }
-  }
+  // private fun collectLocalizationStatus() {
+  //     lifecycleScope.launch{
+  //     VM.localization.collect { status ->
+  //       LOG.W(TAG_METHOD, "status: $status")
+  //       when(status) {
+  //         Localization.stopped -> {
+  //           UI.endLocalization(binding.mapView)
+  //           VM.logging.postValue(Logging.stopped)
+  //         }
+  //         else ->  {}
+  //       }
+  //     }
+  //   }
+  // }
 
   @Deprecated("") // MERGED partially
   private fun setupButtonsAndUi() {
@@ -293,7 +289,7 @@ class CvLoggerActivity : CvActivityBase(), OnMapReadyCallback {
 
   /**
    * Anything that relies on the [gmap].
-   * - called by [CvActivityBase.onMapReady]
+   * - called by [CvActivityBaseRM.onMapReady]
    */
   override fun onMapReadySpecialize() {
     UI.setupClickedLoggingButton(gmap)

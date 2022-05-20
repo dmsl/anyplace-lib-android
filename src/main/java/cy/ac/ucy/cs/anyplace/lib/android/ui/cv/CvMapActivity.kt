@@ -59,7 +59,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // UI
   //// COMPONENTS
   protected lateinit var floorSelector: FloorSelector
-  protected lateinit var UI: CvMapUi
+  protected lateinit var ui: CvMapUi
 
   override fun postCreate() {
     super.postCreate()
@@ -115,37 +115,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   protected open fun setupButtonsAndUi() {
-    floorSelector = FloorSelector(applicationContext,
-            findViewById(R.id.group_floorSelector),
-            findViewById(R.id.textView_titleFloor),
-            findViewById(R.id.button_selectedFloor),
-            findViewById(R.id.button_floorUp),
-            findViewById(R.id.button_floorDown))
-
-    UI = CvMapUi(VM, lifecycleScope,
-            this@CvMapActivity,
-            supportFragmentManager,
-            overlays, floorSelector)
-    wMap = GmapWrapper(applicationContext, lifecycleScope, UI)
-    wMap.attach(VM, this, R.id.mapView)
-
-    /** Updates on the mapH after a floor has changed */
-    val floorSelectorCallback = object: FloorSelector.Callback() {
-      override fun before() {
-        LOG.D4(TAG_METHOD, "remove user locations")
-        // clear any overlays
-        UI.removeHeatmap()
-        wMap.removeUserLocations()
-
-        // [Overlays.drawFloorplan] removes any previous floorplan
-        // before drawing a new one so it doesn't need anything.
-      }
-
-      override fun after() {
-      }
-    }
-
-    floorSelector.callback = floorSelectorCallback
+    setupFloorSelector()
+    setupGmap()
 
     bottomSheet = BottomSheetCvMap(this@CvMapActivity, VM.prefsNav.devMode)
 
@@ -158,7 +129,41 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
 
     checkInternet()
-    UI.setupOnFloorSelectionClick()
+    ui.setupOnFloorSelectionClick()
+  }
+
+  private fun setupGmap() {
+    ui = CvMapUi(VM, lifecycleScope,
+            this@CvMapActivity,
+            supportFragmentManager,
+            overlays, floorSelector)
+    wMap = GmapWrapper(applicationContext, lifecycleScope, ui)
+    wMap.attach(VM, this, R.id.mapView)
+  }
+
+  private fun setupFloorSelector() {
+    floorSelector = FloorSelector(applicationContext,
+            findViewById(R.id.group_floorSelector),
+            findViewById(R.id.textView_titleFloor),
+            findViewById(R.id.button_selectedFloor),
+            findViewById(R.id.button_floorUp),
+            findViewById(R.id.button_floorDown))
+
+    /** Updates on the wMap after a floor has changed */
+    val callbackFloorselector = object: FloorSelector.Callback() {
+      override fun before() {
+        LOG.D4(TAG_METHOD, "remove user locations")
+        // clear any overlays
+        ui.removeHeatmap()
+        wMap.removeUserLocations()
+        // [Overlays.drawFloorplan] removes any previous floorplan
+        // before drawing a new one so it doesn't need anything.
+      }
+
+      override fun after() { }
+    }
+
+    floorSelector.callback = callbackFloorselector
   }
 
   private fun setMapOpacity() {
@@ -196,7 +201,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   fun observerDetections() {
     lifecycleScope.launch {
-      VM.detectionsLocalization.collectLatest {
+      VM.detectionsNAV.collectLatest {
         it.forEach { rec ->
           LOG.E(TAG, "Detection: ${rec.id} ${rec.title}")
         }

@@ -17,7 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBaseRM
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.AppInfo
@@ -32,17 +32,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Encapsulating UI operations for the [CvLoggerActivity]
+ * Encapsulating UI operations for the [CvLoggerActivityRM]
  */
 @Deprecated("")
-class UiActivityCvLogger(
+class UiActivityCvLoggerRM(
         activity: Activity,
         fragmentManager: FragmentManager,
         scope: CoroutineScope,
         statusUpdater: StatusUpdater,
         floorSelector: FloorSelector,
         overlays: Overlays,
-        private val VM: CvLoggerViewModel,
+        private val VM: CvLoggerViewModelRM,
         private val binding: ActivityCvLoggerBinding) :
         UiActivityCvBase(activity,
                 fragmentManager,
@@ -50,72 +50,73 @@ class UiActivityCvLogger(
                 scope, statusUpdater, overlays,
                 floorSelector) {
 
-  private val appInfo by lazy { AppInfo(ctx) }
-  private var clearConfirm=false
+  // private val appInfo by lazy { AppInfo(ctx) }
+  private var clearConfirm=false // MERGE?
   private var clickedScannedObjects=false
   private var longClickClearCvMap=false
 
-  /**
-   * Observes [VM.windowDetections] changes and updates
-   * [binding.bottomUi.buttonCameraWindow] accordingly.
-   */
-  fun updateCameraTimerButton() {
-    val elapsed = VM.getElapsedSeconds()
-    val remaining = (VM.prefs.windowLoggingSeconds.toInt()) - elapsed
-    val btn = binding.bottomUi.buttonCameraTimer
-    val progressBar = binding.bottomUi.progressBarTimer
+  // TODO IS THIS MERGED?!
+  // /**
+  //  * Observes [VM.windowDetections] changes and updates
+  //  * [binding.bottomUi.buttonCameraWindow] accordingly.
+  //  */
+  // fun updateCameraTimerButton() {
+  //   val elapsed = VM.getElapsedSeconds()
+  //   val remaining = (VM.prefs.windowLoggingSeconds.toInt()) - elapsed
+  //   val btn = binding.bottomUi.buttonCameraTimer
+  //   val progressBar = binding.bottomUi.progressBarTimer
+  //
+  //   if (remaining>0) {
+  //     val windowSecs = VM.prefs.windowLoggingSeconds.toInt()
+  //     setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
+  //     btn.text = utlTime.getSecondsRounded(remaining, windowSecs)
+  //   } else {
+  //     progressBar.visibility = View.INVISIBLE
+  //     btn.text = ""
+  //     progressBar.progress = 100
+  //
+  //     if (!VM.detectionsLogging.value.isNullOrEmpty()) {
+  //       utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
+  //     } else {   // no results, hide the timer
+  //       utlButton.removeMaterialButtonIcon(btn)
+  //       btn.fadeOut()
+  //     }
+  //   }
+  // }
 
-    if (remaining>0) {
-      val windowSecs = VM.prefs.windowLoggingSeconds.toInt()
-      setupProgressBarTimerAnimation(btn, progressBar, windowSecs)
-      btn.text = utlTime.getSecondsRounded(remaining, windowSecs)
-    } else {
-      progressBar.visibility = View.INVISIBLE
-      btn.text = ""
-      progressBar.progress = 100
+  // /**
+  //  * Initiate a circular progress bar animation, inside a coroutine for
+  //  * smooth (and independent from other threads) updates.
+  //  * It progresses according to the window time
+  //  */
+  // private fun setupProgressBarTimerAnimation(
+  //         btnTimer: MaterialButton,
+  //         progressBar: ProgressBar,
+  //         windowSecs: Int) {
+  //   // showing timer button but not yet the progress bar
+  //   if (btnTimer.visibility == View.VISIBLE &&
+  //           progressBar.visibility != View.VISIBLE) {
+  //     val delayMs = (windowSecs*1000/100).toLong()
+  //     scope.launch {
+  //       var progress = 0
+  //       progressBar.progress=progress
+  //       progressBar.visibility = View.VISIBLE
+  //       while(progress < 100) {
+  //         when (VM.circleTimerAnimation) {
+  //           TimerAnimation.reset -> { resetCircleAnimation(progressBar); break }
+  //           TimerAnimation.running -> { progressBar.setProgress(++progress, true) }
+  //           TimerAnimation.paused -> {  }
+  //         }
+  //         delay(delayMs)
+  //       }
+  //     }
+  //   }
+  // }
 
-      if (!VM.detectionsLogging.value.isNullOrEmpty()) {
-        utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_objects)
-      } else {   // no results, hide the timer
-        utlButton.removeMaterialButtonIcon(btn)
-        btn.fadeOut()
-      }
-    }
-  }
-
-  /**
-   * Initiate a circular progress bar animation, inside a coroutine for
-   * smooth (and independent from other threads) updates.
-   * It progresses according to the window time
-   */
-  private fun setupProgressBarTimerAnimation(
-          btnTimer: MaterialButton,
-          progressBar: ProgressBar,
-          windowSecs: Int) {
-    // showing timer button but not yet the progress bar
-    if (btnTimer.visibility == View.VISIBLE &&
-            progressBar.visibility != View.VISIBLE) {
-      val delayMs = (windowSecs*1000/100).toLong()
-      scope.launch {
-        var progress = 0
-        progressBar.progress=progress
-        progressBar.visibility = View.VISIBLE
-        while(progress < 100) {
-          when (VM.circleTimerAnimation) {
-            TimerAnimation.reset -> { resetCircleAnimation(progressBar); break }
-            TimerAnimation.running -> { progressBar.setProgress(++progress, true) }
-            TimerAnimation.paused -> {  }
-          }
-          delay(delayMs)
-        }
-      }
-    }
-  }
-
-  private fun resetCircleAnimation(progressBar: ProgressBar) {
-    progressBar.visibility = View.INVISIBLE
-    progressBar.progress=0
-  }
+  // private fun resetCircleAnimation(progressBar: ProgressBar) {
+  //   progressBar.visibility = View.INVISIBLE
+  //   progressBar.progress=0
+  // }
 
   @SuppressLint("SetTextI18n")
   fun bindCvStatsImgDimensions(image: ImageProxy) { // TODO:PM: NAV COMMON shared between activities?
@@ -267,7 +268,7 @@ class UiActivityCvLogger(
       // VM.longClickFinished = true // CLR:PM remove this variable
       // TODO hide any stuff here...
       VM.circleTimerAnimation = TimerAnimation.reset
-      binding.mapView.animateAlpha(1f, CvActivityBase.ANIMATION_DELAY)
+      binding.mapView.animateAlpha(1f, CvActivityBaseRM.ANIMATION_DELAY)
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
       // this needs testing?
@@ -277,17 +278,17 @@ class UiActivityCvLogger(
     }
   }
 
-  fun startLocalization(mapView: MapView) {
-    val btnDemoNav = binding.btnDemoNavigation
-    btnDemoNav.isEnabled = false
-    VM.currentTime = System.currentTimeMillis()
-    VM.windowStart = VM.currentTime
-    VM.localization.value = Localization.running
-    statusUpdater.setStatus("scanning..")
-    btnDemoNav.visibility = View.VISIBLE
-    utlButton.changeBackgroundButtonDONT_USE(btnDemoNav, ctx, R.color.colorPrimary)
-    mapView.alpha = 0.90f // TODO:PM no alpha..
-  }
+  // fun startLocalization(mapView: MapView) {
+  //   val btnDemoNav = binding.btnDemoNavigation
+  //   btnDemoNav.isEnabled = false
+  //   VM.currentTime = System.currentTimeMillis()
+  //   VM.windowStart = VM.currentTime
+  //   VM.localization.value = Localization.running
+  //   statusUpdater.setStatus("scanning..")
+  //   btnDemoNav.visibility = View.VISIBLE
+  //   utlButton.changeBackgroundButtonDONT_USE(btnDemoNav, ctx, R.color.colorPrimary)
+  //   mapView.alpha = 0.90f // TODO:PM no alpha..
+  // }
 
   fun endLocalization(mapView: MapView) {
     LOG.D2()

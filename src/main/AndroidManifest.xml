@@ -13,17 +13,12 @@
 
   <application tools:ignore="LockedOrientationActivity" >
     <activity
-        android:name=".android.ui.cv.CvMapActivity"
-        android:screenOrientation="portrait"
-        android:exported="false"
-        android:theme="@style/AppTheme.Compat.ObjectDetection" />
-    <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.example.DetectorActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
     <activity
-        android:name=".android.ui.cv.gnk.logger.CvLoggerActivity"
+        android:name=".android.ui.cv.gnk.logger.CvLoggerActivityRM"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--MERGE -->
 
 <!--LinearLayout-->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -7,12 +8,13 @@
   <data>
     <variable
         name="vm"
-        type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.gnk.CvLoggerViewModel" />
+        type="cy.ac.ucy.cs.anyplace.smas.logger.viewmodel.CvLoggerViewModelRM" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout
 
       android:id="@+id/bottom_ui"
+      tools:visibility="gone"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="vertical"

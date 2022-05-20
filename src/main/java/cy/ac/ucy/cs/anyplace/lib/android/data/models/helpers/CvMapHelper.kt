@@ -38,14 +38,14 @@ class CvMapHelper(val cvMap: CvMap,
     /**
      * Generates a CvMap from a list of [input] detections
      */
-    fun generate(model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Detector.Detection>>): CvMap {
+    fun generate(model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Classifier.Recognition>>): CvMap {
       val cvLocations :MutableList<CvLocation> = mutableListOf()
       LOG.D(TAG, "generate:")
       input.forEach { (latLng, detections) ->
         LOG.D(TAG, "location: $latLng: : ${detections.size}")
         val cvDetections: MutableList<CvDetection> = mutableListOf()
         detections.forEach { detection ->
-          LOG.D(TAG, "  - ${detection.className}:${detection.detectedClass}: score: ${detection.score}")
+          LOG.D(TAG, "  - ${detection.detectedClass}:${detection.detectedClass}: score: ${detection.confidence}")
           cvDetections.add(toCvDetection(detection))
         }
         cvLocations.add(toCvLocation(latLng, cvDetections))

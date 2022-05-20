@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.*
@@ -36,9 +37,13 @@ class GmapWrapper(private val ctx: Context,
   private val overlays by lazy { Overlays(ctx) }
   private val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
 
+  lateinit var mapView : MapView
+
   /** Dynamically attach a [GoogleMap] */
   fun attach(VM: CvMapViewModel, act: CvMapActivity, layout_id: Int) {
     this.VM=VM
+
+    mapView = act.findViewById(layout_id)
     val mapFragment = SupportMapFragment.newInstance()
     act.supportFragmentManager
             .beginTransaction()

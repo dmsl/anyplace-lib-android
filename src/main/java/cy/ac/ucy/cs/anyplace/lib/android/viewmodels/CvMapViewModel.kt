@@ -4,19 +4,17 @@ import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavigationPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvNavDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -69,6 +67,7 @@ open class CvMapViewModel @Inject constructor(
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
         dsCv: CvDataStore,
+        private val dsMisc: MiscDataStore,
         dsCvNav: CvNavDataStore,
         val repo: RepoAP,
         val RH: RetrofitHolderAP): DetectorViewModel(application, dsCv, dsCvNav) {
@@ -90,7 +89,7 @@ open class CvMapViewModel @Inject constructor(
   var currentTime : Long = 0
   var windowStart : Long = 0
   /** Detections for the localization scan-window */
-  val detectionsLocalization: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
+  val detectionsNAV: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
   /** Last Anyplace location */
   val location: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
   /** Selected [Space] */
@@ -188,7 +187,7 @@ open class CvMapViewModel @Inject constructor(
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
     currentTime = System.currentTimeMillis()
-    val appendedDetections = detectionsLocalization.value + detections
+    val appendedDetections = detectionsNAV.value + detections
 
     when {
       currentTime-windowStart > prefWindowLocalizationMillis() -> { // window finished
@@ -199,9 +198,8 @@ open class CvMapViewModel @Inject constructor(
           // TODO DEDUPLICATE DETECTIONS
 
           val detectionsDedup =
-                  YoloV4Classifier.NMS(detectionsLocalization.value,
-                          detector.labels)
-          detectionsLocalization.value = detectionsDedup
+                  YoloV4Classifier.NMS(detectionsNAV.value, detector.labels)
+          detectionsNAV.value = detectionsDedup
 
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
@@ -211,16 +209,16 @@ open class CvMapViewModel @Inject constructor(
           } else {  // estimate and publish position
             location.value = cvMapH!!.cvMapFast.estimatePositionNEW(
                     super.model,
-                    detectionsLocalization.value)
+                    detectionsNAV.value)
           }
 
-          detectionsLocalization.value = emptyList()
+          detectionsNAV.value = emptyList()
         } else {
           LOG.W(TAG_METHOD, "stopped. no detections..")
           location.value = LocalizationResult.Error("Location not found.", "no objects detected")
         }
       } else -> {  // Within a window
-      detectionsLocalization.value = appendedDetections as MutableList<Classifier.Recognition>
+      detectionsNAV.value = appendedDetections as MutableList<Classifier.Recognition>
       LOG.D5(TAG_METHOD, "append: ${appendedDetections.size}")
     }
     }
@@ -288,4 +286,32 @@ open class CvMapViewModel @Inject constructor(
 
     LOG.V2(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
   }
+
+  // TODO:PM network manager? ineternet connectiovity?
+  var networkStatus = false
+  /** normal var, filled by the observer (SelectSpaceActivity) */
+  var backOnline = false
+
+  // TODO:PM: bind this when connectivity status changes
+  var readBackOnline = dsMisc.readBackOnline.asLiveData()
+  var backFromSettings= false // INFO filled by the observer (collected from the fragment)
+  var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()
+  fun showNetworkStatus() {
+    if (!networkStatus) {
+      app.showToast(viewModelScope, "No internet connection!", Toast.LENGTH_LONG)
+      saveBackOnline(true)
+    } else if(networkStatus && backOnline)  {
+      app.showToast(viewModelScope, "Back online!", Toast.LENGTH_LONG)
+      saveBackOnline(false)
+    }
+  }
+  private fun saveBackOnline(value: Boolean) =
+          viewModelScope.launch(Dispatchers.IO) {
+            dsMisc.saveBackOnline(value)
+          }
+  fun setBackFromSettings() = saveBackFromSettings(true)
+  fun unsetBackFromSettings() = saveBackFromSettings(false)
+  private fun saveBackFromSettings(value: Boolean) =
+          viewModelScope.launch(Dispatchers.IO) {  dsMisc.saveBackFromSettings(value) }
+
 }

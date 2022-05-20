@@ -49,14 +49,14 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 @Deprecated("")
-abstract class CvActivityBase : AppCompatActivity(),
+abstract class CvActivityBaseRM : AppCompatActivity(),
         OnMapReadyCallback {
-  companion object {
-    const val CAMERA_REQUEST_CODE: Int = 1
-    const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
-    const val OPACITY_MAP_LOGGING = 0f
-    const val ANIMATION_DELAY : Long = 100
-  }
+  // companion object {
+  //   const val CAMERA_REQUEST_CODE: Int = 1
+  //   const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
+  //   const val OPACITY_MAP_LOGGING = 0f
+  //   const val ANIMATION_DELAY : Long = 100
+  // }
 
   /** Base [ViewModel] class: [CvViewModelBase] */
   protected lateinit var VMB: CvViewModelBase
@@ -157,7 +157,7 @@ abstract class CvActivityBase : AppCompatActivity(),
         val indexOfCameraPermission = permissions.indexOf(Manifest.permission.CAMERA)
         if (grantResults[indexOfCameraPermission] == PackageManager.PERMISSION_GRANTED) {
           cameraProviderFuture.addListener(
-                  this@CvActivityBase::bindPreview, ContextCompat.getMainExecutor(baseContext))
+                  this@CvActivityBaseRM::bindPreview, ContextCompat.getMainExecutor(baseContext))
         } else {
           val msg = "Permissions not granted."
           Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
@@ -235,7 +235,7 @@ abstract class CvActivityBase : AppCompatActivity(),
 
 
   /**
-   * callback for additional functionality to the [CvActivityBase]-based classes
+   * callback for additional functionality to the [CvActivityBaseRM]-based classes
    */
   protected abstract fun onMapReadySpecialize()
 

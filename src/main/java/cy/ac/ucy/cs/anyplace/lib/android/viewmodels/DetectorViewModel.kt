@@ -31,7 +31,7 @@ open class DetectorViewModel @Inject constructor(
 
   protected val assetReader by lazy { AssetReader(app) }
 
-  internal lateinit var detector: Classifier
+  lateinit var detector: Classifier
 
   var modelLoaded = false
   lateinit var model: DetectionModel
