@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.models.User
 
 // class  {
-companion object UserBindingUtl {
+object UserBindingUtl {
   @BindingAdapter("readUsername", requireAll = true)
   @JvmStatic
   fun readUserName(

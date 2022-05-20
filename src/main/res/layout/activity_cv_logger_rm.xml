@@ -5,7 +5,6 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@color/gmapsGrayColor"
-  tools:context=".android.ui.cv.gnk.logger.CvLoggerActivityRM"
   >
   <!-- NOTE: Modifying the order of the elements in this file might cause crashes.
   EVEN with IDE auto-refactoring.
