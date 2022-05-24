@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
@@ -54,7 +54,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected lateinit var wMap: GmapWrapper
   protected val overlays by lazy { Overlays(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
-  protected lateinit var bottomSheet : BottomSheetCvMap
+  protected open lateinit var uiBottom : BottomSheetCvUI
+
 
   // UI
   //// COMPONENTS
@@ -114,17 +115,25 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     setMapOpacity()
   }
 
+  /**
+   * Initialize bottom sheet by reading the [VM.prefsNav]
+   */
+  open fun lazyInitBottomSheet() {
+    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsNav.devMode)
+  }
+
   protected open fun setupButtonsAndUi() {
     setupFloorSelector()
     setupGmap()
-
-    bottomSheet = BottomSheetCvMap(this@CvMapActivity, VM.prefsNav.devMode)
 
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvNav.read.collect {
         LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
-        bottomSheet.setup()
+        lazyInitBottomSheet()
+        // MERGE:PM: this must change
+        LOG.E(TAG, "MERGE:PM: BottomSheet setup skipped")
+        uiBottom.setup()
       }
     }
 
@@ -189,7 +198,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onProcessImageFinished() {
     LOG.V3()
-    bottomSheet.refreshUi(lifecycleScope)
+    uiBottom.refreshUi(lifecycleScope)
   }
 
   protected fun checkInternet() {

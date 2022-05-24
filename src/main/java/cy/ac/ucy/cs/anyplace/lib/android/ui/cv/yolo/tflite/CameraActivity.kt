@@ -116,9 +116,8 @@ abstract class CameraActivity : AppCompatActivity(),
     postCreate()
   }
 
-  fun hideBottomSheet() {
-    bottomSheetLayout.isVisible = false
-  }
+  fun hideBottomSheet() { bottomSheetLayout.isVisible = false }
+  fun showBottomSheet() { bottomSheetLayout.isVisible = true }
 
   /**
    * Base UI includes at least:

@@ -4,7 +4,7 @@ import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvMap
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,7 +30,7 @@ class DetectorActivity : DetectorActivityBase() {
   override val view_model_class: Class<DetectorViewModel> = DetectorViewModel::class.java
 
   private val showBottomSheet = true
-  private val bottomSheet by lazy { BottomSheetCvMap(this@DetectorActivity, showBottomSheet) }
+  private val bottomSheet by lazy { BottomSheetCvUI(this@DetectorActivity, showBottomSheet) }
 
   // BottomSheet specific details (default ones)
   lateinit var frameValueTextView: TextView
