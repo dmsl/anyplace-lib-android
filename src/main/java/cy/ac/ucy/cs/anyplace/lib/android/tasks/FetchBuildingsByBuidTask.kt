@@ -39,7 +39,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.os.AsyncTask
 import com.google.android.gms.maps.model.LatLng
-import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace
+import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.consts.MSG
 import cy.ac.ucy.cs.anyplace.lib.android.nav.BuildingModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils

@@ -54,10 +54,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.legacy.AnyplaceDebug;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.SensorsMain;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.SimpleWifiManager;
 import cy.ac.ucy.cs.anyplace.lib.android.sensors.wifi.WifiReceiver;
-import cy.ac.ucy.cs.anyplace.lib.core.Algorithms;
-import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.Algorithms;
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LogRecord;
 //import cy.ac.ucy.cs.anyplace.lib.android.utils.LogRecord;
-import cy.ac.ucy.cs.anyplace.lib.core.RadioMap;
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.RadioMap;
 
 /**
  * The main tracker component of Anyplace Navigator. Detects changes in WiFi

@@ -11,12 +11,12 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cache.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
@@ -24,8 +24,9 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import java.lang.IllegalStateException
 
 class ClearCachesDialog(
-        private val repo: RepoAP,
-        private val cvDataStore: CvDataStore):
+  private val repo: RepoAP,
+  private val cvDataStore: CvDataStore
+):
         DialogFragment() {
 
   companion object {

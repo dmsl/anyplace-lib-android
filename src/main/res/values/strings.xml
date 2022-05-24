@@ -224,11 +224,16 @@
   <string name="user">User</string>
   <string name="logout">Logout</string>
   <string name="miscellaneous">Miscellaneous</string>
-  <string name="cv_map_settings">Map &amp; Computer Vision</string>
+  <string name="cv_map_settings">Map Settings</string>
   <string name="account">Account:</string>
   <string name="username">Username:</string>
   <string name="url_anyplace_about">https://anyplace.cs.ucy.ac.cy/#about</string>
   <string name="pref_anyplace_server">pref_anyplace_server</string>
   <string name="summary_cv_scan_delay">Scanning every %1$sms to save battery.</string>
   <string name="model_title_desc">The selected model is specialized at:</string>
+
+  <string name="btn_cancel_descr">cancel</string>
+  <string name="btn_ok">OK</string>
+  <string name="delete_local_msgs">Delete local messages</string>
+
 </resources>

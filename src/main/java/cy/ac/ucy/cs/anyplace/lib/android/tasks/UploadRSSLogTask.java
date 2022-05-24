@@ -51,7 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-import cy.ac.ucy.cs.anyplace.lib.legacy.Anyplace;
+import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 
 import android.app.ProgressDialog;

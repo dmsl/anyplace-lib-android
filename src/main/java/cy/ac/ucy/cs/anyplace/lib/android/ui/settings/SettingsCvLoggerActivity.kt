@@ -7,15 +7,15 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvLoggerDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvLoggerDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
-import cy.ac.ucy.cs.anyplace.lib.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -53,9 +53,9 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvLoggerFragment(
-          private val cvLoggerDataStore: CvLoggerDataStore,
-          private val cvDataStore: CvDataStore,
-          private val repo: RepoAP,
+    private val cvLoggerDataStore: CvLoggerDataStore,
+    private val cvDataStore: CvDataStore,
+    private val repo: RepoAP,
   ) : PreferenceFragmentCompat() {
 
     var spaceH : SpaceHelper? = null
@@ -92,9 +92,9 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
     }
 
     private fun setupButtonClearCache(
-            spaceH: SpaceHelper?,
-            floorsH: FloorsHelper?,
-            floorH: FloorHelper?) {
+      spaceH: SpaceHelper?,
+      floorsH: FloorsHelper?,
+      floorH: FloorHelper?) {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache))
       pref?.setOnPreferenceClickListener {
         LOG.W(TAG_METHOD, "TODO clear cache")

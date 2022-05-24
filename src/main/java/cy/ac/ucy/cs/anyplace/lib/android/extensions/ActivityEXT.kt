@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 
 fun ComponentActivity.registerForActivityResult(
         callback: ActivityResultCallback<ActivityResult>):ActivityResultLauncher<Intent> {

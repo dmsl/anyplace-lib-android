@@ -1,9 +1,9 @@
 package cy.ac.ucy.cs.anyplace.lib.android.utils.net
 
 import android.content.Context
-import cy.ac.ucy.cs.anyplace.lib.API
+import cy.ac.ucy.cs.anyplace.lib.anyplace.API
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.ServerPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ServerPrefs
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -8,11 +8,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.SpaceHelper
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogConfirmActionBinding
 import java.lang.IllegalStateException

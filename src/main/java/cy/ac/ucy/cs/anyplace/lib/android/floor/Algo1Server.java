@@ -43,7 +43,7 @@ import org.json.JSONObject;
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.OLDNetworkUtils;
-import cy.ac.ucy.cs.anyplace.lib.core.LogRecord;
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LogRecord;
 
 public class Algo1Server extends FloorSelector {
   private final String TAG = Algo1Server.class.getSimpleName();

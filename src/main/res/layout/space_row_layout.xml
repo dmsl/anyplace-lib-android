@@ -3,7 +3,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto">
 
   <data>
-    <variable name="space" type="cy.ac.ucy.cs.anyplace.lib.models.Space" />
+    <variable name="space" type="cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout

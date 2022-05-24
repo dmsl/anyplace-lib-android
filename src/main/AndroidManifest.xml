@@ -19,7 +19,7 @@
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
     <activity
-        android:name=".android.ui.user.LoginActivity"
+        android:name=".android.ui.user.AnyplaceLoginActivity"
         android:exported="true"
         android:label="@string/title_activity_login" />
     <activity

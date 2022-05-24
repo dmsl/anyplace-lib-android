@@ -4,8 +4,8 @@ import android.content.Context
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.models.Floors
-import cy.ac.ucy.cs.anyplace.lib.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import java.io.IOException
 import java.lang.Exception
 

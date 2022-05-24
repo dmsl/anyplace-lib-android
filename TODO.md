@@ -11,3 +11,12 @@
 # DataStore
 ## DataStore: UI for editing..
 ## DataStore: DI + dynamically changing URL
+
+
+---
+
+# SMAS:
+
+### CvModels:
+- persists CvModels to DB
+- delete CvModels from DB (+ option in settings)

@@ -2,9 +2,9 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
-import cy.ac.ucy.cs.anyplace.lib.android.data.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

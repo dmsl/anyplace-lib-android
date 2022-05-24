@@ -51,7 +51,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp;
-import cy.ac.ucy.cs.anyplace.lib.android.cache.ObjectCache;
+import cy.ac.ucy.cs.anyplace.lib.android.cache.legacy.ObjectCache;
 import cy.ac.ucy.cs.anyplace.lib.android.googleapi.GooglePlaces;
 import cy.ac.ucy.cs.anyplace.lib.android.googleapi.PlacesList;
 import cy.ac.ucy.cs.anyplace.lib.android.nav.AnyPlaceSeachingHelper;

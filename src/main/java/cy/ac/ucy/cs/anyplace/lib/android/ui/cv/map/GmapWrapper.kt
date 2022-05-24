@@ -7,8 +7,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.models.helpers.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
@@ -16,11 +17,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
-import cy.ac.ucy.cs.anyplace.lib.models.Floor
-import cy.ac.ucy.cs.anyplace.lib.models.Floors
-import cy.ac.ucy.cs.anyplace.lib.models.Space
-import cy.ac.ucy.cs.anyplace.lib.models.UserLocation
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

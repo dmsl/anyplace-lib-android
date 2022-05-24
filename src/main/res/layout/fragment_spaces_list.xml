@@ -6,7 +6,7 @@
   <data>
     <variable
       name="spacesViewModel"
-      type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel" />
+      type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout

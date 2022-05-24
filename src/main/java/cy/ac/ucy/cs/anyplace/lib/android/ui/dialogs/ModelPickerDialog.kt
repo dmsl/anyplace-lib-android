@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import kotlinx.coroutines.flow.first
@@ -26,7 +26,8 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
   companion object {
     /** Creating the dialog. */
     fun SHOW(fragmentManager: FragmentManager,
-             dsCv: CvDataStore) {
+             dsCv: CvDataStore
+    ) {
       val args = Bundle()
 
       val dialog = ModelPickerDialog(dsCv)

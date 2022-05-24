@@ -2,8 +2,8 @@ package cy.ac.ucy.cs.anyplace.lib.android.consts
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 
 open class CONST(ctx: Context) {
 

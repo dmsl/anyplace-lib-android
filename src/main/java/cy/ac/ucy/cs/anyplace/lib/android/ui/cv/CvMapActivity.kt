@@ -7,7 +7,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.store.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
@@ -16,8 +16,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.CvMapViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -66,6 +66,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.postCreate()
     VM = _vm as CvMapViewModel
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
+
+    lifecycleScope.launch(Dispatchers.IO) {
+      LOG.E(TAG, "CvMap: postCreate: getting models.. CvModels")
+      VM.nwCvModelsGet.safeCall()
+    }
   }
 
   override fun onResume() {
@@ -111,8 +116,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   private fun onNavPrefsLoaded() {
-    setupButtonsAndUi()
-    setMapOpacity()
+    setupUi()
   }
 
   /**
@@ -122,9 +126,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsNav.devMode)
   }
 
-  protected open fun setupButtonsAndUi() {
-    setupFloorSelector()
-    setupGmap()
+  protected open fun setupUi() {
+    setMapOpacity()
+
+    setupUiFloorSelector()
+    setupUiGmap()
 
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
@@ -141,7 +147,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     ui.setupOnFloorSelectionClick()
   }
 
-  private fun setupGmap() {
+  private fun setupUiGmap() {
     ui = CvMapUi(VM, lifecycleScope,
             this@CvMapActivity,
             supportFragmentManager,
@@ -150,7 +156,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     wMap.attach(VM, this, R.id.mapView)
   }
 
-  private fun setupFloorSelector() {
+  private fun setupUiFloorSelector() {
     floorSelector = FloorSelector(applicationContext,
             findViewById(R.id.group_floorSelector),
             findViewById(R.id.textView_titleFloor),

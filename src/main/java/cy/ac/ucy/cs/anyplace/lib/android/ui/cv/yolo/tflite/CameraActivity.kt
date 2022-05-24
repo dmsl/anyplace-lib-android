@@ -95,6 +95,8 @@ abstract class CameraActivity : AppCompatActivity(),
   protected abstract val id_gesture_layout: Int
   //// CAMERA METHODS
   protected abstract fun processImage()
+  /** Runs after the inference, once we had the objects detected */
+  protected abstract fun onInferenceRan(detections: MutableList<Classifier.Recognition>)
   protected abstract fun onProcessImageFinished()
   protected abstract fun onPreviewSizeChosen(size: Size?, rotation: Int)
   //// OPTIONS

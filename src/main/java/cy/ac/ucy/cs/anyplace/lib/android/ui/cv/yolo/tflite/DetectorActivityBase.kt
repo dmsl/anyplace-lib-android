@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.YoloConstants
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -20,10 +21,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayVie
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.BorderedText
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.DetectorViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -142,6 +142,8 @@ abstract class DetectorActivityBase : CameraActivity(),
       }
       tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
     }
+
+     // MERGE:PM bind values with bottomSheet vars?
   }
 
   /** Artificial delay between inference calls (in ms) to save battery */
@@ -257,6 +259,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // Flows here
     val detections = storeResults(results, canvas)
+    onInferenceRan(detections)
 
     // finalize detection:
     // View
@@ -308,5 +311,9 @@ abstract class DetectorActivityBase : CameraActivity(),
 
   override fun setNumThreads(numThreads: Int) {
     lifecycleScope.launch(Dispatchers.IO) { VM.detector.setNumThreads(numThreads) }
+  }
+
+  override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
+    LOG.V3(TAG, "$METHOD: detections: $detections.size")
   }
 }

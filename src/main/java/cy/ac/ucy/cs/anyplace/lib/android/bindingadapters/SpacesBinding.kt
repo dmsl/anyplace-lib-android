@@ -7,10 +7,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.models.Space
-import cy.ac.ucy.cs.anyplace.lib.models.Spaces
-import cy.ac.ucy.cs.anyplace.lib.models.User
-import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
+import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 
 object SpacesBinding {
 

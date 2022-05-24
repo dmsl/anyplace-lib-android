@@ -5,8 +5,8 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import com.google.android.gms.maps.model.LatLng
-import cy.ac.ucy.cs.anyplace.lib.models.Coord
-import cy.ac.ucy.cs.anyplace.lib.models.CvLocation
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvLocation
 import java.util.*
 
 // TODO:PM Request permissions then call from onStart and onConnected.

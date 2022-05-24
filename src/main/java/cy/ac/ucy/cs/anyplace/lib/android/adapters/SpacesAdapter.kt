@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
 import cy.ac.ucy.cs.anyplace.lib.databinding.SpaceRowLayoutBinding
-import cy.ac.ucy.cs.anyplace.lib.models.Space
-import cy.ac.ucy.cs.anyplace.lib.models.Spaces
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 
 class SpacesAdapter: RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
   private var spaces = emptyList<Space>()

@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.models.User
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
 
 // class  {
 object UserBindingUtl {

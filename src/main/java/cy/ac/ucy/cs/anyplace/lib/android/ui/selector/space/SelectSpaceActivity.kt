@@ -13,11 +13,11 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.user.LoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -44,20 +44,20 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     spaceViewModel = ViewModelProvider(this).get(SpacesViewModel::class.java)
 
     binding.lifecycleOwner = this
-    binding.mainViewModel = this.mainViewModel
+    // binding.mainViewModel = this.mainViewModel
 
-    mainViewModel.readBackOnline.observe(this, { mainViewModel.backOnline = it })
-    mainViewModel.readBackFromSettings.observe(this, { mainViewModel.backFromSettings = it })
+    mainViewModel.readBackOnline.observe(this) { mainViewModel.backOnline = it }
+    mainViewModel.readBackFromSettings.observe(this) { mainViewModel.backFromSettings = it }
 
-    mainViewModel.readUserLoggedIn.observe(this, {
-      if(it.accessToken.isBlank()) {
+    mainViewModel.readUserLoggedIn.observe(this) {
+      if (it.accessToken.isBlank()) {
         // terminate activity if user not logged in
         // there is probably a better way to handle this
         // (somehow to tie this activity lifecycle with the user login)
-        startActivity(Intent(this@SelectSpaceActivity, LoginActivity::class.java))
+        startActivity(Intent(this@SelectSpaceActivity, AnyplaceLoginActivity::class.java))
         finish()
       }
-    })
+    }
     // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
 
     navController = findNavController(R.id.navHostFragment)

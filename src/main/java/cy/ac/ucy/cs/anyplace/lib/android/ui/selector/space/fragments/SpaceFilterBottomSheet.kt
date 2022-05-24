@@ -12,11 +12,11 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.MainViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.SpacesViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
