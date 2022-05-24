@@ -107,8 +107,8 @@ abstract class DetectorActivityBase : CameraActivity(),
     // TODO:PMX OPT
     lifecycleScope.launch {
       if(!setupDetector()) {
-        val toast = Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG)
-        toast.show()
+        Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG).show()
+        Toast.makeText(applicationContext, "Are there any models available?", Toast.LENGTH_LONG).show()
         finish()
       }
       val textSizePx = TypedValue.applyDimension(

@@ -14,11 +14,7 @@
   <application tools:ignore="LockedOrientationActivity" >
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.example.DetectorActivity"
-        android:exported="true"
-        android:screenOrientation="portrait"
-        android:theme="@style/AppTheme.Compat.ObjectDetection" />
-    <activity
-        android:name=".android.ui.cv.gnk.logger.CvLoggerActivityRM"
+        android:label="TFLite Demo"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
