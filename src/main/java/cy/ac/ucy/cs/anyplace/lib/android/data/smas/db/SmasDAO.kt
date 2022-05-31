@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.smas.db
 import androidx.room.*
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.ChatMsgEntity
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.CvModelClassEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,6 +20,17 @@ interface SmasDAO {
   fun lastMsgTimestamp(): Long?
 
   @Query("SELECT COUNT(mid) FROM ${CHAT.DB_SMAS_MSGS}")
-  fun getMsgsCount(): Int?
+  fun countMsgs(): Int?
 
+  @Query("DELETE FROM ${CHAT.DB_SMAS_CV_MODELS}")
+  fun dropCvModelClasses()
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun insertCvModelClass(tuple: CvModelClassEntity)
+
+  @Query("SELECT * FROM ${CHAT.DB_SMAS_CV_MODELS} WHERE modelid == :modelId")
+  fun readCvModelClasses(modelId: Int): Flow<List<CvModelClassEntity>>
+
+  @Query("SELECT COUNT(oid) FROM ${CHAT.DB_SMAS_CV_MODELS}")
+  fun countCvModelClasses(): Int?
 }

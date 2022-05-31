@@ -75,7 +75,7 @@ interface Classifier {
       resultString += "[$id] "
       resultString += "$title "
       resultString += String.format("(%.1f%%) ", confidence * 100.0f)
-      resultString += location.toString() + " "
+      resultString += "$location "
       return resultString.trim { it <= ' ' }
     }
   }

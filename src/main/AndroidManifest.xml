@@ -33,7 +33,7 @@
         android:label="Logger Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
     <activity
-        android:name=".android.ui.settings.SettingsNavigationActivity"
+        android:name=".android.ui.settings.SettingsCvActivity"
         android:exported="true"
         android:label="Map Settings" />
 

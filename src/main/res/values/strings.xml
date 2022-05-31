@@ -139,7 +139,7 @@
   <string name="inference">Inference</string>
   <string name="objects">Objects</string>
   <string name="current_window">Current Window:</string>
-  <string name="prefs_header_object_recognition">Object Recognition</string>
+  <string name="prefs_header_computer_vision">Computer Vision</string>
   <string name="developer_options">Developer Options</string>
   <string name="tutorial">Tutorial</string>
   <string name="tutorial_cvscan_start">1. START SCANNING:</string>
@@ -224,7 +224,7 @@
   <string name="user">User</string>
   <string name="logout">Logout</string>
   <string name="miscellaneous">Miscellaneous</string>
-  <string name="cv_map_settings">Map Settings</string>
+  <string name="cv_map_settings">CV &amp; Map Settings</string>
   <string name="account">Account:</string>
   <string name="username">Username:</string>
   <string name="url_anyplace_about">https://anyplace.cs.ucy.ac.cy/#about</string>

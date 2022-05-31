@@ -13,10 +13,14 @@ import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
 
-class Overlays(private val ctx: Context) {
+class Overlays(private val ctx: Context,
+               private val scope: CoroutineScope) {
 
   /** Showing a heatmap */
   var heatmapOverlay: TileOverlay? = null
@@ -38,16 +42,18 @@ class Overlays(private val ctx: Context) {
    * Removes the previous floorplan before drawing a new one
    */
   fun drawFloorplan(bitmap: Bitmap?, map: GoogleMap, bounds: LatLngBounds) {
-    if (bitmap != null) {
-      if (floorplanOverlay != null) {
-        floorplanOverlay!!.remove()
+    scope.launch(Dispatchers.Main) {
+      if (bitmap != null) {
+        if (floorplanOverlay != null) {
+          floorplanOverlay!!.remove()
+        }
+        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+        floorplanOverlay = map.addGroundOverlay(
+                GroundOverlayOptions().apply {
+                  positionFromBounds(bounds)
+                  image (bitmapDescriptor)
+                })
       }
-      val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
-      floorplanOverlay = map.addGroundOverlay(
-              GroundOverlayOptions().apply {
-                positionFromBounds(bounds)
-                image (bitmapDescriptor)
-              })
     }
     // floorplanOverlay = null
   }
@@ -102,8 +108,11 @@ class Overlays(private val ctx: Context) {
           .build()
     }
 
-    heatmapOverlay =
-      map.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider!!))
+
+    scope.launch(Dispatchers.Main) {
+      heatmapOverlay =
+              map.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider!!))
+    }
   }
 
 

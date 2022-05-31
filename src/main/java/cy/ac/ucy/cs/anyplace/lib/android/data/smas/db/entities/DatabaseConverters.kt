@@ -4,9 +4,12 @@ import androidx.room.TypeConverter
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsgsResp
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_IMG
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelsResp
 
 class DatabaseConverters {
 
@@ -48,6 +51,44 @@ class DatabaseConverters {
       }
       return ChatMsgsResp(null, "msgs read locally", null, spaces)
     }
+
+    fun cvModelClassToEntity(cvc: CvModelClass): CvModelClassEntity {
+      // skip saving base64 on SQLite.
+      // Those will be stored in [SmasCache] (file cache)
+      // val content = if (msg.mtype == TP_SEND_IMG) " " else msg.msg
+      return CvModelClassEntity(
+              cvc.oid,
+              cvc.cid,
+              cvc.modeldescr,
+              cvc.modelid,
+              cvc.name)
+    }
+
+    fun entityToCvModelClass(e: CvModelClassEntity): CvModelClass {
+      return CvModelClass(
+              e.oid,
+              e.cid,
+              e.modeldescr,
+              e.modelid,
+              e.name)
+    }
+
+    /**
+     * NOT USED
+     */
+    fun entityTooCvModelClassesResp(tuples: List<CvModelClassEntity>): CvModelsResp {
+      return CvModelsResp(entityTooCvModelClasses(tuples), NetworkResult.DB_LOADED , "db", null)
+    }
+
+    /**
+     * Converts chat tuples to a list of [CvModelClass]es
+     */
+    fun entityTooCvModelClasses(tuples: List<CvModelClassEntity>): List<CvModelClass>{
+      val list = mutableListOf<CvModelClass>()
+      tuples.forEach {  list .add(entityToCvModelClass(it))  }
+      return list
+    }
+
   }
 
   val gson = Gson() // Kotlin Serialization?

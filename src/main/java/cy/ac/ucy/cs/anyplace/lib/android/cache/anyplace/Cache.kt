@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -118,7 +118,7 @@ open class Cache(val ctx: Context) {
   //// CV Detection Maps
   ////// Filenames for CvModels: its the model-name.json
   fun filenameCvMapModel(model: String) : String {  return "${model}.json" }
-  fun filenameCvMapModel(model: DetectionModel) : String {  return "${model.model}.json" }
+  fun filenameCvMapModel(model: DetectionModel) : String {  return "${model.modelName}.json" }
   fun filenameCvMapModel(cvMap: CvMap) : String {  return "${cvMap.detectionModel}.json" }
 
   /** Directory (per [Floor] of [CvMap]s. */

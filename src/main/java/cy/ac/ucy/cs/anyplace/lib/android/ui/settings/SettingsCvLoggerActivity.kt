@@ -6,6 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
@@ -13,10 +14,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvLoggerDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -32,6 +37,7 @@ import kotlinx.coroutines.launch
  * TODO: Datastore Settings:
  * -
  */
+@Deprecated("Use the SettingsCvActivity")
 @AndroidEntryPoint
 class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
 
@@ -45,7 +51,7 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    settingsFragment = SettingsCvLoggerFragment(dsCvLog, dsCv, repo)
+    settingsFragment = SettingsCvLoggerFragment(dsCvLog, dsCv, repoAP, repoSmas)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO FIXME:PM not shown!
@@ -53,9 +59,10 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvLoggerFragment(
-    private val cvLoggerDataStore: CvLoggerDataStore,
-    private val cvDataStore: CvDataStore,
-    private val repo: RepoAP,
+          private val cvLoggerDataStore: CvLoggerDataStore,
+          private val dsCv: CvDataStore,
+          private val repoAP: RepoAP,
+          private val repoSmas: RepoSmas
   ) : PreferenceFragmentCompat() {
 
     var spaceH : SpaceHelper? = null
@@ -69,7 +76,7 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
       preferenceManager.preferenceDataStore = cvLoggerDataStore // TODO:PM implement ths
 
       val extras = requireActivity().intent.extras
-      spaceH = IntentExtras.getSpace(requireActivity(), repo, extras, ARG_SPACE)
+      spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, ARG_SPACE)
       floorsH = IntentExtras.getFloors(spaceH, extras, ARG_FLOORS)
       floorH = IntentExtras.getFloor(spaceH, extras, ARG_FLOOR)
 
@@ -87,29 +94,21 @@ class SettingsCvLoggerActivity: AnyplaceSettingsActivity() {
         }
       }
 
-      setupButtonClearCache(spaceH, floorsH, floorH)
-      setupButtonChangeModel()
+      // setupClearCvFingerprintsCache(spaceH, floorsH, floorH)
+      setupChangeCvModel()
     }
 
-    private fun setupButtonClearCache(
-      spaceH: SpaceHelper?,
-      floorsH: FloorsHelper?,
-      floorH: FloorHelper?) {
-      val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache))
-      pref?.setOnPreferenceClickListener {
-        LOG.W(TAG_METHOD, "TODO clear cache")
-        ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repo, cvDataStore, spaceH, floorsH, floorH)
-        true
-      }
-    }
-
-    private fun setupButtonChangeModel() {
+    private fun setupChangeCvModel() {
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
-      pref?.setOnPreferenceClickListener {
-        LOG.W(TAG_METHOD, "clear cache")
-        // ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dataStoreCv)
-        true
+      lifecycleScope.launch {
+        pref?.setOnPreferenceClickListener {
+          LOG.W(TAG, "Changing CV model")
+          ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dsCv)
+          true
+        }
+        dsCv.read.collectLatest { prefs ->
+          pref?.summary = DetectionModel.getModelAndDescription(prefs.modelName)
+        }
       }
     }
   }  // PreferenceFragmentCompat

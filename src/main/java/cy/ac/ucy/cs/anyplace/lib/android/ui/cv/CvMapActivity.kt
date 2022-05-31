@@ -52,7 +52,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   // UTILITY OBJECTS
   protected lateinit var wMap: GmapWrapper
-  protected val overlays by lazy { Overlays(applicationContext) }
+  protected val overlays by lazy { Overlays(applicationContext, lifecycleScope) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected open lateinit var uiBottom : BottomSheetCvUI
 
@@ -68,8 +68,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
     lifecycleScope.launch(Dispatchers.IO) {
-      LOG.E(TAG, "CvMap: postCreate: getting models.. CvModels")
+      LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
       VM.nwCvModelsGet.safeCall()
+      VM.nwCvModelsGet.collect()
     }
   }
 

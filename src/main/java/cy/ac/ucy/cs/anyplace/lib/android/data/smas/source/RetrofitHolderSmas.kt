@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefs
-import cy.ac.ucy.cs.anyplace.smas.ChatAPI
+import cy.ac.ucy.cs.anyplace.lib.smas.ChatAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -35,7 +35,7 @@ class GmapWrapper(private val ctx: Context,
   lateinit var VM: CvMapViewModel
 
   private val assetReader by lazy { AssetReader(ctx) }
-  val overlays by lazy { Overlays(ctx) }
+  val overlays by lazy { Overlays(ctx, scope) }
   private val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
 
   lateinit var mapView : MapView

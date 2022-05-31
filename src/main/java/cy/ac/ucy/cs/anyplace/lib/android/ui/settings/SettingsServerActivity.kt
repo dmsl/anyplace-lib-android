@@ -23,7 +23,7 @@ class SettingsServerActivity: AnyplaceSettingsActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    settingsFragment = SettingsServerFragment(mainViewModel, retrofitHolderAP, dsServer)
+    settingsFragment = SettingsServerFragment(VMmainAp, rfhAP, dsServer)
     setupFragment(settingsFragment, savedInstanceState)
   }
 

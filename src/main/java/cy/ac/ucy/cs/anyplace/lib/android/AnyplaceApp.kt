@@ -7,7 +7,7 @@ import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace
-import cy.ac.ucy.cs.anyplace.lib.android.cache.legacy.FileCache
+import cy.ac.ucy.cs.anyplace.lib.android.legacy.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG

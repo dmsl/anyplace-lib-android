@@ -18,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -27,7 +28,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.CvModelsGetNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvFingerprintSendNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvModelsGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -87,6 +89,7 @@ open class CvMapViewModel @Inject constructor(
   lateinit var prefsNav: CvNavigationPrefs
 
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
 
   /** Controlling navigation mode */
   val localization = MutableStateFlow(Localization.stopped)
@@ -141,14 +144,20 @@ open class CvMapViewModel @Inject constructor(
   private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
     floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
+
+    // CHECK:PM: BUG: "Failed to fetch": sometimes (with internet) it failed to fetch..
+    if (FH.hasFloorplanCached()) {
+      LOG.W(TAG, "$METHOD: loading from cache?? why always fetching?")
+      // floorplanFlow.value = Success(FH.loadFromCache()!!)
+    }
+
     if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
         floorplanFlow.value = Success(bitmap)
         FH.cacheFloorplan(bitmap)
       } else {
-        val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. "
-        "Base URL: ${RH.retrofit.baseUrl()}"
+        val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
         LOG.E(TAG, msg)
         floorplanFlow.value = Error(msg)
       }

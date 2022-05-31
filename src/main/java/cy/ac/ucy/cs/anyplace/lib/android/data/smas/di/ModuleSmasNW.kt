@@ -9,9 +9,16 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.*
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.SecureRandom
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /** Specializing [OkHttpClient], only to make DI to pick a version with authenticator set*/
 data class OkHttpClientBearer(val client: OkHttpClient)
@@ -26,12 +33,51 @@ class ChatNetworkModule {
   @Singleton
   @Provides
   fun provideHttpClientWithBearer(): OkHttpClientBearer {
-    return OkHttpClientBearer(OkHttpClient.Builder()
-            .authenticator(BearerAuthenticator())
-            .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .build())
+    // return OkHttpClientBearer(OkHttpClient.Builder()
+    //         .authenticator(BearerAuthenticator())
+    //         .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
+    //         .connectTimeout(15, TimeUnit.SECONDS)
+    //         .build())
+
+    return getUnsafeOkHttpClientBearer()
   }
+
+
+
+  private fun getUnsafeOkHttpClientBearer(): OkHttpClientBearer {
+    try {
+      // Create a trust manager that does not validate certificate chains
+      val trustAllCerts: Array<TrustManager> = arrayOf(
+              object : X509TrustManager {
+                @Throws(CertificateException::class)
+                override fun checkClientTrusted(chain: Array<X509Certificate?>?,
+                                                authType: String?) = Unit
+
+                @Throws(CertificateException::class)
+                override fun checkServerTrusted(chain: Array<X509Certificate?>?,
+                                                authType: String?) = Unit
+
+                override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+              }
+      )
+      // Install the all-trusting trust manager
+      val sslContext: SSLContext = SSLContext.getInstance("SSL")
+      sslContext.init(null, trustAllCerts, SecureRandom())
+      // Create an ssl socket factory with our all-trusting manager
+      val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
+      return OkHttpClientBearer(OkHttpClient.Builder()
+              .authenticator(BearerAuthenticator())
+              .sslSocketFactory(sslSocketFactory,
+                      trustAllCerts[0] as X509TrustManager)
+              .hostnameVerifier { _, _ -> true }
+              .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
+              .connectTimeout(15, TimeUnit.SECONDS)
+              .build())
+    } catch (e: Exception) {
+      throw RuntimeException(e)
+    }
+  }
+
 
   @Singleton
   @Provides

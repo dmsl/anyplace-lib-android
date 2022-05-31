@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import android.util.Base64
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import okhttp3.ResponseBody

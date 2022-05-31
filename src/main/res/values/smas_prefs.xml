@@ -28,9 +28,9 @@
   <string name="pref_chat_user">pref_chat_user</string>
 
   <!-- DEFAULT PREF VALUES -->
-  <string name="default_pref_chat_server_host">ap.cs.ucy.ac.cy</string>
-  <string name="default_pref_chat_server_protocol">https</string>
-  <string name="default_pref_chat_server_access_token">CHAT_BEARER_TOKEN</string>
-  <string name="default_pref_chat_server_port">443</string>
-  <string name="default_pref_chat_mdelivery">1</string>
+  <string name="default_pref_smas_host">vgate.cs.ucy.ac.cy</string>
+  <string name="default_pref_smas_protocol">https</string>
+  <string name="default_pref_smas_access_token">CHAT_BEARER_TOKEN</string>
+  <string name="default_pref_smas_port">443</string>
+  <string name="default_pref_smas_chat_mdelivery">1</string>
 </resources>

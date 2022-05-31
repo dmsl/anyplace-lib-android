@@ -1,0 +1,86 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+  <PreferenceCategory
+      app:title="@string/prefs_header_computer_vision"
+      app:icon="@drawable/ic_settings_cv">
+
+    <EditTextPreference
+        app:key="@string/pref_cv_window_localization_seconds"
+        app:title="Localization Window"
+        app:summary="@string/summary_logging_window"
+        />
+
+    <EditTextPreference
+        app:key="@string/pref_smas_location_refresh"
+        app:title="Refresh Locations (seconds)"
+        app:summary="@string/summary_refresh_locations"
+        />
+
+    <EditTextPreference
+        app:key="@string/pref_cv_scan_delay"
+        app:title="Delay between CV scans (millis)"
+        app:summary="@string/summary_cv_scan_delay"
+        />
+
+    <DropDownPreference
+        app:key="@string/pref_cv_model"
+        app:title="Change Detection Model"
+        app:summary="Pick different Object Detection model"
+        />
+  </PreferenceCategory>
+
+  <PreferenceCategory app:title="@string/prefs_header_cache"
+      app:icon="@drawable/ic_folder">
+
+    <Preference
+        android:title="Clear local CV Maps (json)"
+        android:key="@string/pref_log_clear_cache_cv_fingerprints"
+        android:summary="Delete Object Maps that were not synced yet."
+        />
+
+    <Preference
+        android:title="Clear local CV Model "
+        android:key="@string/pref_log_clear_cache_cv_models"
+        android:summary="Delete CV Model names (will have to re-fetched)."
+        />
+
+    <Preference
+        android:title="Clear floorplans"
+        android:key="pref_log_clear_cvmaps"
+        android:summary="Delete ...."
+        android:enabled="false"
+        app:isPreferenceVisible="false"
+        tools:isPreferenceVisible="true"
+        />
+
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      app:title="@string/developer_options"
+      app:icon="@drawable/ic_developer_options">
+
+    <EditTextPreference
+        app:key="@string/pref_cvnav_map_alpha"
+        app:title="Map transparency percentage"
+        app:summary="@string/summary_map_alpha"
+        />
+
+    <SwitchPreferenceCompat
+        app:key="@string/pref_cv_dev_mode"
+        android:defaultValue="true"
+        app:title="Show scan details"
+        app:summary="Additional details while scanning (bottomsheet)"
+        />
+
+    <Preference
+        android:title="Anyplace Settings"
+        android:key="@string/pref_anyplace_server"
+        android:summary="Options related to the Anyplace Server."
+        />
+
+  </PreferenceCategory>
+
+
+</PreferenceScreen>

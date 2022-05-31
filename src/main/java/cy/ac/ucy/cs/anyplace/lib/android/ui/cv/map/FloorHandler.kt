@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -37,17 +38,18 @@ open class FloorHandler(
    * This has to be separate
    */
   fun observeFloorplanChanges(gmap: GoogleMap) {
-    scope.launch {
+    scope.launch(Dispatchers.IO) {
       VM.floorplanFlow.collect { response ->
         when (response) {
           is NetworkResult.Loading -> {
             LOG.W("Loading ${VM.spaceH.prettyFloorplan}")
           }
           is NetworkResult.Error -> {
-            val msg = "Failed to fetch ${VM.spaceH.prettyType}: ${VM.space?.name}"
+            // BUG:F84F
+            val msg = "Failed to fetch ${VM.spaceH.prettyType}: ${VM.space?.name}: [${response.message}]"
             LOG.E(msg)
             LOG.E(TAG, "Error: ${response.message}")
-            Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+            // Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
           }
           is NetworkResult.Success -> {
             if (VM.floorH == null) {

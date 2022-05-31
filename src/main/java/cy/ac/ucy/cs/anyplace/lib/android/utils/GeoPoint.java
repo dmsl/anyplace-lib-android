@@ -41,8 +41,6 @@ import android.location.Location;
 
 import org.jetbrains.annotations.NotNull;
 
-import cy.ac.ucy.cs.anyplace.lib.android.googleapi.Place;
-
 public class GeoPoint {
 
 	public String lat;

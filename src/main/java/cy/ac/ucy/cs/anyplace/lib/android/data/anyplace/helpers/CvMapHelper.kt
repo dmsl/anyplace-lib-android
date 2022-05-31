@@ -4,8 +4,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
-import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.tensorflow.legacy.gnk.utils.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
@@ -27,10 +27,11 @@ class CvMapHelper(val cvMap: CvMap,
   companion object {
     // val SCORE_LIMIT  = 0.7f
     fun toCvDetection(d: Detector.Detection) =
-      CvDetection(d.className, d.boundingBox.width(), d.boundingBox.height(), d.ocr)
+      CvDetection(0, d.boundingBox.width().toDouble(), d.boundingBox.height().toDouble(), d.ocr, d.className)
 
     fun toCvDetection(d: Classifier.Recognition) =
-            CvDetection(d.title, d.location.width(), d.location.height(), d.ocr)
+            // MERGE:PM: 0 is invalid
+            CvDetection(0, d.location.width().toDouble(), d.location.height().toDouble(), d.ocr, d.title)
 
     fun toCvLocation(latLng: LatLng, cvDetections: List<CvDetection>) =
       CvLocation(latLng.latitude.toString(), latLng.longitude.toString(), cvDetections)
@@ -51,7 +52,7 @@ class CvMapHelper(val cvMap: CvMap,
         cvLocations.add(toCvLocation(latLng, cvDetections))
       }
 
-      return CvMap(model.model,
+      return CvMap(model.modelName,
               floorH.spaceH.obj.id,
               floorH.obj.floorNumber,
               cvLocations, CvMap.SCHEMA)

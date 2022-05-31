@@ -48,14 +48,17 @@ class StatusUpdater(
     setHideOnClick()
   }
 
-  companion object {
-    private fun ColorWhiteB0(ctx: Context) = ContextCompat.getColor(ctx, R.color.white_B0)
-    private fun ColorWhite(ctx: Context) = ContextCompat.getColor(ctx, R.color.white)
-    private fun ColorWarning(ctx: Context) =ContextCompat.getColor(ctx, R.color.yellowDark)
-    private fun ColorInfo(ctx: Context) =ContextCompat.getColor(ctx, R.color.holo_light_blue)
-    private fun ColorNormal(ctx: Context) =ContextCompat.getColor(ctx, R.color.black)
-    private fun ColorPrimaryDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.colorPrimaryDark)
-    private fun ColorError(ctx: Context) =ContextCompat.getColor(ctx, R.color.redDark)
+  companion object { // TODO: in utlColor object
+    fun ColorWhiteB0(ctx: Context) = ContextCompat.getColor(ctx, R.color.white_B0)
+    fun ColorWhite(ctx: Context) = ContextCompat.getColor(ctx, R.color.white)
+    fun ColorWarning(ctx: Context) =ContextCompat.getColor(ctx, R.color.yellowDark)
+    fun ColorInfo(ctx: Context) =ContextCompat.getColor(ctx, R.color.holo_light_blue)
+    fun ColorNormal(ctx: Context) =ContextCompat.getColor(ctx, R.color.black)
+    fun ColorPrimaryDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.colorPrimaryDark)
+    fun ColorPrimary(ctx: Context) =ContextCompat.getColor(ctx, R.color.colorPrimary)
+    fun ColorError(ctx: Context) =ContextCompat.getColor(ctx, R.color.redDark)
+    fun ColorYellowDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.yellowDark)
+    fun ColorBlueDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.lash_blue_dark)
 
     fun Color(level: Level, ctx: Context): Int {
       return when(level) {

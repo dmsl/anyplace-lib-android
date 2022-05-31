@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.smas.ChatUserAuth
+import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas

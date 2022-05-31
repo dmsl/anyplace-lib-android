@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.cv.enums.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
