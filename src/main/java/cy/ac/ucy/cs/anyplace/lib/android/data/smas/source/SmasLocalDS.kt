@@ -48,7 +48,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     return DAO.lastMsgTimestamp()
   }
 
-  fun hasCvModelClassesDownloaded() : Boolean {
+  suspend fun hasCvModelClassesDownloaded() : Boolean {
     val cnt = DAO.countCvModelClasses()
     return cnt!=null && cnt>0
   }
@@ -61,5 +61,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     LOG.D2(TAG, "deleting all Cv Models")
     DAO.dropCvModelClasses()
   }
+
+  fun getCvModelIds() : List<Int> = DAO.getModelIds()
 
 }

@@ -1,8 +1,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
+import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -250,13 +250,15 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
   }
 
   @Deprecated("")
-  fun estimatePosition(detectionModel: DetectionModel, detections: List<Detector.Detection>)
+  fun estimatePosition(cvUtils: CvUtils,
+                       model: DetectionModel,
+                       detections: List<Classifier.Recognition>)
           : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (detectionModel.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (model.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${detectionModel.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${model.modelName} instead of ${cvMap.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }
@@ -264,8 +266,8 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     LOG.W(TAG, "inputMap: generating...")
     val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
     detections.forEach {
-      val idx = labelMap[it.className]!!
-      val cvDetection = CvMapHelper.toCvDetection(it)
+      val idx = labelMap[it.title]!!
+      val cvDetection = CvMapHelper.toCvDetection(cvUtils, model, it)
       if (inputMap[idx] == null) {
         inputMap[idx] = mutableListOf(cvDetection)
       } else {
@@ -279,13 +281,15 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
   }
 
 
-  fun estimatePositionNEW(detectionModel: DetectionModel, detections: List<Classifier.Recognition>)
-          : LocalizationResult {
+  fun estimatePositionNEW(
+          cvUtils: CvUtils,
+          model: DetectionModel,
+          detections: List<Classifier.Recognition>) : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (detectionModel.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (model.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${detectionModel.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${model.modelName} instead of ${cvMap.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }
@@ -294,7 +298,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
     detections.forEach {
       val idx = labelMap[it.title]!!
-      val cvDetection = CvMapHelper.toCvDetection(it)
+      val cvDetection = CvMapHelper.toCvDetection(cvUtils, model, it)
       if (inputMap[idx] == null) {
         inputMap[idx] = mutableListOf(cvDetection)
       } else {

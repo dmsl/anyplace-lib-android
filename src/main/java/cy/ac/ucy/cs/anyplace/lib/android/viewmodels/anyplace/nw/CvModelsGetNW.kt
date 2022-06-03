@@ -53,6 +53,9 @@ class CvModelsGetNW(
     if (repo.local.hasCvModelClassesDownloaded()) {
       LOG.W(TAG, "CvModels: already in DB")
       resp.value = NetworkResult.Unset(NetworkResult.DB_LOADED)
+
+      // cache (once) the model ids for faster conversion
+      initCvClassConversion()
       return
     }
 
@@ -157,6 +160,20 @@ class CvModelsGetNW(
     VM.viewModelScope.launch(Dispatchers.IO) {
       obj.forEach {
         repo.local.insertCvModelClass(it)
+      }
+    }
+    initCvClassConversion()
+  }
+
+  /**
+   * Initialize maps that speed up conversion between modelid
+   * and cid (YOLO-derived) to the oid that SMAS uses (CV backend).
+   */
+  private fun initCvClassConversion() {
+    VM.viewModelScope.launch(Dispatchers.IO) {
+      val ids = repo.local.getCvModelIds()
+      ids.forEach { id ->
+        app.cvUtils.initConversionTables(id)
       }
     }
   }

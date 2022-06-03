@@ -33,4 +33,8 @@ interface SmasDAO {
 
   @Query("SELECT COUNT(oid) FROM ${CHAT.DB_SMAS_CV_MODELS}")
   fun countCvModelClasses(): Int?
+
+  @Query("SELECT DISTINCT modelid FROM ${CHAT.DB_SMAS_CV_MODELS}")
+  fun getModelIds(): List<Int>
+
 }

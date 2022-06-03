@@ -6,16 +6,20 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
+import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.legacy.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp
@@ -39,6 +43,12 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvNav: CvNavDataStore
 
+
+  @Inject lateinit var repoAP: RepoAP
+  @Inject lateinit var repoSmas: RepoSmas
+
+  lateinit var cvUtils: CvUtils
+
   // TODO:PM: inject all those. otherwise we might have constructor issues.
   // they must be singleton, but after app ctx is created
   // example:
@@ -56,6 +66,8 @@ abstract class AnyplaceApp : Application() {
     super.onCreate()
     LOG.D2(TAG, "onCreate")
     DaggerAppComponent.builder().application(this).build()
+
+    cvUtils = CvUtils(this, repoSmas )
 
     observeServerPrefs()
 

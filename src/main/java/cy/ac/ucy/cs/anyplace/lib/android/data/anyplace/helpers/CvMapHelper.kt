@@ -2,8 +2,10 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.heatmaps.WeightedLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.tensorflow.legacy.gnk.utils.Detector
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -17,37 +19,49 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
  * - [CvMap]
  *
  */
-class CvMapHelper(val cvMap: CvMap,
-                  /** Label names of the used [DetectionModel] */
-                  val labels: List<String>,
-                  val floorH: FloorHelper) {
+class CvMapHelper(
+        val cvMap: CvMap,
+        /** Label names of the used [DetectionModel] */
+        val labels: List<String>,
+        val floorH: FloorHelper) {
 
   lateinit var cvMapFast: CvMapFast
 
   companion object {
     // val SCORE_LIMIT  = 0.7f
-    fun toCvDetection(d: Detector.Detection) =
-      CvDetection(0, d.boundingBox.width().toDouble(), d.boundingBox.height().toDouble(), d.ocr, d.className)
 
-    fun toCvDetection(d: Classifier.Recognition) =
-            // MERGE:PM: 0 is invalid
-            CvDetection(0, d.location.width().toDouble(), d.location.height().toDouble(), d.ocr, d.title)
+    /**
+     * Tries to get also the oid (SMAS id for the class).
+     * This happens only if the [cvUtils] hashmaps were pre-initialized somewhere in the
+     * app flow earlier
+     */
+    fun toCvDetection(cvUtils: CvUtils, model: DetectionModel, d: Classifier.Recognition) : CvDetection {
+      val cvd = cvUtils.toCvDetection(d, model)
+      if (cvd !=null) return cvd
+
+      return CvDetection(0, d.location.width().toDouble(), d.location.height().toDouble(), d.ocr, d.title)
+    }
+
 
     fun toCvLocation(latLng: LatLng, cvDetections: List<CvDetection>) =
-      CvLocation(latLng.latitude.toString(), latLng.longitude.toString(), cvDetections)
+            CvLocation(latLng.latitude.toString(), latLng.longitude.toString(), cvDetections)
 
     /**
      * Generates a CvMap from a list of [input] detections
      */
-    fun generate(model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Classifier.Recognition>>): CvMap {
+    fun generate(
+            app: AnyplaceApp,
+            model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Classifier.Recognition>>): CvMap {
       val cvLocations :MutableList<CvLocation> = mutableListOf()
       LOG.D(TAG, "generate:")
       input.forEach { (latLng, detections) ->
         LOG.D(TAG, "location: $latLng: : ${detections.size}")
         val cvDetections: MutableList<CvDetection> = mutableListOf()
         detections.forEach { detection ->
+
+          val cvd = toCvDetection(app.cvUtils, model, detection)
           LOG.D(TAG, "  - ${detection.detectedClass}:${detection.detectedClass}: score: ${detection.confidence}")
-          cvDetections.add(toCvDetection(detection))
+          cvDetections.add(cvd)
         }
         cvLocations.add(toCvLocation(latLng, cvDetections))
       }
@@ -76,7 +90,7 @@ class CvMapHelper(val cvMap: CvMap,
       // key is the location. If a key exists, then append the [CvDetection] list
       val combined: MutableMap<LatLng, MutableList<CvDetection>> = HashMap()
       cvm1.locations.forEach { cvLoc ->
-       val latLng = utlLoc.toLatLng(cvLoc)
+        val latLng = utlLoc.toLatLng(cvLoc)
         if (combined.containsKey(latLng)) {
           combined[latLng]?.addAll(cvLoc.detections)
         } else {
@@ -141,8 +155,8 @@ class CvMapHelper(val cvMap: CvMap,
   fun hasCache() = cache.hasDirFloorCvMapsLocal(cvMap)
   fun clearCache() = cache.deleteFloorCvMapsLocal(cvMap)
   fun readLocalAndMerge(): CvMap {
-      val localCvMap  = cache.readFloorCvMap(cvMap)
-      return merge(cvMap, localCvMap)
+    val localCvMap  = cache.readFloorCvMap(cvMap)
+    return merge(cvMap, localCvMap)
   }
   fun storeToCache() = cache.saveFloorCvMap(cvMap)
 

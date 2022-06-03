@@ -44,6 +44,7 @@ interface Classifier {
 
     /** Optional location within the source image for the location of the recognized object. */
     var location: RectF
+    /** YOLO ID for the class detection (zero based) */
     var detectedClass = 0
 
     /** TODO:PM OCM. any other field? */

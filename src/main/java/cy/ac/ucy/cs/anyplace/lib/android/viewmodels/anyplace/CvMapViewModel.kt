@@ -225,8 +225,7 @@ open class CvMapViewModel @Inject constructor(
             location.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
           } else {  // estimate and publish position
             location.value = cvMapH!!.cvMapFast.estimatePositionNEW(
-                    super.model,
-                    detectionsNAV.value)
+                    app.cvUtils, model, detectionsNAV.value)
           }
 
           detectionsNAV.value = emptyList()
