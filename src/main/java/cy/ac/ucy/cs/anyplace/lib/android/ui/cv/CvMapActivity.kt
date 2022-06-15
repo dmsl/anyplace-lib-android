@@ -7,7 +7,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
@@ -16,7 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -44,11 +44,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
-          CvMapViewModel::class.java as Class<DetectorViewModel>
+          CvViewModel::class.java as Class<DetectorViewModel>
 
   // VIEW MODELS
   /** extends [DetectorViewModel] */
-  private lateinit var VM: CvMapViewModel
+  private lateinit var VM: CvViewModel
 
   // UTILITY OBJECTS
   protected lateinit var wMap: GmapWrapper
@@ -64,7 +64,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun postCreate() {
     super.postCreate()
-    VM = _vm as CvMapViewModel
+    VM = _vm as CvViewModel
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
     lifecycleScope.launch(Dispatchers.IO) {
@@ -90,22 +90,25 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.V()
       dsCv.read.first { prefs ->
-        VM.prefsCV= prefs
-        onCvPrefsLoaded(prefs)
+        VM.prefsCv= prefs
+        onLoadedPrefsCvEngine(prefs)
         true
       }
 
-      LOG.D(TAG, "CvMapActivity: readPrefsAndContinue: calls read")
+      LOG.D(TAG, "CvMapActivity: readPrefsAndContinue")
+
       dsCvNav.read.first { prefs ->
-        VM.prefsNav = prefs
-        onNavPrefsLoaded()
+        VM.prefsCvNav= prefs
+        onLoadedPrefsCvNavigation()
         true
       }
+
+      VM.reactToPrefChanges()
     }
   }
 
-  private fun onCvPrefsLoaded(cvPrefs: CvPrefs) {
-    if (cvPrefs.reloadCvMaps) {
+  private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
+    if (cvEnginePrefs.reloadCvMaps) {
       LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
       // refresh CvMap+Heatmap only when needed
       // TODO do something similar with floorplans when necessary as well
@@ -116,7 +119,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-  private fun onNavPrefsLoaded() {
+  private fun onLoadedPrefsCvNavigation() {
     setupUi()
   }
 
@@ -124,7 +127,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * Initialize bottom sheet by reading the [VM.prefsNav]
    */
   open fun lazyInitBottomSheet() {
-    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsNav.devMode)
+    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsCvNav.devMode)
   }
 
   protected open fun setupUi() {
@@ -184,7 +187,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   private fun setMapOpacity() {
     val view = findViewById<View>(id_gmap)
-    val value =VM.prefsNav.mapAlpha.toInt()
+    val value =VM.prefsCvNav.mapAlpha.toInt()
     view.alpha=value/100f
   }
 

@@ -47,7 +47,7 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_MODEL_NAME = "coco"
 
   // Settings used in both contexts (Logger, Navigator)
-  val PREF_CV_WINDOW_LOCALIZATION_SECONDS = ctx.getString(R.string.pref_cv_window_localization_seconds)
+  val PREF_CV_WINDOW_LOCALIZATION_MS = ctx.getString(R.string.pref_cv_localization_ms)
   val PREF_CV_SCAN_DELAY = ctx.getString(R.string.pref_cv_scan_delay)
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   //// Settings for Cv Logger
@@ -58,20 +58,21 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CV_DEV_MODE = false
   val DEFAULT_PREF_CV_SCAN_DELAY= "500"
   //// LOCALIZATION
-  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5"
-  val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS = "3"
+  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5" // TODO in ms
+
+  val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS = "2000"
 
   //// Settings for Cv Navigator/Localization apps
   val PREF_CVNAV = ctx.getString(R.string.pref_cvnav)
   val PREF_CVNAV_MAP_ALPHA= ctx.getString(R.string.pref_cvnav_map_alpha)
   //// NAVIGATION
-  val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
+  // val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
   val DEFAULT_PREF_CVNAV_MAP_ALPHA= "90"
 
   //// SMAS
   // this should have been in separate SMAS settings
-  val PREF_SMAS_LOCATION_REFRESH= ctx.getString(R.string.pref_smas_location_refresh)
-  val DEFAULT_PREF_SMAS_LOCATION_REFRESH= "2"
+  val PREF_SMAS_LOCATION_REFRESH_MS= ctx.getString(R.string.pref_smas_location_refresh)
+  val DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS= "2000"
 
   //// MISC
   val PREF_MISC_NAME = "pref_misc"

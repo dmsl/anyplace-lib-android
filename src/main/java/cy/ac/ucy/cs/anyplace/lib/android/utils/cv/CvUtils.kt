@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.cv
+package cy.ac.ucy.cs.anyplace.lib.android.utils.cv
 
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
@@ -8,7 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvDetection
-import kotlinx.coroutines.CoroutineScope
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvDetectionREQ
 
 
 data class CvKey (
@@ -55,17 +55,40 @@ class CvUtils(
 
     val key = CvKey(modelId, detection.detectedClass)
     val oid = hmap[key]
-    if (oid == null) {
+
+    return if (oid == null) {
       LOG.E(TAG, "$METHOD: No class for: ${detection.detectedClass}:${detection.title}")
-      return null
+      null
     } else {
-      val cvd= CvDetection(oid,
+      return CvDetection(oid,
               detection.location.width().toDouble(),
               detection.location.height().toDouble(),
               null, detection.title)
-      LOG.D(TAG, "$METHOD: CvModel: READY: ${cvd.oid}: w:${cvd.width} h:${cvd.height}")
-      return cvd
     }
+  }
+
+  /**
+   * Converts a list of [Classifier.Recognition] (YOLOV4),
+   * to a list of CvDetectionREQ that the SMAS backend understands.
+   */
+  fun toCvDetections(recognitions: List<Classifier.Recognition>, model: DetectionModel) : List<CvDetectionREQ> {
+    LOG.D2(TAG, METHOD)
+    // build detections request
+    val detections = mutableListOf<CvDetectionREQ>()
+    recognitions.forEach { detection ->
+      val detectionStr = "${detection.detectedClass}:${detection.title}"
+      val modelStr = "${model.idSmas}:${model.modelName}"
+
+      LOG.D3(TAG, "$METHOD: CvModel: $detectionStr: $modelStr")
+
+      val cvd = app.cvUtils.toCvDetection(detection, model)
+      if (cvd != null) {
+        val detReq = CvDetectionREQ(cvd)
+        LOG.D2(TAG, "$METHOD: CvModel: READY: ${detReq.oid}: w:${detReq.width} h:${detReq.height}")
+        detections.add(detReq)
+      }
+    }
+    return detections
   }
 
 }

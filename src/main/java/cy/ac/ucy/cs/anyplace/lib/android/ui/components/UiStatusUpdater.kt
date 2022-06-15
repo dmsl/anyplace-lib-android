@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashOut
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashView
@@ -21,7 +22,7 @@ import kotlinx.coroutines.launch
  *
  * TODO:PM if something else is showing: then hide it
  */
-class StatusUpdater(
+class UiStatusUpdater(
         private val ctx: Context,
         private val scope: CoroutineScope,
         /** Stick mode in the status bar,
@@ -36,6 +37,8 @@ class StatusUpdater(
         private val tvBg: View,
         /** Overlay View on top of the others.  It may appear briefly to emphasize text. */
         private val overlay: View) {
+
+
 
   enum class Level {
     Warning,
@@ -141,6 +144,7 @@ class StatusUpdater(
   }
 
   private fun showMsgAutohide(level: Level, title: String, subtitle: String, delay: Long) {
+    // TODO: make only the updates on the Main thread?
     scope.launch {
       clearMessages()
       tvBg.setBackgroundColor(ColorWhite(ctx))

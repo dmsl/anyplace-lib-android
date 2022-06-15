@@ -111,7 +111,7 @@ class MainSettingsDialog : DialogFragment() {
 
   private fun setupCvLoggerSetings() {
     binding.buttonComputerVision.setOnClickListener {
-      startActivity(Intent(requireActivity(), SettingsCvLoggerActivity::class.java))
+      startActivity(Intent(requireActivity(), SettingsCvLoggerActivityDEPR::class.java))
     }
   }
 

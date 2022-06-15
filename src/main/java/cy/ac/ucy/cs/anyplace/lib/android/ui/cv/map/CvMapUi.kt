@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,13 +24,13 @@ import kotlinx.coroutines.launch
  * - floorplans
  */
 open class CvMapUi(
-  protected val VM: CvMapViewModel,
-  protected val scope: CoroutineScope,
-  protected val activity: Activity,
-  protected val fragmentManager: FragmentManager,
-  /** [GoogleMap] overlays */
+        protected val VM: CvViewModel,
+        protected val scope: CoroutineScope,
+        protected val activity: Activity,
+        protected val fragmentManager: FragmentManager,
+        /** [GoogleMap] overlays */
         protected val overlays: Overlays,
-  val floorSelector: FloorSelector) {
+        val floorSelector: FloorSelector) {
 
   protected val ctx: Context = activity.applicationContext
 
@@ -41,7 +41,7 @@ open class CvMapUi(
 
   fun removeHeatmap() {
     scope.launch(Dispatchers.Main) {
-      overlays.removeHeatmap()
+      overlays.uiRemoveHeatmap()
     }
   }
 

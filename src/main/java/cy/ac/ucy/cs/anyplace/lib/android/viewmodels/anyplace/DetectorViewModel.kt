@@ -12,7 +12,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-
 /**
  * [DetectorViewModel] contains only whatever is related to
  * - object detection (YOLOV4-TFLITE):

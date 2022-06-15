@@ -17,7 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
@@ -32,7 +32,7 @@ class GmapWrapper(private val ctx: Context,
                   private val UI: CvMapUi) {
 
   lateinit var obj: GoogleMap
-  lateinit var VM: CvMapViewModel
+  lateinit var VM: CvViewModel
 
   private val assetReader by lazy { AssetReader(ctx) }
   val overlays by lazy { Overlays(ctx, scope) }
@@ -41,7 +41,7 @@ class GmapWrapper(private val ctx: Context,
   lateinit var mapView : MapView
 
   /** Dynamically attach a [GoogleMap] */
-  fun attach(VM: CvMapViewModel, act: CvMapActivity, layout_id: Int) {
+  fun attach(VM: CvViewModel, act: CvMapActivity, layout_id: Int) {
     this.VM=VM
 
     mapView = act.findViewById(layout_id)
@@ -59,7 +59,7 @@ class GmapWrapper(private val ctx: Context,
     LOG.D()
 
     obj = googleMap
-    VM.markers = Markers(ctx, obj)
+    VM.markers = Markers(ctx, scope, obj)
 
     // ON FLOOR LOADED....
     obj.uiSettings.apply {
@@ -113,6 +113,11 @@ class GmapWrapper(private val ctx: Context,
 
       val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
+      // LEFTHERE: we get OUT OF BOUNDS RESULTS!
+      // some crashes, and some weird results.
+      // invastigating..
+      // QR CODES?! those NOT part of the model.
+      LOG.W(TAG, "NOT SETTINGS CAMERA BOUNDS.")
       obj.setLatLngBoundsForCameraTarget(VM.floorH?.bounds())
     }
   }

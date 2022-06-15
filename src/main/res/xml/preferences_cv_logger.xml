@@ -12,7 +12,7 @@
         app:summary="@string/summary_logging_window"
         />
     <EditTextPreference
-        app:key="@string/pref_cv_window_localization_seconds"
+        app:key="@string/pref_cv_localization_ms"
         app:title="Localization Window"
         app:summary="@string/summary_localization_window"
         />

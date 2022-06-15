@@ -28,9 +28,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgSendNW
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -62,9 +60,6 @@ class SmasChatViewModel @Inject constructor(
   // Preferences
   val prefsCvNav = dsCvNav.read
 
-  /** How often to refresh UI components from backend (in ms) */
-  private var refreshMs : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
-
   //Variables observed by composable functions
   var reply: String by mutableStateOf("")
   var imageUri: Uri? by mutableStateOf(null)
@@ -75,12 +70,6 @@ class SmasChatViewModel @Inject constructor(
   var isLoading: Boolean by mutableStateOf(false)
 
   var newMessages = MutableStateFlow(false)
-
-  private fun collectRefreshMs() {
-    viewModelScope.launch(Dispatchers.IO) {
-      prefsCvNav.collectLatest{ refreshMs = it.locationRefresh.toLong()*1000L }
-    }
-  }
 
   fun getLoggedInUser(): String {
     var uid = ""
@@ -124,25 +113,37 @@ class SmasChatViewModel @Inject constructor(
     }
   }
 
-  fun netPullMessagesLOOP()  {
-    viewModelScope.launch(Dispatchers.IO) {
-      collectRefreshMs()
-      while (true) {
-        LOG.D2(TAG, "loop: pull-msgs")
-        nwMsgGet.safeCall()
-        delay(refreshMs)
-      }
-    }
-  }
+  /** How often to refresh UI components from backend (in ms) */
+  // private var locationRefresh : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
+  // private fun collectRefreshMs() {
+  //   viewModelScope.launch(Dispatchers.IO) {
+  //     prefsCvNav.collectLatest{ locationRefresh = it.locationRefresh.toLong()*1000L }
+  //   }
+  // }
+  /**
+   * Not pulling any msgs.
+   * This is done by the [SmasMainViewModel]
+   * (which stays active while the [SmasChatActivity] runs)
+   */
+  // fun netPullMessagesLOOP()  {
+  //   viewModelScope.launch(Dispatchers.IO) {
+  //     collectRefreshMs()
+  //     while (true) {
+  //       LOG.D2(TAG, "loop: pull-msgs")
+  //       nwMsgGet.safeCall()
+  //       delay(locationRefresh)
+  //     }
+  //   }
+  // }
 
 
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
     var userCoord : UserCoordinates? = null
-    if (VM.location.value.coord != null) {
+    if (VM.locationLOCAL.value.coord != null) {
       userCoord = UserCoordinates(VM.spaceH.obj.id,
               VM.floorH?.obj!!.floorNumber.toInt(),
-              VM.location.value.coord!!.lat,
-              VM.location.value.coord!!.lon)
+              VM.locationLOCAL.value.coord!!.lat,
+              VM.locationLOCAL.value.coord!!.lon)
       return userCoord
     }
 

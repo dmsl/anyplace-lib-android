@@ -105,7 +105,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
   fun setReloadCvMaps(value: Boolean) = putBoolean(C.PREF_RELOAD_CVMAPS, value)
   fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_FLOORPLAN, value)
 
-  val read: Flow<CvPrefs> = ctx.dataStoreCv.data
+  val read: Flow<CvEnginePrefs> = ctx.dataStoreCv.data
           .catch { exception ->
             if (exception is IOException) {
               emit(emptyPreferences())
@@ -115,11 +115,11 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
             val modelName = (preferences[KEY.modelName] ?: C.DEFAULT_PREF_MODEL_NAME).lowercase()
             val reloadCvMaps= preferences[KEY.reloadCvMaps] ?: false
             val reloadFloorplan = preferences[KEY.reloadFloorplans] ?: false
-            CvPrefs(modelName, reloadCvMaps, reloadFloorplan)
+            CvEnginePrefs(modelName, reloadCvMaps, reloadFloorplan)
           }
 }
 
-data class CvPrefs(
+data class CvEnginePrefs(
         val modelName: String,
         /** The model has changed so it has to be reloaded */
         val reloadCvMaps: Boolean,

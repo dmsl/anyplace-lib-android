@@ -21,7 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.VersionNW
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Extends [CvMapViewModel]:
+ * Extends [CvViewModel]:
  * - TODO here merge chat / messages
  */
 @HiltViewModel
@@ -48,7 +48,7 @@ class SmasMainViewModel @Inject constructor(
         dsMisc: MiscDataStore,
         RHsmas: RetrofitHolderSmas,
         RHap: RetrofitHolderAP):
-        CvMapViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
+        CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { CHAT(app.applicationContext) }
 
@@ -56,11 +56,11 @@ class SmasMainViewModel @Inject constructor(
   val prefsChat = dsChat.read
 
   /** How often to refresh UI components from backend (in ms) */
-  var refreshMs : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
+  // var refreshMs : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
 
-  override fun prefWindowLocalizationMillis(): Int {
+  override fun prefWindowLocalizationMs(): Int {
     // modify properly for Smas?
-    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS.toInt()
+    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS.toInt()
   }
 
   //// RETROFIT UTILS:
@@ -77,11 +77,14 @@ class SmasMainViewModel @Inject constructor(
    */
   fun displayVersion(p: Preference?) = viewModelScope.launch { nwVersion.safeCallAndUpdateUi(p) }
 
-  fun collectRefreshMs() {
-    viewModelScope.launch(Dispatchers.IO) {
-      prefsCvNav.collectLatest{ refreshMs = it.locationRefresh.toLong()*1000L }
-    }
-  }
+  // CHECK:PM VERIFY:PM is it updating correclty?? (if so CLR refreshMs)
+  // fun collectRefreshMs() {
+  //   viewModelScope.launch(Dispatchers.IO) {
+  //     dsCvNav.read.collectLatest {
+  //       refreshMs = it.locationRefresh.toLong()*1000L
+  //     }
+  //   }
+  // }
 
   /**
    * React to user location updates:
@@ -101,7 +104,6 @@ class SmasMainViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
       nwLocationGet.collect(VMchat, mapH)
     }
-
   }
 
   fun toggleAlert() : LocationSendNW.Mode {

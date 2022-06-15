@@ -172,8 +172,8 @@
   <string name="confirm">Confirm</string>
   <string name="for_var_var">for %1$s %2$s</string>
   <string name="clear_local_cv_maps">Clear local CV maps</string>
-  <string name="summary_logging_window">Log objects for %1$s seconds per location.</string>
-  <string name="summary_refresh_locations">Every %1$s seconds it pulls updated user locations.</string>
+  <string name="summary_logging_window">Log objects for %1$s ms per location.</string>
+  <string name="summary_refresh_locations">Every %1$s ms it pulls updated user locations.</string>
   <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
   <string name="change_cv_model">Change Object Recognition Model</string>
   <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>

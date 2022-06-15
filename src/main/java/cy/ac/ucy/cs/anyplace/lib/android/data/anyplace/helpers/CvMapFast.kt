@@ -1,6 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
-import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
@@ -112,7 +112,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     for (locationIndex in cvMap.locations.indices) {
       val location = cvMap.locations[locationIndex]
 
-      val coord = Coord.get(location.lat, location.lon)
+      val coord = Coord.get(location.lat, location.lon, cvMap.floorNumber.toInt())
       val dbgkey = coord.lat.toString()+"_"+coord.lon.toString()
       _locNames[dbgkey] = "LOC${locationIndex+1}"
       var locValues = ""

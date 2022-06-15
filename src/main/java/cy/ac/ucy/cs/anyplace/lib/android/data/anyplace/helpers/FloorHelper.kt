@@ -29,6 +29,7 @@ class FloorHelper(val obj: Floor,
 
   private val cache by lazy { Cache(spaceH.ctx) }
 
+  fun floorNumber() : Int = obj.floorNumber.toInt()
   fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${obj.floorNumber}"
   fun prettyFloorNumber() = "${spaceH.prettyFloor}${obj.floorName}"
   fun prettyFloorName() = "${spaceH.prettyFloor} ${obj.floorName}"

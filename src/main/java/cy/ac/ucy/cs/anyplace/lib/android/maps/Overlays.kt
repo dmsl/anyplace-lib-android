@@ -10,14 +10,12 @@ import com.google.android.gms.maps.model.*
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
-import java.io.InputStream
 
 class Overlays(private val ctx: Context,
                private val scope: CoroutineScope) {
@@ -28,49 +26,49 @@ class Overlays(private val ctx: Context,
   /** Showing a floorplan */
   var floorplanOverlay: GroundOverlay? = null
 
-  fun getImgTestAsset(): InputStream? {
-    val floorplanFilename = "t1.png"
-    try {
-      with(ctx.assets.open(floorplanFilename)){  return this  }
-    } catch (e: IOException) {
-      // log error
-    }
-    return null
-  }
-
   /**
    * Removes the previous floorplan before drawing a new one
    */
   fun drawFloorplan(bitmap: Bitmap?, map: GoogleMap, bounds: LatLngBounds) {
-    scope.launch(Dispatchers.Main) {
-      if (bitmap != null) {
-        if (floorplanOverlay != null) {
-          floorplanOverlay!!.remove()
-        }
-        val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
-        floorplanOverlay = map.addGroundOverlay(
-                GroundOverlayOptions().apply {
-                  positionFromBounds(bounds)
-                  image (bitmapDescriptor)
-                })
+    if (bitmap != null) {
+      if (floorplanOverlay != null) {
+        uiRemoveFloorplanOverlay()
       }
+      uiAddGroundOverlay(map, bitmap, bounds)
     }
     // floorplanOverlay = null
+  }
+
+  fun uiRemoveFloorplanOverlay() {
+    scope.launch(Dispatchers.Main) {
+      floorplanOverlay!!.remove()
+    }
+  }
+
+  fun uiAddGroundOverlay(map: GoogleMap, bitmap: Bitmap, bounds: LatLngBounds) {
+    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+    scope.launch(Dispatchers.Main) {
+      // make the caller method normal, and this on main thread....
+      floorplanOverlay = map.addGroundOverlay(
+              GroundOverlayOptions().apply {
+                positionFromBounds(bounds)
+                image(bitmapDescriptor)
+              })
+    }
   }
 
   fun refreshHeatmap(map: GoogleMap, locations: List<WeightedLatLng>) {
     LOG.E(TAG, "refreshHeatmap")
     if (heatmapTileProvider != null) {
-      LOG.E(TAG, "refreshHeatmap: updating")
-      heatmapTileProvider?.setWeightedData(locations)
-      heatmapOverlay?.clearTileCache()
+      LOG.W(TAG, "$METHOD: updating")
+      uiRefreshHeatmap(locations)
     } else {
-      LOG.E(TAG_METHOD, "heatmapTileProvider was null!") // CLR:PM
+      LOG.W(TAG, "$METHOD: heatmapTileProvider was null.") // CLR:PM
       createHeatmap(map, locations)
     }
   }
 
-  fun removeHeatmap() = heatmapOverlay?.remove()
+
 
   private fun CvHeatmapGradient() : Gradient? {
     val useGradient = true
@@ -93,28 +91,27 @@ class Overlays(private val ctx: Context,
   fun createHeatmap(map: GoogleMap, locations: List<WeightedLatLng>) {
     val gradient = CvHeatmapGradient()
     if (heatmapOverlay != null) {
-      LOG.D(TAG, "addHeatmap: removing previous heatmap")
-      heatmapOverlay?.remove()
-    }
-    heatmapTileProvider = if (gradient != null) {
-      HeatmapTileProvider.Builder()
-          .weightedData(locations)
-          .opacity(0.9)
-          .gradient(gradient)
-          .build()
-    } else {
-      HeatmapTileProvider.Builder()
-          .weightedData(locations)
-          .build()
+      LOG.D(TAG, "$METHOD: removing previous heatmap")
+      uiRemoveHeatmap()
     }
 
-
-    scope.launch(Dispatchers.Main) {
-      heatmapOverlay =
-              map.addTileOverlay(TileOverlayOptions().tileProvider(heatmapTileProvider!!))
-    }
+    heatmapTileProvider = getTileProvider(gradient, locations)
+    uiAddTileOverlay(map)
   }
 
+  fun getTileProvider(gradient: Gradient?, locations: List<WeightedLatLng>):
+          HeatmapTileProvider =
+          if (gradient != null) {
+            HeatmapTileProvider.Builder()
+                    .weightedData(locations)
+                    .opacity(0.9)
+                    .gradient(gradient)
+                    .build()
+          } else {
+            HeatmapTileProvider.Builder()
+                    .weightedData(locations)
+                    .build()
+          }
 
   private fun bitmapFromVectorKt(vectorResID: Int) : BitmapDescriptor {
     val vectorDrawable=ContextCompat.getDrawable(ctx ,vectorResID)
@@ -124,4 +121,25 @@ class Overlays(private val ctx: Context,
     vectorDrawable.draw(canvas)
     return BitmapDescriptorFactory.fromBitmap(bitmap)
   }
+
+  fun uiAddTileOverlay(map: GoogleMap) {
+    scope.launch(Dispatchers.Main) {
+      val options = TileOverlayOptions().tileProvider(heatmapTileProvider!!)
+      heatmapOverlay = map.addTileOverlay(options)
+    }
+  }
+
+  fun uiRemoveHeatmap() {
+    scope.launch(Dispatchers.Main) {
+      heatmapOverlay?.remove()
+    }
+  }
+
+  fun uiRefreshHeatmap(locations: List<WeightedLatLng>) {
+    scope.launch(Dispatchers.Main) {
+      heatmapTileProvider?.setWeightedData(locations)
+      heatmapOverlay?.clearTileCache()
+    }
+  }
+
 }

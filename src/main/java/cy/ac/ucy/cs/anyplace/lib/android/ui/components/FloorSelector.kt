@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.FloorplanLoader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +85,7 @@ class FloorSelector(
   /**
    * Wait some time, and then change floor
    */
-  fun lazilyChangeFloor(VM: CvMapViewModel, scope: CoroutineScope) {
+  fun lazilyChangeFloor(VM: CvViewModel, scope: CoroutineScope) {
     if (VM.floorH == null) {
       LOG.E(TAG_METHOD, "Null floor")
       return
@@ -131,7 +131,7 @@ class FloorSelector(
    *
    * Must be called each time wee want to load a floor.
    */
-  private fun loadFloor(VM: CvMapViewModel, scope: CoroutineScope) {
+  private fun loadFloor(VM: CvViewModel, scope: CoroutineScope) {
     callback?.before()
 
     if (VM.floorH==null) {

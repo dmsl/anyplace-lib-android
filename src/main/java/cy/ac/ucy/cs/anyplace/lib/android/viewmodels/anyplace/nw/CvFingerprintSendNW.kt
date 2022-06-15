@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +31,7 @@ import java.net.ConnectException
  */
 class CvFingerprintSendNW(
         private val app: SmasApp,
-        private val VM: CvMapViewModel,
+        private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
@@ -57,9 +57,9 @@ class CvFingerprintSendNW(
       try {
         val req= FingerprintSendReq(chatUser, userCoords, utlTime.epoch().toString(),
                 detectionsReq, model.idSmas)
-        LOG.D2(TAG, "FP-Send: ${req.time}: #: ${detectionsReq.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
+        LOG.D3(TAG, "FP-Send: ${req.time}: #: ${detectionsReq.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.cvFingerprintSend(req)
-        LOG.D2(TAG, "FP-Send: Resp: ${response.message()}" )
+        LOG.D3(TAG, "FP-Send: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"

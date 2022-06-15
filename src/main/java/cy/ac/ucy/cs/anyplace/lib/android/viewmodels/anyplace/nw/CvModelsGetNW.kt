@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvMapViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ import java.net.ConnectException
  */
 class CvModelsGetNW(
         private val app: SmasApp,
-        private val VM: CvMapViewModel,
+        private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
@@ -137,14 +137,8 @@ class CvModelsGetNW(
             app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
           }
         }
-        else -> {
-          //db error
-          if (!err.handle(app, it.message, "msg-send")) {
-            val msg = it.message ?: "unspecified error"
-            app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
-            LOG.E(TAG, msg)
-          }
-        }
+        is NetworkResult.Unset -> { }
+        else -> { } // might be unset or db loaded
       }
     }
   }

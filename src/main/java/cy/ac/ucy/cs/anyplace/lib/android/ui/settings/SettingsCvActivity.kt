@@ -67,7 +67,6 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-
     // TODO: get whether we are from Smas or Logger apps
 
     settingsFragment = SettingsCvFragment(dsCvNav, dsCv, repoAP, repoSmas)
@@ -111,19 +110,20 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         LOG.D(TAG, "SNAct: calls read")
         val prefs = ds.read.first()
         LOG.E(TAG, "SCAN: SNAct: scanDelay: ${prefs.scanDelay}")
+
         // val prefsCvNav= DS.read.first()
         setPercentageInput(R.string.pref_cvnav_map_alpha,
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
 
         setNumericInput(R.string.pref_smas_location_refresh,
-                R.string.summary_refresh_locations, prefs.locationRefresh)
+                R.string.summary_refresh_locations, prefs.locationRefreshMs)
 
         setNumericInput(R.string.pref_cv_scan_delay,
                 R.string.summary_cv_scan_delay, prefs.scanDelay)
 
-        setNumericInput(R.string.pref_cv_window_localization_seconds,
-                R.string.summary_localization_window, prefs.windowLocalizationSeconds)
+        setNumericInput(R.string.pref_cv_localization_ms,
+                R.string.summary_localization_window, prefs.windowLocalizationMs)
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
 

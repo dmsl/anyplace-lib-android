@@ -7,8 +7,8 @@
 // import androidx.lifecycle.MutableLiveData
 // import com.google.android.gms.maps.model.LatLng
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-// import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.Detector
-// import cy.ac.ucy.cs.anyplace.lib.android.cv.tensorflow.legacy.gnk.utils.YoloV4Detector
+// import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.tensorflow.legacy.gnk.utils.Detector
+// import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.tensorflow.legacy.gnk.utils.YoloV4Detector
 // import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 // import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.CvLoggerPrefs
 // import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.CvMapHelper

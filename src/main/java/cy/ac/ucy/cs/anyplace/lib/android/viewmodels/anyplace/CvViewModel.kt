@@ -29,6 +29,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvFingerprintSendNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvModelsGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
@@ -39,7 +40,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -52,7 +53,7 @@ import javax.inject.Inject
  * and store detection lists in 'scanning windows'.
  * Therefore we need the below states.
  */
-enum class Localization {
+enum class LocalizingStatus {
   running,
   stopped,
   stoppedNoDetections,
@@ -68,7 +69,7 @@ enum class Localization {
  *    - gmap markers
  */
 @HiltViewModel
-open class CvMapViewModel @Inject constructor(
+open class CvViewModel @Inject constructor(
         /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
@@ -81,19 +82,23 @@ open class CvMapViewModel @Inject constructor(
         val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvNav) {
 
   private val C by lazy { CONST(app) }
+  /** Updated on changes */
+  lateinit var prefsCvNav: CvNavigationPrefs
+  /** Updated on changes */
+  lateinit var prefsCv: CvEnginePrefs
 
-  lateinit var prefsCV: CvPrefs
+  // lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs
-  val prefsCvNav = dsCvNav.read
-
-  lateinit var prefsNav: CvNavigationPrefs
+  // lateinit var prefsNav: CvNavigationPrefs
 
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
 
   /** Controlling navigation mode */
-  val localization = MutableStateFlow(Localization.stopped)
-  val localizationFlow = localization.asStateFlow()
+  val stateLocalizing = MutableStateFlow(LocalizingStatus.stopped)
+  // val localizationFlow = localizationLocal.asStateFlow()
+
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
   // e.g., each window might be 5seconds.
   /** related to cv scan window */
@@ -101,8 +106,12 @@ open class CvMapViewModel @Inject constructor(
   var windowStart : Long = 0
   /** Detections for the localization scan-window */
   val detectionsNAV: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
-  /** Last Anyplace location */
-  val location: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+
+  /** Last locallly calculated location (CvMap) */
+  val locationLOCAL: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+  /** Last locallly calculated location (SMAS) */
+  val locationREMOTE: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+
   /** Selected [Space] */
   var space: Space? = null
   /** All floors of the selected [space] */
@@ -178,7 +187,7 @@ open class CvMapViewModel @Inject constructor(
   fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
     userLocation.forEach {
       scope.launch(Dispatchers.Main) {
-        markers.addUserMarker(LatLng(it.x, it.y), it.uid, scope, it.alert, it.time)
+        markers.addUserMarker(LatLng(it.x, it.y), it.uid, it.alert, it.time)
       }
     }
   }
@@ -190,13 +199,32 @@ open class CvMapViewModel @Inject constructor(
   /**
    * Sets a new marker location on the map.
    */
-  fun setUserLocation(coord: Coord) {
-    LOG.D(TAG, "setUserLocation")
-    markers?.setLocationMarker(utlLoc.toLatLng(coord))
+  fun setUserLocationLOCAL(coord: Coord) {
+    LOG.D(TAG, "$METHOD")
+    markers.setLocationMarkerLOCAL(utlLoc.toLatLng(coord))
   }
 
-  protected open fun prefWindowLocalizationMillis(): Int {
-    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS.toInt()
+  /**
+   * Sets a new marker location on the map.
+   */
+  fun setUserLocationREMOTE(coord: Coord) {
+    LOG.D(TAG, "$METHOD")
+    markers.setLocationMarkerREMOTE(utlLoc.toLatLng(coord))
+  }
+
+
+  /**
+   * React to [CvEnginePrefs] and [CvNavigationPrefs] changes
+   */
+  fun reactToPrefChanges() {
+    viewModelScope.launch (Dispatchers.IO){
+      dsCvNav.read.collectLatest { prefsCvNav=it }
+      dsCv.read.collectLatest { prefsCv=it }
+    }
+  }
+
+  protected open fun prefWindowLocalizationMs(): Int {
+    return prefsCvNav.windowLocalizationMs.toInt()
   }
 
   /**
@@ -207,36 +235,59 @@ open class CvMapViewModel @Inject constructor(
     val appendedDetections = detectionsNAV.value + detections
 
     when {
-      currentTime-windowStart > prefWindowLocalizationMillis() -> { // window finished
-        localization.tryEmit(Localization.stopped)
-        location.value = LocalizationResult.Unset()
+      currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
+        stateLocalizing.tryEmit(LocalizingStatus.stopped)
+        locationLOCAL.value = LocalizationResult.Unset()
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
-          // TODO DEDUPLICATE DETECTIONS
-
-          val detectionsDedup =
-                  YoloV4Classifier.NMS(detectionsNAV.value, detector.labels)
+          // VERIFY: DEDUPLICATE DETECTIONS (this should be ok)
+          val detectionsDedup = YoloV4Classifier.NMS(detectionsNAV.value, detector.labels)
           detectionsNAV.value = detectionsDedup
 
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
-          location.value = LocalizationResult.Unset()
-          if (cvMapH == null) {
-            location.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
-          } else {  // estimate and publish position
-            location.value = cvMapH!!.cvMapFast.estimatePositionNEW(
-                    app.cvUtils, model, detectionsNAV.value)
-          }
+          // POINT OF LOCALIZING:
+          localizeCvMapLOCAL(detectionsNAV.value)
+          localizeCvMapREMOTE(detectionsNAV.value) // TODO:PMX
 
           detectionsNAV.value = emptyList()
         } else {
           LOG.W(TAG_METHOD, "stopped. no detections..")
-          location.value = LocalizationResult.Error("Location not found.", "no objects detected")
+          locationLOCAL.value = LocalizationResult.Error("Location not found.", "no objects detected")
         }
       } else -> {  // Within a window
       detectionsNAV.value = appendedDetections as MutableList<Classifier.Recognition>
       LOG.D5(TAG_METHOD, "append: ${appendedDetections.size}")
     }
+    }
+  }
+
+
+  var collectingCvLocalization = false
+  fun localizeCvMapREMOTE(recognitions: List<Classifier.Recognition>) {
+    LOG.E(TAG, "$METHOD: calling remote")
+
+    // TODO convert detections
+    val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
+    viewModelScope.launch(Dispatchers.IO) {
+      nwCvLocalize.safeCall(spaceH.obj.id, detectionsReq, model)
+
+      if (!collectingCvLocalization) {
+       collectingCvLocalization=true
+        nwCvLocalize.collect()
+      }
+    }
+  }
+
+  /**
+   * Perform a local localization, using whatever [CvMap] files exist on device
+   */
+  fun localizeCvMapLOCAL(detections: List<Classifier.Recognition>) {
+    locationLOCAL.value = LocalizationResult.Unset()
+    if (cvMapH == null) {
+      locationLOCAL.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
+    } else {  // estimate and publish position
+      locationLOCAL.value = cvMapH!!.cvMapFast.estimatePositionNEW(app.cvUtils, model, detections)
     }
   }
 

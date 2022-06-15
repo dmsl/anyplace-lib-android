@@ -1,5 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvLocalizationReq
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvLocalizationResp
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.FingerprintSendReq
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.FingerprintSendResp
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
@@ -42,5 +44,8 @@ class ChatRemoteDataSource @Inject constructor(private val RH: RetrofitHolderSma
   suspend fun cvModelsGet(r: ChatUserAuth) : Response<CvModelsResp> = RH.api.cvModelsGet(r)
   suspend fun cvFingerprintSend(r: FingerprintSendReq) : Response<FingerprintSendResp>
           = RH.api.cvFingerprintSend(r)
+
+  suspend fun cvLocalization(r: CvLocalizationReq) : Response<CvLocalizationResp>
+          = RH.api.cvLocalization(r)
 
 }

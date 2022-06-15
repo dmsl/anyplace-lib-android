@@ -31,13 +31,13 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
 
   private val validKeys = setOf(
           C.PREF_CVLOG_WINDOW_LOGGING_SECONDS,
-          C.PREF_CV_WINDOW_LOCALIZATION_SECONDS,
+          // C.PREF_CV_WINDOW_LOCALIZATION_MS,
           C.PREF_CV_DEV_MODE,
   )
 
   private class Keys(c: CONST) {
     val windowLoggingSeconds = stringPreferencesKey(c.PREF_CVLOG_WINDOW_LOGGING_SECONDS)
-    val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_SECONDS)
+    // val windowLocalizationSeconds = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_MS)
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
   }
   private val KEY = Keys(C)
@@ -72,8 +72,8 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
         when (key) {
           C.PREF_CVLOG_WINDOW_LOGGING_SECONDS -> it[KEY.windowLoggingSeconds] =
                   value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-          C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> it[KEY.windowLocalizationSeconds] =
-                  value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+          // C.PREF_CV_WINDOW_LOCALIZATION_MS-> it[KEY.windowLocalizationSeconds] =
+          //         value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
         }
       }
     }
@@ -96,7 +96,7 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSeconds
-        C.PREF_CV_WINDOW_LOCALIZATION_SECONDS-> prefs.windowLocalizationSeconds
+        // C.PREF_CV_WINDOW_LOCALIZATION_MS-> prefs.windowLocalizationMs
         else -> null
       }
     }
@@ -111,11 +111,11 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
           .map { preferences ->
             val windowLoggingSeconds = preferences[KEY.windowLoggingSeconds] ?:
             C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS
-            val windowLocalizationSeconds = preferences[KEY.windowLocalizationSeconds] ?:
-            C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_SECONDS
+            // val windowLocalizationMs = preferences[KEY.windowLocalizationSeconds] ?:
+            // C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
 
-            val prefs = CvLoggerPrefs(windowLoggingSeconds, windowLocalizationSeconds, devMode)
+            val prefs = CvLoggerPrefs(windowLoggingSeconds, devMode)
             LOG.D2(TAG, "read prefs: $prefs")
 
             prefs
@@ -124,6 +124,11 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
 
 data class CvLoggerPrefs(
         val windowLoggingSeconds: String,
-        val windowLocalizationSeconds: String,
+        /** We keep a duplicate option here (as well in [CvNavigationPrefs])
+         * because the XML [SettingsCvLoggerActivity] has to be bound to this DS
+         *
+         * See in [SettingsCvLoggerActivity]: preferenceManager.preferenceDataStore = dsCvLog
+         * */
+        // val windowLocalizationMs: String,
         val devMode: Boolean,
 )

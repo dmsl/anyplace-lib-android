@@ -7,6 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import java.io.IOException
+import java.io.InputStream
 import java.lang.Exception
 
 open class AssetReader(val ctx: Context) {
@@ -65,5 +66,18 @@ open class AssetReader(val ctx: Context) {
       return null
     }
     return jsonString
+  }
+
+  /**
+   * Was used for testing floorplan overlays on [GoogleMap]
+   */
+  fun readImageAsset(): InputStream? {
+    val floorplanFilename = "t1.png"
+    try {
+      with(ctx.assets.open(floorplanFilename)){  return this  }
+    } catch (e: IOException) {
+      // log error
+    }
+    return null
   }
 }

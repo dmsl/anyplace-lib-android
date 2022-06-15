@@ -11,6 +11,13 @@
 
   <uses-permission android:name="android.permission.VIBRATE" />
 
+  <queries>
+    <package android:name="com.flir.myflir.s62" />
+    <intent>
+      <action android:name="android.speech.RecognitionService" />
+    </intent>
+  </queries>
+
   <application tools:ignore="LockedOrientationActivity" >
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.example.DetectorActivity"
@@ -27,7 +34,7 @@
         android:exported="true"
         android:label="Server Settings" />
     <activity
-        android:name=".android.ui.settings.SettingsCvLoggerActivity"
+        android:name=".android.ui.settings.SettingsCvLoggerActivityDEPR"
         android:exported="true"
         android:icon="@drawable/ic_settings"
         android:label="Logger Settings" />
@@ -36,6 +43,41 @@
         android:name=".android.ui.settings.SettingsCvActivity"
         android:exported="true"
         android:label="Map Settings" />
+
+
+    <!-- SMAS ACTIVITIES -->
+
+    <activity
+        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity"
+        android:screenOrientation="portrait"
+        android:exported="false"
+        android:theme="@style/AppTheme.Compat.ObjectDetection" />
+
+    <activity
+        android:name=".android.ui.smas.SmasMainActivity"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat.ObjectDetection"
+        android:exported="true">
+    </activity>
+    <activity
+        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SearchActivity"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat.ObjectDetection"
+        android:exported="true">
+    </activity>
+    <activity
+        android:name=".ui.chat.SmasChatActivity"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat.ObjectDetection"
+        android:exported="true"
+        android:windowSoftInputMode="adjustResize|stateVisible">
+    </activity>
+    <activity
+        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity"
+        android:exported="true"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat"
+        android:label="Chat Settings" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

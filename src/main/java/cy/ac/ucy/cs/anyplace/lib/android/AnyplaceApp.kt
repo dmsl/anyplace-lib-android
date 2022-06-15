@@ -6,7 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
-import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace
 import cy.ac.ucy.cs.anyplace.lib.android.legacy.cache.FileCache
@@ -19,7 +19,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 // import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
 // import dagger.hilt.android.HiltAndroidApp

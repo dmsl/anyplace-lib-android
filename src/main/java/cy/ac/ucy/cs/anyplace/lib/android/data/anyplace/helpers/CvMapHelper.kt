@@ -5,8 +5,7 @@ import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.cv.CvUtils
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.tensorflow.legacy.gnk.utils.Detector
+import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
