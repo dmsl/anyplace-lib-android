@@ -6,7 +6,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
@@ -83,7 +82,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     super.setupUi()
     LOG.D2()
     setupUiReactions()
-
 
     // CLR: MERGE ..
     // uiLog.uiBottom.setup() // TODO why special method?
@@ -166,7 +164,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
             // }
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { VM.setUserLocationLOCAL(it) }
+            result.coord?.let { wMap.setUserLocationLOCAL(it) }
 
             val cvLoc = result.coord!!
 
@@ -194,15 +192,16 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
             app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { VM.setUserLocationREMOTE(it) }
-            val loc = result.coord!!
-            val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${loc.lat}, ${loc.lon} floor: ${loc.level}"
+            result.coord?.let { wMap.setUserLocationREMOTE(it) }
+            val coord = result.coord!!
+            val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.E(TAG, msg)
-            val curFloor = VM.floorH?.floorNumber()
-            if (loc.level != curFloor) {
-             app.showToast(lifecycleScope, "Matched on floor: ${loc.level} (cur floor: ${curFloor})")
+            val curFloor = VM.wFloor?.floorNumber()
+            if (coord.level != curFloor) {
+             app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
             }
-            // uiLog.uiStatusUpdater.showInfoAutohide("Loc","XY: ${result.details}.", 3000L)
+
+            VM.wFloors.moveToFloor(VM, coord.level)
           }
         }
       }
@@ -232,7 +231,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun setupCollectors() {
     if (collectorsSet) return
     LOG.D(TAG_METHOD)
-    collectLoadedFloors()
+    observeFloors()
     collectLoggedInChatUser()
     VM.nwCvFingerprintSend.collect()
     collectorsSet=true
@@ -260,27 +259,26 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   }
 
 
-  /**
-   * Observes when the initial floor will be loaded, and runs a method
-   */
-  private fun collectLoadedFloors() {
-    lifecycleScope.launch(Dispatchers.IO) {
-      VM.floor.collect { floor ->
-        if (floor == null) return@collect
-
-        VM.floorH = FloorHelper(floor, VM.spaceH)
-        LOG.W(TAG,"FLOOR NOW IS: ${VM.floorH!!.prettyFloorName()}")
-        // MERGE
-        // CLR:PM ..
-      }
-    }
-  }
-
   override fun onMapReadyCallback() {
     uiLog.setupClickedLoggingButton()
     uiLog.setupOnMapLongClick()
 
     uiLog.uiLocalization.setupClick()  // TODO:PM:NAV put in CvMap
+  }
+
+  // override fun onFloorLoaded() {
+  //   super.onFloorLoaded()
+  // }
+
+  /* Runs when the first of any of the floors is loaded */
+  override fun onFirstFloorLoaded() {
+    super.onFirstFloorLoaded()
+  }
+
+
+  /* Runs when any of the floors is loaded */
+  override fun onFloorLoaded() {
+    super.onFloorLoaded()
   }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {

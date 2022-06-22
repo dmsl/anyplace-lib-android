@@ -19,15 +19,15 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 /**
  * Extra functionality on top of the [Space] data class.
  */
-class SpaceHelper(val ctx: Context,
-                  val repo: RepoAP,
-                  val obj: Space) {
+class SpaceWrapper(val ctx: Context,
+                   val repo: RepoAP,
+                   val obj: Space) {
 
   override fun toString(): String = Gson().toJson(obj, Space::class.java)
 
   companion object {
     const val TP_BUILDING = "building"
-    const val TP_VESSEL = "lashco"
+    const val TP_VESSEL = "vessel"
 
     fun parse(str: String): Space  = Gson().fromJson(str, Space::class.java)
   }
@@ -35,21 +35,17 @@ class SpaceHelper(val ctx: Context,
   private val cache by lazy { Cache(ctx) }
 
   val prettyType: String
-    get() {
-      return obj.type
-    }
+    get() = obj.type
 
   val prettyTypeCapitalize: String
-    get() {
-      return prettyType.replaceFirstChar(Char::uppercase)
-    }
+    get() = prettyType.replaceFirstChar(Char::uppercase)
 
   val prettyFloor : String
     get() {
       return when (obj.type) {
         TP_BUILDING -> "floor"
         TP_VESSEL -> "deck"
-        else -> "floor"
+        else -> "level"
       }
     }
 

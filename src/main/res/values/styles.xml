@@ -52,7 +52,7 @@
 
   <!--android:backgroundTint="@color/white"-->
   <style name="ButtonRound" >
-    <item name="android:background">@drawable/button_round</item>
+    <item name="android:background">@drawable/bg_round_gray</item>
     <item name="tint">@color/white</item>
   </style>
 

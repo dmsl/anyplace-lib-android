@@ -18,8 +18,8 @@ import retrofit2.Response
 /**
  * Extra functionality on top of the [Floor] data class.
  */
-class FloorHelper(val obj: Floor,
-                  val spaceH: SpaceHelper) {
+class FloorWrapper(val obj: Floor,
+                   val spaceH: SpaceWrapper) {
 
   override fun toString(): String = Gson().toJson(obj, Floor::class.java)
 
@@ -33,6 +33,11 @@ class FloorHelper(val obj: Floor,
   fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${obj.floorNumber}"
   fun prettyFloorNumber() = "${spaceH.prettyFloor}${obj.floorName}"
   fun prettyFloorName() = "${spaceH.prettyFloor} ${obj.floorName}"
+
+  val prettyFloor : String get() = spaceH.prettyFloor
+  val prettyFloors : String get() = spaceH.prettyFloors
+  val prettyFloorPlan : String get() = spaceH.prettyFloorplan
+  val prettyFloorPlans : String get() = spaceH.prettyFloorplans
 
   fun northEast() : LatLng {
     val latNE = obj.topRightLat.toDouble()

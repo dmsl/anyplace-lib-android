@@ -1,9 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 
-import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -11,8 +9,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * TODO:ATHX this file is yours. put your all of your stuff here (for poi/user search)
@@ -66,25 +62,9 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
    */
   private fun setupCollectors() {
     LOG.D(TAG_METHOD)
-    collectLoadedFloors()
+    observeFloors()
   }
 
-  /**
-   * Observes when the initial floor will be loaded, and runs a method
-   */
-  private fun collectLoadedFloors() {
-    lifecycleScope.launch(Dispatchers.IO) {
-      VM.floor.collect { floor ->
-        if (floor == null) return@collect
-
-        // TODO:ATH here you have the floor you want!
-        VM.floorH = FloorHelper(floor, VM.spaceH) // this creates a wrapper than you can use:
-        // you only need [VM.floorH.obj.floorNumber]
-
-        LOG.W(TAG,"FLOOR NOW IS: ${VM.floorH!!.prettyFloorName()}")
-      }
-    }
-  }
 
   override fun onMapReadyCallback() {
     /*
@@ -119,6 +99,10 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
 
      */
 
+  }
+
+  override fun onFirstFloorLoaded() {
+    TODO("Not yet implemented")
   }
 
 }

@@ -179,14 +179,14 @@ class CvLoggerUI(private val act: CvLoggerActivity,
 
         val windowDetections = VM.objWindowLOG.value.orEmpty().size
 
-        VM.addDetections(VM.floorH, VM.model, location)
+        VM.addDetections(VM.wFloor, VM.model, location)
 
         // add marker
         val curPoint = VM.objOnMAP.size.toString()
         val msg = "Point: $curPoint\n\nObjects: $windowDetections\n"
 
-        VM.markers.addCvMarker(location, msg)
-        // VM.addMarker(location, msg) // CHECK:PM
+        wMap.markers.addCvMarker(location, msg)
+        // VM.addMarker(location, msg) // CLR:PM
 
         // pause a bit, then restart logging
         scope.launch {
@@ -486,7 +486,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
    */
   fun storeDetectionsAndUpdateUI(gmap: GoogleMap) {
     // TODO show/enable an upload button
-    VM.markers.hideCvObjMarkers() // CLR:PM VM.hideActiveMarkers()
+    wMap.markers.hideCvObjMarkers() // CLR:PM VM.hideActiveMarkers()
 
     // an extra check in case of a forced storing (long click while running or paused mode)
     if (VM.objOnMAP.isEmpty()) {
@@ -496,11 +496,8 @@ class CvLoggerUI(private val act: CvLoggerActivity,
       return
     }
     val detectionsToStored = VM.objOnMAP.size
-    VM.storeDetections(VM.floorH)
+    VM.storeDetections(VM.wFloor)
     VM.cvMapH?.let { wMap.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
     uiStatusUpdater.showWarningAutohide("stored $detectionsToStored locations", 3000)
   }
-
-
-
 }

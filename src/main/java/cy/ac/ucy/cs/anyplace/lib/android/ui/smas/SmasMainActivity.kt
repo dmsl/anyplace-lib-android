@@ -20,7 +20,6 @@ import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
@@ -146,18 +145,27 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /**
    * Runs only once, when any of the floors is loaded for the first time.
    */
-  private fun onFloorLoaded() {
+  override fun onFirstFloorLoaded() {
     LOG.D2(TAG_METHOD, "Floor: ${VM.floor.value}")
+
+    super.onFirstFloorLoaded()
 
     // Send own location, and receive other users locations
     // VM.nwUpdateLocationsLOOP(true, "main")
     updateLocationsLOOP()
 
+    // TODO:PM: bring localization to SMAS also..
     collectOwnLocationLOCAL()
     VM.collectLocations(VMchat, wMap)
 
     setupFakeUserLocation(wMap)
     // collect alert
+  }
+
+
+  /* Runs when any of the floors is loaded */
+  override fun onFloorLoaded() {
+    super.onFloorLoaded()
   }
 
 
@@ -177,8 +185,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         var msg = "pull"
         val hasRegisteredLocation = VM.locationLOCAL.value.coord != null
         if (isActive && hasRegisteredLocation) {
-          val lastCoordinates = UserCoordinates(VM.spaceH.obj.id,
-                  VM.floorH?.obj!!.floorNumber.toInt(),
+          val lastCoordinates = UserCoordinates(VM.wSpace.obj.id,
+                  VM.wFloor?.obj!!.floorNumber.toInt(),
                   VM.locationLOCAL.value.coord!!.lat,
                   VM.locationLOCAL.value.coord!!.lon)
 
@@ -220,7 +228,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.D()
 
     collectLoggedInUser()
-    collectLoadedFloors()
+    observeFloors()
 
     // NOTE: [collectOtherUsersLocations] is done on floorLoaded
     // collectUserLocalizationStatus(): localizing or not localizing
@@ -228,39 +236,44 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   @Deprecated("TODO replace with Anyplace Location")
   private fun setupFakeUserLocation(mapH: GmapWrapper) {
-    val floorNum = VM.floorH!!.floorNumber()
-    val loc = VM.spaceH.latLng().toCoord(floorNum)
+    val floorNum = VM.wFloor!!.floorNumber()
+    val loc = VM.wSpace.latLng().toCoord(floorNum)
     VM.locationLOCAL.value = LocalizationResult.Success(loc)
 
-    mapH.obj.setOnMapLongClickListener {
-      LOG.W(TAG, "Setting fake location: $it")
-      VM.locationLOCAL.value = LocalizationResult.Success(it.toCoord(floorNum))
-    }
-  }
-
-  var firstFloorLoaded = false
-
-  /**
-   * Observes when the initial floor will be loaded, and runs a method
-   */
-  private fun collectLoadedFloors() {
-    lifecycleScope.launch {
-      VM.floor.collect { floor ->
-        if (floor == null) return@collect
-
-        LOG.D4(TAG, "collectLoadedFloors: is spaceH filled? ${VM.spaceH.obj.name}")
-        // Update FH
-        VM.floorH = FloorHelper(floor, VM.spaceH)
-
-        if (firstFloorLoaded) {
-          cancel()
-        } else {
-          onFloorLoaded()
-          firstFloorLoaded = true
-        }
+    lifecycleScope.launch(Dispatchers.Main) {
+      mapH.obj.setOnMapLongClickListener {
+        LOG.W(TAG, "Setting fake location: $it")
+        VM.locationLOCAL.value = LocalizationResult.Success(it.toCoord(floorNum))
       }
     }
   }
+
+
+  // CLR:PM: this was moved to [CvMapActivity]
+  // /**
+  //  * Observes when the initial floor will be loaded, and runs a method
+  //  */
+  // var firstFloorLoaded = false
+  // private fun collectLoadedFloors() {
+  //   super.collectLoadedFloors()
+  //
+  //   lifecycleScope.launch {
+  //     VM.floor.collect { floor ->
+  //       if (floor == null) return@collect
+  //
+  //       LOG.D4(TAG, "collectLoadedFloors: is spaceH filled? ${VM.spaceH.obj.name}")
+  //       // Update FH
+  //       VM.floorH = FloorHelper(floor, VM.spaceH)
+  //
+  //       if (firstFloorLoaded) {
+  //         cancel()
+  //       } else {
+  //         onFloorLoaded()
+  //         firstFloorLoaded = true
+  //       }
+  //     }
+  //   }
+  // }
 
 
   /**
@@ -413,7 +426,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
             // TODO HANDLE
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { VM.setUserLocationLOCAL(it) }
+            result.coord?.let { wMap.setUserLocationLOCAL(it) }
           }
         }
       }

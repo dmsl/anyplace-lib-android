@@ -14,9 +14,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
@@ -36,7 +36,7 @@ class ClearCachesDialog(
 
     /**
      * Creating the dialog.
-     * It gets a [SpaceHelper], [FloorsHelper], and a [FloorHelper] and:
+     * It gets a [SpaceWrapper], [FloorsWrapper], and a [FloorWrapper] and:
      * - if each object is not null:
      *   - it is serialized (into a [String]) and put into the bundle
      * - Once the dialog is created they are deserialized to provide additional clear cache options
@@ -44,9 +44,9 @@ class ClearCachesDialog(
     fun SHOW(fragmentManager: FragmentManager,
              repo: RepoAP,
              cvDataStore: CvDataStore,
-             SH: SpaceHelper?,
-             FSH: FloorsHelper?,
-             FH: FloorHelper?) {
+             SH: SpaceWrapper?,
+             FSH: FloorsWrapper?,
+             FH: FloorWrapper?) {
       val args = Bundle()
 
       SH?.let { sh ->
@@ -62,9 +62,9 @@ class ClearCachesDialog(
     }
   }
 
-  var spaceH: SpaceHelper?= null
-  var floorsH: FloorsHelper?= null
-  var floorH: FloorHelper?= null
+  var spaceH: SpaceWrapper?= null
+  var floorsH: FloorsWrapper?= null
+  var floorH: FloorWrapper?= null
 
   var _binding : DialogClearCachesBinding?= null
   private val binding get() = _binding!!

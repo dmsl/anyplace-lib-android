@@ -14,7 +14,7 @@
 
     <EditTextPreference
         app:key="@string/pref_smas_location_refresh"
-        app:title="Refresh Locations (ms)"
+        app:title="Refresh Other User Locations (ms)"
         app:summary="@string/summary_refresh_locations"
         />
 
@@ -43,7 +43,7 @@
     <Preference
         android:title="Clear local CV Model "
         android:key="@string/pref_log_clear_cache_cv_models"
-        android:summary="Delete CV Model names (will have to re-fetched)."
+        android:summary="Delete CV Model names (RESTART APP)."
         />
 
     <Preference

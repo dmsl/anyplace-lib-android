@@ -6,7 +6,7 @@ import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapFast
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
@@ -42,25 +42,26 @@ open class FloorHandler(
       VM.floorplanFlow.collect { response ->
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W("Loading ${VM.spaceH.prettyFloorplan}")
+            LOG.W("Loading ${VM.wSpace.prettyFloorplan}..")
           }
           is NetworkResult.Error -> {
-            // BUG:F84F
-            val msg = "Failed to fetch ${VM.spaceH.prettyType}: ${VM.space?.name}: [${response.message}]"
-            LOG.E(msg)
-            LOG.E(TAG, "Error: ${response.message}")
-            // Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+            val msg = ": Failed to fetch ${VM.wSpace.prettyType}: ${VM.space?.name}: [${response.message}]"
+            LOG.E(TAG, "Error: observeFloorplanChanges: $msg")
+            Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
           }
           is NetworkResult.Success -> {
-            if (VM.floorH == null) {
+            if (VM.wFloor == null) {
               val msg = "No floor/deck selected."
               LOG.W(msg)
               Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
             } else {
-              fpLoader.render(overlays, gmap, response.data, VM.floorH!!)
+              LOG.E(TAG, "observeFloorplanChanges: success: loading floorplan")
+              fpLoader.render(overlays, gmap, response.data, VM.wFloor!!)
               loadCvMapAndHeatmap(gmap)
             }
           }
+          // ignore Unset
+          else -> {}
         }
       }
     }
@@ -86,8 +87,8 @@ open class FloorHandler(
         }
 
         // update FloorHelper & FloorSelector
-        VM.floorH = if (selectedFloor != null) FloorHelper(selectedFloor, VM.spaceH) else null
-        UI.floorSelector.updateFloorSelector(selectedFloor, VM.floorsH)
+        VM.wFloor = if (selectedFloor != null) FloorWrapper(selectedFloor, VM.wSpace) else null
+        UI.floorSelector.updateFloorSelector(selectedFloor, VM.wFloors)
         LOG.V3(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
           LOG.V2(TAG,
@@ -107,7 +108,7 @@ open class FloorHandler(
     LOG.V2(TAG, "$METHOD: ${floor?.floorNumber.toString()}")
     if (floor != null) {
       VM.lastValSpaces.lastFloor=floor.floorNumber
-      VM.spaceH.cacheLastValues(VM.lastValSpaces)
+      VM.wSpace.cacheLastValues(VM.lastValSpaces)
     }
   }
 
@@ -128,9 +129,9 @@ open class FloorHandler(
    }
 
     val model = VM.model // TODO
-    if (VM.floorH==null) return
-    val FH = VM.floorH!!
-    val cvMap = if (FH.hasFloorCvMap(model)) VM.floorH?.loadCvMapFromCache(model) else null
+    if (VM.wFloor==null) return
+    val FH = VM.wFloor!!
+    val cvMap = if (FH.hasFloorCvMap(model)) VM.wFloor?.loadCvMapFromCache(model) else null
     UI.removeHeatmap()
     when {
       !FH.hasFloorCvMap(model) -> { LOG.V3(TAG, "No local CvMap") }

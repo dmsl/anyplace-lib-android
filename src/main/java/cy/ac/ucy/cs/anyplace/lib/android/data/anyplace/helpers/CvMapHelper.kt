@@ -22,7 +22,7 @@ class CvMapHelper(
         val cvMap: CvMap,
         /** Label names of the used [DetectionModel] */
         val labels: List<String>,
-        val floorH: FloorHelper) {
+        val floorH: FloorWrapper) {
 
   lateinit var cvMapFast: CvMapFast
 
@@ -49,8 +49,8 @@ class CvMapHelper(
      * Generates a CvMap from a list of [input] detections
      */
     fun generate(
-            app: AnyplaceApp,
-            model: DetectionModel, floorH: FloorHelper, input: Map<LatLng, List<Classifier.Recognition>>): CvMap {
+      app: AnyplaceApp,
+      model: DetectionModel, floorH: FloorWrapper, input: Map<LatLng, List<Classifier.Recognition>>): CvMap {
       val cvLocations :MutableList<CvLocation> = mutableListOf()
       LOG.D(TAG, "generate:")
       input.forEach { (latLng, detections) ->

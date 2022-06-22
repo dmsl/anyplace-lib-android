@@ -48,6 +48,6 @@ Path:
 The convention is to use `modelH` for the `ModelHelper` variable.
 
 Examples:
-- [SpaceHelper](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/anyplace/helpers/SpaceHelper.kt)
+- [SpaceHelper](src/main/java/cy/ac/ucy/cs/anyplace/lib/android/data/anyplace/helpers/SpaceWrapper.kt)
 
 </details>

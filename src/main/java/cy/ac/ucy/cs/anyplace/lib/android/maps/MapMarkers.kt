@@ -8,7 +8,10 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,11 +21,12 @@ import kotlinx.coroutines.launch
  *
  * NOTE: any UI updating operations must be executed on the Main [CoroutineScope] (UI Thread)
  */
-class Markers(private val ctx: Context,
-              private val scope: CoroutineScope,
-              private val map: GoogleMap) {
+class MapMarkers(private val ctx: Context,
+                 private val scope: CoroutineScope,
+                 private val VM: CvViewModel,
+                 private val map: GoogleMap) {
   companion object {
-    private val TAG = Markers::class.java.simpleName
+    private val TAG = MapMarkers::class.java.simpleName
   }
 
   /** GMap markers used in detections */
@@ -45,7 +49,8 @@ class Markers(private val ctx: Context,
   }
 
   /** Last Location marker REMOTE */
-  private fun locationMarkerREMOTE(latLng: LatLng) : MarkerOptions  {
+  private fun locationMarkerREMOTE(coord: Coord) : MarkerOptions  {
+    val latLng = utlLoc.toLatLng(coord)
     return MarkerOptions().position(latLng)
             .userIcon(ctx, R.drawable.marker_location_smas)
             .title("Smas Location")
@@ -146,24 +151,58 @@ class Markers(private val ctx: Context,
       // https://gist.github.com/broady/6314689
       //https://www.youtube.com/watch?v=WKfZsCKSXVQ
     }
-
     // animateToMarker(latLng)
   }
 
-  fun setLocationMarkerREMOTE(latLng: LatLng) {
-    LOG.D2()
-    if (lastLocationREMOTE == null) {
-      LOG.D3(TAG, "$METHOD: initial marker")
+  /**
+   * If the location marker is on a different floor it will become transparent,
+   * and show relevant info in the snippet
+   */
+  fun updateLocationMarkerBasedOnFloor(floorNum: Int) {
+    // LOG.D(TAG, "$METHOD: update marker: $floorNum")
+    // LOG.D(TAG, "$METHOD: lastLocationREMOTE is null? ${lastLocationREMOTE==null}")
+    // LOG.D(TAG, "$METHOD: lastCoord is null? ${lastCoord==null}")
+    if (lastLocationREMOTE == null || lastCoord == null) return
 
+    LOG.D(TAG, "$METHOD: floor: $floorNum. last one: ${lastCoord!!.level}")
+
+    var alpha = 1f
+    var snippet = ""
+    if (floorNum != lastCoord!!.level)  {  // on a different floor
+      alpha=0.5f
+      snippet = "last ${VM.wFloor?.prettyFloor}: ${lastCoord?.level}"
+      // snippet = "last ${VM.spaceH.prettyFloor}: ${lastCoord?.level}"
+    }
+
+    scope.launch(Dispatchers.Main) {
+      lastLocationREMOTE?.alpha=alpha
+      lastLocationREMOTE?.snippet=snippet
+      if (lastLocationREMOTE?.isInfoWindowShown == true) {
+        lastLocationREMOTE?.hideInfoWindow()
+        lastLocationREMOTE?.showInfoWindow()
+      }
+    }
+  }
+
+  var lastCoord : Coord?=null
+  fun setLocationMarkerREMOTE(coord: Coord) {
+    val latLng = utlLoc.toLatLng(coord)
+    LOG.D2()
+
+    lastCoord=coord
+
+    if (lastLocationREMOTE == null) {
+      LOG.D2(TAG, "$METHOD: initial marker")
       scope.launch(Dispatchers.Main) {
-        lastLocationREMOTE = map.addMarker(locationMarkerREMOTE(latLng))
+        lastLocationREMOTE = map.addMarker(locationMarkerREMOTE(coord))
       }
     } else {
-      LOG.D3(TAG, "$METHOD: updated marker")
+      LOG.D2(TAG, "$METHOD: updated marker")
       scope.launch(Dispatchers.Main) {
         lastLocationREMOTE?.position = latLng
       }
     }
+    updateLocationMarkerBasedOnFloor(coord.level)
     animateToMarker(latLng)
   }
 

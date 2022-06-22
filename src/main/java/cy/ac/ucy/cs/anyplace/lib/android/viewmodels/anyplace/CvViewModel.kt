@@ -6,15 +6,14 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
@@ -22,12 +21,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvFingerprintSendNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvModelsGetNW
@@ -37,10 +34,10 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Error
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -112,30 +109,30 @@ open class CvViewModel @Inject constructor(
   /** Last locallly calculated location (SMAS) */
   val locationREMOTE: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
 
-  /** Selected [Space] */
+  /** Selected [Space] (model)*/
   var space: Space? = null
-  /** All floors of the selected [space] */
+  /** All floors of the selected [space] (model) */
   var floors: Floors? = null
-  /** Selected [Space] ([SpaceHelper]) */
-  lateinit var spaceH: SpaceHelper
-  /** floorsH of selected [spaceH] */
-  lateinit var floorsH: FloorsHelper
-  /** Selected floorH of [floorsH] */
-  var floorH: FloorHelper? = null
-  /** Selected floor/deck ([Floor]) of [space] */
+  /** Selected floor/deck ([Floor]) of [space] (model) */
   var floor: MutableStateFlow<Floor?> = MutableStateFlow(null)
+
+  /** Selected [Space] ([SpaceWrapper]) */
+  lateinit var wSpace: SpaceWrapper
+  /** floorsH of selected [wSpace] */
+  lateinit var wFloors: FloorsWrapper
+  /** Selected floorH of [wFloors] */
+  var wFloor: FloorWrapper? = null
+
   /** LastVals: user last selections regarding a space.
    * Currently not much use (for a field var), but if we have multiple
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
-  /** Initialized onMapReady */
-  lateinit var markers : Markers
-  val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(Error(null))
+  val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
   /** Holds the functionality of a [CvMap] and can generate the [CvMapFast] */
   var cvMapH: CvMapHelper? = null
 
   // FLOOR PLANS
-  fun getFloorplanFromRemote(FH: FloorHelper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
+  fun getFloorplanFromRemote(FH: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
   private fun loadFloorplanFromAsset() {
     LOG.W(TAG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
@@ -150,15 +147,11 @@ open class CvViewModel @Inject constructor(
   /**
    * Requests a floorplan from remote and publishes outcome to [floorplanFlow].
    */
-  private suspend fun getFloorplanSafeCall(FH: FloorHelper) {
+  private suspend fun getFloorplanSafeCall(FH: FloorWrapper) {
+    LOG.E(TAG, "$METHOD: getFloorplanSafeCall (remote)")
     floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
 
-    // CHECK:PM: BUG: "Failed to fetch": sometimes (with internet) it failed to fetch..
-    if (FH.hasFloorplanCached()) {
-      LOG.W(TAG, "$METHOD: loading from cache?? why always fetching?")
-      // floorplanFlow.value = Success(FH.loadFromCache()!!)
-    }
 
     if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
@@ -166,7 +159,7 @@ open class CvViewModel @Inject constructor(
         floorplanFlow.value = Success(bitmap)
         FH.cacheFloorplan(bitmap)
       } else {
-        val msg ="Failed to get ${FH.spaceH.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
+        val msg ="getFloorplanSafeCall: bitmap was null. Failed to get ${FH.spaceH.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
         LOG.E(TAG, msg)
         floorplanFlow.value = Error(msg)
       }
@@ -174,44 +167,6 @@ open class CvViewModel @Inject constructor(
       floorplanFlow.value = Error("No Internet Connection.")
     }
   }
-
-  //// GOOGLE MAPS
-  fun addCvMarker(latLng: LatLng, msg: String) {
-    markers.addCvMarker(latLng, msg)
-  }
-
-  fun hideCvMarkers() {
-    markers.hideCvObjMarkers()
-  }
-
-  fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
-    userLocation.forEach {
-      scope.launch(Dispatchers.Main) {
-        markers.addUserMarker(LatLng(it.x, it.y), it.uid, it.alert, it.time)
-      }
-    }
-  }
-
-  fun hideUserMarkers() {
-    markers.hideUserMarkers()
-  }
-
-  /**
-   * Sets a new marker location on the map.
-   */
-  fun setUserLocationLOCAL(coord: Coord) {
-    LOG.D(TAG, "$METHOD")
-    markers.setLocationMarkerLOCAL(utlLoc.toLatLng(coord))
-  }
-
-  /**
-   * Sets a new marker location on the map.
-   */
-  fun setUserLocationREMOTE(coord: Coord) {
-    LOG.D(TAG, "$METHOD")
-    markers.setLocationMarkerREMOTE(utlLoc.toLatLng(coord))
-  }
-
 
   /**
    * React to [CvEnginePrefs] and [CvNavigationPrefs] changes
@@ -247,7 +202,7 @@ open class CvViewModel @Inject constructor(
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
-          localizeCvMapLOCAL(detectionsNAV.value)
+          // localizeCvMapLOCAL(detectionsNAV.value)
           localizeCvMapREMOTE(detectionsNAV.value) // TODO:PMX
 
           detectionsNAV.value = emptyList()
@@ -270,7 +225,7 @@ open class CvViewModel @Inject constructor(
     // TODO convert detections
     val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
     viewModelScope.launch(Dispatchers.IO) {
-      nwCvLocalize.safeCall(spaceH.obj.id, detectionsReq, model)
+      nwCvLocalize.safeCall(wSpace.obj.id, detectionsReq, model)
 
       if (!collectingCvLocalization) {
        collectingCvLocalization=true
@@ -291,67 +246,39 @@ open class CvViewModel @Inject constructor(
     }
   }
 
-  // TODO in new class
-  /** Go one floor up */
-  fun floorGoUp() {
-    LOG.V3()
-    val floorNumStr = floor.value?.floorNumber.toString()
-    if (floorsH.canGoUp(floorNumStr)) {
-      val to = floorsH.getFloorAbove(floorNumStr)
-      LOG.V2(TAG_METHOD, "from: ${floor.value?.floorNumber} to: ${to?.floorNumber}")
-      floor.value = to
-    } else {
-      LOG.W(TAG_METHOD, "Cannot go further up.")
-    }
-  }
-
-  /** Go one floor down */
-  fun floorGoDown() {
-    LOG.V3()
-    val floorNumStr = floor.value?.floorNumber.toString()
-    if (floorsH.canGoDown(floorNumStr)) {
-      val to = floorsH.getFloorBelow(floorNumStr)
-      LOG.V2(TAG_METHOD, "from: ${floor.value?.floorNumber} to: ${to?.floorNumber}")
-      floor.value = to
-    } else {
-      LOG.W(TAG_METHOD, "Cannot go further down.")
-    }
-  }
-
-
   /** TODO in new class
    * Selects the first available floor, or the last floor that was picked
    * for a particular space.
    */
   fun selectInitialFloor(ctx: Context) {
     LOG.V2()
-    LOG.V2(TAG,"${spaceH.prettyFloors}: ${floorsH.size}")
+    LOG.V2(TAG,"${wSpace.prettyFloors}: ${wFloors.size}")
 
-    if (!floorsH.hasFloors()) {  // space has no floors
-      val msg = "Selected ${spaceH.prettyTypeCapitalize} has no ${spaceH.prettyFloors}."
+    if (!wFloors.hasFloors()) {  // space has no floors
+      val msg = "Selected ${wSpace.prettyTypeCapitalize} has no ${wSpace.prettyFloors}."
       LOG.W(TAG_METHOD, msg)
       Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
-      floor.value = null
+      floor.update { null }
     }
 
     // var floor : Floor? = null
     // START OF: select floor: last selection or first available
     // VMb.floor.value = null
-    if (spaceH.hasLastValuesCached()) {
-      val lastVal = spaceH.loadLastValues()
+    if (wSpace.hasLastValuesCached()) {
+      val lastVal = wSpace.loadLastValues()
       if (lastVal.lastFloor!=null) {
-        LOG.V3(TAG_METHOD, "lastVal cache: ${spaceH.prettyFloor}${lastVal.lastFloor}.")
-        floor.value = floorsH.getFloor(lastVal.lastFloor!!)
+        LOG.V3(TAG_METHOD, "lastVal cache: ${wSpace.prettyFloor}${lastVal.lastFloor}.")
+        floor.update { wFloors.getFloor(lastVal.lastFloor!!) }
       }
       lastValSpaces = lastVal
     }
 
     if (floor.value == null)  {
-      LOG.V3(TAG_METHOD, "Loading first ${spaceH.prettyFloor}.")
-      floor.value = floorsH.getFirstFloor()
+      LOG.V3(TAG_METHOD, "Loading first ${wSpace.prettyFloor}.")
+      floor.update { wFloors.getFirstFloor() }
     }
 
-    LOG.V2(TAG_METHOD, "Selected ${spaceH.prettyFloor}: ${floor.value!!.floorNumber}")
+    LOG.V2(TAG_METHOD, "Selected ${wSpace.prettyFloor}: ${floor.value!!.floorNumber}")
   }
 
   // TODO:PM network manager? ineternet connectiovity?

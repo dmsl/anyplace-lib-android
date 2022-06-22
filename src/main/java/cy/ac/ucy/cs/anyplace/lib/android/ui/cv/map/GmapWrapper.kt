@@ -7,21 +7,21 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
+import com.google.android.gms.maps.model.LatLng
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Markers
+import cy.ac.ucy.cs.anyplace.lib.android.maps.MapMarkers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -55,11 +55,15 @@ class GmapWrapper(private val ctx: Context,
     }
   }
 
+  /** Initialized onMapReady */
+  lateinit var markers : MapMarkers
+
   fun setup(googleMap: GoogleMap) {
     LOG.D()
 
     obj = googleMap
-    VM.markers = Markers(ctx, scope, obj)
+    // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx)) // TODO:PMX ?
+    markers = MapMarkers(ctx, scope, VM, obj)
 
     // ON FLOOR LOADED....
     obj.uiSettings.apply {
@@ -87,7 +91,7 @@ class GmapWrapper(private val ctx: Context,
   fun onFloorLoaded() {
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    scope.launch(Dispatchers.IO) { VM.floorsH.fetchAllFloorplans() }
+    scope.launch(Dispatchers.IO) { VM.wFloors.fetchAllFloorplans() }
 
     val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
 
@@ -99,7 +103,7 @@ class GmapWrapper(private val ctx: Context,
     scope.launch {
       delay(500) // CHECK is ths a bugfix?
 
-      if (VM.floorH == null) {
+      if (VM.wFloor == null) {
         LOG.E(TAG_METHOD, "Floor is null. Cannot update google map location")
         return@launch
       }
@@ -109,7 +113,7 @@ class GmapWrapper(private val ctx: Context,
 
       // zooms to the center of the floorplan
       obj.moveCamera(CameraUpdateFactory.newCameraPosition(
-              CameraAndViewport.loggerCamera(VM.floorH?.bounds()!!.center, maxZoomLevel-2)))
+              CameraAndViewport.loggerCamera(VM.wFloor?.bounds()!!.center, maxZoomLevel-2)))
 
       val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
@@ -117,8 +121,8 @@ class GmapWrapper(private val ctx: Context,
       // some crashes, and some weird results.
       // invastigating..
       // QR CODES?! those NOT part of the model.
-      LOG.W(TAG, "NOT SETTINGS CAMERA BOUNDS.")
-      obj.setLatLngBoundsForCameraTarget(VM.floorH?.bounds())
+      LOG.W(TAG, "Setting camera bounds: users will be restricted to viewing just the particular space")
+      obj.setLatLngBoundsForCameraTarget(VM.wFloor?.bounds())
     }
   }
 
@@ -143,7 +147,7 @@ class GmapWrapper(private val ctx: Context,
   }
 
   private fun loadSpaceAndFloorFromAssets() : Boolean {
-    LOG.V2()
+    LOG.W(TAG, "$METHOD: loading space from assets:")
     VM.space = assetReader.getSpace()
     VM.floors = assetReader.getFloors()
 
@@ -152,13 +156,15 @@ class GmapWrapper(private val ctx: Context,
       return false
     }
 
-    VM.spaceH = SpaceHelper(ctx, VM.repo, VM.space!!)
-    VM.floorsH = FloorsHelper(VM.floors!!, VM.spaceH)
-    val prettySpace = VM.spaceH.prettyTypeCapitalize
-    val prettyFloors= VM.spaceH.prettyFloors
+    VM.wSpace = SpaceWrapper(ctx, VM.repo, VM.space!!)
+    VM.wFloors = FloorsWrapper(VM.floors!!, VM.wSpace)
+    val prettySpace = VM.wSpace.prettyTypeCapitalize
+    val prettyFloors= VM.wSpace.prettyFloors
 
-    LOG.D3(TAG_METHOD, "$prettySpace: ${VM.space!!.name} " +
+    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${VM.space!!.name} " +
             "(has ${VM.floors!!.floors.size} $prettyFloors)")
+
+    LOG.W(TAG, "$METHOD: pretty: ${VM.wSpace.prettyType} ${VM.wSpace.prettyFloor}")
 
     return true
   }
@@ -167,8 +173,8 @@ class GmapWrapper(private val ctx: Context,
     var msg = ""
     when {
       space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${VM.spaceH.prettyFloors}."
-      floor == null -> msg = "Failed to get ${VM.spaceH.prettyFloor} $floorNum."
+      floors == null -> msg = "Failed to get ${VM.wSpace.prettyFloors}."
+      floor == null -> msg = "Failed to get ${VM.wSpace.prettyFloor} $floorNum."
     }
     LOG.E(msg)
     Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
@@ -176,13 +182,52 @@ class GmapWrapper(private val ctx: Context,
 
   fun removeUserLocations() {
     scope.launch(Dispatchers.Main) {
-      VM.hideUserMarkers()
+      hideUserMarkers()
     }
   }
 
   fun renderUserLocations(userLocation: List<UserLocation>) {
     removeUserLocations() // TODO: update instead of hiding and rendering again..
     // TODO:OPT add all markers at once
-      VM.addUserMarkers(userLocation, scope)
+    addUserMarkers(userLocation, scope)
   }
+
+  //// GOOGLE MAPS
+  // fun addCvMarker(latLng: LatLng, msg: String) { // CLR:PM ?
+  //   markers.addCvMarker(latLng, msg)
+  // }
+
+  // fun hideCvMarkers() {
+  //   markers.hideCvObjMarkers()
+  // }
+
+  fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
+    userLocation.forEach {
+      scope.launch(Dispatchers.Main) {
+        markers.addUserMarker(LatLng(it.x, it.y), it.uid, it.alert, it.time)
+      }
+    }
+  }
+
+  fun hideUserMarkers() {
+    markers.hideUserMarkers()
+  }
+
+  /**
+   * Sets a new marker location on the map.
+   */
+  fun setUserLocationLOCAL(coord: Coord) {
+    LOG.D(TAG, "$METHOD")
+    markers.setLocationMarkerLOCAL(utlLoc.toLatLng(coord))
+  }
+
+  /**
+   * Sets a new marker location on the map.
+   */
+  fun setUserLocationREMOTE(coord: Coord) {
+    LOG.D(TAG, "$METHOD")
+    markers.setLocationMarkerREMOTE(coord)
+  }
+
+
 }

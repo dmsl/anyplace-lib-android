@@ -140,8 +140,8 @@ class SmasChatViewModel @Inject constructor(
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
     var userCoord : UserCoordinates? = null
     if (VM.locationLOCAL.value.coord != null) {
-      userCoord = UserCoordinates(VM.spaceH.obj.id,
-              VM.floorH?.obj!!.floorNumber.toInt(),
+      userCoord = UserCoordinates(VM.wSpace.obj.id,
+              VM.wFloor?.obj!!.floorNumber.toInt(),
               VM.locationLOCAL.value.coord!!.lat,
               VM.locationLOCAL.value.coord!!.lon)
       return userCoord
@@ -151,9 +151,9 @@ class SmasChatViewModel @Inject constructor(
   }
 
   private fun getCenterOfFloor(VM: SmasMainViewModel): UserCoordinates {
-    val latLng = VM.spaceH.latLng()
-    return UserCoordinates(VM.spaceH.obj.id,
-            VM.floorH?.obj!!.floorNumber.toInt(),
+    val latLng = VM.wSpace.latLng()
+    return UserCoordinates(VM.wSpace.obj.id,
+            VM.wFloor?.obj!!.floorNumber.toInt(),
             latLng.latitude,
             latLng.longitude)
   }

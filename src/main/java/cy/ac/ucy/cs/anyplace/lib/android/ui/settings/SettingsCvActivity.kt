@@ -11,9 +11,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -90,9 +90,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       LOG.D4(TAG, "SettingsNav: FRAGMENT on resume")
     }
 
-    var spaceH : SpaceHelper? = null
-    var floorsH: FloorsHelper? = null
-    var floorH: FloorHelper? = null
+    var spaceH : SpaceWrapper? = null
+    var floorsH: FloorsWrapper? = null
+    var floorH: FloorWrapper? = null
 
     @SuppressLint("ResourceAsColor")
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
@@ -147,9 +147,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
     }
 
     private fun setupButtonClearCache(
-            spaceH: SpaceHelper?,
-            floorsH: FloorsHelper?,
-            floorH: FloorHelper?) {
+            spaceH: SpaceWrapper?,
+            floorsH: FloorsWrapper?,
+            floorH: FloorWrapper?) {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
@@ -174,9 +174,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
     }
 
     private fun setupClearCvFingerprintsCache(
-            spaceH: SpaceHelper?,
-            floorsH: FloorsHelper?,
-            floorH: FloorHelper?) {
+            spaceH: SpaceWrapper?,
+            floorsH: FloorsWrapper?,
+            floorH: FloorWrapper?) {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.setOnPreferenceClickListener {
 

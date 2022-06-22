@@ -4,7 +4,7 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -143,7 +143,7 @@ class LocationGetNW(
     LOG.D3(TAG_METHOD)
     if (locations == null) return
 
-    val FH = FloorHelper(VM.floor.value!!, VM.spaceH)
+    val FH = FloorWrapper(VM.floor.value!!, VM.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
       userLocation.buid == FH.spaceH.obj.id &&  // same space
               userLocation.deck == FH.obj.floorNumber.toInt() && // same deck

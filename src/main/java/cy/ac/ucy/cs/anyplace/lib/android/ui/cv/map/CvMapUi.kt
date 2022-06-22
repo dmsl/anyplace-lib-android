@@ -35,8 +35,8 @@ open class CvMapUi(
   protected val ctx: Context = activity.applicationContext
 
   fun setupOnFloorSelectionClick(){
-    floorSelector.onFloorDown { VM.floorGoDown() }
-    floorSelector.onFloorUp { VM.floorGoUp() }
+    floorSelector.onFloorDown { VM.wFloors.tryGoDown(VM) }
+    floorSelector.onFloorUp { VM.wFloors.tryGoUp(VM) }
   }
 
   fun removeHeatmap() {

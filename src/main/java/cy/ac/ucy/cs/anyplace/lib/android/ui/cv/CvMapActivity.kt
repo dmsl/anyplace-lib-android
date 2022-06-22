@@ -6,6 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -227,6 +228,50 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
     }
     // detectionsLocalization.coll
+  }
+
+  var firstFloorLoaded = false
+
+  open fun onFirstFloorLoaded() {
+    LOG.D2(TAG, "First floor loaded: ${VM.wFloor?.floorNumber()}")
+  }
+
+  open fun onFloorLoaded() {
+    LOG.D2(TAG, "Floor loaded: ${VM.wFloor?.floorNumber()}")
+    if (VM.wFloor != null) {
+      wMap.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
+    }
+  }
+
+
+  var observingFloors = false
+  /**
+   * Observes when the initial floor will be loaded, and runs a method
+   */
+  fun observeFloors() {
+    if (observingFloors) return
+
+    observingFloors=true
+    val _method = METHOD
+    lifecycleScope.launch(Dispatchers.IO) {
+      VM.floor.collect { floor ->
+        LOG.D1(TAG, "$_method: floor is: ${floor?.floorNumber}")
+        if (floor == null) return@collect
+
+        // LOG.D4(TAG, "$_method: is spaceH filled? ${VM.spaceH.obj.name}")
+        // // Update FH
+        VM.wFloor = FloorWrapper(floor, VM.wSpace)
+        // LOG.E(TAG, "$_method: floor now is: ${VM.floorH!!.floorNumber()}")
+        // wMap.markers.updateLocationMarkerBasedOnFloor(VM.floorH!!.floorNumber())
+
+        if (!firstFloorLoaded) { // runs only when the first floor is loaded
+          onFirstFloorLoaded()
+          firstFloorLoaded = true
+        }
+
+        onFloorLoaded()
+      }
+    }
   }
 
 }

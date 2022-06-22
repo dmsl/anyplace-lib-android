@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -320,7 +320,7 @@ fun startNewWindow() {
  * a Hash Map of locations and object fingerprints
  */
 
-fun addDetections(FH: FloorHelper?, mdddd: DetectionModel, latLong: LatLng) {
+fun addDetections(FH: FloorWrapper?, mdddd: DetectionModel, latLong: LatLng) {
 
   objTotal+=objWindowUnique
   // TODO:PM do them in batch later on..
@@ -328,8 +328,8 @@ fun addDetections(FH: FloorHelper?, mdddd: DetectionModel, latLong: LatLng) {
   objOnMAP[latLong] = detections
 
   // floorH.spaceH.obj.id
-  val userCoord = UserCoordinates(floorH?.spaceH?.obj?.id!!,
-          floorH?.obj!!.floorNumber.toInt(),
+  val userCoord = UserCoordinates(wFloor?.spaceH?.obj?.id!!,
+          wFloor?.obj!!.floorNumber.toInt(),
           latLong.latitude, latLong.longitude)
 
   uploadUniqueDetections(userCoord, detections)
@@ -342,7 +342,7 @@ fun addDetections(FH: FloorHelper?, mdddd: DetectionModel, latLong: LatLng) {
  * Finally the merged [CvMap] is written to cache (overriding previous one),
  * and stored in [CvViewModelBase].
  */
-fun storeDetections(FH: FloorHelper?) {
+fun storeDetections(FH: FloorWrapper?) {
   if (FH == null) {
     LOG.E(TAG, "$METHOD: floorHelper is null.")
     return
