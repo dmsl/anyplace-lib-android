@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,7 +16,6 @@
       android:orientation="vertical">
 
     <!-- CameraActivity -->
-
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
@@ -34,6 +34,24 @@
         tools:context=".android.ui.cv.CvMapActivity"
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="center" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_localization"
+        style="@style/MaterialButtonIcon"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/darkGray"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_location_found"
+        app:iconGravity="textStart"
+
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_floorDown"
+        app:layout_constraintVertical_bias="0.22"
+        />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_userAlert"
@@ -287,8 +305,6 @@
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="match_parent"-->
     <!--        android:background="@color/white" />-->
-
-
 
 
 

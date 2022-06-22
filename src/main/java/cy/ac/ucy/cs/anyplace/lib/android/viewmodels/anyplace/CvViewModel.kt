@@ -21,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
@@ -42,19 +43,6 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
-/**
- * Localization is generally an one-time call. It gets a list of objects from the camera,
- * and calculates the user location.
- *
- * However, YOLO (and it's camera-related components) operate asynchronously in the background,
- * and store detection lists in 'scanning windows'.
- * Therefore we need the below states.
- */
-enum class LocalizingStatus {
-  running,
-  stopped,
-  stoppedNoDetections,
-}
 
 /** CvMapViewModel is used by:
  *  - Logger TODO
@@ -93,7 +81,7 @@ open class CvViewModel @Inject constructor(
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
 
   /** Controlling navigation mode */
-  val stateLocalizing = MutableStateFlow(LocalizingStatus.stopped)
+  val statusLocalization = MutableStateFlow(LocalizationStatus.stopped)
   // val localizationFlow = localizationLocal.asStateFlow()
 
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
@@ -102,10 +90,11 @@ open class CvViewModel @Inject constructor(
   var currentTime : Long = 0
   var windowStart : Long = 0
   /** Detections for the localization scan-window */
-  val detectionsNAV: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
+  val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
 
   /** Last locallly calculated location (CvMap) */
-  val locationLOCAL: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+  // TODO:PM: CLR
+  // val locationLOCAL: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
   /** Last locallly calculated location (SMAS) */
   val locationREMOTE: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
 
@@ -182,41 +171,53 @@ open class CvViewModel @Inject constructor(
     return prefsCvNav.windowLocalizationMs.toInt()
   }
 
+  open fun processDetections(recognitions: List<Classifier.Recognition>) {
+    LOG.D2(TAG, "CvViewModel: ProcessDetections")
+
+    when(statusLocalization.value) {
+      LocalizationStatus.running -> {
+        updateDetectionsLocalization(recognitions)
+      }
+      else -> {}
+    }
+
+  }
+
+
   /**
    * Update [detections] that are related only to the localization window.
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
     currentTime = System.currentTimeMillis()
-    val appendedDetections = detectionsNAV.value + detections
+    val appendedDetections = detectionsLOC.value + detections
 
     when {
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
-        stateLocalizing.tryEmit(LocalizingStatus.stopped)
-        locationLOCAL.value = LocalizationResult.Unset()
+        statusLocalization.tryEmit(LocalizationStatus.stopped)
+        // locationLOCAL.value = LocalizationResult.Unset()
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
           // VERIFY: DEDUPLICATE DETECTIONS (this should be ok)
-          val detectionsDedup = YoloV4Classifier.NMS(detectionsNAV.value, detector.labels)
-          detectionsNAV.value = detectionsDedup
+          val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
+          detectionsLOC.value = detectionsDedup
 
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
           // localizeCvMapLOCAL(detectionsNAV.value)
-          localizeCvMapREMOTE(detectionsNAV.value) // TODO:PMX
+          localizeCvMapREMOTE(detectionsLOC.value) // TODO:PMX
 
-          detectionsNAV.value = emptyList()
+          detectionsLOC.value = emptyList()
         } else {
           LOG.W(TAG_METHOD, "stopped. no detections..")
-          locationLOCAL.value = LocalizationResult.Error("Location not found.", "no objects detected")
+          // locationLOCAL.value = LocalizationResult.Error("Location not found.", "no objects detected")
         }
       } else -> {  // Within a window
-      detectionsNAV.value = appendedDetections as MutableList<Classifier.Recognition>
+      detectionsLOC.value = appendedDetections as MutableList<Classifier.Recognition>
       LOG.D5(TAG_METHOD, "append: ${appendedDetections.size}")
     }
     }
   }
-
 
   var collectingCvLocalization = false
   fun localizeCvMapREMOTE(recognitions: List<Classifier.Recognition>) {
@@ -237,14 +238,14 @@ open class CvViewModel @Inject constructor(
   /**
    * Perform a local localization, using whatever [CvMap] files exist on device
    */
-  fun localizeCvMapLOCAL(detections: List<Classifier.Recognition>) {
-    locationLOCAL.value = LocalizationResult.Unset()
-    if (cvMapH == null) {
-      locationLOCAL.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
-    } else {  // estimate and publish position
-      locationLOCAL.value = cvMapH!!.cvMapFast.estimatePositionNEW(app.cvUtils, model, detections)
-    }
-  }
+  // fun localizeCvMapLOCAL(detections: List<Classifier.Recognition>) {
+  //   locationLOCAL.value = LocalizationResult.Unset()
+  //   if (cvMapH == null) {
+  //     locationLOCAL.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
+  //   } else {  // estimate and publish position
+  //     locationLOCAL.value = cvMapH!!.cvMapFast.estimatePositionNEW(app.cvUtils, model, detections)
+  //   }
+  // }
 
   /** TODO in new class
    * Selects the first available floor, or the last floor that was picked
@@ -307,5 +308,4 @@ open class CvViewModel @Inject constructor(
   fun unsetBackFromSettings() = saveBackFromSettings(false)
   private fun saveBackFromSettings(value: Boolean) =
           viewModelScope.launch(Dispatchers.IO) {  dsMisc.saveBackFromSettings(value) }
-
 }

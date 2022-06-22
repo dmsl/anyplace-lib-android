@@ -10,10 +10,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
@@ -52,11 +50,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvViewModel
 
   // UTILITY OBJECTS
-  protected lateinit var wMap: GmapWrapper
-  protected val overlays by lazy { Overlays(applicationContext, lifecycleScope) }
+  // protected lateinit var wMap: GmapWrapper TODO in CvMapUi
   protected val assetReader by lazy { AssetReader(applicationContext) }
-  protected open lateinit var uiBottom : BottomSheetCvUI
-
+  protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
 
   // UI
   //// COMPONENTS
@@ -133,9 +129,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected open fun setupUi() {
     setMapOpacity()
-
     setupUiFloorSelector()
     setupUiGmap()
+
+    // there is demo localization in Logger too,
+    // to validate findings according to the latest CvMap
+    ui.localization.collectStatus()
+
 
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
@@ -155,10 +155,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun setupUiGmap() {
     ui = CvMapUi(VM, lifecycleScope,
             this@CvMapActivity,
-            supportFragmentManager,
-            overlays, floorSelector)
-    wMap = GmapWrapper(applicationContext, lifecycleScope, ui)
-    wMap.attach(VM, this, R.id.mapView)
+            supportFragmentManager, floorSelector)
+    ui.map.attach(VM, this, R.id.mapView)
   }
 
   private fun setupUiFloorSelector() {
@@ -175,7 +173,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
         ui.removeHeatmap()
-        wMap.removeUserLocations()
+        ui.map.removeUserLocations()
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
       }
@@ -192,7 +190,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     view.alpha=value/100f
   }
 
-
   /**
    * GMap is created by [CvMapActivity].
    * This is a callback that can be used sub-classes.
@@ -203,7 +200,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    wMap.setup(googleMap)
+    ui.map.setup(googleMap)
+    ui.localization.setupClick()
+
     onMapReadyCallback()
   }
 
@@ -221,7 +220,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   fun observerDetections() {
     lifecycleScope.launch {
-      VM.detectionsNAV.collectLatest {
+      VM.detectionsLOC.collectLatest {
         it.forEach { rec ->
           LOG.E(TAG, "Detection: ${rec.id} ${rec.title}")
         }
@@ -239,7 +238,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   open fun onFloorLoaded() {
     LOG.D2(TAG, "Floor loaded: ${VM.wFloor?.floorNumber()}")
     if (VM.wFloor != null) {
-      wMap.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
+      ui.map.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
     }
   }
 

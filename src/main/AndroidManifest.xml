@@ -66,7 +66,7 @@
         android:exported="true">
     </activity>
     <activity
-        android:name=".ui.chat.SmasChatActivity"
+        android:name=".android.ui.smas.chat.SmasChatActivity"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat.ObjectDetection"
         android:exported="true"

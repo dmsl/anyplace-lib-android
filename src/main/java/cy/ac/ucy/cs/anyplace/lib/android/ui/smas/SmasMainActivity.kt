@@ -21,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilNotify
@@ -28,7 +29,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
@@ -97,9 +97,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private lateinit var btnChat: Button
   private lateinit var btnFlir: Button
   private lateinit var btnSettings: Button
-  // private lateinit var btnSwitch: Button
   private lateinit var btnAlert: Button
-  private lateinit var btnLocalization: Button
 
   private val utlNotify by lazy { UtilNotify(applicationContext) }
 
@@ -115,14 +113,13 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     setupButtonSettings()
     // setupButtonSwitch()
-    setupButtonLocalization()
     setupButtonChat()
     setupButtonFlir()
     setupButtonAlert()
   }
 
   override fun onMapReadyCallback() {
-    // Nothing for now
+      // nothing for now..
   }
 
   /**
@@ -155,11 +152,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     updateLocationsLOOP()
 
     // TODO:PM: bring localization to SMAS also..
-    collectOwnLocationLOCAL()
-    VM.collectLocations(VMchat, wMap)
+    // collectOwnLocationLOCAL()
+    VM.collectLocations(VMchat, ui.map)
 
-    setupFakeUserLocation(wMap)
-    // collect alert
+    // setupFakeUserLocation(ui.map)
+    // collect alert TODO:PMX
   }
 
 
@@ -183,12 +180,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       // VM.collectRefreshMs()
       while (true) {
         var msg = "pull"
-        val hasRegisteredLocation = VM.locationLOCAL.value.coord != null
+        val hasRegisteredLocation = VM.locationREMOTE.value.coord != null
         if (isActive && hasRegisteredLocation) {
           val lastCoordinates = UserCoordinates(VM.wSpace.obj.id,
                   VM.wFloor?.obj!!.floorNumber.toInt(),
-                  VM.locationLOCAL.value.coord!!.lat,
-                  VM.locationLOCAL.value.coord!!.lon)
+                  VM.locationREMOTE.value.coord!!.lat,
+                  VM.locationREMOTE.value.coord!!.lon)
 
           VM.nwLocationSend.safeCall(lastCoordinates)
           msg+="&send"
@@ -238,12 +235,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupFakeUserLocation(mapH: GmapWrapper) {
     val floorNum = VM.wFloor!!.floorNumber()
     val loc = VM.wSpace.latLng().toCoord(floorNum)
-    VM.locationLOCAL.value = LocalizationResult.Success(loc)
+    VM.locationREMOTE.value = LocalizationResult.Success(loc)
 
     lifecycleScope.launch(Dispatchers.Main) {
       mapH.obj.setOnMapLongClickListener {
         LOG.W(TAG, "Setting fake location: $it")
-        VM.locationLOCAL.value = LocalizationResult.Success(it.toCoord(floorNum))
+        VM.locationREMOTE.value = LocalizationResult.Success(it.toCoord(floorNum))
       }
     }
   }
@@ -374,17 +371,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  /**
-   * TODO this could toggle the heavyweight DNN engine
-   */
-  private fun setupButtonLocalization() {
-    btnFlir = findViewById(R.id.button_flir)
-    btnFlir.setOnClickListener {
-      lifecycleScope.launch {
-      }
-    }
-  }
-
   private fun setupButtonSettings() {
     btnSettings = findViewById(R.id.button_settings)
     btnSettings.setOnClickListener {
@@ -395,44 +381,29 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  // TODO CHECK:PM
-  private suspend fun collectLocalizationStatus() {
-    VM.stateLocalizing.collect { status ->
-      when (status) {
-        LocalizingStatus.running -> {
-          utlButton.changeBackgroundButtonCompat(btnLocalization, applicationContext,
-                  R.color.colorPrimary)
-        }
-        else -> {
-          utlButton.changeBackgroundButtonCompat(btnLocalization, applicationContext,
-                  R.color.gray)
-        }
-      }
-    }
-  }
-
   /**
    * Collect own user's Anyplace location
    * (calculated via CV-based localization)
    */
-  private fun collectOwnLocationLOCAL() {
-    LOG.E()
-    lifecycleScope.launch {
-      VM.locationLOCAL.collect { result ->
-        when (result) {
-          is LocalizationResult.Unset -> {
-          }
-          is LocalizationResult.Error -> {
-            // TODO HANDLE
-          }
-          is LocalizationResult.Success -> {
-            result.coord?.let { wMap.setUserLocationLOCAL(it) }
-          }
-        }
-      }
-    }
-  }
-  // CLR:PM
+  // private fun collectOwnLocationLOCAL() {
+  //   LOG.E()
+  //   lifecycleScope.launch {
+  //     VM.locationLOCAL.collect { result ->
+  //       when (result) {
+  //         is LocalizationResult.Unset -> {
+  //         }
+  //         is LocalizationResult.Error -> {
+  //           // TODO HANDLE
+  //         }
+  //         is LocalizationResult.Success -> {
+  //           result.coord?.let { wMap.setUserLocationLOCAL(it) }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // CLR
   // private suspend fun setupFakeLocation() {
   //   LOG.E(TAG_METHOD)
   //   delay(2000)
@@ -516,13 +487,4 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       }
     }
   }
-
-  // TODO search: removed for now
-  // private fun setupButtonFind() {
-  //   LOG.D()
-  //   btnFind= findViewById(R.id.button_find)
-  //   btnFind.setOnClickListener {
-  //     FindDialog.SHOW(supportFragmentManager, VM.repository)
-  //   }
-  // }
 }

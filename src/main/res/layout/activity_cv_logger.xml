@@ -268,7 +268,7 @@
 
     <!-- 7. DEMO NAVIGATION BTN -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_demoNavigation"
+        android:id="@+id/btn_localization"
         style="@style/MaterialButtonIcon"
         android:layout_marginEnd="16dp"
         android:backgroundTint="@color/darkGray"

@@ -4,11 +4,12 @@ import android.app.Activity
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,19 +21,40 @@ import kotlinx.coroutines.launch
  * TODO:
  * // More functionality from GmapHandler
  * // OR break up [GmapWrapper] to:
+ * - GmapWrapper (that holds Overlays)
  * - floors
  * - floorplans
+ * - floorSelector
  */
 open class CvMapUi(
         protected val VM: CvViewModel,
         protected val scope: CoroutineScope,
         protected val activity: Activity,
         protected val fragmentManager: FragmentManager,
-        /** [GoogleMap] overlays */
-        protected val overlays: Overlays,
-        val floorSelector: FloorSelector) {
+        val floorSelector: FloorSelector
+        ) {
 
   protected val ctx: Context = activity.applicationContext
+  /** Google Maps Wrapper */
+  val map by lazy { GmapWrapper(activity, scope, this) }
+
+  /** Localization Button Wrapper */
+  val localization by lazy { UiLocalization(activity, VM, scope, map, R.id.btn_localization) }
+
+
+  /**
+   * MERGE:PM once image is analyzed
+   * Used to be inside analyzeImage I think
+   */
+  open fun onInferenceRan() {
+    LOG.D3()
+    scope.launch(Dispatchers.Main) {
+      // TODO: binding bottom sheet stats..
+      // bottom.tvTimeInfo.text =  "<TODO>ms" // "${detectionTime}ms" // TODO:PM timer?
+      // bottom.bindCvStats()
+      // bindCvStatsImgDimensions(image) // and do this once. not on each analyze
+    }
+  }
 
   fun setupOnFloorSelectionClick(){
     floorSelector.onFloorDown { VM.wFloors.tryGoDown(VM) }
@@ -41,7 +63,7 @@ open class CvMapUi(
 
   fun removeHeatmap() {
     scope.launch(Dispatchers.Main) {
-      overlays.uiRemoveHeatmap()
+      map.overlays.uiRemoveHeatmap()
     }
   }
 
@@ -52,7 +74,7 @@ open class CvMapUi(
     }
 
     LOG.D2(TAG, "renderHeatmap: locations ${cvMapH.cvMap.locations.size}")
-    overlays.createHeatmap(map, cvMapH.getWeightedLocationList())
+    this.map.overlays.createHeatmap(map, cvMapH.getWeightedLocationList())
   }
 
 }

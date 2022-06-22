@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas
 
+import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Provider
 
 /**
  * Extends [CvViewModel]:

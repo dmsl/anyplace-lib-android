@@ -136,14 +136,13 @@ class SmasChatViewModel @Inject constructor(
   //   }
   // }
 
-
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
     var userCoord : UserCoordinates? = null
-    if (VM.locationLOCAL.value.coord != null) {
+    if (VM.locationREMOTE.value.coord != null) {
       userCoord = UserCoordinates(VM.wSpace.obj.id,
               VM.wFloor?.obj!!.floorNumber.toInt(),
-              VM.locationLOCAL.value.coord!!.lat,
-              VM.locationLOCAL.value.coord!!.lon)
+              VM.locationREMOTE.value.coord!!.lat,
+              VM.locationREMOTE.value.coord!!.lon)
       return userCoord
     }
 
@@ -186,6 +185,7 @@ class SmasChatViewModel @Inject constructor(
       //   LOG.E("Localization problem. Message cannot be delivered.")
       // }
     }
+
     collectMsgsSend()
   }
 

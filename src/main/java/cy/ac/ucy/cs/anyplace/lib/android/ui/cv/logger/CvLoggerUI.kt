@@ -1,6 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.View
 import android.widget.ProgressBar
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -11,8 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiStatusUpdater
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
@@ -21,57 +21,30 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class CvLoggerUI(private val act: CvLoggerActivity,
-                 private val scope: CoroutineScope,
-                 private val VM: CvLoggerViewModel,
-                 val id_bottomsheet: Int,
-                 private val wMap: GmapWrapper
-        // fragmentManager: FragmentManager, // CHECK (on CvMapUi?) or GmapWrapper?
-        // floorSelector: FloorSelector, //  CHECK (on CvMapUi?) or GmapWrapper?
-        // overlays: Overlays, //  CHECK (on CvMapUi?) or GmapWrapper?
-                 )
-// CLR:PM once this is merged
-// : UiActivityCvBase(activity, // MERGED? possible inheritance is OK
-// fragmentManager,
-// VM as CvViewModelBase,
-// scope, statusUpdater, overlays,
-// floorSelector)
-{
+open class CvLoggerUI(private val act: CvLoggerActivity,
+                      private val scope: CoroutineScope,
+                      private val VM: CvLoggerViewModel,
+                      private val ui: CvMapUi) {
 
-  /**
-   * MERGE:PM once image is analyzed
-   * Used to be inside analyzeImage I think
-   */
   fun onInferenceRan() {
-    LOG.D3()
-    scope.launch(Dispatchers.Main) {
-      updateCameraTimerButton()
-      bottom.tvTimeInfo.text =  "<TODO>ms" // "${detectionTime}ms" // TODO:PM timer?
-      bottom.bindCvStats()
-      // bindCvStatsImgDimensions(image) // and do this once. not on each analyze
-    }
+    ui.onInferenceRan()
+    updateCameraTimerButton()
   }
 
   companion object {
     const val OPACITY_MAP_LOGGING = 0f
     const val ANIMATION_DELAY : Long = 100
-
-    // CLR:PM GNK CODE?
-    // const val CAMERA_REQUEST_CODE: Int = 1
-    // const val CAMERA_ASPECT_RATIO: Int = AspectRatio.RATIO_4_3 // AspectRatio.RATIO_16_9
   }
 
   /** BottomSheet for the CvLogger */
   lateinit var bottom: BottomSheetCvLoggerUI
-  private val ctx = act.applicationContext
+  val ctx : Context = act
 
   // UI COMPONENTS:
   // CHECK: this was in bottom sheet?
-
   val btnSettings: MaterialButton by lazy { act.findViewById(R.id.button_settings) }
 
   // val btnLogging : Button = binding.bottomUi.buttonLogging
@@ -89,15 +62,30 @@ class CvLoggerUI(private val act: CvLoggerActivity,
             act.findViewById(R.id.view_warning))
   }
 
-  val uiLocalization by lazy {
-    UiLocalization(act, VM, scope, wMap, R.id.btn_demoNavigation, uiStatusUpdater)
-  }
-
-  // MERGE:PM bind this once (when we have CV img dimensions)
-  // fun bindCvStatsImgDimensions(image: ImageProxy) { // TODO:PM: NAV COMMON shared between activities?
+  // fun bindCvStatsImgDimensions(image: ImageProxy) { // TODO:shared between activities?
   //   binding.bottomUi.frameInfo.text = "${image.width}x${image.height}"
   // }
 
+
+  // CLR:PM
+  // fun setupLocalizationMode() {
+    // ui.localization.btn.setOnClickListener {
+    //   when (VM.logging.value) {
+    //     Logging.stopped,
+    //     Logging.stoppedMustStore -> {  // enter demo-nav mode
+    //       VM.logging.postValue(Logging.demoNavigation)
+    //     }
+    //     // CHECK:PM ??
+    //     // Logging.demoNavigation-> { // exit demo-nav mode:
+    //     //   // stopLocalization(mapView)
+    //     //   // VM.logging.postValue(Logging.stopped)
+    //     // }
+    //     else -> { // ignore click
+    //       LOG.D(TAG_METHOD, "$METHOD: Ignoring Demo-Navigation. status: ${VM.logging}")
+    //     }
+    //   }
+    // }
+  // }
 
 
   /**
@@ -162,19 +150,19 @@ class CvLoggerUI(private val act: CvLoggerActivity,
    * Stores some measurements on the given GPS locations
    */
   fun setupOnMapLongClick() {
-    wMap.obj.setOnMapLongClickListener { location ->
+    ui.map.obj.setOnMapLongClickListener { location ->
       LOG.V2(TAG, "$METHOD: storing detections")
       if (VM.canStoreDetections()) {
         LOG.V3(TAG, "clicked at: $location")
 
         // re-center map
-        wMap.obj.animateCamera(
+        ui.map.obj.animateCamera(
                 CameraUpdateFactory.newCameraPosition(
                         CameraPosition(
-                                location, wMap.obj.cameraPosition.zoom,
+                                location, ui.map.obj.cameraPosition.zoom,
                                 // don't alter tilt/bearing
-                                wMap.obj.cameraPosition.tilt,
-                                wMap.obj.cameraPosition.bearing))
+                                ui.map.obj.cameraPosition.tilt,
+                                ui.map.obj.cameraPosition.bearing))
         )
 
         val windowDetections = VM.objWindowLOG.value.orEmpty().size
@@ -185,7 +173,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
         val curPoint = VM.objOnMAP.size.toString()
         val msg = "Point: $curPoint\n\nObjects: $windowDetections\n"
 
-        wMap.markers.addCvMarker(location, msg)
+        ui.map.markers.addCvMarker(location, msg)
         // VM.addMarker(location, msg) // CLR:PM
 
         // pause a bit, then restart logging
@@ -219,11 +207,6 @@ class CvLoggerUI(private val act: CvLoggerActivity,
     bottom.btnLogging.visibility = View.VISIBLE // hidden only by demo-nav
 
     when (status) {
-      Logging.demoNavigation -> {
-        bottom.btnLogging.visibility = View.INVISIBLE
-        VM.circleTimerAnimation = TimerAnimation.reset
-        uiLocalization.startLocalization()
-      }
       // CLR:PM these were OLD comments (before merging)
       // Logging.finished -> { // finished a scanning
       //   btnDemoNav.visibility = View.GONE
@@ -241,17 +224,17 @@ class CvLoggerUI(private val act: CvLoggerActivity,
       //   // TODO set to stopped again
       // }
       Logging.running -> { // just started scanning
-        uiLocalization.hide()
+        ui.localization.hide()  // TODO:PMX FR1
         VM.circleTimerAnimation = TimerAnimation.running
         bottom.btnLogging.text = "pause"
         utlButton.removeMaterialButtonIcon(bottom.btnTimer)
         utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.darkGray)
         utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.redDark)
         bottom.btnTimer.fadeIn()
-        wMap.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
+        ui.map.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
       Logging.stopped -> { // stopped after a pause or a store: can start logging again
-        uiLocalization.show()
+        ui.localization.show()
         // clear btnTimer related components.. TODO make this a class..
         VM.circleTimerAnimation = TimerAnimation.reset
         bottom.btnTimer.fadeOut()
@@ -264,11 +247,11 @@ class CvLoggerUI(private val act: CvLoggerActivity,
           bottom.groupTutorial.visibility = View.VISIBLE
         }
         utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.colorPrimary)
-        wMap.mapView.animateAlpha(1f, ANIMATION_DELAY)
+        ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
         utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.darkGray)
       }
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
-        uiLocalization.visibilityGone()
+        ui.localization.visibilityGone()   // TODO:PMX FR1
         VM.circleTimerAnimation = TimerAnimation.reset
         scope.launch {
           val ms = 1500L
@@ -278,12 +261,12 @@ class CvLoggerUI(private val act: CvLoggerActivity,
         }
       }
       Logging.stoppedMustStore -> {
-        uiLocalization.visibilityGone()
+        ui.localization.visibilityGone() // TODO:PMX FR1
         VM.circleTimerAnimation = TimerAnimation.reset
         bottom.btnTimer.visibility= View.VISIBLE
         LOG.D(TAG_METHOD, "stopped must store: visible")
 
-        wMap.mapView.animateAlpha(1f, ANIMATION_DELAY)
+        ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
         utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.yellowDark)
 
         val storedDetections = VM.objOnMAP.size
@@ -300,8 +283,6 @@ class CvLoggerUI(private val act: CvLoggerActivity,
       }
     }
   }
-
-
 
   private fun resetCircleAnimation(progressBar: ProgressBar) {
     progressBar.visibility = View.INVISIBLE
@@ -329,7 +310,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
     // CHECK:PM: replaced changeBackgroundButtonDONT_USE
     utlButton.changeBackgroundButtonCompat(bottom.btnTimer, ctx, R.color.darkGray)
     utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.colorPrimary)
-    wMap.mapView.animateAlpha(1f, ANIMATION_DELAY)
+    ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
     VM.startNewWindow()
   }
 
@@ -435,7 +416,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
       when (VM.logging.value) {
         Logging.stoppedMustStore -> {
           if (VM.objOnMAP.isEmpty())  handleStoreNoDetections()
-           else handleStoreDetections(wMap.obj)
+           else handleStoreDetections(ui.map.obj)
         }
         else -> VM.toggleLogging()
       }
@@ -451,12 +432,12 @@ class CvLoggerUI(private val act: CvLoggerActivity,
       // VM.longClickFinished = true // CLR:PM remove this variable
       // TODO hide any stuff here...
       VM.circleTimerAnimation = TimerAnimation.reset
-      wMap.mapView.animateAlpha(1f, ANIMATION_DELAY)
+      ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
       // this needs testing?
       uiStatusUpdater.showInfoAutohide("stored ${VM.objOnMAP.size} locations", 3000)
-      handleStoreDetections(wMap.obj)
+      handleStoreDetections(ui.map.obj)
       true
     }
   }
@@ -486,7 +467,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
    */
   fun storeDetectionsAndUpdateUI(gmap: GoogleMap) {
     // TODO show/enable an upload button
-    wMap.markers.hideCvObjMarkers() // CLR:PM VM.hideActiveMarkers()
+    ui.map.markers.hideCvObjMarkers() // CLR:PM VM.hideActiveMarkers()
 
     // an extra check in case of a forced storing (long click while running or paused mode)
     if (VM.objOnMAP.isEmpty()) {
@@ -497,7 +478,7 @@ class CvLoggerUI(private val act: CvLoggerActivity,
     }
     val detectionsToStored = VM.objOnMAP.size
     VM.storeDetections(VM.wFloor)
-    VM.cvMapH?.let { wMap.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
+    VM.cvMapH?.let { ui.map.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
     uiStatusUpdater.showWarningAutohide("stored $detectionsToStored locations", 3000)
   }
 }

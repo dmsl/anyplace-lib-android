@@ -12,10 +12,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -23,13 +21,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * LEFTHERE:
- *
- * 1. settings: switch between SMAS / Logging
- *
- * 2. Bind w/ CV
- *
- * 3. Send fingerprints to remote
  *
  */
 @AndroidEntryPoint
@@ -54,7 +45,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private lateinit var VM: CvLoggerViewModel
 
   private val uiLog: CvLoggerUI by lazy {
-    CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, id_bottomsheet, wMap)
+    CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, ui)
   }
 
   override fun postCreate() {
@@ -87,15 +78,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     // uiLog.uiBottom.setup() // TODO why special method?
     // uiLog.setupBottomSheet() // TODO special method?
 
-    // TODO
     // MERGE this was setupComputerVision()
-    // TODO: CLR: collectors?
-    // there is demo localization in Logger too,
-    // to validate findings according to the latest CvMap
-    collectLocalizationStatus()
-
     // update both local and remotely fetched locations
-    collectLocationLOCAL()
+    // collectLocationLOCAL()
     collectLocationREMOTE()
   }
 
@@ -146,37 +131,37 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  private fun collectLocationLOCAL() {
-    lifecycleScope.launch{
-      VM.locationLOCAL.collect { result ->
-        when (result) {
-          is LocalizationResult.Unset -> { }
-          is LocalizationResult.Error -> {
-            var msg = result.message.toString()
-            val details = result.details
-            if (details != null) {
-              msg+=": $details"
-            }
-            LOG.E(TAG, "${CvLocalizeNW.TAG_TASK}: LOCAL: collect:  $msg")
-            //   uiLog.uiStatusUpdater.showErrorAutohide(msg, details, 4000L)
-            // } else {
-            //   uiLog.uiStatusUpdater.showErrorAutohide(msg, 4000L)
-            // }
-          }
-          is LocalizationResult.Success -> {
-            result.coord?.let { wMap.setUserLocationLOCAL(it) }
-
-            val cvLoc = result.coord!!
-
-            val msg = "${CvLocalizeNW.TAG_TASK}: LOCAL: coords: ${cvLoc.lat} ${cvLoc.lon}, lvl: ${cvLoc.level}"
-            LOG.E(TAG, "$msg")
-
-            // uiLog.uiStatusUpdater.showInfoAutohide("Loc","XY: ${result.details}.", 3000L)
-          }
-        }
-      }
-    }
-  }
+  // private fun collectLocationLOCAL() {
+  //   lifecycleScope.launch{
+  //     VM.locationLOCAL.collect { result ->
+  //       when (result) {
+  //         is LocalizationResult.Unset -> { }
+  //         is LocalizationResult.Error -> {
+  //           var msg = result.message.toString()
+  //           val details = result.details
+  //           if (details != null) {
+  //             msg+=": $details"
+  //           }
+  //           LOG.E(TAG, "${CvLocalizeNW.TAG_TASK}: LOCAL: collect:  $msg")
+  //           //   uiLog.uiStatusUpdater.showErrorAutohide(msg, details, 4000L)
+  //           // } else {
+  //           //   uiLog.uiStatusUpdater.showErrorAutohide(msg, 4000L)
+  //           // }
+  //         }
+  //         is LocalizationResult.Success -> {
+  //           result.coord?.let { ui.map.setUserLocationLOCAL(it) }
+  //
+  //           val cvLoc = result.coord!!
+  //
+  //           val msg = "${CvLocalizeNW.TAG_TASK}: LOCAL: coords: ${cvLoc.lat} ${cvLoc.lon}, lvl: ${cvLoc.level}"
+  //           LOG.E(TAG, "$msg")
+  //
+  //           // uiLog.uiStatusUpdater.showInfoAutohide("Loc","XY: ${result.details}.", 3000L)
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   private fun collectLocationREMOTE() {
     lifecycleScope.launch (Dispatchers.IO){
@@ -192,7 +177,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
             app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { wMap.setUserLocationREMOTE(it) }
+            result.coord?.let { ui.map.setUserLocationREMOTE(it) }
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.E(TAG, msg)
@@ -203,22 +188,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
             VM.wFloors.moveToFloor(VM, coord.level)
           }
-        }
-      }
-    }
-  }
-
-  private fun collectLocalizationStatus() {
-    lifecycleScope.launch{
-      VM.stateLocalizing.collect { status ->
-        LOG.W(TAG_METHOD, "status: $status")
-        when(status) {
-          LocalizingStatus.stopped -> {
-            uiLog.uiLocalization.endLocalization()
-            // TODO move in CvMap
-            VM.logging.postValue(Logging.stopped)
-          }
-          else ->  {}
         }
       }
     }
@@ -258,28 +227,16 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-
   override fun onMapReadyCallback() {
     uiLog.setupClickedLoggingButton()
     uiLog.setupOnMapLongClick()
-
-    uiLog.uiLocalization.setupClick()  // TODO:PM:NAV put in CvMap
   }
-
-  // override fun onFloorLoaded() {
-  //   super.onFloorLoaded()
-  // }
 
   /* Runs when the first of any of the floors is loaded */
-  override fun onFirstFloorLoaded() {
-    super.onFirstFloorLoaded()
-  }
-
+  // override fun onFirstFloorLoaded() { super.onFirstFloorLoaded() }
 
   /* Runs when any of the floors is loaded */
-  override fun onFloorLoaded() {
-    super.onFloorLoaded()
-  }
+  // override fun onFloorLoaded() { super.onFloorLoaded()  }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     uiLog.onInferenceRan()
