@@ -64,7 +64,8 @@ class GmapWrapper(private val ctx: Context,
     LOG.D()
 
     obj = googleMap
-    obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
+    // TODO:PMX FR10
+    // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
     markers = MapMarkers(ctx, scope, VM, obj)
 
     // ON FLOOR LOADED....

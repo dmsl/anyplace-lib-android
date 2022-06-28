@@ -70,8 +70,8 @@
     <SwitchPreferenceCompat
         app:key="@string/pref_cv_dev_mode"
         android:defaultValue="true"
-        app:title="Show scan details"
-        app:summary="Additional details while scanning (bottomsheet)"
+        app:title="Developer Mode"
+        app:summary="Show debug details throughout the app."
         />
 
     <Preference

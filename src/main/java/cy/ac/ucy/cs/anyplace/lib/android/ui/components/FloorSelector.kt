@@ -13,9 +13,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.fadeIn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.FloorplanLoader
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import kotlinx.coroutines.CoroutineScope
@@ -44,14 +43,15 @@ class FloorSelector(
     abstract fun after()
   }
 
-  private val utlButton by lazy { UtilButton(ctx, scope) }
+  private val utlButton by lazy { UtilUI(ctx, scope) }
 
   private val fpLoader by lazy { FloorplanLoader() }
   var callback : Callback ?= null
 
   fun updateFloorSelector(floor: Floor?, FH: FloorsWrapper) {
     // if it has floors, then fade in..
-    if (groupFloorSelector.visibility != View.VISIBLE) groupFloorSelector.fadeIn()
+    if (groupFloorSelector.visibility != View.VISIBLE)
+      utlButton.fadeIn(groupFloorSelector)
 
     if (floor == null) {
       updateSelectionButton(btnFloorUp, ctx, false)
@@ -72,10 +72,10 @@ class FloorSelector(
   private fun updateSelectionButton(btn: MaterialButton, ctx: Context, enable: Boolean) {
     if (enable) {
       btn.isClickable=true
-      utlButton.changeMaterialButtonIcon(btn, R.drawable.arrow_up)
+      utlButton.changeMaterialIcon(btn, R.drawable.arrow_up)
     } else {
       btn.isClickable= false
-      utlButton.changeMaterialButtonIcon(btn, R.drawable.ic_arrow_up_disabled)
+      utlButton.changeMaterialIcon(btn, R.drawable.ic_arrow_up_disabled)
     }
   }
 

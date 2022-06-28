@@ -32,7 +32,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -52,6 +51,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
 
+
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
           SmasMainViewModel::class.java as Class<DetectorViewModel>
@@ -70,7 +70,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private lateinit var btnAlert: Button
 
   private val utlNotify by lazy { UtilNotify(applicationContext) }
-  private val utlButton by lazy { UtilButton(applicationContext, lifecycleScope) }
 
   /** whether this activity is active or not */
   private var isActive = false
@@ -90,7 +89,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   }
 
   override fun onMapReadyCallback() {
-      // nothing for now..
+    // nothing for now..
   }
 
   /**
@@ -218,17 +217,17 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun reactToNewMessages() {
     lifecycleScope.launch(Dispatchers.Main) {
       VM.readHasNewMessages.observeForever { hasNewMsgs ->
-      val btn = btnChat as MaterialButton
-      val ctx = this@SmasMainActivity
-      LOG.E(TAG,"NEW-MSGS: $hasNewMsgs")
+        val btn = btnChat as MaterialButton
+        val ctx = this@SmasMainActivity
+        LOG.E(TAG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
-          utlButton.changeBackgroundButtonDONT_USE(btn, R.color.redDark)
-          utlButton.changeMaterialButtonIcon(btn, R.drawable.ic_chat_unread)
+          utlUi.changeBackgroundDONT_USE(btn, R.color.redDark)
+          utlUi.changeMaterialIcon(btn, R.drawable.ic_chat_unread)
           utlNotify.msgReceived()
         } else {
-          utlButton.changeBackgroundButtonDONT_USE(btn, R.color.colorPrimaryDark)
-          utlButton.changeMaterialButtonIcon(btn, R.drawable.ic_chat)
+          utlUi.changeBackgroundDONT_USE(btn, R.color.colorPrimaryDark)
+          utlUi.changeMaterialIcon(btn, R.drawable.ic_chat)
         }
       }
     }
@@ -247,7 +246,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           startActivity(Intent(this@SmasMainActivity, SmasLoginActivity::class.java))
         } else {
           lifecycleScope.launch(Dispatchers.Main) {
-          Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
           }
         }
       }
@@ -266,18 +265,18 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       VM.alertingUser.collect {
         if (it == null) { // no user alerting
           // btnAlert.visibility = View.VISIBLE
-          group.fadeOut()
+          utlUi.fadeOut(group)
           delay(100)
-          btnAlert.fadeIn()
+          utlUi.fadeIn(btnAlert)
           tvAlertTitle.clearAnimation()
           // group.visibility = View.INVISIBLE
         } else { // user alerting
           tvUserAlert.text = "${it.name} ${it.surname}"
-          btnAlert.fadeOut()
+          utlUi.fadeOut(btnAlert)
           delay(100)
-          group.fadeIn()
+          utlUi.fadeIn(group)
           delay(100)
-          tvAlertTitle.flashingLoop()
+          utlUi.flashingLoop(tvAlertTitle)
           // btnAlert.visibility = View.INVISIBLE
           // group.visibility = View.VISIBLE
         }
@@ -294,16 +293,16 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     btnAlert.setOnLongClickListener {
       when (VM.toggleAlert()) {
         LocationSendNW.Mode.alert -> {
-          btnAlert.flashingLoop()
+          utlUi.flashingLoop(btnAlert)
           btnAlert.text = "ALERTING"
-          utlButton.changeBackgroundButtonCompat(btnAlert, R.color.redDark)
+          utlUi.changeBackgroundCompat(btnAlert, R.color.redDark)
           btnAlert.setTextColor(Color.WHITE)
         }
         LocationSendNW.Mode.normal -> {
           btnAlert.clearAnimation()
           btnAlert.text = "SEND ALERT"
           btnAlert.setTextColor(Color.BLACK)
-          utlButton.changeBackgroundButtonCompat(btnAlert, R.color.yellowDark)
+          utlUi.changeBackgroundCompat(btnAlert, R.color.yellowDark)
         }
       }
       true

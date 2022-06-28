@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
@@ -55,6 +56,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // protected lateinit var wMap: GmapWrapper TODO in CvMapUi
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
+  val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
   // UI
   //// COMPONENTS
@@ -294,8 +296,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           is LocalizationResult.Success -> {
             result.coord?.let { ui.map.setUserLocationREMOTE(it) }
             val coord = result.coord!!
-            val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
-            LOG.E(TAG, msg)
+            val msg = "${CvLocalizeNW.TAG_TASK}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
+            LOG.D2(TAG, msg)
             val curFloor = VM.wFloor?.floorNumber()
             if (coord.level != curFloor) {
               app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")

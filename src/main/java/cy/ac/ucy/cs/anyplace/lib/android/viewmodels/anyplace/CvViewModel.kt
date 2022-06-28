@@ -198,7 +198,7 @@ open class CvViewModel @Inject constructor(
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
-          localizeCvMapREMOTE(detectionsLOC.value)
+          localizeCvMap(detectionsLOC.value)
 
           detectionsLOC.value = emptyList()
         } else {
@@ -212,8 +212,8 @@ open class CvViewModel @Inject constructor(
   }
 
   var collectingCvLocalization = false
-  fun localizeCvMapREMOTE(recognitions: List<Classifier.Recognition>) {
-    LOG.E(TAG, "$METHOD: calling remote")
+  fun localizeCvMap(recognitions: List<Classifier.Recognition>) {
+    LOG.D2(TAG, "$METHOD: performing remote localization")
 
     // TODO convert detections
     val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)

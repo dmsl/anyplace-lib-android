@@ -3,12 +3,8 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.content.Context
 import android.view.View
 import android.widget.TextView
-import androidx.core.content.ContextCompat
-import com.google.android.material.button.MaterialButton
-import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashOut
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashView
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,6 +47,7 @@ class UiStatusUpdater(
   init { setHideOnClick() }
 
   private val utlColor by lazy { UtilColor(ctx)}
+  private val utlUi by lazy { UtilUI(ctx, scope) }
 
   fun Color(level: Level): Int {
     return when(level) {
@@ -80,7 +77,7 @@ class UiStatusUpdater(
 
     val color= Color(Level.Info)
     overlay.setBackgroundColor(color)
-    overlay.flashView(1000)
+    utlUi.flashView(overlay, 1000)
   }
 
   fun clearStatus() { tvStatus.visibility = View.GONE}
@@ -88,15 +85,6 @@ class UiStatusUpdater(
   fun showNormal(text: String, delay: Long = 500) = showMsgPersistent(Level.Normal, text, delay)
   fun showError(text: String, delay: Long = 500) = showMsgPersistent(Level.Error, text, delay)
   fun showWarning(text: String, delay: Long = 500) = showMsgPersistent(Level.Warning, text)
-  // { // OLD CODE. CLR:PM ?
-  // CLR:PM
-  // tvMsgTitle.setTextColor(ColorWarning(ctx))
-  // tvBg.setBackgroundColor(ColorWarning(ctx))
-  // setMessageTitle(Level.Warning, text)
-  // tvBg.flashOut(0.7f, delay)
-  // overlay.flashView(delay)
-  // }
-
 
   private fun clearMessages() {
     tvMsgSubtitle.text=""
@@ -106,10 +94,9 @@ class UiStatusUpdater(
   private fun showMsgPersistent(level: Level, text: String, delay: Long = 500) {
     clearMessages()
     setMessageTitle(Level.Warning, text)
-    tvBg.flashOut(0.7f, delay)
-    overlay.flashView(delay)
+    utlUi.flashOut(tvBg, 0.7f, delay)
+    utlUi.flashView(overlay, delay)
   }
-
 
   fun showErrorAutohide(title: String, delay: Long = 500) = showMsgAutohide(Level.Error, title, delay)
   fun showErrorAutohide(title: String, subtitle: String, delay: Long = 500) = showMsgAutohide(Level.Error, title, subtitle, delay)
@@ -125,7 +112,7 @@ class UiStatusUpdater(
       clearMessages()
       tvBg.setBackgroundColor(utlColor.ColorWhite())
       setMessageTitle(level, title)
-      overlay.flashView(delay)
+      utlUi.flashView(overlay, delay)
       delay(delay)
       hideStatus()
     }
@@ -137,7 +124,7 @@ class UiStatusUpdater(
       clearMessages()
       tvBg.setBackgroundColor(utlColor.ColorWhite())
       setMessageTitle(level, title, subtitle)
-      overlay.flashView(delay)
+      utlUi.flashView(overlay, delay)
       delay(delay)
       hideStatus()
     }

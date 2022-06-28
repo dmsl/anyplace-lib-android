@@ -90,7 +90,7 @@ class MsgSendNW(private val app: SmasApp,
     resp.value = NetworkResult.Error(msg)
   }
 
-  suspend fun collect(ctx: Context) {
+  suspend fun collect() {
     resp.collect {
       when (it) {
         is NetworkResult.Loading -> {
@@ -101,7 +101,8 @@ class MsgSendNW(private val app: SmasApp,
           VM.isLoading = false
           VM.clearReply()
           VM.clearTheReplyToMessage()
-          app.showToast(VM.viewModelScope, "Sent to ${it.data?.deliveredTo} people.", Toast.LENGTH_SHORT)
+          val msg = "Sent to ${it.data?.deliveredTo} people (floor: $VM)."
+          app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
         }
         is NetworkResult.Error -> {
           LOG.D1(TAG, "MessageSend Error: ${it.message}")

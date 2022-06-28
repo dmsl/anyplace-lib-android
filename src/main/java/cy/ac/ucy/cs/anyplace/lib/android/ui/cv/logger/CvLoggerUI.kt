@@ -19,7 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -39,8 +39,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     const val ANIMATION_DELAY : Long = 100
   }
 
-  private val utlButton by lazy { UtilButton(act, scope) }
-
+  private val utlUi by lazy { UtilUI(act, scope) }
 
   /** BottomSheet for the CvLogger */
   lateinit var bottom: BottomSheetCvLoggerUI
@@ -93,10 +92,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       bottom.progressBarTimer.progress = 100
 
       if (!VM.objWindowLOG.value.isNullOrEmpty()) {
-        utlButton.changeMaterialButtonIcon(bottom.btnTimer, R.drawable.ic_objects)
+        utlUi.changeMaterialIcon(bottom.btnTimer, R.drawable.ic_objects)
       } else {   // no results, hide the timer
-        utlButton.removeMaterialButtonIcon(bottom.btnTimer)
-        bottom.btnTimer.fadeOut()
+        utlUi.removeMaterialIcon(bottom.btnTimer)
+        utlUi.fadeOut(bottom.btnTimer)
       }
     }
   }
@@ -209,18 +208,18 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         ui.localization.hide()  // TODO:PMX FR1
         VM.circleTimerAnimation = TimerAnimation.running
         bottom.btnLogging.text = "pause"
-        utlButton.removeMaterialButtonIcon(bottom.btnTimer)
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.darkGray)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.redDark)
-        bottom.btnTimer.fadeIn()
-        ui.map.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
+        utlUi.removeMaterialIcon(bottom.btnTimer)
+        utlUi.changeBackgroundCompat(bottom.btnLogging, R.color.darkGray)
+        utlUi.changeBackgroundDONT_USE(bottom.btnTimer, R.color.redDark)
+        utlUi.fadeIn(bottom.btnTimer)
+        utlUi.animateAlpha(ui.map.mapView, OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
       Logging.stopped -> { // stopped after a pause or a store: can start logging again
         ui.localization.show()
         // clear btnTimer related components.. TODO make this a class..
         VM.circleTimerAnimation = TimerAnimation.reset
-        bottom.btnTimer.fadeOut()
-        bottom.progressBarTimer.fadeOut()
+        utlUi.fadeOut(bottom.btnTimer)
+        utlUi.fadeOut(bottom.progressBarTimer)
         VM.circleTimerAnimation = TimerAnimation.paused
         if (VM.previouslyPaused) {
           bottom.btnLogging.text = "resume"
@@ -228,9 +227,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
           bottom.btnLogging.text = "scan"
           bottom.groupTutorial.visibility = View.VISIBLE
         }
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.colorPrimary)
-        ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.darkGray)
+        utlUi.changeBackgroundCompat(bottom.btnLogging, R.color.colorPrimary)
+        utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
+        utlUi.changeBackgroundDONT_USE(bottom.btnTimer, R.color.darkGray)
       }
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
         ui.localization.visibilityGone()   // TODO:PMX FR1
@@ -247,9 +246,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         VM.circleTimerAnimation = TimerAnimation.reset
         bottom.btnTimer.visibility= View.VISIBLE
         LOG.D(TAG_METHOD, "stopped must store: visible")
-
-        ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.yellowDark)
+        utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
+        utlUi.changeBackgroundDONT_USE(bottom.btnTimer, R.color.yellowDark)
 
         val storedDetections = VM.objOnMAP.size
         val noDetections = storedDetections == 0
@@ -261,7 +259,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         bottom.btnLogging.text = "END"
         // val loggingBtnColor = if (noDetections) R.color.darkGray else R.color.yellowDark
         // changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.darkGray)
+        utlUi.changeBackgroundCompat(bottom.btnLogging, R.color.darkGray)
       }
     }
   }
@@ -288,11 +286,11 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     LOG.D()
     delay(delayMs)
     uiStatusUpdater.hideStatus()
-    utlButton.removeMaterialButtonIcon(bottom.btnTimer)
+    utlUi.removeMaterialIcon(bottom.btnTimer)
     // CHECK:PM: replaced changeBackgroundButtonDONT_USE
-    utlButton.changeBackgroundButtonCompat(bottom.btnTimer, R.color.darkGray)
-    utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.colorPrimary)
-    ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
+    utlUi.changeBackgroundCompat(bottom.btnTimer, R.color.darkGray)
+    utlUi.changeBackgroundCompat(bottom.btnLogging, R.color.colorPrimary)
+    utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
     VM.startNewWindow()
   }
 
@@ -307,7 +305,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     bottom.btnTimer.setOnClickListener {
       if (VM.objWindowUnique > 0 &&!clickedScannedObjects) {
         clickedScannedObjects=true
-        bottom.btnClearObj.fadeIn()
+        utlUi.fadeIn(bottom.btnClearObj)
         scope.launch {
           delay(5000)
           clickedScannedObjects=false
@@ -331,7 +329,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         bottom.btnClearObj.alpha = 1f
       } else {
         hideClearObjectsButton()
-        bottom.btnTimer.fadeOut()
+        utlUi.fadeOut(bottom.btnTimer)
         VM.resetLoggingWindow()
         uiStatusUpdater.hideStatus()
       }
@@ -340,7 +338,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   fun hideClearObjectsButton() {
     clearConfirm=false
-    bottom.btnClearObj.fadeOut()
+    utlUi.fadeOut(bottom.btnClearObj)
     scope.launch {
       delay(100)
       bottom.btnClearObj.alpha = 0.5f
@@ -357,14 +355,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
               MainSmasSettingsDialog.FROM_MAIN, act, versionStr)
     }
 
-    utlButton.changeBackgroundButtonCompat(btnSettings, R.color.yellowDark)
-    // CLR:PM
-    // btnSettings.setOnLongClickListener {
-    //   scope.launch {
-    //     uiStatusUpdater.showInfoAutohide("App Version: $versionName", 1000L)
-    //   }
-    //   true
-    // }
+    utlUi.changeBackgroundCompat(btnSettings, R.color.yellowDark)
   }
 
 
@@ -393,7 +384,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       // VM.longClickFinished = true // CLR:PM remove this variable
       // TODO hide any stuff here...
       VM.circleTimerAnimation = TimerAnimation.reset
-      ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
+      utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
       // buttonUtils.changeBackgroundButton(btnTimer, ctx, R.color.yellowDark)
 
       // this needs testing?

@@ -194,7 +194,7 @@ class SmasChatViewModel @Inject constructor(
    */
   fun collectMsgsSend() {
     viewModelScope.launch {
-      nwMsgSend.collect(app)
+      nwMsgSend.collect()
     }
   }
 

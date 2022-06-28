@@ -40,7 +40,9 @@ class MapMarkers(private val ctx: Context,
   var users: MutableList<Marker> = mutableListOf()
 
   private fun toString(ll: LatLng) : String {
-    return ll.latitude.toString() + ",\n" + ll.longitude.toString()
+    return ""
+    // TODO:PMX FR10
+    // return ll.latitude.toString() + ",\n" + ll.longitude.toString()
   }
 
   private fun toString(coord: Coord) : String {
@@ -51,8 +53,10 @@ class MapMarkers(private val ctx: Context,
   private fun locationMarkerREMOTE(coord: Coord) : MarkerOptions  {
     val latLng = toLatLng(coord)
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_location_smas)
-            .title("Own location:")
+            // TODO:PMX FR10
+            // .userIcon(ctx, R.drawable.marker_location_smas)
+            .userIcon(ctx, R.drawable.marker_objects_stored)
+            .title("My Location")
             .snippet(getSnippetOwnLocation(coord))
   }
 
@@ -60,15 +64,17 @@ class MapMarkers(private val ctx: Context,
   private fun cvMarker(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
         .userIcon(ctx, R.drawable.marker_objects)
-            .snippet("CV-Fingerprint at:\n" + toString(latLng))
+    // TODO:PMX FR10
+    // .snippet("CV-Fingerprint at:\n" + toString(latLng))
   }
 
   /** Computer Vision stored marker */
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
         .userIcon(ctx, R.drawable.marker_objects_stored)
-            .snippet("CV-Fingerprint at:\n" + toString(latLng)+
-            "\n\n[stored]")
+    // TODO:PMX FR10
+    // .snippet("CV-Fingerprint at:\n" + toString(latLng)+
+    // "\n\n[stored]")
   }
 
   fun addCvMarker(latLng: LatLng, msg: String) {
@@ -81,7 +87,9 @@ class MapMarkers(private val ctx: Context,
 
   /** User marker */
   private fun userMarker(latLng: LatLng, title: String) : MarkerOptions {
-    val details = "Last Active: <>\n\n" + toString(latLng)
+    // TODO:PMX FR10
+    // val details = "Last Active: <>\n\n" + toString(latLng)
+    val details = toString(latLng)
     return MarkerOptions().position(latLng).title(title)
             .userIcon(ctx, R.drawable.marker_user)
             .snippet(details)

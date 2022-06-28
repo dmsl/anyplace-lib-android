@@ -45,9 +45,8 @@ class UserInfoWindowAdapter(private val ctx: Context) : GoogleMap.InfoWindowAdap
       val drawable = view.background as GradientDrawable
       drawable.mutate() // only change this instance of the xml, not all components using this xml
 
-      var col = when (metadata.type) {
+      val col = when (metadata.type) {
         UserInfoType.OwnUser -> {
-
           drawable.setColor(utlColor.GrayLighter())
 
           utlColor.get(R.color.colorPrimary)
@@ -61,7 +60,6 @@ class UserInfoWindowAdapter(private val ctx: Context) : GoogleMap.InfoWindowAdap
       drawable.setStroke(5, col)
       tvTitle.setTextColor(col)
     }
-
   }
 
   override fun getInfoContents(marker: Marker): View {
