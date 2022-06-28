@@ -17,7 +17,6 @@
 // import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 // import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 // import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-// import cy.ac.ucy.cs.anyplace.lib.android.ui.components.StatusUpdater
 // import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.CvActivityBaseRM
 // import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.gnk.UiActivityCvBase
 // import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvLoggerActivity

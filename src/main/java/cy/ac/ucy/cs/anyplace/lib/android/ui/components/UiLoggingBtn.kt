@@ -38,8 +38,8 @@ class UiLoggingBtn(
 
   private val utlUi by lazy { UtilUI(act, scope) }
   private val app = act.app
-
   private val ctx = act.applicationContext
+
   // val btn: MaterialButton by lazy { act.findViewById(button_id) }
 
   /**
@@ -49,19 +49,26 @@ class UiLoggingBtn(
     btn.setOnClickListener {
       LOG.D2(TAG, "loggingBtn: clicked: ${VM.statusLogging}")
       when (VM.statusLogging.value) {
+
+        LoggingStatus.running -> {
+          cancelWindow()
+        }
         LoggingStatus.mustStore -> {
           app.showToast(scope, "Long-click on map to store detections", Toast.LENGTH_LONG)
         }
         LoggingStatus.stopped -> {
           VM.statusLogging.update { LoggingStatus.running }
-          // if (VM.objOnMAP.isEmpty())  handleStoreNoDetections() CLR:PM
-          //  else handleStoreDetections(ui.map.obj)
         }
         else ->  {
-          LOG.W(TAG, "$METHOD: ignoring click..")
+          LOG.D2(TAG, "$METHOD: ignoring click..")
         }
       }
     }
+  }
+
+  private fun cancelWindow() {
+    VM.resetLoggingWindow()
+    uiLog.bottom.timer.reset()
   }
 
   /**
@@ -92,11 +99,7 @@ class UiLoggingBtn(
     ui.localization.visibilityGone() // dont show this yet..
     utlUi.changeBackgroundCompat(btn, R.color.yellowDark)
     utlUi.text(btn, "long-click on position")
-
-    // utlUi.fadeIn(uiLog.bottom.btnTimer)
-    // VM.circleTimerAnimation = TimerAnimation.reset
-    // utlUi.changeBackgroundCompat(uiLog.bottom.btnTimer, R.color.yellowDark)
-    uiLog.setCameraTimerToMustStore()
+    uiLog.bottom.timer.setToStoreMode()
   }
 
   fun startLogging() {
@@ -110,21 +113,12 @@ class UiLoggingBtn(
     ui.localization.hide()
     ui.map.mapView.alpha = 0f
 
-    VM.circleTimerAnimation = TimerAnimation.paused
+    VM.circleTimerAnimation = TimerAnimation.running
     utlUi.text(btn, "cancel")
     utlUi.changeBackgroundCompat(uiLog.bottom.logging.btn, R.color.darkGray)
 
-    // TODO:PM make a method: prepare time button..
-    utlUi.removeMaterialIcon(uiLog.bottom.btnTimer)
-    utlUi.changeBackgroundMaterial(uiLog.bottom.btnTimer, R.color.redDark)
-    utlUi.fadeIn(uiLog.bottom.btnTimer)
-    utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, CvLoggerUI.ANIMATION_DELAY)
-
-    //   // CHECK: replace in the UiLocalization too?
-    //   // VM.statusLocalization.value = LocalizationStatus.running
-    //   btn.visibility = View.VISIBLE
-    //   // utlButton.changeBackgroundDONT_USE(btn, R.color.colorPrimary)
-    //   val mapAlpha = VM.prefsCvNav.mapAlpha.toFloat()/100
+    uiLog.bottom.timer.init()
+    utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
   }
 
   /* TODO:PM
@@ -132,17 +126,14 @@ class UiLoggingBtn(
     (unplaced on map detections..)
     - these are also NOT STORED ON DISK!
    */
-
-  //
   fun notRunning() {
     LOG.W(TAG, "$METHOD: logging")
     VM.disableCvDetection()
     ui.map.mapView.alpha = 1f
 
     VM.circleTimerAnimation = TimerAnimation.reset
-    utlUi.fadeOut(uiLog.bottom.btnTimer)
-    utlUi.fadeOut(uiLog.bottom.progressBarTimer)
-    // VM.circleTimerAnimation = TimerAnimation.reset
+    utlUi.fadeOut(uiLog.bottom.timer.btn)
+    utlUi.fadeOut(uiLog.bottom.timer.progressBar)
 
     utlUi.changeBackgroundCompat(btn, R.color.colorPrimary)
 

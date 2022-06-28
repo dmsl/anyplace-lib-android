@@ -4,15 +4,15 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.google.gson.Gson
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import com.google.gson.GsonBuilder
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMap
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.LastValSpaces
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
+import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileWriter
@@ -40,8 +40,10 @@ open class Cache(val ctx: Context) {
   val baseDir get() = "${ctx.filesDir}"
 
   val spacesDir get() = "$baseDir/spaces"
+  val fingerprintsFilename get() = "$baseDir/fingerprints"
 
   // SPACES
+
   fun dirSpace(space: Space) : String {  return "$spacesDir/${space.id}"  }
   fun dirSpace(floor: Floor) : String {  return "$spacesDir/${floor.buid}" }
   fun dirSpace(cvMap: CvMap) : String {  return "$spacesDir/${cvMap.buid}" }
@@ -174,28 +176,6 @@ open class Cache(val ctx: Context) {
   // fun deleteFloorCvMap(cvMap: CvMap) {  _deleteFloorCvMap(jsonFloorCvMap(cvMap)) }
   // fun deleteFloorCvMap(floor: Floor) {  _deleteFloorCvMap(jsonFloorCvMap(floor)) }
 
-
-  // /** CHECK:PM CLR?
-  //  * Appends to the floor plan
-  //  */
-  // fun readAndMerge(cvMap: CvMap): Boolean {
-  //   val filename = jsonFloorCvMap(cvMap)
-  //   val oldCvMap  = readFloorCvMap(cvMap)
-  //   val combinedCvMap = CvMapHelper.merge(cvMap, oldCvMap)
-  //   return try {
-  //     File(dirSpace(cvMap)).mkdirs()
-  //     val fw= FileWriter(File(filename))
-  //     Gson().toJson(combinedCvMap, fw)
-  //     fw.close()
-  //     LOG.D2(TAG, "saveFloorCvMap: $combinedCvMap")
-  //     LOG.D2(TAG, "saveFloorCvMap: $filename")
-  //     true
-  //   } catch (e: Exception) {
-  //     LOG.E(TAG, "saveFloorCvMap: $filename: ${e.message}")
-  //     false
-  //   }
-  // }
-
   /**
    * This overrides any previous Cv Map,
    * so any merging must be done earlier
@@ -231,6 +211,32 @@ open class Cache(val ctx: Context) {
       // TODO deleting local cache...
     }
     return null
+  }
+
+  fun hasFingerprints(): Boolean { return File(fingerprintsFilename).exists() }
+
+  fun uploadFingerprints(user: ChatUser) {
+  //   val entry = FingerprintEntry(userCoords, time, detectionsReq, model.idSmas)
+  //
+  //   val gson: Gson = GsonBuilder().create()
+  //   val fw= FileWriter(File(fingerprintsFilename), true)
+  //   val lineEntry = gson.toJson(entry)
+  //   LOG.D2(TAG, "STR: $lineEntry")
+  //   fw.write(lineEntry + "\n")
+  //   fw.close()
+  }
+
+
+  fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
+    val time = utlTime.epoch().toString()
+    val entry = FingerprintEntry(userCoords, time, detectionsReq, model.idSmas)
+
+    val gson: Gson = GsonBuilder().create()
+    val fw= FileWriter(File(fingerprintsFilename), true)
+    val lineEntry = gson.toJson(entry)
+    LOG.D2(TAG, "STR: $lineEntry")
+    fw.write(lineEntry + "\n")
+    fw.close()
   }
 
 }

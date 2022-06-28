@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggerTimer
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggingBtn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
@@ -34,12 +35,14 @@ class BottomSheetCvLoggerUI(
   // TODO replace bu_TvCropInfo: with tvCropInfo
   // TODO replace ivBottomSheetArrow with  ivArrowImg
 
+  private val id_btn_timer = R.id.button_cameraTimer
+  private val id_progressBar_timer = R.id.progressBar_timer
+  private val id_btn_clearObjs = R.id.button_clearObjects
   val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope, ui, uiLog, id_btn_logging) }
+  val timer by lazy { UiLoggerTimer(act, VMlog, act.lifecycleScope, ui, uiLog,
+          id_btn_timer, id_progressBar_timer, id_btn_clearObjs) }
 
   val tvWindowObjectsAll : TextView by lazy { act.findViewById(R.id.tv_windowObjectsAll) }
-  val btnClearObj: MaterialButton by lazy { act.findViewById(R.id.button_clearObjects) }
-  val btnTimer : MaterialButton by lazy { act.findViewById(R.id.button_cameraTimer) }
-  val progressBarTimer: ProgressBar by lazy { act.findViewById(R.id.progressBar_timer) }
   val groupTutorial : Group by lazy { act.findViewById(R.id.group_tutorial) }
 
   val llBottomSheetInternal: LinearLayout  by lazy { act.findViewById(R.id.bottom_sheet_internal) }

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
@@ -26,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.internal.cacheGet
 import javax.inject.Inject
 
 enum class LoggingStatus {
@@ -34,7 +36,7 @@ enum class LoggingStatus {
   stopped,
 }
 
-enum class TimerAnimation { running,  paused,  reset  }
+enum class TimerAnimation { running,  reset  }
 
 /**
  * Extends [CvViewModel]:
@@ -53,10 +55,11 @@ class CvLoggerViewModel @Inject constructor(
         CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { CHAT(app.applicationContext) }
+  private val cache by lazy { Cache(application) }
 
   // TODO: move in new class..
   // var longClickFinished: Boolean = false
-  var circleTimerAnimation: TimerAnimation = TimerAnimation.paused
+  var circleTimerAnimation: TimerAnimation = TimerAnimation.reset
 
   lateinit var prefsCvLog : CvLoggerPrefs
 
@@ -71,11 +74,6 @@ class CvLoggerViewModel @Inject constructor(
   /** for stats, and for enabling scanned objects clear (on current window) (MERGE: objectsWindowUnique) */
   var statObjWindowUNQ = 0
   var statObjTotal = 0
-
-  // CLR:PM
-  /** stores the elapsed time on stops/pauses */
-  // var windowElapsedPause : Long = 0
-  // var firstDetection = false
 
   // PREFERENCES (CHECK:PM these were SMAS).
   // val prefsChat = dsChat.read
@@ -107,10 +105,7 @@ class CvLoggerViewModel @Inject constructor(
       LoggingStatus.running -> {
         updateLoggingRecognitions(recognitions)
       }
-      else -> {  // Clear objects
-        // MERGE:
-        // Dont run this often?
-        // detectionProcessor.clearObjects()
+      else -> {
         LOG.E(TAG, "$METHOD: (ignoring objects)")
       }
     }
@@ -192,17 +187,15 @@ class CvLoggerViewModel @Inject constructor(
 
       // LEFTHERE:
       /* TODO: BATCH STORING
-      - file cache: append a line: in this method
-      - NW call: storeDetectionsAndUpdateUI
-        - or w/ an upload button
+      - TODO 1: file cache: append to file
+
+      - TODO 2: upload button:
+       - show ONLY:
+         + if initially there is the file
+         + if we are calling this method...
        */
 
-      // 0. make NW call (DONE)
-      // 1. read from DB and to oid from DB query DONE
-      // 2. keep recording elements
-      // 3. store then in a file, line by line:
-      // // 3.a it will be 2 places: file line by line
-      // // 3.b and the CVMap json
+
       // CHECK:PM
       // Can we upload at the end the local radiomap?
       // UI TODO
@@ -210,12 +203,13 @@ class CvLoggerViewModel @Inject constructor(
 
       LOG.E(TAG, "uploadUniqueDetections: SKIPPING NW call here")
       LOG.E(TAG, "TODO: [STORE THEM IN FILE CODE LOCATION]")
+
+      cache.storeFingerprints(userCoords, detectionsReq, model)
       // nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
-      // TODO test from different model too..
     }
   }
 
-  fun prefWindowLoggingMillis(): Int { return prefsCvLog.windowLoggingSeconds.toInt()*1000 }
+  fun prefWindowLoggingMillis(): Int { return prefsCvLog.windowLoggingSec.toInt()*1000 }
 
   /** Toggle [logging] between stopped (or notStarted), and started.
    *  There will be no effect when in stoppedMustStore mode.
@@ -290,25 +284,25 @@ class CvLoggerViewModel @Inject constructor(
    * Finally the merged [CvMap] is written to cache (overriding previous one),
    * and stored in [CvViewModelBase].
    */
-  fun storeDetectionsLOCAL(FH: FloorWrapper?) {
-    LOG.E(TAG, "storeDetectionsLOCAL: updating heatmaps etc?")
-    if (FH == null) {
-      LOG.E(TAG, "$METHOD: floorHelper is null.")
-      return
-    }
-
-    // MERGE:PM:TODO
-    // TODO: UPDATE radiomap (this was a trial todo?)
-    val curMap = CvMapHelper.generate(app, model, FH, objOnMAP)
-    val curMapH = CvMapHelper(curMap, detector.labels, FH)
-    LOG.D(TAG, "$METHOD: has cache: ${curMapH.hasCache()}") // CLR:PM
-    val merged = curMapH.readLocalAndMerge()
-    val mergedH = CvMapHelper(merged, detector.labels, FH)
-    mergedH.storeToCache()
-
-    LOG.D(TAG, "$METHOD: has cache: ${cvMapH?.hasCache()}") // CLR:PM
-    mergedH.generateCvMapFast()
-    cvMapH = mergedH
-    objOnMAP.clear()
-  }
+  // fun storeDetectionsLOCAL(FH: FloorWrapper?) {
+  //   LOG.E(TAG, "storeDetectionsLOCAL: updating heatmaps etc?")
+  //   if (FH == null) {
+  //     LOG.E(TAG, "$METHOD: floorHelper is null.")
+  //     return
+  //   }
+  //
+  //   // MERGE:PM:TODO
+  //   // TODO: UPDATE radiomap (this was a trial todo?)
+  //   val curMap = CvMapHelper.generate(app, model, FH, objOnMAP)
+  //   val curMapH = CvMapHelper(curMap, detector.labels, FH)
+  //   LOG.D(TAG, "$METHOD: has cache: ${curMapH.hasCache()}") // CLR:PM
+  //   val merged = curMapH.readLocalAndMerge()
+  //   val mergedH = CvMapHelper(merged, detector.labels, FH)
+  //   mergedH.storeToCache()
+  //
+  //   LOG.D(TAG, "$METHOD: has cache: ${cvMapH?.hasCache()}") // CLR:PM
+  //   mergedH.generateCvMapFast()
+  //   cvMapH = mergedH
+  //   objOnMAP.clear()
+  // }
 }

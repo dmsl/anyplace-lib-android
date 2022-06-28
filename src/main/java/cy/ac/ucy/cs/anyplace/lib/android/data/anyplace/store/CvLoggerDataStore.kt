@@ -95,7 +95,7 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        C.PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSeconds
+        C.PREF_CVLOG_WINDOW_LOGGING_SECONDS-> prefs.windowLoggingSec
         // C.PREF_CV_WINDOW_LOCALIZATION_MS-> prefs.windowLocalizationMs
         else -> null
       }
@@ -123,7 +123,7 @@ class CvLoggerDataStore @Inject constructor(@ApplicationContext private val ctx:
 }
 
 data class CvLoggerPrefs(
-        val windowLoggingSeconds: String,
+        val windowLoggingSec: String,
         /** We keep a duplicate option here (as well in [CvNavigationPrefs])
          * because the XML [SettingsCvLoggerActivity] has to be bound to this DS
          *

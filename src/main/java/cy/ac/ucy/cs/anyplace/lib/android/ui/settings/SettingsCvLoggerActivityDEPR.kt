@@ -86,7 +86,7 @@ class SettingsCvLoggerActivityDEPR: AnyplaceSettingsActivity() {
       lifecycleScope.launch {
         dsCvLog.read.first { prefsCv ->
           setNumericInput(R.string.pref_cvlog_window_logging_seconds,
-                  R.string.summary_logging_window, prefsCv.windowLoggingSeconds)
+                  R.string.summary_logging_window, prefsCv.windowLoggingSec)
 
           // DEPRECATED. dont use
           // setNumericInput(R.string.pref_cv_localization_ms,

@@ -111,12 +111,10 @@ class MainSmasSettingsDialog(
     when (parentActivity) {
       is CvLoggerActivity -> {
         binding.tvTitleAppName.text = "Anyplace Logger"
-        // binding.tvTitleAppName.setTextColor(StatusUpdater.ColorYellowDark(parentActivity))
         binding.ivLogoApp.setImageResource(R.drawable.ic_anyplace)
       }
       is SmasMainActivity -> {
         binding.tvTitleAppName.text = "Smart Alert System"
-        // binding.tvTitleAppName.setTextColor(StatusUpdater.ColorBlueDark(parentActivity))
         binding.ivLogoApp.setImageResource(R.drawable.ic_lashfire_logo)
       }
     }

@@ -105,8 +105,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // and init it on creation.
   // and remove all code from [uiLog]
   private fun setupLoggerBottomSheet() {
-    uiLog.setupTimerButtonClick()
-    uiLog.setupClickClearObjectsPopup()
+    uiLog.bottom.timer.setup()
     uiLog.setupButtonSettings()
   }
 

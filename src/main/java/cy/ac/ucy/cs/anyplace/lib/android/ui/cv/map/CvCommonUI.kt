@@ -48,12 +48,12 @@ open class CvCommonUI(
    */
   open fun onInferenceRan() {
     LOG.D2(TAG, "$METHOD: CvMapUi")
-    scope.launch(Dispatchers.Main) {
+    // scope.launch(Dispatchers.Main) {
       // TODO: binding bottom sheet stats..
       // bottom.tvTimeInfo.text =  "<TODO>ms" // "${detectionTime}ms" // TODO:PM timer?
       // bottom.bindCvStats()
       // bindCvStatsImgDimensions(image) // and do this once. not on each analyze
-    }
+    // }
   }
 
   fun setupOnFloorSelectionClick(){
