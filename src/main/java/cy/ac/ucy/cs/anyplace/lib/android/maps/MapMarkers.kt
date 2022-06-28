@@ -33,27 +33,19 @@ class MapMarkers(private val ctx: Context,
   var cvObjects: MutableList<Marker> = mutableListOf()
   // TODO:PM show storedMarkers with green color
   var stored: MutableList<Marker> = mutableListOf()
-  /** Marker of the last location calculated locally using CvMaps */
-  var lastLocationLOCAL: Marker? = null
   /** Marker of the last location calculated remotely using SMAS */
   var lastLocationREMOTE: Marker? = null
 
   /** Active users on the map */
   var users: MutableList<Marker> = mutableListOf()
 
-  /** Last Location marker LOCAL */
-  private fun locationMarkerLOCAL(latLng: LatLng) : MarkerOptions  {
-    return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_location_local, 255/4)
-            .title("CvMap Location")
-  }
-
   /** Last Location marker REMOTE */
   private fun locationMarkerREMOTE(coord: Coord) : MarkerOptions  {
     val latLng = utlLoc.toLatLng(coord)
     return MarkerOptions().position(latLng)
             .userIcon(ctx, R.drawable.marker_location_smas)
-            .title("Smas Location")
+            .title("User Location")
+            .snippet(coord.lat.toString() + "," + coord.lon.toString())
   }
 
   /** Computer Vision marker */
@@ -128,40 +120,10 @@ class MapMarkers(private val ctx: Context,
   }
 
   /**
-   * Updates the user's location to position [latLng]
-   */
-  fun setLocationMarkerLOCAL(latLng: LatLng) {
-    LOG.D2()
-    if (lastLocationLOCAL == null) {
-      LOG.D3(TAG, "$METHOD: initial marker")
-
-      scope.launch(Dispatchers.Main) {
-        lastLocationLOCAL = map.addMarker(locationMarkerLOCAL(latLng))
-      }
-    } else {
-      LOG.D3(TAG, "$METHOD: updated marker")
-      scope.launch(Dispatchers.Main) {
-        lastLocationLOCAL?.position = latLng
-      }
-      // CLR:PM
-      // lastLocationMarker?.remove()
-      // lastLocationMarker = map.addMarker(locationMarker(latLng))
-      // lastLocationMarker = map.addMarker(locationMarker(latLng))
-      // MarkerAnimation.animateMarkerToICS(ourGlobalMarker, newLatLng, new LatLngInterpolator.Spherical());
-      // https://gist.github.com/broady/6314689
-      //https://www.youtube.com/watch?v=WKfZsCKSXVQ
-    }
-    // animateToMarker(latLng)
-  }
-
-  /**
    * If the location marker is on a different floor it will become transparent,
    * and show relevant info in the snippet
    */
   fun updateLocationMarkerBasedOnFloor(floorNum: Int) {
-    // LOG.D(TAG, "$METHOD: update marker: $floorNum")
-    // LOG.D(TAG, "$METHOD: lastLocationREMOTE is null? ${lastLocationREMOTE==null}")
-    // LOG.D(TAG, "$METHOD: lastCoord is null? ${lastCoord==null}")
     if (lastLocationREMOTE == null || lastCoord == null) return
 
     LOG.D(TAG, "$METHOD: floor: $floorNum. last one: ${lastCoord!!.level}")

@@ -77,9 +77,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     // MERGE this was setupComputerVision()
     // uiLog.uiBottom.setup() // TODO why special method?
     // uiLog.setupBottomSheet() // TODO special method?
-
-    // update both local and remotely fetched locations
-    // collectLocationLOCAL()
   }
 
   private fun setupUiReactions() {
@@ -128,38 +125,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
       uiLog.refresh(status)
     }
   }
-
-  // private fun collectLocationLOCAL() {
-  //   lifecycleScope.launch{
-  //     VM.locationLOCAL.collect { result ->
-  //       when (result) {
-  //         is LocalizationResult.Unset -> { }
-  //         is LocalizationResult.Error -> {
-  //           var msg = result.message.toString()
-  //           val details = result.details
-  //           if (details != null) {
-  //             msg+=": $details"
-  //           }
-  //           LOG.E(TAG, "${CvLocalizeNW.TAG_TASK}: LOCAL: collect:  $msg")
-  //           //   uiLog.uiStatusUpdater.showErrorAutohide(msg, details, 4000L)
-  //           // } else {
-  //           //   uiLog.uiStatusUpdater.showErrorAutohide(msg, 4000L)
-  //           // }
-  //         }
-  //         is LocalizationResult.Success -> {
-  //           result.coord?.let { ui.map.setUserLocationLOCAL(it) }
-  //
-  //           val cvLoc = result.coord!!
-  //
-  //           val msg = "${CvLocalizeNW.TAG_TASK}: LOCAL: coords: ${cvLoc.lat} ${cvLoc.lon}, lvl: ${cvLoc.level}"
-  //           LOG.E(TAG, "$msg")
-  //
-  //           // uiLog.uiStatusUpdater.showInfoAutohide("Loc","XY: ${result.details}.", 3000L)
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 
 
   /**

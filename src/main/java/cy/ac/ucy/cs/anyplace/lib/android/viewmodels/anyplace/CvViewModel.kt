@@ -92,10 +92,7 @@ open class CvViewModel @Inject constructor(
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
 
-  /** Last locallly calculated location (CvMap) */
-  // TODO:PM: CLR
-  // val locationLOCAL: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
-  /** Last locallly calculated location (SMAS) */
+  /** Last remotely calculated location (SMAS) */
   val locationREMOTE: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
 
   /** Selected [Space] (model)*/
@@ -196,7 +193,6 @@ open class CvViewModel @Inject constructor(
     when {
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
         statusLocalization.tryEmit(LocalizationStatus.stopped)
-        // locationLOCAL.value = LocalizationResult.Unset()
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
           // VERIFY: DEDUPLICATE DETECTIONS (this should be ok)
@@ -206,13 +202,11 @@ open class CvViewModel @Inject constructor(
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
-          // localizeCvMapLOCAL(detectionsNAV.value)
-          localizeCvMapREMOTE(detectionsLOC.value) // TODO:PMX
+          localizeCvMapREMOTE(detectionsLOC.value)
 
           detectionsLOC.value = emptyList()
         } else {
           LOG.W(TAG_METHOD, "stopped. no detections..")
-          // locationLOCAL.value = LocalizationResult.Error("Location not found.", "no objects detected")
         }
       } else -> {  // Within a window
       detectionsLOC.value = appendedDetections as MutableList<Classifier.Recognition>
@@ -236,18 +230,6 @@ open class CvViewModel @Inject constructor(
       }
     }
   }
-
-  /**
-   * Perform a local localization, using whatever [CvMap] files exist on device
-   */
-  // fun localizeCvMapLOCAL(detections: List<Classifier.Recognition>) {
-  //   locationLOCAL.value = LocalizationResult.Unset()
-  //   if (cvMapH == null) {
-  //     locationLOCAL.value = LocalizationResult.Error("No CvMap on device", "create one with object logging")
-  //   } else {  // estimate and publish position
-  //     locationLOCAL.value = cvMapH!!.cvMapFast.estimatePositionNEW(app.cvUtils, model, detections)
-  //   }
-  // }
 
   /** TODO in new class
    * Selects the first available floor, or the last floor that was picked

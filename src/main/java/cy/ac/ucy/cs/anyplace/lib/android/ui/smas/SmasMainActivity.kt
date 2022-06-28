@@ -152,11 +152,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     // VM.nwUpdateLocationsLOOP(true, "main")
     updateLocationsLOOP()
 
-    // TODO:PM: bring localization to SMAS also..
-    // collectOwnLocationLOCAL()
     VM.collectLocations(VMchat, ui.map)
 
-    // setupFakeUserLocation(ui.map)
     // collect alert TODO:PMX
   }
 
@@ -381,41 +378,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
               MainSmasSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
     }
   }
-
-  /**
-   * Collect own user's Anyplace location
-   * (calculated via CV-based localization)
-   */
-  // private fun collectOwnLocationLOCAL() {
-  //   LOG.E()
-  //   lifecycleScope.launch {
-  //     VM.locationLOCAL.collect { result ->
-  //       when (result) {
-  //         is LocalizationResult.Unset -> {
-  //         }
-  //         is LocalizationResult.Error -> {
-  //           // TODO HANDLE
-  //         }
-  //         is LocalizationResult.Success -> {
-  //           result.coord?.let { wMap.setUserLocationLOCAL(it) }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // CLR
-  // private suspend fun setupFakeLocation() {
-  //   LOG.E(TAG_METHOD)
-  //   delay(2000)
-  //   LOG.E(TAG_METHOD, " Continuing..")
-  //   val coord = Coord(57.69531517496923, 11.913105745699344)
-  //   VM.location.value = LocalizationResult.Unset()
-  //   VM.location.value = LocalizationResult.Success(coord)
-  //
-  //   delay(5000)
-  //   VM.location.value = LocalizationResult.Unset()
-  // }
 
   private fun setupButtonFlir() {
     btnFlir = findViewById(R.id.button_flir)

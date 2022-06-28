@@ -217,14 +217,6 @@ class GmapWrapper(private val ctx: Context,
   /**
    * Sets a new marker location on the map.
    */
-  fun setUserLocationLOCAL(coord: Coord) {
-    LOG.D(TAG, "$METHOD")
-    markers.setLocationMarkerLOCAL(utlLoc.toLatLng(coord))
-  }
-
-  /**
-   * Sets a new marker location on the map.
-   */
   fun setUserLocationREMOTE(coord: Coord) {
     LOG.D(TAG, "$METHOD")
     markers.setLocationMarkerREMOTE(coord)
