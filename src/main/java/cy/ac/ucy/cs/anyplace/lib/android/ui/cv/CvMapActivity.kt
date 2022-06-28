@@ -143,9 +143,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       app.dsCvNav.read.collect {
         LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
         lazyInitBottomSheet()
-        // MERGE:PM: this must change
-        LOG.E(TAG, "MERGE:PM: BottomSheet setup skipped")
-        uiBottom.setup()
+        uiBottom.setup()  // CHECK: this may have to change
       }
     }
 
@@ -162,6 +160,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   private fun setupUiFloorSelector() {
     floorSelector = FloorSelector(applicationContext,
+            lifecycleScope,
             findViewById(R.id.group_floorSelector),
             findViewById(R.id.textView_titleFloor),
             findViewById(R.id.button_selectedFloor),

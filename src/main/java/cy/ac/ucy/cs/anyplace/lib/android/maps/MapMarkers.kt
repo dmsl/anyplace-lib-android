@@ -8,7 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
@@ -39,25 +39,36 @@ class MapMarkers(private val ctx: Context,
   /** Active users on the map */
   var users: MutableList<Marker> = mutableListOf()
 
+  private fun toString(ll: LatLng) : String {
+    return ll.latitude.toString() + ",\n" + ll.longitude.toString()
+  }
+
+  private fun toString(coord: Coord) : String {
+    return toString(toLatLng(coord))
+  }
+
   /** Last Location marker REMOTE */
   private fun locationMarkerREMOTE(coord: Coord) : MarkerOptions  {
-    val latLng = utlLoc.toLatLng(coord)
+    val latLng = toLatLng(coord)
     return MarkerOptions().position(latLng)
             .userIcon(ctx, R.drawable.marker_location_smas)
-            .title("User Location")
-            .snippet(coord.lat.toString() + "," + coord.lon.toString())
+            .title("Own location:")
+            .snippet(getSnippetOwnLocation(coord))
   }
 
   /** Computer Vision marker */
   private fun cvMarker(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
         .userIcon(ctx, R.drawable.marker_objects)
+            .snippet("CV-Fingerprint at:\n" + toString(latLng))
   }
 
   /** Computer Vision stored marker */
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
-        .userIcon(ctx, R.drawable.marker_objects)
+        .userIcon(ctx, R.drawable.marker_objects_stored)
+            .snippet("CV-Fingerprint at:\n" + toString(latLng)+
+            "\n\n[stored]")
   }
 
   fun addCvMarker(latLng: LatLng, msg: String) {
@@ -69,9 +80,11 @@ class MapMarkers(private val ctx: Context,
   }
 
   /** User marker */
-  private fun userMarker(latLng: LatLng, msg: String) : MarkerOptions {
-    return MarkerOptions().position(latLng).title(msg)
+  private fun userMarker(latLng: LatLng, title: String) : MarkerOptions {
+    val details = "Last Active: <>\n\n" + toString(latLng)
+    return MarkerOptions().position(latLng).title(title)
             .userIcon(ctx, R.drawable.marker_user)
+            .snippet(details)
   }
 
   /** User marker in alert mode */
@@ -100,9 +113,11 @@ class MapMarkers(private val ctx: Context,
       // add a marker and then store it
       val marker2 = userMarker(latLng, detailedMsg)
       scope.launch(Dispatchers.Main) {
-        map.addMarker(marker2)?.let { users.add(it) }
+        map.addMarker(marker2)?.let {
+          users.add(it)
+          it.tag = UserInfoMetadata(UserInfoType.OtherUser)
+        }
       }
-
     }
   }
 
@@ -119,6 +134,8 @@ class MapMarkers(private val ctx: Context,
     }
   }
 
+  private fun getSnippetOwnLocation(coord: Coord)=toString(coord)
+
   /**
    * If the location marker is on a different floor it will become transparent,
    * and show relevant info in the snippet
@@ -130,10 +147,12 @@ class MapMarkers(private val ctx: Context,
 
     var alpha = 1f
     var snippet = ""
+    if (lastCoord!= null) snippet = getSnippetOwnLocation(lastCoord!!)
     if (floorNum != lastCoord!!.level)  {  // on a different floor
       alpha=0.5f
-      snippet = "last ${VM.wFloor?.prettyFloor}: ${lastCoord?.level}"
-      // snippet = "last ${VM.spaceH.prettyFloor}: ${lastCoord?.level}"
+      snippet += "\n\nlast ${VM.wFloor?.prettyFloor}: ${lastCoord?.level}"
+    } else {
+      if (lastCoord!= null) snippet = getSnippetOwnLocation(lastCoord!!)
     }
 
     scope.launch(Dispatchers.Main) {
@@ -148,7 +167,7 @@ class MapMarkers(private val ctx: Context,
 
   var lastCoord : Coord?=null
   fun setLocationMarkerREMOTE(coord: Coord) {
-    val latLng = utlLoc.toLatLng(coord)
+    val latLng = toLatLng(coord)
     LOG.D2()
 
     lastCoord=coord
@@ -157,6 +176,7 @@ class MapMarkers(private val ctx: Context,
       LOG.D2(TAG, "$METHOD: initial marker")
       scope.launch(Dispatchers.Main) {
         lastLocationREMOTE = map.addMarker(locationMarkerREMOTE(coord))
+        lastLocationREMOTE!!.tag = UserInfoMetadata(UserInfoType.OwnUser)
       }
     } else {
       LOG.D2(TAG, "$METHOD: updated marker")
@@ -164,6 +184,7 @@ class MapMarkers(private val ctx: Context,
         lastLocationREMOTE?.position = latLng
       }
     }
+
     updateLocationMarkerBasedOnFloor(coord.level)
     animateToMarker(latLng)
   }

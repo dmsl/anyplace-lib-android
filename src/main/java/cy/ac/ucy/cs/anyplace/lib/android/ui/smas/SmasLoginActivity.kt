@@ -22,11 +22,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton.changeBackgroundButtonCompat
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +47,7 @@ class SmasLoginActivity : BaseActivity() {
   private var _binding: ActivitySmasLoginBinding?= null
   private val binding get() = _binding!!
 
+  private val utlButton by lazy { UtilButton(applicationContext, lifecycleScope) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -141,13 +142,13 @@ class SmasLoginActivity : BaseActivity() {
   private fun setLoginButtonLoading() {
     val btn = binding.btnLogin
     btn.isEnabled = false
-    changeBackgroundButtonCompat(btn, applicationContext, R.color.darkGray)
+    utlButton.changeBackgroundButtonCompat(btn, R.color.darkGray)
   }
 
   private fun unsetLoginButtonLoading() {
     val btn = binding.btnLogin
     btn.isEnabled = true
-    changeBackgroundButtonCompat(btn, applicationContext, R.color.colorPrimary)
+    utlButton.changeBackgroundButtonCompat(btn, R.color.colorPrimary)
   }
 
   /**

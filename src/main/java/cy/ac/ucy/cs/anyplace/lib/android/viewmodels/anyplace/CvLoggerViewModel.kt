@@ -107,6 +107,9 @@ class CvLoggerViewModel @Inject constructor(
 
     when (logging.value) {
       Logging.running -> {
+        updateLoggingRecognitions(recognitions)
+
+        // CLR:
         // val detectionTime: Long = detectionProcessor.processImage(bitmap)
         // val processingTime = conversionTime + detectionTime
         // val detections = detectionProcessor.frameDetections
@@ -116,12 +119,10 @@ class CvLoggerViewModel @Inject constructor(
         // LOG.V3(TAG, "Detected: ${detections.size}")
         // updateDetectionsLogging(detection)
         // return detectionTime
-
-        updateLoggingRecognitions(recognitions)
       }
       else -> {  // Clear objects
-        // MERGE:PM:
-        // TODO:PM DONT RUN THIS OFTEN!!!
+        // MERGE:
+        // Dont run this often?
         LOG.D2(TAG, "$METHOD: neither logging or localizing (ignoring objects)")
         // detectionProcessor.clearObjects()
       }

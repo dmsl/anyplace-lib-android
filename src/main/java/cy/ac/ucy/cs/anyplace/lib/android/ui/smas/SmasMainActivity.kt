@@ -21,19 +21,18 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilNotify
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -41,39 +40,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 
-/*
-  CONST: from string/xml
-  - prefs:
-    - xml
-    - ChatDataStore
-    - SettingsActivity (uses CDS)
-
-  - RetrofitSetup: (with all the above)
-    - RetrofitHolder: VERIFY dynamically adapt to domain change
-
-    - API Setup:
-      - remoteDataSources (talks with API interface)
-      - connection verification with server (due to some issues)1
-    - ENDPOINTS:
-      - version: check I can talk
-      - login: working on it (below)
-    - models
-
-    - loginProgrammatically
-      - TODO build UI for this
-      - TODO persist in a ChatUser DataStore
-
-  - ViewModelChat: this will be used by Athina
-
-  - working on:
-    - ChatUserDataSource: to preserve the logged in user
-
-    - TODO: persist user login: store ChatUser DS
-
-    TODO:
-    - async get version of the SMAS backend (in start activity maybe..)
-
-   */
+/**
+ * TODO:
+ */
 @AndroidEntryPoint
 class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
@@ -101,6 +70,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private lateinit var btnAlert: Button
 
   private val utlNotify by lazy { UtilNotify(applicationContext) }
+  private val utlButton by lazy { UtilButton(applicationContext, lifecycleScope) }
 
   /** whether this activity is active or not */
   private var isActive = false
@@ -153,7 +123,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     updateLocationsLOOP()
 
     VM.collectLocations(VMchat, ui.map)
-
     // collect alert TODO:PMX
   }
 
@@ -162,7 +131,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override fun onFloorLoaded() {
     super.onFloorLoaded()
   }
-
 
   /**
    * In a loop:
@@ -244,33 +212,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   }
 
 
-  // CLR:PM: this was moved to [CvMapActivity]
-  // /**
-  //  * Observes when the initial floor will be loaded, and runs a method
-  //  */
-  // var firstFloorLoaded = false
-  // private fun collectLoadedFloors() {
-  //   super.collectLoadedFloors()
-  //
-  //   lifecycleScope.launch {
-  //     VM.floor.collect { floor ->
-  //       if (floor == null) return@collect
-  //
-  //       LOG.D4(TAG, "collectLoadedFloors: is spaceH filled? ${VM.spaceH.obj.name}")
-  //       // Update FH
-  //       VM.floorH = FloorHelper(floor, VM.spaceH)
-  //
-  //       if (firstFloorLoaded) {
-  //         cancel()
-  //       } else {
-  //         onFloorLoaded()
-  //         firstFloorLoaded = true
-  //       }
-  //     }
-  //   }
-  // }
-
-
   /**
    * Update the UI button when new msgs come in
    */
@@ -282,12 +223,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       LOG.E(TAG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
-          utlButton.changeBackgroundButtonDONT_USE(btn, ctx, R.color.redDark)
-          utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_chat_unread)
+          utlButton.changeBackgroundButtonDONT_USE(btn, R.color.redDark)
+          utlButton.changeMaterialButtonIcon(btn, R.drawable.ic_chat_unread)
           utlNotify.msgReceived()
         } else {
-          utlButton.changeBackgroundButtonDONT_USE(btn, ctx, R.color.colorPrimaryDark)
-          utlButton.changeMaterialButtonIcon(btn, ctx, R.drawable.ic_chat)
+          utlButton.changeBackgroundButtonDONT_USE(btn, R.color.colorPrimaryDark)
+          utlButton.changeMaterialButtonIcon(btn, R.drawable.ic_chat)
         }
       }
     }
@@ -355,14 +296,14 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         LocationSendNW.Mode.alert -> {
           btnAlert.flashingLoop()
           btnAlert.text = "ALERTING"
-          utlButton.changeBackgroundButtonCompat(btnAlert, this, R.color.redDark)
+          utlButton.changeBackgroundButtonCompat(btnAlert, R.color.redDark)
           btnAlert.setTextColor(Color.WHITE)
         }
         LocationSendNW.Mode.normal -> {
           btnAlert.clearAnimation()
           btnAlert.text = "SEND ALERT"
           btnAlert.setTextColor(Color.BLACK)
-          utlButton.changeBackgroundButtonCompat(btnAlert, this, R.color.yellowDark)
+          utlButton.changeBackgroundButtonCompat(btnAlert, R.color.yellowDark)
         }
       }
       true
@@ -373,7 +314,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     btnSettings = findViewById(R.id.button_settings)
     btnSettings.setOnClickListener {
 
-      val versionStr = BuildConfig.LIB_VERSION
+      val versionStr = BuildConfig.VERSION_CODE
       MainSmasSettingsDialog.SHOW(supportFragmentManager,
               MainSmasSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
     }

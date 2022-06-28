@@ -23,12 +23,11 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
   val ivArrowImg: ImageView by lazy {act.findViewById(R.id.bottom_sheet_arrow) }
 
   fun setup() {
-    LOG.E(TAG, " BSheet. CV: setup")
+    LOG.W(TAG, " BSheet CV setup")
     if (!visible) hideBottomSheet()
 
     // CLR if ok
     // defaultSetup()
-
     // setupStatechanges(ivArrowImg, R.drawable.ic_icon_down, R.drawable.ic_icon_up)
 
     act.sheetBehavior = BottomSheetBehavior.from(act.bottomSheetLayout)
@@ -44,6 +43,12 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
     // Setup peak height
     val vto = act.gestureLayout.viewTreeObserver
 
+    if(!act.gestureLayout.viewTreeObserver.isAlive) {
+      // CHECK: BUG?
+      LOG.E(TAG, "FAILED TO SETUP BOTTOM SHEET: was not alive")
+      return
+    }
+    // getViewTreeObserver
     vto.addOnGlobalLayoutListener(
             object : ViewTreeObserver.OnGlobalLayoutListener {
               override fun onGlobalLayout() {
@@ -65,13 +70,6 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
   // open fun setupSpecific() {
   //   // defaultSetup()
   //   // act.sheetBehavior.isHideable = false
-  // }
-
-  // /**
-  //  * This is the default setup of the BottomSheet.
-  //  * It is different than
-  //  */
-  // private fun defaultSetup() {
   // }
 
   // CLR:PM if ok

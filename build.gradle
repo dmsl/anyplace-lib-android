@@ -19,6 +19,7 @@ android {
   namespace 'cy.ac.ucy.cs.anyplace.lib'
 
   defaultConfig {
+
     minSdkVersion 28
     //noinspection OldTargetApi,ExpiredTargetSdkVersion
     targetSdkVersion 30
@@ -26,7 +27,7 @@ android {
     // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
 
-    versionName "1.3.2-lib"
+    versionName "${VERSION_CODE}-lib"
 
     // CLR
 //    // TODO use secrets-gradle-plugin (like w/ gmaps api)
@@ -237,7 +238,6 @@ dependencies {
 // publications must use the afterEvaluate() lifecycle method.
 def GROUP = 'com.github.dmsl'
 def ARTIFACT_ID="anyplace-lib-android"
-def VERSION_NAME="4.1.0"
 
 afterEvaluate {
   publishing {
@@ -246,13 +246,13 @@ afterEvaluate {
         from components.release   // Applies the component for the release build variant.
         groupId = GROUP
         artifactId = ARTIFACT_ID
-        version = VERSION_NAME
+        version = VERSION_CODE
       }
       debug(MavenPublication) {  // Creates a Maven publication called “debug”.
         from components.debug    // Applies the component for the debug build variant.
         groupId = GROUP
         artifactId = ARTIFACT_ID
-        version = VERSION_NAME
+        version = VERSION_CODE
       }
     }
   }

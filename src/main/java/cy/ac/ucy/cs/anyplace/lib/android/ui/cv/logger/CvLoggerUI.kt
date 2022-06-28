@@ -14,12 +14,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiStatusUpdater
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.Logging
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,6 +38,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     const val OPACITY_MAP_LOGGING = 0f
     const val ANIMATION_DELAY : Long = 100
   }
+
+  private val utlButton by lazy { UtilButton(act, scope) }
+
 
   /** BottomSheet for the CvLogger */
   lateinit var bottom: BottomSheetCvLoggerUI
@@ -90,7 +93,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       bottom.progressBarTimer.progress = 100
 
       if (!VM.objWindowLOG.value.isNullOrEmpty()) {
-        utlButton.changeMaterialButtonIcon(bottom.btnTimer, ctx, R.drawable.ic_objects)
+        utlButton.changeMaterialButtonIcon(bottom.btnTimer, R.drawable.ic_objects)
       } else {   // no results, hide the timer
         utlButton.removeMaterialButtonIcon(bottom.btnTimer)
         bottom.btnTimer.fadeOut()
@@ -207,8 +210,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         VM.circleTimerAnimation = TimerAnimation.running
         bottom.btnLogging.text = "pause"
         utlButton.removeMaterialButtonIcon(bottom.btnTimer)
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.darkGray)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.redDark)
+        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.darkGray)
+        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.redDark)
         bottom.btnTimer.fadeIn()
         ui.map.mapView.animateAlpha(OPACITY_MAP_LOGGING, ANIMATION_DELAY)
       }
@@ -225,9 +228,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
           bottom.btnLogging.text = "scan"
           bottom.groupTutorial.visibility = View.VISIBLE
         }
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.colorPrimary)
+        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.colorPrimary)
         ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.darkGray)
+        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.darkGray)
       }
       Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
         ui.localization.visibilityGone()   // TODO:PMX FR1
@@ -246,7 +249,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         LOG.D(TAG_METHOD, "stopped must store: visible")
 
         ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
-        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, ctx, R.color.yellowDark)
+        utlButton.changeBackgroundButtonDONT_USE(bottom.btnTimer, R.color.yellowDark)
 
         val storedDetections = VM.objOnMAP.size
         val noDetections = storedDetections == 0
@@ -258,7 +261,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         bottom.btnLogging.text = "END"
         // val loggingBtnColor = if (noDetections) R.color.darkGray else R.color.yellowDark
         // changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
-        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.darkGray)
+        utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.darkGray)
       }
     }
   }
@@ -287,8 +290,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     uiStatusUpdater.hideStatus()
     utlButton.removeMaterialButtonIcon(bottom.btnTimer)
     // CHECK:PM: replaced changeBackgroundButtonDONT_USE
-    utlButton.changeBackgroundButtonCompat(bottom.btnTimer, ctx, R.color.darkGray)
-    utlButton.changeBackgroundButtonCompat(bottom.btnLogging, ctx, R.color.colorPrimary)
+    utlButton.changeBackgroundButtonCompat(bottom.btnTimer, R.color.darkGray)
+    utlButton.changeBackgroundButtonCompat(bottom.btnLogging, R.color.colorPrimary)
     ui.map.mapView.animateAlpha(1f, ANIMATION_DELAY)
     VM.startNewWindow()
   }
@@ -349,12 +352,12 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     LOG.D2()
 
     btnSettings.setOnClickListener {
-      val versionStr = BuildConfig.LIB_VERSION
+      val versionStr = BuildConfig.VERSION_CODE
       MainSmasSettingsDialog.SHOW(act.supportFragmentManager,
               MainSmasSettingsDialog.FROM_MAIN, act, versionStr)
     }
 
-    utlButton.changeBackgroundButtonCompat(btnSettings, act, R.color.yellowDark)
+    utlButton.changeBackgroundButtonCompat(btnSettings, R.color.yellowDark)
     // CLR:PM
     // btnSettings.setOnLongClickListener {
     //   scope.launch {
@@ -364,27 +367,6 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     // }
   }
 
-  /**
-   *  THIS WAS CODE FOR STANDALONE LOGGER (in the lib-android).
-   *
-   *  Now in the SmasApp it is merged.. Might have to be re-worked.
-   */
-  // fun setupClickSettingsMenuButtonPURE_LOGGER() {
-  //   // Setups a regular button to act as a menu button
-  //   btnSettings.setOnClickListener { // TODO:PM
-  //     val intent = Intent(act, SettingsCvLoggerActivity::class.java)
-  //     intent.putExtra(SettingsCvLoggerActivity.ARG_SPACE, VM.spaceH.toString())
-  //     intent.putExtra(SettingsCvLoggerActivity.ARG_FLOORS, VM.floorsH.toString())
-  //     intent.putExtra(SettingsCvLoggerActivity.ARG_FLOOR, VM.floorH.toString())
-  //     act.startActivity(intent)
-  //   }
-  //
-  //   // // TODO:PM Settings
-  //   // // Setups a regular button to act as a menu button
-  //   //   binding.buttonSettings.setOnClickListener {
-  //   //     SettingsDialog.SHOW(supportFragmentManager, SettingsDialog.FROM_CVLOGGER)
-  //   //   }
-  // }
 
   /**
    * When logging button is clicked and we must store, else: toggle logging

@@ -8,6 +8,7 @@ import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashOut
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.flashView
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,29 +48,16 @@ class UiStatusUpdater(
     Error
   }
 
-  init {
-    setHideOnClick()
-  }
+  init { setHideOnClick() }
 
-  companion object { // TODO: in utlColor object
-    fun ColorWhiteB0(ctx: Context) = ContextCompat.getColor(ctx, R.color.white_B0)
-    fun ColorWhite(ctx: Context) = ContextCompat.getColor(ctx, R.color.white)
-    fun ColorWarning(ctx: Context) =ContextCompat.getColor(ctx, R.color.yellowDark)
-    fun ColorInfo(ctx: Context) =ContextCompat.getColor(ctx, R.color.holo_light_blue)
-    fun ColorNormal(ctx: Context) =ContextCompat.getColor(ctx, R.color.black)
-    fun ColorPrimaryDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.colorPrimaryDark)
-    fun ColorPrimary(ctx: Context) =ContextCompat.getColor(ctx, R.color.colorPrimary)
-    fun ColorError(ctx: Context) =ContextCompat.getColor(ctx, R.color.redDark)
-    fun ColorYellowDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.yellowDark)
-    fun ColorBlueDark(ctx: Context) =ContextCompat.getColor(ctx, R.color.lash_blue_dark)
+  private val utlColor by lazy { UtilColor(ctx)}
 
-    fun Color(level: Level, ctx: Context): Int {
-      return when(level) {
-        Level.Warning -> ColorWarning(ctx)
-        Level.Error -> ColorError(ctx)
-        Level.Info -> ColorInfo(ctx)
-        Level.Normal -> ColorNormal(ctx)
-      }
+  fun Color(level: Level): Int {
+    return when(level) {
+      Level.Warning -> utlColor.ColorWarning()
+      Level.Error -> utlColor.ColorError()
+      Level.Info -> utlColor.ColorInfo()
+      Level.Normal -> utlColor.ColorNormal()
     }
   }
 
@@ -90,7 +78,7 @@ class UiStatusUpdater(
     tvStatus.text = text
     tvStatus.visibility = View.VISIBLE
 
-    val color= Color(Level.Info, ctx)
+    val color= Color(Level.Info)
     overlay.setBackgroundColor(color)
     overlay.flashView(1000)
   }
@@ -135,7 +123,7 @@ class UiStatusUpdater(
   private fun showMsgAutohide(level: Level, title: String, delay: Long) {
     scope.launch {
       clearMessages()
-      tvBg.setBackgroundColor(ColorWhite(ctx))
+      tvBg.setBackgroundColor(utlColor.ColorWhite())
       setMessageTitle(level, title)
       overlay.flashView(delay)
       delay(delay)
@@ -147,7 +135,7 @@ class UiStatusUpdater(
     // TODO: make only the updates on the Main thread?
     scope.launch {
       clearMessages()
-      tvBg.setBackgroundColor(ColorWhite(ctx))
+      tvBg.setBackgroundColor(utlColor.ColorWhite())
       setMessageTitle(level, title, subtitle)
       overlay.flashView(delay)
       delay(delay)
@@ -161,7 +149,7 @@ class UiStatusUpdater(
   }
 
   private fun setMessageSubtitle(level: Level, subtitle: String) {
-    val color= Color(level, ctx)
+    val color= Color(level)
     tvMsgSubtitle.setTextColor(color)
     tvMsgSubtitle.text = subtitle
     tvMsgSubtitle.alpha=1f
@@ -169,7 +157,7 @@ class UiStatusUpdater(
   }
 
   private fun setMessageTitle(level: Level, title: String) {
-    val color= Color(level, ctx)
+    val color= Color(level)
     overlay.setBackgroundColor(color)
     tvMsgTitle.setTextColor(color)
 

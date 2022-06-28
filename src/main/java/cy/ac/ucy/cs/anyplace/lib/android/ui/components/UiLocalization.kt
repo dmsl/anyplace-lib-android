@@ -7,7 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilButton
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 // import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +40,9 @@ class UiLocalization(
         private val button_id: Int) {
 
   private val ctx = act.applicationContext
+
+  private val utlButton by lazy { UtilButton(act, scope) }
+
   val btn: MaterialButton by lazy { act.findViewById(button_id) }
 
   fun setupClick() {
@@ -53,13 +56,8 @@ class UiLocalization(
       VM.statusLocalization.collect { status ->
         LOG.W(TAG_METHOD, "status: $status")
         when(status) {
-          LocalizationStatus.running -> {
-            startLocalization()
-          }
-
-          LocalizationStatus.stopped -> {
-            endLocalization()
-          }
+          LocalizationStatus.running -> {  startLocalization()  }
+          LocalizationStatus.stopped -> {  endLocalization() }
           else ->  {}
         }
       }
@@ -69,7 +67,7 @@ class UiLocalization(
 
   fun endLocalization() {
     LOG.D2(TAG, "$METHOD")
-    utlButton.changeBackgroundButtonDONT_USE(btn, ctx, R.color.darkGray)
+    utlButton.changeBackgroundButtonDONT_USE(btn, R.color.darkGray)
     btn.isEnabled = true
     wMap.mapView.alpha = 1f
     VM.statusLocalization.tryEmit(LocalizationStatus.stopped)
@@ -82,7 +80,7 @@ class UiLocalization(
     VM.windowStart = VM.currentTime
     VM.statusLocalization.value = LocalizationStatus.running
     btn.visibility = View.VISIBLE
-    utlButton.changeBackgroundButtonDONT_USE(btn, ctx, R.color.colorPrimary)
+    utlButton.changeBackgroundButtonDONT_USE(btn, R.color.colorPrimary)
     val mapAlpha = VM.prefsCvNav.mapAlpha.toFloat()/100
     wMap.mapView.alpha = mapAlpha
   }

@@ -29,6 +29,7 @@
   <color name="yellow">#FFC114</color>
   <color name="yellow2">#E6BB06</color>
   <color name="yellowDark">#C4A008</color>
+  <color name="yellowDark2">#805500</color>
 
   <color name="colorPrimary">@color/blue</color>
   <color name="colorPrimaryDark">@color/darkBlue</color>

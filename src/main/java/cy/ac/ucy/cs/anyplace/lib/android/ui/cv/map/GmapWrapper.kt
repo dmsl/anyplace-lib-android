@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.MapMarkers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
+import cy.ac.ucy.cs.anyplace.lib.android.maps.UserInfoWindowAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
@@ -63,7 +64,7 @@ class GmapWrapper(private val ctx: Context,
     LOG.D()
 
     obj = googleMap
-    // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx)) // TODO:PMX ?
+    obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
     markers = MapMarkers(ctx, scope, VM, obj)
 
     // ON FLOOR LOADED....

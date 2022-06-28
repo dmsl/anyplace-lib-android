@@ -169,7 +169,7 @@ open class CvViewModel @Inject constructor(
   }
 
   open fun processDetections(recognitions: List<Classifier.Recognition>) {
-    LOG.D2(TAG, "CvViewModel: ProcessDetections: ${recognitions.size}")
+    LOG.D2(TAG, "CvViewModel: $METHOD: ProcessDetections: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)

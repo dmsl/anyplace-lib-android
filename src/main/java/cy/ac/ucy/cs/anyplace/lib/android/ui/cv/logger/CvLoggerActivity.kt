@@ -126,7 +126,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-
   /**
    * CHECK:PM
    */
@@ -139,7 +138,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     VM.nwCvFingerprintSend.collect()
     collectorsSet=true
   }
-
 
   /*
   * Reacts to updates on [ChatUser]'s login status:
