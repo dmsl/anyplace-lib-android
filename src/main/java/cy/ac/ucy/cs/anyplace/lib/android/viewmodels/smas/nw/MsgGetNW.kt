@@ -272,8 +272,8 @@ class MsgGetNW(
 
       app.msgList.add(0, obj)   // add to the beginning
       val prettyTimestamp = utlTime.getPrettyEpoch(obj.time, utlTime.TIMEZONE_CY)
-      LOG.D2(TAG, "MSG |$prettyTimestamp| ${msgH.prettyTypeCapitalize.format(6)} | $contents  || [${obj.time}][${obj.timestr}]")
-      LOG.W(TAG, "MsgList: updated size: ${app.msgList.size}")
+      LOG.V3(TAG, "MSG |$prettyTimestamp| ${msgH.prettyTypeCapitalize.format(6)} | $contents  || [${obj.time}][${obj.timestr}]")
+      LOG.V4(TAG, "MsgList: updated size: ${app.msgList.size}")
     }
 
     // clear the response

@@ -17,6 +17,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -136,7 +138,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // to validate findings according to the latest CvMap
     ui.localization.collectStatus()
 
-
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvNav.read.collect {
@@ -203,6 +204,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     ui.map.setup(googleMap)
     ui.localization.setupClick()
 
+    collectLocationREMOTE()
     onMapReadyCallback()
   }
 
@@ -249,8 +251,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   fun observeFloors() {
     if (observingFloors) return
-
     observingFloors=true
+
     val _method = METHOD
     lifecycleScope.launch(Dispatchers.IO) {
       VM.floor.collect { floor ->
@@ -269,6 +271,40 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         }
 
         onFloorLoaded()
+      }
+    }
+  }
+
+  var collectingLocationRemote = false
+  fun collectLocationREMOTE() {
+    if (collectingLocationRemote) return
+    collectingLocationRemote=true
+
+    lifecycleScope.launch (Dispatchers.IO){
+      VM.locationREMOTE.collect { result ->
+        when (result) {
+          is LocalizationResult.Unset -> { }
+          is LocalizationResult.Error -> {
+            var msg = result.message.toString()
+            val details = result.details
+            if (details != null) {
+              msg+="\n$details"
+            }
+            app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
+          }
+          is LocalizationResult.Success -> {
+            result.coord?.let { ui.map.setUserLocationREMOTE(it) }
+            val coord = result.coord!!
+            val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
+            LOG.E(TAG, msg)
+            val curFloor = VM.wFloor?.floorNumber()
+            if (coord.level != curFloor) {
+              app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
+            }
+
+            VM.wFloors.moveToFloor(VM, coord.level)
+          }
+        }
       }
     }
   }

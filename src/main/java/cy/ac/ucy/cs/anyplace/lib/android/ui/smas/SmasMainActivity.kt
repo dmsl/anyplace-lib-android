@@ -24,6 +24,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilNotify
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.utlButton
@@ -487,4 +488,15 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       }
     }
   }
+
+  // TODO:PMX FR
+  override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
+    ui.onInferenceRan()
+
+    if (detections.isNotEmpty()) {
+      LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
+    }
+    VM.processDetections(detections)
+  }
+
 }

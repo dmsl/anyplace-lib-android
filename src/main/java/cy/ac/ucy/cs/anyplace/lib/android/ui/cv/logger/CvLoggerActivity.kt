@@ -74,14 +74,12 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     LOG.D2()
     setupUiReactions()
 
-    // CLR: MERGE ..
+    // MERGE this was setupComputerVision()
     // uiLog.uiBottom.setup() // TODO why special method?
     // uiLog.setupBottomSheet() // TODO special method?
 
-    // MERGE this was setupComputerVision()
     // update both local and remotely fetched locations
     // collectLocationLOCAL()
-    collectLocationREMOTE()
   }
 
   private fun setupUiReactions() {
@@ -163,35 +161,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   //   }
   // }
 
-  private fun collectLocationREMOTE() {
-    lifecycleScope.launch (Dispatchers.IO){
-      VM.locationREMOTE.collect { result ->
-        when (result) {
-          is LocalizationResult.Unset -> { }
-          is LocalizationResult.Error -> {
-            var msg = result.message.toString()
-            val details = result.details
-            if (details != null) {
-              msg+="\n$details"
-            }
-            app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
-          }
-          is LocalizationResult.Success -> {
-            result.coord?.let { ui.map.setUserLocationREMOTE(it) }
-            val coord = result.coord!!
-            val msg = "${CvLocalizeNW.TAG_TASK}: REMOTE: found location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
-            LOG.E(TAG, msg)
-            val curFloor = VM.wFloor?.floorNumber()
-            if (coord.level != curFloor) {
-             app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
-            }
-
-            VM.wFloors.moveToFloor(VM, coord.level)
-          }
-        }
-      }
-    }
-  }
 
   /**
    * CHECK:PM

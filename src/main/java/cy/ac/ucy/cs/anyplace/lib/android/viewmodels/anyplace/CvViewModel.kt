@@ -172,8 +172,9 @@ open class CvViewModel @Inject constructor(
   }
 
   open fun processDetections(recognitions: List<Classifier.Recognition>) {
-    LOG.D2(TAG, "CvViewModel: ProcessDetections")
+    LOG.D2(TAG, "CvViewModel: ProcessDetections: ${recognitions.size}")
 
+    // uiStatusUpdater.showWarningAutohide("No detections.", "trying again..", ms)
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)
@@ -188,6 +189,7 @@ open class CvViewModel @Inject constructor(
    * Update [detections] that are related only to the localization window.
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
+    LOG.W(TAG, "$METHOD: updating for localization..")
     currentTime = System.currentTimeMillis()
     val appendedDetections = detectionsLOC.value + detections
 

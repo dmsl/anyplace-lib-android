@@ -65,9 +65,6 @@ class CvModelsGetNW(
         LOG.D4(TAG, "CvModelsGet: ${response.message()}" )
         resp.value = handleResponse(response)
 
-        // TODO:PM Persist: put in cache & list (main mem) ?
-        // val userLocations = resp.value.data
-        // if (userLocations != null) { cache(useLocations, UserOwnership.PUBLIC) }
         val cvModels = resp.value.data?.rows
         if (cvModels == null) {
           val msg = "Downloading CvModels: no classes fetched"
@@ -77,11 +74,8 @@ class CvModelsGetNW(
             LOG.D(TAG, "CvModel: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
           }
           persistToDB(cvModels)
+
         }
-
-        // if (!cacheChat.hasImgCache() && !repo.local.hasMsgs()) {
-
-        // TODO:PMX
       } catch(ce: ConnectException) {
         val msg = "CvModelsGet: Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
