@@ -45,21 +45,6 @@ class UiLocalization(
   fun setupClick() {
     btn.setOnClickListener {
       VM.statusLocalization.update { LocalizationStatus.running }
-      // when (VM.statusLocalization.value) {
-        // TODO:PM all other stauses?
-      //   Logging.stopped,
-      //   Logging.stoppedMustStore -> {  // enter demo-nav mode
-      //     // VM.logging.postValue(Logging.demoNavigation)
-      //   }
-      //   // CHECK:PM ??
-      //   // Logging.demoNavigation-> { // exit demo-nav mode:
-      //   //   // stopLocalization(mapView)
-      //   //   // VM.logging.postValue(Logging.stopped)
-      //   // }
-      //   else -> { // ignore click
-      //     LOG.D(TAG_METHOD, "$METHOD: Ignoring Demo-Navigation. status: ${VM.logging}")
-      //   }
-      // }
     }
   }
 
@@ -69,16 +54,11 @@ class UiLocalization(
         LOG.W(TAG_METHOD, "status: $status")
         when(status) {
           LocalizationStatus.running -> {
-            // CLR:PM there were CV SPECIFIC:
-            // bottom.btnLogging.visibility = View.INVISIBLE
-            // VM.circleTimerAnimation = TimerAnimation.reset
             startLocalization()
           }
 
           LocalizationStatus.stopped -> {
             endLocalization()
-            // CLR:PM LOGGER specific
-            // VM.logging.postValue(Logging.stopped)
           }
           else ->  {}
         }
@@ -97,7 +77,6 @@ class UiLocalization(
 
   fun startLocalization() {
     LOG.D2(TAG, "$METHOD")
-    // val btnDemoNav = binding.btnDemoNavigation CLR
     btn.isEnabled=false
     VM.currentTime = System.currentTimeMillis()
     VM.windowStart = VM.currentTime

@@ -62,29 +62,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             act.findViewById(R.id.view_warning))
   }
 
-  // fun bindCvStatsImgDimensions(image: ImageProxy) { // TODO:shared between activities?
+  // fun bindCvStatsImgDimensions(image: ImageProxy) { // TODO: shared between activities?
   //   binding.bottomUi.frameInfo.text = "${image.width}x${image.height}"
-  // }
-
-
-  // CLR:PM
-  // fun setupLocalizationMode() {
-    // ui.localization.btn.setOnClickListener {
-    //   when (VM.logging.value) {
-    //     Logging.stopped,
-    //     Logging.stoppedMustStore -> {  // enter demo-nav mode
-    //       VM.logging.postValue(Logging.demoNavigation)
-    //     }
-    //     // CHECK:PM ??
-    //     // Logging.demoNavigation-> { // exit demo-nav mode:
-    //     //   // stopLocalization(mapView)
-    //     //   // VM.logging.postValue(Logging.stopped)
-    //     // }
-    //     else -> { // ignore click
-    //       LOG.D(TAG_METHOD, "$METHOD: Ignoring Demo-Navigation. status: ${VM.logging}")
-    //     }
-    //   }
-    // }
   // }
 
 

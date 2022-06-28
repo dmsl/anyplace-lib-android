@@ -31,7 +31,6 @@ enum class Logging {
   stopped,
   stoppedMustStore,
   stoppedNoDetections,
-  // demoNavigation, // DemoLocalization CLR:PM
 }
 
 enum class TimerAnimation { running,  paused,  reset  }

@@ -170,17 +170,13 @@ open class CvViewModel @Inject constructor(
 
   open fun processDetections(recognitions: List<Classifier.Recognition>) {
     LOG.D2(TAG, "CvViewModel: ProcessDetections: ${recognitions.size}")
-
-    // uiStatusUpdater.showWarningAutohide("No detections.", "trying again..", ms)
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)
       }
       else -> {}
     }
-
   }
-
 
   /**
    * Update [detections] that are related only to the localization window.
@@ -195,7 +191,7 @@ open class CvViewModel @Inject constructor(
         statusLocalization.tryEmit(LocalizationStatus.stopped)
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
-          // VERIFY: DEDUPLICATE DETECTIONS (this should be ok)
+          // deduplicate detections (as we are scanning things in a window of a few seconds)
           val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
           detectionsLOC.value = detectionsDedup
 
