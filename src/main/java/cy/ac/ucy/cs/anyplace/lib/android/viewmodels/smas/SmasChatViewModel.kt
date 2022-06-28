@@ -138,11 +138,11 @@ class SmasChatViewModel @Inject constructor(
 
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
     var userCoord : UserCoordinates? = null
-    if (VM.locationREMOTE.value.coord != null) {
+    if (VM.locationSmas.value.coord != null) {
       userCoord = UserCoordinates(VM.wSpace.obj.id,
               VM.wFloor?.obj!!.floorNumber.toInt(),
-              VM.locationREMOTE.value.coord!!.lat,
-              VM.locationREMOTE.value.coord!!.lon)
+              VM.locationSmas.value.coord!!.lat,
+              VM.locationSmas.value.coord!!.lon)
       return userCoord
     }
 

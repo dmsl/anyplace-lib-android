@@ -35,9 +35,13 @@ import android.util.Size
 import android.view.Surface
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Exception
 
@@ -67,6 +71,7 @@ abstract class CameraActivity : AppCompatActivity(),
       return true
     }
   }
+
 
   lateinit var bottomSheetLayout: ConstraintLayout
   lateinit var gestureLayout: ConstraintLayout
@@ -105,8 +110,12 @@ abstract class CameraActivity : AppCompatActivity(),
   protected abstract fun setUseNNAPI(isChecked: Boolean)
   /** Called by [CameraActivity]'s [onCreate] */
   protected abstract fun postCreate()
+  abstract val view_model_class: Class<DetectorViewModel>
+  protected lateinit var _vm: ViewModel
   // end of OVERRIDES
   ///////////////////
+
+  lateinit var VMD: DetectorViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     LOG.V()
@@ -114,6 +123,9 @@ abstract class CameraActivity : AppCompatActivity(),
 
     setupBaseUi()
     checkPermissionsAndConnectCamera()
+
+    _vm = ViewModelProvider(this)[view_model_class]
+    VMD= _vm as DetectorViewModel
 
     postCreate()
   }
@@ -193,6 +205,7 @@ abstract class CameraActivity : AppCompatActivity(),
     if (previewWidth == 0 || previewHeight == 0) {
       return
     }
+
     if (rgbBytes == null) {
       rgbBytes = IntArray(previewWidth * previewHeight)
     }
@@ -204,7 +217,7 @@ abstract class CameraActivity : AppCompatActivity(),
       }
 
       isProcessingFrame = true
-      Trace.beginSection("imageAvailable")
+      // Trace.beginSection("imageAvailable")
       val planes = image.planes
       fillBytes(planes, yuvBytes)
       luminanceStride = planes[0].rowStride
@@ -230,10 +243,10 @@ abstract class CameraActivity : AppCompatActivity(),
       processImage()
     } catch (e: Exception) {
       LOG.E(e)
-      Trace.endSection()
+      // Trace.endSection()
       return
     }
-    Trace.endSection()
+    // Trace.endSection()
   }
 
   @Synchronized

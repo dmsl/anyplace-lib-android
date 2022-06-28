@@ -10,7 +10,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+
+enum class DetectorStatus {
+  enabled,
+  disabled,
+}
 
 /**
  * [DetectorViewModel] contains only whatever is related to
@@ -31,6 +38,9 @@ open class DetectorViewModel @Inject constructor(
 
   lateinit var detector: Classifier
 
+  /** Whether to run on skip detection/inference */
+  private val status = MutableStateFlow(DetectorStatus.disabled)
+
   var modelLoaded = false
   lateinit var model: DetectionModel
 
@@ -46,6 +56,17 @@ open class DetectorViewModel @Inject constructor(
       "ucyco" -> DetectionModel.UCYCO
       else -> { DetectionModel.COCO }
     }
+  }
+
+  fun disableCvDetection() {
+   status.update { DetectorStatus.disabled }
+  }
+
+  // TODO:PMX SKP-NGN return true always?
+  fun isDetecting() = status.value == DetectorStatus.enabled
+
+  fun enableCvDetection() {
+    status.update { DetectorStatus.enabled }
   }
 
 }

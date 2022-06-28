@@ -3,31 +3,16 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.app.Activity
 import android.view.View
 import com.google.android.material.button.MaterialButton
-import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-// import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
-/**
- * Localization is generally an one-time call. It gets a list of objects from the camera,
- * and calculates the user location.
- *
- * However, YOLO (and it's camera-related components) operate asynchronously in the background,
- * and store detection lists in 'scanning windows'.
- * Therefore we need the below states.
- */
-enum class LocalizationStatus {
-  running,
-  stopped,
-  stoppedNoDetections,
-}
 
 /**
  * UI Localization Button
@@ -66,21 +51,22 @@ class UiLocalization(
 
 
   fun endLocalization() {
+    VM.disableCvDetection()
     LOG.D2(TAG, "$METHOD")
-    utlButton.changeBackgroundDONT_USE(btn, R.color.darkGray)
+    // utlButton.changeBackgroundDONT_USE(btn, R.color.darkGray)
     btn.isEnabled = true
     wMap.mapView.alpha = 1f
     VM.statusLocalization.tryEmit(LocalizationStatus.stopped)
   }
 
   fun startLocalization() {
+    VM.enableCvDetection()
     LOG.D2(TAG, "$METHOD")
     btn.isEnabled=false
     VM.currentTime = System.currentTimeMillis()
     VM.windowStart = VM.currentTime
     VM.statusLocalization.value = LocalizationStatus.running
     btn.visibility = View.VISIBLE
-    utlButton.changeBackgroundDONT_USE(btn, R.color.colorPrimary)
     val mapAlpha = VM.prefsCvNav.mapAlpha.toFloat()/100
     wMap.mapView.alpha = mapAlpha
   }
@@ -90,9 +76,7 @@ class UiLocalization(
 
   fun show() = utlButton.fadeIn(btn)
 
-  fun visibilityGone() {
-    btn.visibility = View.GONE
-  }
+  fun visibilityGone() = utlButton.gone(btn)
 
   // fun disable() {
   //   btn.isEnabled = false

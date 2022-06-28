@@ -12,9 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -28,6 +26,8 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.activity_cv_logger
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
+  val id_btn_logging: Int get() = R.id.button_logging
+
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
 
@@ -82,7 +82,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun setupUiReactions() {
     lifecycleScope.launch(Dispatchers.Main) {
       uiReactObjectDetection()
-      uiReactLogging()
+      uiLog.bottom.logging.collectStatus()
     }
   }
 
@@ -91,9 +91,13 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    * This is because the logging UI is part of the BottomSheet.
    */
   override fun lazyInitBottomSheet() {
-    uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity, VM, id_bottomsheet)
-    uiBottom = uiLog.bottom
+    uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity,
+            VM, ui, uiLog,
+            id_bottomsheet,
+            id_btn_logging)
 
+    // upcasting the CvLog BottomSheet to the regular BottomSheet
+    uiBottom = uiLog.bottom
     setupLoggerBottomSheet()
   }
 
@@ -103,7 +107,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun setupLoggerBottomSheet() {
     uiLog.setupTimerButtonClick()
     uiLog.setupClickClearObjectsPopup()
-
     uiLog.setupButtonSettings()
   }
 
@@ -113,16 +116,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    * [binding.bottomUi.buttonCameraTimer] accordingly.
    */
   private fun uiReactObjectDetection() {
-    VM.objWindowALL.observeForever { detections ->
+    VM.statObjWindowAll.observeForever { detections ->
       // CHECK:PM binding.bottomUi.tvWindowObjectsAll
       uiLog.bottom.tvWindowObjectsAll.text = detections.toString()
-    }
-  }
-
-  private fun uiReactLogging() {
-    VM.logging.observeForever { status ->
-      LOG.D(TAG_METHOD, "logging: $status")
-      uiLog.refresh(status)
     }
   }
 
@@ -160,7 +156,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   }
 
   override fun onMapReadyCallback() {
-    uiLog.setupClickedLoggingButton()
+    uiLog.bottom.logging.setupClick()
     uiLog.setupOnMapLongClick()
   }
 
@@ -171,10 +167,11 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // override fun onFloorLoaded() { super.onFloorLoaded()  }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
+    LOG.D2(TAG, "$METHOD: CvLoggerActivity")
     uiLog.onInferenceRan()
 
     if (detections.isNotEmpty()) {
-      LOG.V3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
+      LOG.D2(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
     }
     VM.processDetections(detections)
   }

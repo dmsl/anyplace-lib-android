@@ -6,13 +6,15 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggingBtn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
@@ -20,7 +22,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 class BottomSheetCvLoggerUI(
         private val act: CvLoggerActivity,
         val VMlog: CvLoggerViewModel,
-        val id_bottomsheet: Int)
+        val ui: CvCommonUI,
+        val uiLog: CvLoggerUI,
+        val id_bottomsheet: Int,
+        val id_btn_logging: Int)
   : BottomSheetCvUI(act as DetectorActivityBase, true) {
 
   // val llBottomSheet: ConstraintLayout by lazy {act.findViewById(id_bottomsheet) }
@@ -29,8 +34,9 @@ class BottomSheetCvLoggerUI(
   // TODO replace bu_TvCropInfo: with tvCropInfo
   // TODO replace ivBottomSheetArrow with  ivArrowImg
 
+  val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope, ui, uiLog, id_btn_logging) }
+
   val tvWindowObjectsAll : TextView by lazy { act.findViewById(R.id.tv_windowObjectsAll) }
-  val btnLogging : AppCompatButton by lazy { act.findViewById(R.id.button_logging) }
   val btnClearObj: MaterialButton by lazy { act.findViewById(R.id.button_clearObjects) }
   val btnTimer : MaterialButton by lazy { act.findViewById(R.id.button_cameraTimer) }
   val progressBarTimer: ProgressBar by lazy { act.findViewById(R.id.progressBar_timer) }
@@ -51,9 +57,9 @@ class BottomSheetCvLoggerUI(
   // NAV COMMON shared between activities? (pre-merge)
   fun bindCvStats() {
     tvElapsedTime.text=VMlog.getElapsedSecondsStr()
-    tvObjUnique.text=VMlog.objWindowUnique.toString()
+    tvObjUnique.text=VMlog.statObjWindowUNQ.toString()
     tvCurWindow.text=VMlog.objOnMAP.size.toString()
-    tvObjTotal.text=VMlog.objTotal.toString()
+    tvObjTotal.text=VMlog.statObjTotal.toString()
   }
 
   // TODO: in parent BottomSheetCvUI? override?!

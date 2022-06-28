@@ -32,6 +32,11 @@ open class UtilAnimations(
 
   fun flashView(v: View, delay: Long = 200)
           = scope.launch(Dispatchers.Main) { v.flashView(delay) }
+
+  fun gone(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
+
+  fun visible(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
+
 }
 
 

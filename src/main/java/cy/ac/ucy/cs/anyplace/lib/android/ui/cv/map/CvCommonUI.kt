@@ -7,6 +7,7 @@ import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
  * - floorplans
  * - floorSelector
  */
-open class CvMapUi(
+open class CvCommonUI(
         protected val VM: CvViewModel,
         protected val scope: CoroutineScope,
         protected val activity: Activity,
@@ -41,13 +42,12 @@ open class CvMapUi(
   /** Localization Button Wrapper */
   val localization by lazy { UiLocalization(activity, VM, scope, map, R.id.btn_localization) }
 
-
   /**
    * MERGE:PM once image is analyzed
    * Used to be inside analyzeImage I think
    */
   open fun onInferenceRan() {
-    LOG.D3()
+    LOG.D2(TAG, "$METHOD: CvMapUi")
     scope.launch(Dispatchers.Main) {
       // TODO: binding bottom sheet stats..
       // bottom.tvTimeInfo.text =  "<TODO>ms" // "${detectionTime}ms" // TODO:PM timer?

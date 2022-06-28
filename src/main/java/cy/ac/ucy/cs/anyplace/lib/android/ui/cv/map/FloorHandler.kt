@@ -21,11 +21,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 open class FloorHandler(
-  protected val VM: CvViewModel,
-  protected val scope: CoroutineScope,
-  protected val ctx: Context,
-  private val UI: CvMapUi,
-  /** [GoogleMap] overlays */
+        protected val VM: CvViewModel,
+        protected val scope: CoroutineScope,
+        protected val ctx: Context,
+        private val UI: CvCommonUI,
+        /** [GoogleMap] overlays */
         protected val overlays: Overlays
         ) {
 
@@ -55,7 +55,7 @@ open class FloorHandler(
               LOG.W(msg)
               Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
             } else {
-              LOG.E(TAG, "observeFloorplanChanges: success: loading floorplan")
+              LOG.D(TAG, "$METHOD: observeFloorplanChanges: success: loading floorplan")
               fpLoader.render(overlays, gmap, response.data, VM.wFloor!!)
               loadCvMapAndHeatmap(gmap)
             }

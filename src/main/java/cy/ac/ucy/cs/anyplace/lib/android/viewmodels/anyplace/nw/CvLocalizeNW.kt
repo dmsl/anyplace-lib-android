@@ -118,7 +118,7 @@ class CvLocalizeNW(
             if (it.data==null || it.data!!.rows.isEmpty()) {
               val msg = "Failed to get location (from SMAS)"
               app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
-              VM.locationREMOTE.value = LocalizationResult.Unset()
+              VM.locationSmas.value = LocalizationResult.Unset()
             } else {
               val cvLoc = it.data!!.rows[0]
               val msg = "$TAG_TASK: REMOTE: coords: ${cvLoc.x} ${cvLoc.y}, FL: ${cvLoc.deck} FLID: ${cvLoc.flid} diss: ${cvLoc.dissimilarity}"
@@ -128,7 +128,7 @@ class CvLocalizeNW(
 
               // Propagating the result
               val coord = Coord(cvLoc.x, cvLoc.y, cvLoc.deck)
-              VM.locationREMOTE.value = LocalizationResult.Success(coord)
+              VM.locationSmas.value = LocalizationResult.Success(coord)
             }
           }
           is NetworkResult.Error -> {

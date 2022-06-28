@@ -21,7 +21,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
@@ -43,6 +42,19 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
+
+/**
+ * Localization is generally an one-time call. It gets a list of objects from the camera,
+ * and calculates the user location.
+ *
+ * However, YOLO (and it's camera-related components) operate asynchronously in the background,
+ * and store detection lists in 'scanning windows'.
+ * Therefore we need the below states.
+ */
+enum class LocalizationStatus {
+  running,
+  stopped,
+}
 
 /** CvMapViewModel is used by:
  *  - Logger TODO
@@ -76,24 +88,24 @@ open class CvViewModel @Inject constructor(
   // lateinit var prefsNav: CvNavigationPrefs
   // lateinit var prefsNav: CvNavigationPrefs
 
-  val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
-
-  /** Controlling navigation mode */
-  val statusLocalization = MutableStateFlow(LocalizationStatus.stopped)
-  // val localizationFlow = localizationLocal.asStateFlow()
-
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
   // e.g., each window might be 5seconds.
   /** related to cv scan window */
   var currentTime : Long = 0
   var windowStart : Long = 0
+
+  val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
+
+  /** Controlling localization mode */
+  val statusLocalization = MutableStateFlow(LocalizationStatus.stopped)
+
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
 
   /** Last remotely calculated location (SMAS) */
-  val locationREMOTE: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+  val locationSmas: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
 
   /** Selected [Space] (model)*/
   var space: Space? = null
@@ -138,7 +150,6 @@ open class CvViewModel @Inject constructor(
     floorplanFlow.value = NetworkResult.Loading()
     // loadFloorplanFromAsset()
 
-
     if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
@@ -169,7 +180,7 @@ open class CvViewModel @Inject constructor(
   }
 
   open fun processDetections(recognitions: List<Classifier.Recognition>) {
-    LOG.D2(TAG, "CvViewModel: $METHOD: ProcessDetections: ${recognitions.size}")
+    LOG.D2(TAG, "VM: CvBASE: $METHOD: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)

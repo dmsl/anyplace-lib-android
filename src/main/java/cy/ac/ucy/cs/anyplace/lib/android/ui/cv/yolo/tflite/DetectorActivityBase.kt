@@ -7,8 +7,6 @@ import android.util.Size
 import android.util.TypedValue
 import android.view.View
 import android.widget.Toast
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -21,7 +19,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayVie
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.BorderedText
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -73,10 +70,6 @@ abstract class DetectorActivityBase : CameraActivity(),
     const val TEXT_SIZE_DIP = 10f
   }
 
-  abstract val view_model_class: Class<DetectorViewModel>
-  protected lateinit var _vm: ViewModel
-  private lateinit var VM: DetectorViewModel
-
   private lateinit var rgbFrameBitmap: Bitmap
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
@@ -93,10 +86,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
   private var tracker: MultiBoxTracker? = null
 
-
   override fun postCreate() {
-    _vm = ViewModelProvider(this)[view_model_class]
-    VM = _vm as DetectorViewModel
   }
 
   // TODO: this method is problematic even for the original project.
@@ -125,7 +115,7 @@ abstract class DetectorActivityBase : CameraActivity(),
       LOG.V3(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
       LOG.V3(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
 
-      val cropSize = VM.model.inputSize
+      val cropSize = VMD.model.inputSize
       rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
       croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888)
       frameToCropTransform = ImageUtils.getTransformationMatrix(
@@ -150,6 +140,13 @@ abstract class DetectorActivityBase : CameraActivity(),
   private var scanDelay : Long = 100
   private var lastScan : Long = 0L
 
+  private fun skipInference() : Boolean {
+    // TODO implement this..
+    // TODO:PMX: SKP
+    // return !delayPassed()
+    return !delayPassed() || !VMD.isDetecting()
+  }
+
   /**
    * Allowing only one scan in a [scanDelay] window.
    *
@@ -162,7 +159,6 @@ abstract class DetectorActivityBase : CameraActivity(),
    *
    */
   private fun delayPassed() : Boolean {
-    // LOG.E(TAG, "SCAN: delayPassed:")
     val currentTime = System.currentTimeMillis()
     when (lastScan) {
       0L -> { // first scan
@@ -185,17 +181,17 @@ abstract class DetectorActivityBase : CameraActivity(),
     LOG.I()
     try {
       // Read DS Preferences:
-      val prefsCv = VM.dsCv.read.first()
-      VM.setModel(prefsCv.modelName)
+      val prefsCv = VMD.dsCv.read.first()
+      VMD.setModel(prefsCv.modelName)
       LOG.D(TAG, "setupDetector: calls read")
-      val prefsCvNav = VM.dsCvNav.read.first()
+      val prefsCvNav = VMD.dsCvNav.read.first()
       scanDelay = prefsCvNav.scanDelay.toLong()
 
-      VM.detector = YoloV4Classifier.create(
+      VMD.detector = YoloV4Classifier.create(
               assets,
-              VM.model.filename,
-              VM.model.labelFilePath,
-              VM.model.isQuantized)
+              VMD.model.filename,
+              VMD.model.labelFilePath,
+              VMD.model.isQuantized)
     } catch (e: IOException) {
       val msg = "Cant initialize classifier"
       LOG.E(TAG_METHOD, msg, e)
@@ -216,8 +212,8 @@ abstract class DetectorActivityBase : CameraActivity(),
     }
 
     // No mutex needed as this method is not reentrant.
-    if (!delayPassed()) {
-      LOG.V2(TAG_METHOD, "Skipping inference..")
+    if (skipInference()) {
+      LOG.V2(TAG, "$METHOD: Skipping inference..")
       readyForNextImage()
       return
     }
@@ -246,7 +242,7 @@ abstract class DetectorActivityBase : CameraActivity(),
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
     val startTime = SystemClock.uptimeMillis()
-    val results = VM.detector.recognizeImage(croppedBitmap)
+    val results = VMD.detector.recognizeImage(croppedBitmap)
     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
     LOG.V3(TAG_METHOD, "Detections: ${results.size}")
@@ -306,14 +302,15 @@ abstract class DetectorActivityBase : CameraActivity(),
     get() = DESIRED_PREVIEW_SIZE
 
   override fun setUseNNAPI(isChecked: Boolean) {
-    lifecycleScope.launch(Dispatchers.IO) { VM.detector.setUseNNAPI(isChecked) }
+    lifecycleScope.launch(Dispatchers.IO) { VMD.detector.setUseNNAPI(isChecked) }
   }
 
   override fun setNumThreads(numThreads: Int) {
-    lifecycleScope.launch(Dispatchers.IO) { VM.detector.setNumThreads(numThreads) }
+    lifecycleScope.launch(Dispatchers.IO) { VMD.detector.setNumThreads(numThreads) }
   }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.V3(TAG, "$METHOD: detections: $detections.size")
+    LOG.D2(TAG, "$METHOD: DetectorBaseActivity")
+    // LOG.V3(TAG, "$METHOD: detections: $detections.size")
   }
 }

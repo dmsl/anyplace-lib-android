@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvMapUi
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
@@ -61,7 +61,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // UI
   //// COMPONENTS
   protected lateinit var floorSelector: FloorSelector
-  protected lateinit var ui: CvMapUi
+  protected lateinit var ui: CvCommonUI
 
   override fun postCreate() {
     super.postCreate()
@@ -154,7 +154,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   private fun setupUiGmap() {
-    ui = CvMapUi(VM, lifecycleScope,
+    ui = CvCommonUI(VM, lifecycleScope,
             this@CvMapActivity,
             supportFragmentManager, floorSelector)
     ui.map.attach(VM, this, R.id.mapView)
@@ -282,7 +282,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     collectingLocationRemote=true
 
     lifecycleScope.launch (Dispatchers.IO){
-      VM.locationREMOTE.collect { result ->
+      VM.locationSmas.collect { result ->
         when (result) {
           is LocalizationResult.Unset -> { }
           is LocalizationResult.Error -> {

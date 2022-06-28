@@ -16,11 +16,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.maps.MapMarkers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
-import cy.ac.ucy.cs.anyplace.lib.android.maps.UserInfoWindowAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +28,7 @@ import kotlinx.coroutines.launch
 
 class GmapWrapper(private val ctx: Context,
                   private val scope: CoroutineScope,
-                  private val UI: CvMapUi) {
+                  private val UI: CvCommonUI) {
 
   lateinit var obj: GoogleMap
   lateinit var VM: CvViewModel

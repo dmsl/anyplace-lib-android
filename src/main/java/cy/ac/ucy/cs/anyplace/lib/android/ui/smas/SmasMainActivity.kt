@@ -145,12 +145,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       // VM.collectRefreshMs()
       while (true) {
         var msg = "pull"
-        val hasRegisteredLocation = VM.locationREMOTE.value.coord != null
+        val hasRegisteredLocation = VM.locationSmas.value.coord != null
         if (isActive && hasRegisteredLocation) {
           val lastCoordinates = UserCoordinates(VM.wSpace.obj.id,
                   VM.wFloor?.obj!!.floorNumber.toInt(),
-                  VM.locationREMOTE.value.coord!!.lat,
-                  VM.locationREMOTE.value.coord!!.lon)
+                  VM.locationSmas.value.coord!!.lat,
+                  VM.locationSmas.value.coord!!.lon)
 
           VM.nwLocationSend.safeCall(lastCoordinates)
           msg+="&send"
@@ -200,12 +200,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupFakeUserLocation(mapH: GmapWrapper) {
     val floorNum = VM.wFloor!!.floorNumber()
     val loc = VM.wSpace.latLng().toCoord(floorNum)
-    VM.locationREMOTE.value = LocalizationResult.Success(loc)
+    VM.locationSmas.value = LocalizationResult.Success(loc)
 
     lifecycleScope.launch(Dispatchers.Main) {
       mapH.obj.setOnMapLongClickListener {
         LOG.W(TAG, "Setting fake location: $it")
-        VM.locationREMOTE.value = LocalizationResult.Success(it.toCoord(floorNum))
+        VM.locationSmas.value = LocalizationResult.Success(it.toCoord(floorNum))
       }
     }
   }
@@ -222,11 +222,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         LOG.E(TAG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
-          utlUi.changeBackgroundDONT_USE(btn, R.color.redDark)
+          utlUi.changeBackgroundMaterial(btn, R.color.redDark)
           utlUi.changeMaterialIcon(btn, R.drawable.ic_chat_unread)
           utlNotify.msgReceived()
         } else {
-          utlUi.changeBackgroundDONT_USE(btn, R.color.colorPrimaryDark)
+          utlUi.changeBackgroundMaterial(btn, R.color.colorPrimaryDark)
           utlUi.changeMaterialIcon(btn, R.drawable.ic_chat)
         }
       }
@@ -393,11 +393,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   // TODO:PMX FR
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
+    LOG.D2(TAG, "$METHOD: SmasMainActivity")
     ui.onInferenceRan()
 
-    if (detections.isNotEmpty()) {
-      LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
-    }
+    // if (detections.isNotEmpty()) {
+    //   // LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
+    // }
     VM.processDetections(detections)
   }
 

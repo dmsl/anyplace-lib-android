@@ -5,6 +5,7 @@ import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.os.Build
 import android.widget.Button
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
@@ -19,10 +20,12 @@ class UtilUI(
         val ctx: Context,
         val scope: CoroutineScope) : UtilAnimations(ctx, scope) {
 
+  fun text(btn: Button, txt: String) = scope.launch(Dispatchers.Main) { btn.text=txt }
+
   /**
    * Works for [MaterialButton]
    */
-  fun changeBackgroundDONT_USE(btn: Button, colorId: Int) {
+  fun changeBackgroundMaterial(btn: MaterialButton, colorId: Int) {
     scope.launch(Dispatchers.Main) {
       val compatColor = ContextCompat.getColor(ctx, colorId)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
