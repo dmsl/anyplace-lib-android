@@ -35,8 +35,8 @@ class DetectorActivity : DetectorActivityBase() {
   // BottomSheet specific details (default ones)
   lateinit var frameValueTextView: TextView
 
-  override fun postCreate() {
-    super.postCreate()
+  override fun postResume() {
+    // super.postResume()
     // VM = _vm as DetectorViewModel  // no need to use a VM here
     bottomSheet.setup()
   }

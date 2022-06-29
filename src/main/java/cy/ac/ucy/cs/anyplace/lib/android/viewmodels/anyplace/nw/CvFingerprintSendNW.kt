@@ -59,7 +59,7 @@ class CvFingerprintSendNW(
 
     if (!app.hasInternet()) {
       app.showToast(VM.viewModelScope, msg)
-      utlUi.enable(uiLog.btnUpload)
+      uiLog.bottom.logging.showUploadBtn()
       return
     }
 
@@ -71,8 +71,8 @@ class CvFingerprintSendNW(
       val entry = VM.cache.topFingerprintsEntry()
 
       if (!app.hasInternet()) {
-        app.showToast(VM.viewModelScope, msg)
-        utlUi.enable(uiLog.btnUpload)
+        app.showToast(VM.viewModelScope, "$msg (dropped)")
+        uiLog.bottom.logging.showUploadBtn()
         break
       }
 

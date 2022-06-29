@@ -61,25 +61,24 @@ class MapMarkers(private val ctx: Context,
   }
 
   /** Computer Vision marker */
-  private fun cvMarker(latLng: LatLng, msg: String) : MarkerOptions  {
-    return MarkerOptions().position(latLng).title(msg)
-        .userIcon(ctx, R.drawable.marker_objects)
-    // TODO:PMX FR10
-    // .snippet("CV-Fingerprint at:\n" + toString(latLng))
+  private fun cvMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions  {
+    return MarkerOptions()
+            .position(latLng)
+            .title(title)
+            .userIcon(ctx, R.drawable.marker_objects)
+            .snippet(snippet)
   }
 
   /** Computer Vision stored marker */
+  @Deprecated("Stored fingerprints are now uploaded on backend and not shown..")
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
         .userIcon(ctx, R.drawable.marker_objects_stored)
-    // TODO:PMX FR10
-    // .snippet("CV-Fingerprint at:\n" + toString(latLng)+
-    // "\n\n[stored]")
   }
 
-  fun addCvMarker(latLng: LatLng, msg: String) {
+  fun addCvMarker(latLng: LatLng, title: String, snippet: String) {
     scope.launch(Dispatchers.Main) {
-      map.addMarker(cvMarker(latLng, msg))?.let {
+      map.addMarker(cvMarker(latLng, title, snippet))?.let {
         cvObjects.add(it)
       }
     }

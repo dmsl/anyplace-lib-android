@@ -1,8 +1,10 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.content.Intent
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
@@ -15,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -48,8 +51,8 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, ui)
   }
 
-  override fun postCreate() {
-    super.postCreate()
+  override fun postResume() {
+    super.postResume()
     VM = _vm as CvLoggerViewModel
 
     lifecycleScope.launch(Dispatchers.IO) {
@@ -66,7 +69,22 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   override fun onResume() {
     super.onResume()
     LOG.D(TAG, "$METHOD [CvLogger]")
-    // MERGE
+
+    updateModelName()
+  }
+
+
+  /**
+   * TODO: for this (and any similar code that loops+delay):
+   * - create a variable and observe it (a Flow or something observable/collactable)
+   */
+  fun updateModelName() {
+    val tvTitle = findViewById<TextView>(R.id.tvTitle)
+    lifecycleScope.launch(Dispatchers.IO)
+    {
+      while (!VM.modelEnumLoaded) delay(100)
+      utlUi.text(tvTitle, "logger (model: ${VM.model.modelName})")
+    }
   }
 
   override fun setupUi() {
@@ -76,10 +94,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
     uiLog.setupUploadBtn()
     uiLog.checkForUploadCache()
-
-    // CLR:PM MERGE this was setupComputerVision()
-    // uiLog.uiBottom.setup() // why special method?
-    // uiLog.setupBottomSheet() // special method?
   }
 
   private fun setupUiReactions() {
@@ -94,6 +108,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    * This is because the logging UI is part of the BottomSheet.
    */
   override fun lazyInitBottomSheet() {
+    LOG.D(TAG, "$METHOD: init logging click")
     uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity,
             VM, ui, uiLog,
             id_bottomsheet,
@@ -102,6 +117,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     // upcasting the CvLog BottomSheet to the regular BottomSheet
     uiBottom = uiLog.bottom
     setupLoggerBottomSheet()
+    uiLog.uiBottomLazilyInited=true
+
+    uiLog.bottom.logging.setupClick()
   }
 
   // TODO:PM put this method in bottom (CvLoggerBottom)
@@ -157,10 +175,14 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  override fun onMapReadyCallback() {
-    uiLog.bottom.logging.setupClick()
-    uiLog.setupOnMapLongClick()
+
+
+  override fun onMapReady(googleMap: GoogleMap) {
+    super.onMapReady(googleMap)
+      LOG.E(TAG, "onMapReadyCallback: [CvLogger]")
+      uiLog.setupOnMapLongClick()
   }
+
 
   /* Runs when the first of any of the floors is loaded */
   // override fun onFirstFloorLoaded() { super.onFirstFloorLoaded() }
@@ -175,7 +197,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     if (detections.isNotEmpty()) {
       LOG.D2(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
     }
-    VM.processDetections(detections)
+    VM.processDetections(detections, this@CvLoggerActivity)
   }
 
 }

@@ -30,23 +30,16 @@
         android:exported="true"
         android:label="@string/title_activity_login" />
     <activity
-        android:name=".android.ui.settings.SettingsServerActivity"
+        android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
         android:exported="true"
         android:label="Server Settings" />
-    <activity
-        android:name=".android.ui.settings.SettingsCvLoggerActivityDEPR"
-        android:exported="true"
-        android:icon="@drawable/ic_settings"
-        android:label="Logger Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
     <activity
         android:name=".android.ui.settings.SettingsCvActivity"
         android:exported="true"
         android:label="Map Settings" />
 
-
     <!-- SMAS ACTIVITIES -->
-
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity"
         android:screenOrientation="portrait"

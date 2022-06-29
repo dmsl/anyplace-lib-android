@@ -20,6 +20,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.AnyplaceSettingsActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.IntentExtras
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -119,14 +121,16 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
 
+        // TODO:PMX LMT 500ms
         setNumericInput(R.string.pref_smas_location_refresh,
-                R.string.summary_refresh_locations, prefs.locationRefreshMs)
+                R.string.summary_refresh_locations, prefs.locationRefreshMs, 0)
 
         setNumericInput(R.string.pref_cv_scan_delay,
-                R.string.summary_cv_scan_delay, prefs.scanDelay)
+                R.string.summary_cv_scan_delay, prefs.scanDelay, 0)
 
         setNumericInput(R.string.pref_cv_localization_ms,
-                R.string.summary_localization_window, prefs.windowLocalizationMs)
+                R.string.summary_localization_window, prefs.windowLocalizationMs, 0)
+
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
 
@@ -141,7 +145,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       val pref = findPreference<Preference>(getString(R.string.pref_anyplace_server))
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
-        startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
+        startActivity(Intent(requireActivity(), SettingsAnyplaceServerActivity::class.java))
         true
       }
     }
@@ -162,12 +166,14 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
     private fun setupClearCvFingerprints() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
-      pref?.setOnPreferenceClickListener {
+      pref?.isEnabled = cache.hasFingerprints()
 
+      pref?.setOnPreferenceClickListener {
         val mgr=requireActivity().supportFragmentManager
+        // TODO:PMX V22
         ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
-                "Will delete scanned objects that have not been uploaded yet to the database.\n" +
-                        "Proceed only if you want to discard the latest scans.") { // on confirmed
+                "These are scanned objects that have not been uploaded yet to the database.\n" +
+                        "Proceed only if you want to discard them.") { // on confirmed
           lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
             cache.deleteFingerprintsCache()
           }

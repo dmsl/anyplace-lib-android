@@ -151,10 +151,11 @@ public class MultiBoxTracker {
       float cornerSize = Math.min(trackedPos.width(), trackedPos.height()) / 8.0f;
       canvas.drawRoundRect(trackedPos, cornerSize, cornerSize, boxPaint);
 
+      int intVal = Math.round(100 * recognition.detectionConfidence);
       final String labelString =
           !TextUtils.isEmpty(recognition.title)
-              ? String.format("%s %.2f", recognition.title, (100 * recognition.detectionConfidence))
-              : String.format("%.2f", (100 * recognition.detectionConfidence));
+              ? String.format("%s %d", recognition.title, intVal)
+              : String.format("%d", intVal);
       //            borderedText.drawText(canvas, trackedPos.left + cornerSize, trackedPos.top,
       // labelString);
       borderedText.drawText(
@@ -208,6 +209,11 @@ public class MultiBoxTracker {
         break;
       }
     }
+  }
+
+  public void clear() {
+    trackedObjects.clear();
+    screenRects.clear();
   }
 
   private static class TrackedRecognition {

@@ -20,7 +20,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
-class MainSettingsDialog : DialogFragment() {
+/**
+ * This has Anyplace login stuff.
+ */
+@Deprecated("This has anyplace login and not smas login")
+class MainSettingsDialogAnyplace : DialogFragment() {
 
   companion object {
     val KEY_FROM = "key.from"
@@ -31,7 +35,7 @@ class MainSettingsDialog : DialogFragment() {
     fun SHOW(fragmentManager: FragmentManager, from: String) {
       val args = Bundle()
       args.putString(KEY_FROM, from)
-      val dialog = MainSettingsDialog()
+      val dialog = MainSettingsDialogAnyplace()
       dialog.arguments = args
       // val test = dialog.requireArguments().getString(KEY_FROM)
       dialog.show(fragmentManager, from)
@@ -105,19 +109,19 @@ class MainSettingsDialog : DialogFragment() {
 
   private fun setupServerSettings() {
     binding.buttonSettingsServer.setOnClickListener {
-      startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
+      startActivity(Intent(requireActivity(), SettingsAnyplaceServerActivity::class.java))
     }
   }
 
-  private fun setupCvLoggerSetings() {
+  private fun setupCvSettings() {
     binding.buttonComputerVision.setOnClickListener {
-      startActivity(Intent(requireActivity(), SettingsCvLoggerActivityDEPR::class.java))
+      startActivity(Intent(requireActivity(), SettingsCvActivity::class.java))
     }
   }
 
   private fun setup() {
-    setupCvLoggerSetings()
-    fromCvLogger=false // TODO:PM
+    setupCvSettings()
+    fromCvLogger=false // TODO:PMX
     if (!fromCvLogger) {
       setupServerSettings()
       setupUser()

@@ -74,7 +74,6 @@ abstract class DetectorActivityBase : CameraActivity(),
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
   lateinit var cropCopyBitmap: Bitmap
-  lateinit var trackingOverlay: OverlayView
   private lateinit var borderedText: BorderedText
 
   private var sensorOrientation: Int? = null
@@ -84,20 +83,18 @@ abstract class DetectorActivityBase : CameraActivity(),
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
 
-  private var tracker: MultiBoxTracker? = null
-
-  override fun postCreate() {
+  override fun postResume() {
   }
 
   // TODO: this method is problematic even for the original project.
   // It should run on an IO Dispatcher. Otherwise the app will lag on boot.
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
-    if (size==null) return
+    if (size == null) return
 
     // TODO:PMX OPT
     lifecycleScope.launch {
-      if(!setupDetector()) {
-        Toast.makeText(applicationContext, "Can't set up detector.",Toast.LENGTH_LONG).show()
+      if (!setupDetector()) {
+        Toast.makeText(applicationContext, "Can't set up detector.", Toast.LENGTH_LONG).show()
         Toast.makeText(applicationContext, "Are there any models available?", Toast.LENGTH_LONG).show()
         finish()
       }
@@ -107,7 +104,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
       borderedText = BorderedText(textSizePx)
       borderedText.setTypeface(Typeface.MONOSPACE)
-      tracker = MultiBoxTracker(this@DetectorActivityBase)
+      VMD.tracker = MultiBoxTracker(this@DetectorActivityBase)
       previewWidth = size.width
       previewHeight = size.height
       sensorOrientation = rotation - screenOrientation
@@ -125,27 +122,22 @@ abstract class DetectorActivityBase : CameraActivity(),
       frameToCropTransform.invert(cropToFrameTransform)
 
       // View
-      trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
-      trackingOverlay.addCallback { canvas ->
-        tracker!!.draw(canvas)
-        if (isDebug) { tracker!!.drawDebug(canvas)  }
+      VMD.trackingOverlay = findViewById<View>(R.id.tracking_overlay) as OverlayView
+      VMD.trackingOverlay.addCallback { canvas ->
+        VMD.tracker.draw(canvas)
+        if (isDebug) {
+          VMD.tracker.drawDebug(canvas)
+        }
       }
-      tracker!!.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
+      VMD.tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
     }
 
-     // MERGE:PM bind values with bottomSheet vars?
+    // MERGE: bind values with bottomSheet vars?
   }
 
   /** Artificial delay between inference calls (in ms) to save battery */
-  private var scanDelay : Long = 100
-  private var lastScan : Long = 0L
-
-  private fun skipInference() : Boolean {
-    // TODO implement this..
-    // TODO:PMX: SKP
-    // return !delayPassed()
-    return !delayPassed() || !VMD.isDetecting()
-  }
+  private var scanDelay: Long = 100
+  private var lastScan: Long = 0L
 
   /**
    * Allowing only one scan in a [scanDelay] window.
@@ -158,7 +150,7 @@ abstract class DetectorActivityBase : CameraActivity(),
    * We might introduce another mode that will disable scanning also..
    *
    */
-  private fun delayPassed() : Boolean {
+  private fun delayPassed(): Boolean {
     val currentTime = System.currentTimeMillis()
     when (lastScan) {
       0L -> { // first scan
@@ -203,17 +195,17 @@ abstract class DetectorActivityBase : CameraActivity(),
   override fun processImage() {
     // ViewModel
     ++timestamp
-    trackingOverlay.postInvalidate()
+    VMD.trackingOverlay.postInvalidate()
 
     // No mutex needed as this method is not reentrant.
-    if (computingDetection) {
+    if (!delayPassed()) {
+      LOG.V2(TAG, "$METHOD: Skipping inference.. (delay)")
       readyForNextImage()
       return
     }
 
     // No mutex needed as this method is not reentrant.
-    if (skipInference()) {
-      LOG.V2(TAG, "$METHOD: Skipping inference..")
+    if (computingDetection) {
       readyForNextImage()
       return
     }
@@ -227,13 +219,51 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     readyForNextImage()
 
+    // No mutex needed as this method is not reentrant.
+    if (!VMD.isDetecting()) { // TODO:PMX SF2
+      LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
+      skipDetection()
+      return
+    }
+
     // For examining the actual TF input.
-    if (SAVE_PREVIEW_BITMAP) { ImageUtils.saveBitmap(croppedBitmap) }
+    if (SAVE_PREVIEW_BITMAP) {
+      ImageUtils.saveBitmap(croppedBitmap)
+    }
 
     lifecycleScope.launch(Dispatchers.IO) {
       runDetection(currTimestamp)
       onProcessImageFinished()
     }
+  }
+
+  /**
+   * Draw a an empty canvas:
+   *
+   * Similar to [runDetection], but instead it skips running inference
+   * It draws an empty canvas (without any detections in it)
+   *
+   * CLR:PM
+   */
+  private fun skipDetection() {
+    LOG.V4(TAG_METHOD, "Skip detection on image")
+    val canvas = Canvas(croppedBitmap)
+    canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
+
+    // val results = emptyList<Classifier.Recognition>()
+
+    cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
+    // canvas = Canvas(cropCopyBitmap)
+
+    // Flows here
+    // val detections = storeResults(results, canvas)
+    // onInferenceRan(detections)
+
+    // finalize detection:
+    // View
+    VMD.tracker.clear()
+    VMD.trackingOverlay.postInvalidate()
+    computingDetection = false
   }
 
   private fun runDetection(currTimestamp: Long) {
@@ -259,15 +289,22 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // finalize detection:
     // View
-    tracker!!.trackResults(detections, currTimestamp)
-    trackingOverlay.postInvalidate()
+    VMD.tracker.trackResults(detections, currTimestamp)
+    VMD.trackingOverlay.postInvalidate()
     computingDetection = false
   }
 
   private val MODE = DetectorMode.TF_OD_API
+
   // Which detection model to use:
   // by default uses Tensorflow Object Detection API frozen checkpoints.
   private enum class DetectorMode { TF_OD_API }
+
+  // public fun drawEmptyCanvas(canvas: Canvas) {
+  //   cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
+  //   storeResults(emptyList(), cropCopyBitmap)
+  // }
+
 
   fun storeResults(results: List<Classifier.Recognition>, canvas: Canvas):
           MutableList<Classifier.Recognition> {
@@ -285,7 +322,8 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     for (result in results) {
       val location = result.location
-      if (location != null && result.confidence!! >= minimumConfidence) {
+      if (result.confidence >= minimumConfidence) {
+        LOG.D(TAG, "drawing: ${result.title} DABase")
         canvas.drawRect(location, paint)
         cropToFrameTransform!!.mapRect(location)
         result.location = location

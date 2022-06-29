@@ -63,8 +63,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected lateinit var floorSelector: FloorSelector
   protected lateinit var ui: CvCommonUI
 
-  override fun postCreate() {
-    super.postCreate()
+  override fun postResume() {
+    // super.postResume()
     VM = _vm as CvViewModel
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
@@ -77,10 +77,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.V2(TAG, "onResume")
+    LOG.E(TAG, "onResume")
 
     readPrefsAndContinue()
   }
+
 
   /**
    * Read preferences and continue setup:
@@ -91,15 +92,16 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.V()
       dsCv.read.first { prefs ->
+
         VM.prefsCv= prefs
         onLoadedPrefsCvEngine(prefs)
         true
       }
 
-      LOG.D(TAG, "CvMapActivity: readPrefsAndContinue")
-
+      LOG.E(TAG, "CvMapActivity: readPrefsAndContinue")
       dsCvNav.read.first { prefs ->
         VM.prefsCvNav= prefs
+        LOG.E(TAG, "readPrefsAndContinue")
         onLoadedPrefsCvNavigation()
         true
       }
@@ -111,16 +113,18 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
     if (cvEnginePrefs.reloadCvMaps) {
       LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
+      // CLR:PM OLD LOCAL CODE...
       // refresh CvMap+Heatmap only when needed
       // TODO do something similar with floorplans when necessary as well
       // loadCvMapAndHeatmap() // TODO call this..
-      dsCv.setReloadCvMaps(false)
+      // dsCv.setReloadCvMaps(false)
     } else {
       LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
     }
   }
 
   private fun onLoadedPrefsCvNavigation() {
+    LOG.E(TAG, "onLoadedPrefsCvNavigation")
     setupUi()
   }
 
@@ -132,6 +136,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   protected open fun setupUi() {
+    LOG.E(TAG, "setupUi")
     setMapOpacity()
     setupUiFloorSelector()
     setupUiGmap()
@@ -153,14 +158,24 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     ui.setupOnFloorSelectionClick()
   }
 
+  var initedGmap = false
   private fun setupUiGmap() {
+    LOG.E(TAG, "SETUP CommonUI & GMAP")
+    if (initedGmap) return
+
+    LOG.E(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
+    initedGmap=true
     ui = CvCommonUI(VM, lifecycleScope,
             this@CvMapActivity,
             supportFragmentManager, floorSelector)
     ui.map.attach(VM, this, R.id.mapView)
   }
 
+  var floorSelectorInited = false
   private fun setupUiFloorSelector() {
+    if (floorSelectorInited) return
+    floorSelectorInited=true
+
     floorSelector = FloorSelector(applicationContext,
             lifecycleScope,
             findViewById(R.id.group_floorSelector),
@@ -170,7 +185,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             findViewById(R.id.button_floorDown))
 
     /** Updates on the wMap after a floor has changed */
-    val callbackFloorselector = object: FloorSelector.Callback() {
+    val fsCallback = object: FloorSelector.Callback() {
       override fun before() {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
@@ -183,7 +198,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun after() { }
     }
 
-    floorSelector.callback = callbackFloorselector
+    floorSelector.callback = fsCallback
   }
 
   private fun setMapOpacity() {
@@ -192,21 +207,15 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     view.alpha=value/100f
   }
 
-  /**
-   * GMap is created by [CvMapActivity].
-   * This is a callback that can be used sub-classes.
-   */
-  protected abstract fun onMapReadyCallback()
-
   /** Setup the Google Map:
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
+    LOG.E(TAG, "onMapReadyCallback: [CvMap]")
     ui.map.setup(googleMap)
     ui.localization.setupClick()
 
     collectLocationREMOTE()
-    onMapReadyCallback()
   }
 
   override fun onProcessImageFinished() {

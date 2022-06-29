@@ -17,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -92,9 +93,10 @@ class CvLoggerViewModel @Inject constructor(
    *
    * TODO:PM convert to a post call?
    */
-  override fun processDetections(recognitions: List<Classifier.Recognition>) {
+  override fun processDetections(recognitions: List<Classifier.Recognition>,
+                                 activity: DetectorActivityBase) {
     LOG.D2(TAG, "VM: CvLogger: $METHOD: ${recognitions.size}")
-    super.processDetections(recognitions)
+    super.processDetections(recognitions, activity)
 
     when (statusLogging.value) {
       LoggingStatus.running -> {
@@ -102,6 +104,8 @@ class CvLoggerViewModel @Inject constructor(
       }
       else -> {
         LOG.E(TAG, "$METHOD: (ignoring objects)")
+        // activity.drawEmptyCanvas()
+        clearTracking() // TODO:PMX SF2
       }
     }
   }
@@ -121,23 +125,14 @@ class CvLoggerViewModel @Inject constructor(
     if (windowStart==0L) windowStart=currentTime
 
     when {
-      // firstDetection -> { CLR:PM
-      //   LOG.D3(TAG, "$METHOD: initing window: $currentTime")
-      //   windowStart = currentTime
-      //   firstDetection=false
-      //   this.objWindowLOG.postValue(appendedDetections)
-      // }
-      // logging.value == Logging.stoppedMustStore -> { CLR:PM
-      //   windowStart = currentTime
-      //   LOG.D("updateDetectionsLogging: new window: $currentTime")
-      // }
-
       // WINDOW FINISHED:
       currentTime-windowStart > prefWindowLoggingMillis() -> {
         // windowElapsedPause = 0 // resetting any pause time
         windowStart=0L // resetting window
 
         LOG.E(TAG, "WINDOW FINISHED")
+        LOG.W(TAG, "Statuses: log; ${statusLogging.value} loc: ${statusLocalization.value}")
+        clearTracking() // TODO:PMX SF2
 
         // previouslyPaused=false
         if (appendedDetections.isEmpty()) {
@@ -151,10 +146,6 @@ class CvLoggerViewModel @Inject constructor(
 
           LOG.E(TAG, "TODO: detections to store: dedup: $detectionsDedup")
 
-          // objWindowLOG.postValue(detectionsDedup)   // TODO:CLR THIS
-
-
-          // LOG.D3("updateDetectionsLogging: status: $logging objects: ${detectionsDedup.size} (dedup)")
           statObjWindowUNQ=detectionsDedup.size
           statObjTotal+=statObjWindowUNQ
 
@@ -242,20 +233,16 @@ class CvLoggerViewModel @Inject constructor(
    * a Hash Map of locations and object fingerprints
    */
 
-  fun cacheDetectionsLocally(latLong: LatLng) {
+  fun cacheDetectionsLocally(userCoord: UserCoordinates, latLong: LatLng) {
     statObjTotal+=statObjWindowUNQ
     // TODO:PM do them in batch later on..
     val detections = objWindowLOG.value.orEmpty()
     objOnMAP[latLong] = detections
 
-    val userCoord = UserCoordinates(wFloor?.spaceH?.obj?.id!!,
-            wFloor?.obj!!.floorNumber.toInt(),
-            latLong.latitude, latLong.longitude)
-
     cacheUniqueDetections(userCoord, detections)
   }
 
-
+  // CLR:OFL
   /**
    * Generates a [cvMap] from the stored detections.
    * Then it reads any local [CvMap] and merges with it.

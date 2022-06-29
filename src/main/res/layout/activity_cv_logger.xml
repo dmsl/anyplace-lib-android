@@ -23,6 +23,19 @@
       android:background="@android:color/black"
       android:orientation="vertical">
 
+
+  <!-- YELLOW BG (theme of logging) -->
+    <View
+        android:id="@+id/view_Bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="1"
+        android:background="@color/yellowDark"
+        app:layout_anchor="@+id/relativeLayout"
+        app:layout_anchorGravity="center"
+        />
+
+
     <!-- 1 and 2:
     - CAMERA VIEW: CameraActivity
     - OVERLAY: DETECTED OBJECTS
@@ -35,37 +48,23 @@
         android:background="@android:color/black"
         app:layout_anchorGravity="center"
         tools:context="org.tensorflow.demo.CameraActivity">
-
-<!--      CLR:PM -->
-<!--      <View-->
-<!--          android:id="@+id/view_statusBackground"-->
-<!--          android:layout_width="0dp"-->
-<!--          android:layout_height="68dp"-->
-<!--          android:alpha="0.8"-->
-<!--          android:background="@color/yellowDark"-->
-<!--          android:elevation="39dp"-->
-<!--          android:visibility="invisible"-->
-<!--          tools:alpha="0.8" />-->
-
     </FrameLayout>
 
     <!-- 3. GOOGLE MAPS
         It is hidden when Camera View and Detections Overlay are visible.
     -->
-
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
-        android:alpha="0.3"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".android.ui.cv.CvMapActivity"
+        tools:alpha="0.5"
         app:layout_anchor="@+id/relativeLayout"
-        app:layout_anchorGravity="center" />
+        app:layout_anchorGravity="center"
+        tools:context=".android.ui.cv.CvMapActivity" />
 
 
     <!-- 4. TOOLBAR:
     - Settings Button
-    - TODO Search of ATH?
     -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -85,7 +84,6 @@
         android:layout_alignParentEnd="true"
         android:layout_gravity="end"
         android:layout_margin="8dp"
-        android:elevation="50dp"
         android:insetLeft="0dp"
         android:insetTop="0dp"
         android:insetRight="0dp"
@@ -100,9 +98,10 @@
 
     </androidx.appcompat.widget.Toolbar>
 
+
     <!-- TV LOGGER-->
     <TextView
-        android:id="@+id/tv_title"
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="logger"
@@ -113,6 +112,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         />
+
 
     <Button
         android:id="@+id/button_upload"
@@ -134,6 +134,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/toolbar" />
+
+
 
     <!-- 6. FLOOR SELECTOR -->
     <androidx.constraintlayout.widget.Group
@@ -182,7 +184,6 @@
         android:layout_width="48dp"
         android:layout_height="22dp"
         android:translationY="10dp"
-        android:elevation="42dp"
         android:fontFamily="sans-serif-black"
         tools:text="5"
         android:textColor="@color/white"
@@ -191,12 +192,17 @@
         app:layout_constraintBottom_toTopOf="@id/button_floorDown"
         />
 
-    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
+
+
+    <TextView
+        android:background="@drawable/bg_round_white_20"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
         android:id="@+id/textView_titleFloor"
         app:layout_constraintStart_toStartOf="@id/button_floorDown"
         app:layout_constraintEnd_toEndOf="@id/button_floorDown"
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
-        android:elevation="40dp"
         android:fontFamily="sans-serif-black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -205,7 +211,6 @@
         android:textColor="@color/colorPrimary"
         app:outlineColor="@color/white"
         android:text="@string/floor"
-        app:outlineWidth="0.5dp"
         />
     <!-- end: floor selector (6) -->
 
@@ -219,7 +224,6 @@
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_location_found"
         app:iconGravity="textStart"
-
         app:iconPadding="0dp"
         app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -229,24 +233,10 @@
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
-  <!-- 10. WARNING OVERLAY (after ConstraintLayout)-->
-  <View
-      android:id="@+id/view_warning"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      android:alpha="0"
-      tools:visibility="gone"
-      android:background="@color/yellowDark"
-      android:elevation="40dp"
-      android:visibility="invisible"
-      app:layout_anchor="@+id/relativeLayout"
-      app:layout_anchorGravity="center"
-      />
 
   <include
       android:id="@+id/bottom_sheet_layout"
       layout="@layout/bottom_sheet_cv_logging"
-      android:elevation="0dp"
       app:behavior_peekHeight="2dp"
       tools:visibility="gone"
       />

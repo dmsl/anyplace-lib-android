@@ -18,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
 // import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -41,18 +42,25 @@ class UiLoggingBtn(
   private val app = act.app
   private val ctx = act.applicationContext
 
-  // val btn: MaterialButton by lazy { act.findViewById(button_id) }
+  private val alphaMin = 0f
+  private val alphaMax = 1f
 
   /**
    * When logging button is clicked and we must store, else: toggle logging
    */
+  var btnInit = false
   fun setupClick() {
+    if (btnInit) return // PMX: NTI
+    btnInit = true
+
+    LOG.E(TAG, "$METHOD: setup logging button")
+
     btn.setOnClickListener {
       LOG.D2(TAG, "loggingBtn: clicked: ${VM.statusLogging}")
       when (VM.statusLogging.value) {
 
         LoggingStatus.running -> {
-          cancelWindow()
+          resetLogging()
         }
         LoggingStatus.mustStore -> {
           app.showToast(scope, "Long-click on map to store detections", Toast.LENGTH_LONG)
@@ -67,9 +75,10 @@ class UiLoggingBtn(
     }
   }
 
-  private fun cancelWindow() {
+  private fun resetLogging() {
     VM.resetLoggingWindow()
     uiLog.bottom.timer.reset()
+    if (!VM.cache.hasFingerprints()) ui.localization.show()
   }
 
   /**
@@ -82,7 +91,7 @@ class UiLoggingBtn(
 
     scope.launch (Dispatchers.IO){
       VM.statusLogging.collect { status ->
-        LOG.W(TAG, "$METHOD: status: $status")
+        LOG.D2(TAG, "logging status: $status")
         when(status) {
           LoggingStatus.running -> {  startLogging()  }
           LoggingStatus.stopped -> {  notRunning() }
@@ -93,52 +102,50 @@ class UiLoggingBtn(
   }
 
   fun handleMustStore() {
-    if (uploadButtonWasVisible) utlUi.fadeIn(uiLog.btnUpload)
+    // if (uploadButtonWasVisible) showUploadBtn()
     VM.disableCvDetection()
 
     LOG.D(TAG, "$METHOD: stopped must store: visible")
-    utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
+    utlUi.animateAlpha(ui.map.mapView, alphaMax, ANIMATION_DELAY)
     ui.localization.visibilityGone() // dont show this yet..
     utlUi.changeBackgroundCompat(btn, R.color.yellowDark)
-    utlUi.text(btn, "long-click on position")
+    utlUi.text(btn, "long-click on map")
     uiLog.bottom.timer.setToStoreMode()
   }
 
 
   var uploadButtonWasVisible=false
   fun startLogging() {
+    LOG.W(TAG, "$METHOD")
+
     uploadButtonWasVisible = uiLog.btnUpload.isVisible
     if (uploadButtonWasVisible) utlUi.fadeOut(uiLog.btnUpload)
 
-    LOG.E(TAG, "$METHOD: TODO")
-  //   btn.isEnabled=false
+    ui.floorSelector.hide()
+
     VM.enableCvDetection()
 
     VM.currentTime = System.currentTimeMillis()
     VM.windowStart = VM.currentTime
 
     ui.localization.hide()
-    ui.map.mapView.alpha = 0f
+    ui.map.mapView.alpha = alphaMin
 
     VM.circleTimerAnimation = TimerAnimation.running
     utlUi.text(btn, "cancel")
     utlUi.changeBackgroundCompat(uiLog.bottom.logging.btn, R.color.darkGray)
 
-    uiLog.bottom.timer.init()
+    uiLog.bottom.timer.prepareForStart()
     utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
   }
 
-  /* TODO:PM
-  - react to UNPLACED detections!!!!!
-    (unplaced on map detections..)
-    - these are also NOT STORED ON DISK!
-   */
   fun notRunning() {
-    if (uploadButtonWasVisible) utlUi.fadeIn(uiLog.btnUpload)
+    if (uploadButtonWasVisible) showUploadBtn()
+    ui.floorSelector.show()
 
     LOG.W(TAG, "$METHOD: logging")
     VM.disableCvDetection()
-    ui.map.mapView.alpha = 1f
+    ui.map.mapView.alpha = alphaMax
 
     VM.circleTimerAnimation = TimerAnimation.reset
     utlUi.fadeOut(uiLog.bottom.timer.btn)
@@ -146,8 +153,9 @@ class UiLoggingBtn(
 
     utlUi.changeBackgroundCompat(btn, R.color.colorPrimary)
 
-    ui.localization.show()
-    btn.text = "scan"
+    // LOG.D2(TAG, "call: showLocalizationButton (from notRunning)")
+    // uiLog.showLocalizationButton(VM.cache.hasFingerprints())
+    utlUi.text(btn, "scan")
   }
 
   fun hide() = utlUi.fadeOut(btn)
@@ -155,6 +163,17 @@ class UiLoggingBtn(
 
   fun visibilityGone() {
     btn.visibility = View.GONE
+  }
+
+  fun showUploadBtn() {
+    ui.localization.hide()
+    ui.localization.visibilityGone()
+
+    utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
+    utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
+    utlUi.enable(uiLog.btnUpload)
+
+    utlUi.fadeInAnyway(uiLog.btnUpload)
   }
 
 }

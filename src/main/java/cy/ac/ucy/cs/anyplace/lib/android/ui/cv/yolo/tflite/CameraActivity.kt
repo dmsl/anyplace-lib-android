@@ -72,7 +72,6 @@ abstract class CameraActivity : AppCompatActivity(),
     }
   }
 
-
   lateinit var bottomSheetLayout: ConstraintLayout
   lateinit var gestureLayout: ConstraintLayout
   lateinit var sheetBehavior: BottomSheetBehavior<ConstraintLayout>
@@ -109,7 +108,7 @@ abstract class CameraActivity : AppCompatActivity(),
   protected abstract fun setNumThreads(numThreads: Int)
   protected abstract fun setUseNNAPI(isChecked: Boolean)
   /** Called by [CameraActivity]'s [onCreate] */
-  protected abstract fun postCreate()
+  protected abstract fun postResume()
   abstract val view_model_class: Class<DetectorViewModel>
   protected lateinit var _vm: ViewModel
   // end of OVERRIDES
@@ -127,8 +126,20 @@ abstract class CameraActivity : AppCompatActivity(),
     _vm = ViewModelProvider(this)[view_model_class]
     VMD= _vm as DetectorViewModel
 
-    postCreate()
   }
+
+
+  @Synchronized
+  public override fun onResume() {
+    LOG.V3()
+    super.onResume()
+    handlerThread = HandlerThread("inference")
+    handlerThread!!.start()
+    handler = Handler(handlerThread!!.looper)
+
+    postResume()
+  }
+
 
   fun hideBottomSheet() { bottomSheetLayout.isVisible = false }
   fun showBottomSheet() { bottomSheetLayout.isVisible = true }
@@ -249,14 +260,6 @@ abstract class CameraActivity : AppCompatActivity(),
     // Trace.endSection()
   }
 
-  @Synchronized
-  public override fun onResume() {
-    LOG.V3()
-    super.onResume()
-    handlerThread = HandlerThread("inference")
-    handlerThread!!.start()
-    handler = Handler(handlerThread!!.looper)
-  }
 
   @Synchronized
   public override fun onPause() {

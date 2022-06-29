@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas
+package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -19,7 +19,6 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
@@ -37,7 +36,7 @@ internal enum class SettingsUi {
   Chat,
 }
 
-class MainSmasSettingsDialog(
+class MainSettingsDialog(
         private val parentActivity: Activity,
         private val version: String): DialogFragment() {
 
@@ -51,7 +50,7 @@ class MainSmasSettingsDialog(
              version: String) {
       val args = Bundle()
       args.putString(KEY_FROM, from)
-      val dialog = MainSmasSettingsDialog(parentActivity, version)
+      val dialog = MainSettingsDialog(parentActivity, version)
       dialog.arguments = args
       dialog.show(fragmentManager, from)
     }

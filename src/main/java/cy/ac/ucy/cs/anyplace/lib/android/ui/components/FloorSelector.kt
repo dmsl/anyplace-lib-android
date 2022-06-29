@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 class FloorSelector(
         private val ctx: Context,
         private val scope: CoroutineScope,
-        private val groupFloorSelector: Group,
+        private val group: Group,
         private val tvFloorTitle: TextView,
         /** this is not treated as a button. used a button just for the background color.. */
         private val btnSelectedFloor: Button,
@@ -48,10 +48,13 @@ class FloorSelector(
   private val fpLoader by lazy { FloorplanLoader() }
   var callback : Callback ?= null
 
+  fun show() = utlButton.fadeIn(group)
+  fun hide() = utlButton.fadeOut(group)
+
   fun updateFloorSelector(floor: Floor?, FH: FloorsWrapper) {
     // if it has floors, then fade in..
-    if (groupFloorSelector.visibility != View.VISIBLE)
-      utlButton.fadeIn(groupFloorSelector)
+    if (group.visibility != View.VISIBLE)
+      utlButton.fadeIn(group)
 
     if (floor == null) {
       updateSelectionButton(btnFloorUp, ctx, false)

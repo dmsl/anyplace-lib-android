@@ -23,6 +23,7 @@ open class UtilAnimations(
   fun disable(v: View) = scope.launch(Dispatchers.Main) { v.isEnabled=false }
 
   fun fadeIn(v: View) = scope.launch(Dispatchers.Main) { v.fadeIn() }
+  fun fadeInAnyway(v: View) = scope.launch(Dispatchers.Main) { v.fadeInAnyway() }
 
   fun fadeOut(v: View) = scope.launch(Dispatchers.Main) { v.fadeOut() }
 
@@ -65,6 +66,14 @@ private fun View.fadeIn() {
     val anim = AnimationUtils.loadAnimation(context, R.anim.zoom_in)
     startAnimation(anim)
   }
+}
+
+private fun View.fadeInAnyway() {
+  visibility = View.INVISIBLE
+  visibility = View.VISIBLE
+  isEnabled = true
+  val anim = AnimationUtils.loadAnimation(context, R.anim.zoom_in)
+  startAnimation(anim)
 }
 
 /**

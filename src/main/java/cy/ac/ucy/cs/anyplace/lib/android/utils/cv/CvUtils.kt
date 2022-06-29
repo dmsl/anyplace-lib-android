@@ -79,12 +79,12 @@ class CvUtils(
       val detectionStr = "${detection.detectedClass}:${detection.title}"
       val modelStr = "${model.idSmas}:${model.modelName}"
 
-      LOG.D3(TAG, "$METHOD: CvModel: $detectionStr: $modelStr")
+      LOG.V3(TAG, "$METHOD: CvModel: $detectionStr: $modelStr")
 
       val cvd = app.cvUtils.toCvDetection(detection, model)
       if (cvd != null) {
         val detReq = CvDetectionREQ(cvd)
-        LOG.D2(TAG, "$METHOD: CvModel: READY: ${detReq.oid}: w:${detReq.width} h:${detReq.height}")
+        LOG.V3(TAG, "$METHOD: CvModel: READY: ${detReq.oid}: w:${detReq.width} h:${detReq.height}")
         detections.add(detReq)
       }
     }

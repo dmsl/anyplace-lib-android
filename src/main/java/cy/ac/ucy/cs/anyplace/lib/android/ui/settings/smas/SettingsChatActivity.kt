@@ -16,7 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.setBackButton
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.setTextColor
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.BaseSettingsActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore

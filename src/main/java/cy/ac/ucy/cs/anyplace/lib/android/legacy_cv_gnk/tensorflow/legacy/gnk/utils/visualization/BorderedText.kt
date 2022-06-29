@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.tensorflow.legacy.gnk.ut
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 
 @Deprecated("")
 /**
@@ -31,6 +32,7 @@ class BorderedText(
     }
 
 
+  @Deprecated("LEGACY GNK")
     fun drawText(
         canvas: Canvas,
         posX: Float,
@@ -44,6 +46,7 @@ class BorderedText(
 
         paint.style = Paint.Style.FILL
         paint.alpha = 160
+
         canvas.drawRect(posX, posY + textSize.toInt(), posX + width.toInt(), posY, paint)
         canvas.drawText(text, posX, posY + textSize, interiorPaint)
     }

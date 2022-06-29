@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
+package cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base
 
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider

@@ -14,7 +14,7 @@ import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialogAnyplace
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
@@ -88,7 +88,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      MainSettingsDialog().show(supportFragmentManager, null)
+      MainSettingsDialogAnyplace().show(supportFragmentManager, null)
     }
     return super.onOptionsItemSelected(item)
   }

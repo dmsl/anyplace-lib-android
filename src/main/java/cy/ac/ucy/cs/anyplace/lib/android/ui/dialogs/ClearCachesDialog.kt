@@ -19,7 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.IntentExtras
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import java.lang.IllegalStateException
 
@@ -101,7 +101,7 @@ class ClearCachesDialog(
       if (spaceH != null) {
         val SH = spaceH!!
         LOG.D(TAG_METHOD, "Space is ${SH.obj.name}")
-        floorsH=IntentExtras.getFloors(spaceH, bundle, KEY_FLOORS)
+        floorsH= IntentExtras.getFloors(spaceH, bundle, KEY_FLOORS)
         binding.radioButtonSpace.text=getString(R.string.for_var_var, SH.prettyType, SH.obj.name)
         binding.radioButtonSpace.visibility=View.VISIBLE
         binding.radioButtonFloor.isChecked = true

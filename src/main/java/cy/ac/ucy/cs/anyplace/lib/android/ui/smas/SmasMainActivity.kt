@@ -14,6 +14,7 @@ import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
@@ -30,7 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
-import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
@@ -88,18 +89,18 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     setupButtonAlert()
   }
 
-  override fun onMapReadyCallback() {
-    // nothing for now..
+  override fun onMapReady(googleMap: GoogleMap) {
+    super.onMapReady(googleMap)
   }
 
   /**
    * Called by [CvMapActivity] ? (some parent method)
    */
-  override fun postCreate() {
-    super.postCreate()
+  override fun postResume() {
+    super.postResume()
     LOG.D2()
 
-    LOG.W(TAG, "main: onPostCreate")
+    LOG.W(TAG, "main: postResume")
 
     VM = _vm as SmasMainViewModel
     VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
@@ -314,8 +315,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     btnSettings.setOnClickListener {
 
       val versionStr = BuildConfig.VERSION_CODE
-      MainSmasSettingsDialog.SHOW(supportFragmentManager,
-              MainSmasSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
+      MainSettingsDialog.SHOW(supportFragmentManager,
+              MainSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
     }
   }
 
@@ -399,7 +400,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     // if (detections.isNotEmpty()) {
     //   // LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
     // }
-    VM.processDetections(detections)
+    VM.processDetections(detections, this@SmasMainActivity)
   }
 
 }

@@ -1,25 +1,23 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.view.View
 import android.widget.Toast
-import com.google.android.gms.maps.GoogleMap
+import androidx.core.view.isVisible
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MainSmasSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 open class CvLoggerUI(private val act: CvLoggerActivity,
@@ -45,6 +43,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   /** BottomSheet for the CvLogger */
   lateinit var bottom: BottomSheetCvLoggerUI
+  var uiBottomLazilyInited = false
   val ctx : Context = act
 
   // UI COMPONENTS:
@@ -56,24 +55,53 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * Stores some detections (if not empty) to local cache.
    */
   fun setupOnMapLongClick() {
-    ui.map.obj.setOnMapLongClickListener { location ->
-      LOG.E(TAG, "$METHOD: storing detections (long-click)")
-      if (VM.canStoreDetections()) {
-        LOG.V3(TAG, "clicked at: $location")
-        handleStoreDetections(location)
-      } else {
-        app.showToast(scope, "Scan some objects first!")
+    val method = METHOD
+    val tag = TAG
+    LOG.E(tag, "$method: setup: (long-click)")
+    ui.map.mapView.isLongClickable=false
+    ui.map.mapView.isLongClickable=true
+
+    // mMapFragment.getView().setClickable(false);
+    scope.launch(Dispatchers.IO) {
+      delay(200)
+      scope.launch(Dispatchers.Main) {
+        ui.map.obj.setOnMapLongClickListener { location ->
+          LOG.E(tag, "$method: storing detections (long-click)")
+          if (VM.canStoreDetections()) {
+            LOG.V3(tag, "clicked at: $location")
+            handleStoreDetections(location)
+          } else {
+            app.showToast(scope, "Scan some objects first!")
+          }
+        }
       }
     }
   }
 
 
+  /**
+   * Optionally passing whether there are fingerprints stored
+   * (due to async, checking whether the button is visible is not enough)
+   *
+   * probably this logic needs to be reworked..
+   */
+  fun showLocalizationButton(hasFingerprints: Boolean = false)  {
+    LOG.D2(TAG,"$METHOD:")
+    if (!hasFingerprints && canPerformLocalization()) {
+      LOG.W(TAG,"$METHOD: showing!")
+     ui.localization.show()
+    }
+  }
+
+  fun canPerformLocalization() =
+          btnUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
+
   fun setupButtonSettings() {
     LOG.D2()
     btnSettings.setOnClickListener {
       val versionStr = BuildConfig.VERSION_CODE
-      MainSmasSettingsDialog.SHOW(act.supportFragmentManager,
-              MainSmasSettingsDialog.FROM_MAIN, act, versionStr)
+      MainSettingsDialog.SHOW(act.supportFragmentManager,
+              MainSettingsDialog.FROM_MAIN, act, versionStr)
     }
 
     utlUi.changeBackgroundCompat(btnSettings, R.color.yellowDark)
@@ -88,127 +116,95 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     LOG.E(TAG, "$METHOD")
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
-    VM.cacheDetectionsLocally(location)
-    utlUi.fadeIn(btnUpload) // show upload button
+
+    if (VM.wFloor==null) {
+      app.showToast(scope, "Cannot store detections. (null floor)", Toast.LENGTH_LONG)
+      resetLogging()
+      return
+    }
+
+    val FW = VM.wFloor!!
+    val SW = FW.spaceH
+
+    // find the floor
+    val userCoord = UserCoordinates(SW.obj.id,
+            FW.obj.floorNumber.toInt(),
+            location.latitude, location.longitude)
+
+    VM.cacheDetectionsLocally(userCoord, location)
+    bottom.logging.showUploadBtn()
 
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
-    val msg = "Point: $curPoint\n\nObjects: $windowDetections\n"
+    val msg = "Point: $curPoint"
+    // val snippet=""
+    val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
+    // val snippet="Objects: $windowDetections\n${FW.prettyFloor}: ${FW.obj.floorNumber}" // TODO:PMX FR10
 
+    ui.map.markers.addCvMarker(location, msg, snippet)
     ui.map.recenterCamera(location)
-    ui.map.markers.addCvMarker(location, msg)
 
+    resetLogging()
+  }
+
+
+  fun resetLogging() {
     VM.resetLoggingWindow()
     bottom.timer.reset()
   }
 
+
+  /**
+   * Updates UI according to the offline cache
+   * if there is cache:
+   * - hide demo localization button (in loggeronly makes sense to test latest fingerprint)
+   * - shows upload button and a prompted
+   * else:
+   * - shows localization button
+   * - clears map markers
+   * - hides upload button
+   */
   fun checkForUploadCache(clearMarkers: Boolean=false) {
     scope.launch(Dispatchers.IO) {
       if (VM.cache.hasFingerprints()) {
-        utlUi.fadeIn(btnUpload)
-        val msg = "Please upload cached fingerprints to the cloud."
-        app.showToast(scope, msg, Toast.LENGTH_LONG)
+        // wait for the bottom sheet to be initialized
+        while(!uiBottomLazilyInited) delay(100)
+
+        bottom.logging.showUploadBtn()
+        // val msg = "Please upload local fingerprints to the cloud."
+        // app.showToast(scope, msg, Toast.LENGTH_LONG)
       } else {
         utlUi.fadeOut(btnUpload)
         // only when required (as markers are lazily initialized)
         if(clearMarkers) ui.map.markers.hideCvObjMarkers()
+
+        LOG.E(TAG, "call: showLocalizationButton checkForUploadCache..")
+        showLocalizationButton()  // show again localization button
       }
     }
-
-    utlUi.enable(btnUpload)
   }
 
+  var uploadButtonInit = false
   fun setupUploadBtn() {
+    if (uploadButtonInit) return
+    uploadButtonInit = true
+
+    LOG.E(TAG, "$METHOD: setup upload button")
     btnUpload.setOnClickListener {
       LOG.E(TAG, "$METHOD: clicked upload")
       scope.launch(Dispatchers.IO) {
         utlUi.disable(btnUpload)
+        utlUi.text(btnUpload, ctx.getString(R.string.uploading))
+        utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
         VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
       }
     }
   }
 
-
   /**
+   * DEPRECATED CALLS:
    *
-   * DEPRECATED:
-   * - used to store locally the detections in an optimized radio format.
-   *
-   * Everything is handled by the backend now..
-   *
-   * It stores detections using [VM], and updates the UI:
-   * - shows warning when no detections captured
-   * otherwise:
-   * - clears the [gmap] markers
-   * - updates the heatmap
+   * VM.storeDetectionsLOCAL(VM.wFloor)
+   * VM.cvMapH?.let { ui.map.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
    */
-  @Deprecated("NOT USED - old offline cv-map storing code")
-  fun storeDetectionsAndUpdateUI(gmap: GoogleMap) {
-    ui.map.markers.hideCvObjMarkers()
-
-    // an extra check in case of a forced storing (long click while running or paused mode)
-    if (VM.objOnMAP.isEmpty()) {
-      val msg = "Nothing stored."
-      LOG.W(TAG, msg)
-      return
-    }
-    // val detectionsToStored = VM.objOnMAP.size
-    // VM.storeDetectionsLOCAL(VM.wFloor)
-    // VM.cvMapH?.let { ui.map.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
-  }
-  /** CLR:PM after done?
-   */
-  @SuppressLint("SetTextI18n")
-  @Deprecated("CLR")
-  fun updateUi(status: LoggingStatus) {
-    LOG.E(TAG, "$METHOD: status: $status")
-    bottom.groupTutorial.visibility = View.GONE
-    bottom.logging.btn.visibility = View.VISIBLE // hidden only by demo-nav
-
-    when (status) {
-      // MERGE:
-      // LoggingStatus.running -> { // just started scanning
-      //   ui.localization.hide()
-      //   VM.circleTimerAnimation = TimerAnimation.running
-      //   bottom.logging.btn.text = "pause (cancel?)"
-      //   utlUi.removeMaterialIcon(bottom.btnTimer)
-      //   utlUi.changeBackgroundCompat(bottom.logging.btn, R.color.darkGray)
-      //   utlUi.changeBackgroundDONT_USE(bottom.btnTimer, R.color.redDark)
-      //   utlUi.fadeIn(bottom.btnTimer)
-      //   utlUi.animateAlpha(ui.map.mapView, OPACITY_MAP_LOGGING, ANIMATION_DELAY)
-      // }
-
-      // MERGE:
-      // LoggingStatus.stopped -> { // stopped after a pause or a store: can start logging again
-      // }
-      // Logging.stoppedNoDetections -> { // stopped after no detections: retry a scan
-      //   ui.localization.visibilityGone()   // TODO:PMX FR1
-      //   VM.circleTimerAnimation = TimerAnimation.reset
-      //   scope.launch {
-      //     val ms = 1500L
-      //     delay(ms) // wait before restarting..
-      //     restartLogging()
-      //   }
-      // }
-      // Logging.stoppedMustStore -> {
-      //   ui.localization.visibilityGone() // TODO:PMX FR1
-      //   VM.circleTimerAnimation = TimerAnimation.reset
-      //   bottom.btnTimer.visibility= View.VISIBLE
-      //   LOG.D(TAG_METHOD, "stopped must store: visible")
-      //   utlUi.animateAlpha(ui.map.mapView, 1f, ANIMATION_DELAY)
-      //   utlUi.changeBackgroundDONT_USE(bottom.btnTimer, R.color.yellowDark)
-      //
-      //   val storedDetections = VM.objOnMAP.size
-      //   val noDetections = storedDetections == 0
-      //   val title="long-click on map"
-      //   val subtitle = if (noDetections) "nothing new attached on map yet" else "mapped locations: $storedDetections"
-      //   val delay = if(noDetections) 7000L else 5000L
-      //
-      //   bottom.btnLogging.text = "END"
-      //   // val loggingBtnColor = if (noDetections) R.color.darkGray else R.color.yellowDark
-      //   // changeBackgroundButtonCompat(btnLogging, applicationContext, loggingBtnColor)
-      //   utlUi.changeBackgroundCompat(bottom.btnLogging, R.color.darkGray)
-      // }
-    }
-  }
 }

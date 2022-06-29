@@ -141,28 +141,36 @@
   <string name="current_window">Current Window:</string>
   <string name="prefs_header_computer_vision">Computer Vision</string>
   <string name="developer_options">Developer Options</string>
-  <string name="tutorial">Tutorial</string>
-  <string name="tutorial_cvscan_start">1. START SCANNING:</string>
+  <string name="logging_tutorial">Logging Tutorial</string>
+  <string name="tutorial_cvscan_start">1. SCAN:</string>
   <string name="tutorial_cvscan_start_details">
-"   - identifies objects for some seconds.
-   - these objects belong to the same \"scan window\".
+"   - the camera opens to identify objects.
+   - these objects belong to the same \"scan window\"."
   </string>
-  <string name="tutorial_cvscan_store">2. MAP-ASSIGN OBJECTS:</string>
+  <string name="tutorial_cvscan_store">2. LONG-CLICK ON MAP:</string>
   <string name="tutorial_cvscan_store_details">
-"   - once the scan window ends, the map is shown
-   - scanned objects must be map-assigned with long-click
-   - once objects are assigned, a new scan starts."
+"  - once scan is done you can assign coordinates
+     to the scanned objects
+   - this is done by long-clicking on a map location
+   - Steps (1), (2) may repeated as necessary
+   - \"Upload Scans\": updates the cloud fingerprints"
   </string>
-  <string name="tutorial_cvscan_finish">3. END SCANNING:</string>
-
-
+  <string name="tutorial_cvscan_discard">DISCARDING OBJECTS:</string>
   <!-- TUTORIALS -->
   <string name="tutorial_cvscan_finish_details">
-"   - the last scanned window will be discarded.
-   - the \"Object Map\" will be stored locally.
-   - a \"Heat Map\" of the stored detections will updated.
+"   - While scanning: \"cancel\" discards current window
+   - On window finish: can discard it using the UI
+   - In settings: you can discard all local fingerprints."
   </string>
+  <string name="tutorial_restrictions">RESTRICTIONS IMPOSED:</string>
+  <string name="tutorial_restrictions_details">
+"   - While in (1) or (2) you cannot change a floor
+   - Localization in logger is unavailable while there are
+     local fingerprints. Either discard them or upload them."
+  </string>
+
   <string name="clear">Clear</string>
+  <string name="clear_window">Clear window</string>
   <string name="upper_floor">Upper floor</string>
   <string name="prefs_header_cvmap">Object Maps</string>
   <string name="prefs_header_cache">Cache</string>
@@ -236,5 +244,6 @@
   <string name="btn_ok">OK</string>
   <string name="delete_local_msgs">Delete local messages</string>
   <string name="upload_scans">Upload Scans</string>
+  <string name="uploading">Uploading..</string>
 
 </resources>

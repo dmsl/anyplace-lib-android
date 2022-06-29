@@ -64,6 +64,7 @@ class DetectionProcessor(
   /**
    * Runs (YOLO) detection on the image
    */
+  @Deprecated("LEGACY GNCK")
   fun processImage(bitmap: Bitmap): Long {
     val detectionTime: Long = measureTimeMillis {
       frameDetections = detector.runDetection(bitmap)

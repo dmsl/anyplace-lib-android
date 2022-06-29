@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -34,8 +35,8 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
   /** extends [CvViewModel] */
   private lateinit var VM: SmasMainViewModel
 
-  override fun postCreate() {
-    super.postCreate()
+  override fun postResume() {
+    super.postResume()
     VM = _vm as SmasMainViewModel
 
     setupCollectors()
@@ -65,40 +66,8 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
     observeFloors()
   }
 
-
-  override fun onMapReadyCallback() {
-    /*
-    TODO:ATH here your Google Map is ready.
-
-    - [wMap]  it's a is a wrapper class ([GmapWrapper]) for the map (more info below)
-    The [GoogleMap] object for that wrapper is: [wMap] (it is in the [CvMapActivity])
-
-    - [wMap.obj] it's the actual [GoogleMap] object
-    e.g.: you can use wMap.obj.addMarker()
-
-    you can set a bool Flow, and when both: a floor is selected + the map is ready,
-    you can put some markers on the map..
-
-    GmapWrapper (cy/ac/ucy/cs/anyplace/lib/android/ui/cv/map/GmapWrapper.kt):
-    - it has for example: CvMapUi, that manages:
-      - FloorSelector,
-      - and Overlays (adding heatmap or images on map)
-      - Markers of user locations, etc. (cy.ac.ucy.cs.anyplace.lib.android.maps.Markers)
-
-     Eventually, your functionality will be broken down and put into the [GmapWrapper]
-     in a similar fashion..
-
-     TODO:ATH Other notes:
-     - you can make a tmpmodels folder for any models you might extra need.
-     - there are some models already here: cy/ac/ucy/cs/anyplace/lib/models
-
-     Example:
-     - cy/ac/ucy/cs/anyplace/lib/models/POI.kt (that also has POIS.kt)
-
-     - BTW for the POIx (the one that you used for Routes), you can name it: RoutePOI
-
-     */
-
+  override fun onMapReady(googleMap: GoogleMap) {
+    super.onMapReady(googleMap)
   }
 
   override fun onFirstFloorLoaded() {

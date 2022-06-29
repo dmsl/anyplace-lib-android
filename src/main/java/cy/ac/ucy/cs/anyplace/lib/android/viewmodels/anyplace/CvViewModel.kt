@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
@@ -182,7 +183,8 @@ open class CvViewModel @Inject constructor(
     return prefsCvNav.windowLocalizationMs.toInt()
   }
 
-  open fun processDetections(recognitions: List<Classifier.Recognition>) {
+  open fun processDetections(recognitions: List<Classifier.Recognition>,
+                             activity: DetectorActivityBase) {
     LOG.D2(TAG, "VM: CvBASE: $METHOD: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {

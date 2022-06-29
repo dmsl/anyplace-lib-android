@@ -32,12 +32,18 @@ class UiLoggerTimer(
 
   private val utlUi by lazy { UtilUI(act, scope) }
 
-  private var clearConfirm=false
   private var clickedScannedObjects=false
 
   val btnClearObj: MaterialButton by lazy { act.findViewById(id_btn_clearObjects) }
   val btn: MaterialButton by lazy { act.findViewById(id_btn_timer) }
   val progressBar: ProgressBar by lazy { act.findViewById(id_progressBar) }
+
+  fun prepareForStart() {
+    utlUi.removeMaterialIcon(uiLog.bottom.timer.btn)
+    utlUi.changeBackgroundMaterial(uiLog.bottom.timer.btn, R.color.redDark)
+    utlUi.fadeIn(uiLog.bottom.timer.btn)
+  }
+
 
   /**
    * Initiate a circular progress bar animation, inside a coroutine for
@@ -64,13 +70,6 @@ class UiLoggerTimer(
     }
   }
 
-  fun reset() {
-    progressBar.visibility = View.INVISIBLE
-    VM.circleTimerAnimation = TimerAnimation.reset
-    progressBar.progress=0
-    hideBtnClearObjects()
-  }
-
   fun setup() {
     setupClick()
     uiLog.bottom.timer.setupClearObjectsBtn()
@@ -82,18 +81,11 @@ class UiLoggerTimer(
   private fun setupClick() {
     btn.setOnClickListener {
       if (VM.statObjWindowUNQ > 0 &&!clickedScannedObjects) {
-        clickedScannedObjects=true
         utlUi.fadeIn(btnClearObj)
-        scope.launch {
+        scope.launch(Dispatchers.IO) {
           delay(5000)
           clickedScannedObjects=false
-          if(clearConfirm) {
-            clickedScannedObjects=true
-            delay(5000) // an extra delay
-            clearConfirm=false
-            clickedScannedObjects=false
-          }
-          hideBtnClearObjects()
+          resetBtnClearObjects()
         }
       }
     }
@@ -105,25 +97,35 @@ class UiLoggerTimer(
    */
   fun setupClearObjectsBtn() {
     btnClearObj.setOnClickListener {
-      if (!clearConfirm) {
-        clearConfirm = true
-        btnClearObj.text = "Sure ?"
-        btnClearObj.alpha = 1f
-      } else {
-        hideBtnClearObjects()
-        utlUi.fadeOut(btn)
-        VM.resetLoggingWindow()
-      }
+      resetLogging()
     }
   }
 
-  fun hideBtnClearObjects() {
-    clearConfirm=false
+  fun resetLogging() {
+    reset()
+    VM.resetLoggingWindow()
+  }
+
+
+  fun reset() {
+    resetBtnClearObjects()
+    VM.circleTimerAnimation = TimerAnimation.reset
+    resetProgressBar()
+  }
+
+  fun resetProgressBar() {
+    progressBar.visibility = View.INVISIBLE
+    progressBar.progress=0
+  }
+
+
+  fun resetBtnClearObjects() {
     utlUi.fadeOut(btnClearObj)
-    scope.launch {
+    scope.launch(Dispatchers.IO) {
       delay(100)
-      btnClearObj.alpha = 0.5f
-      btnClearObj.text = "Clear"
+      scope.launch(Dispatchers.Main) {
+        btnClearObj.alpha = 0.5f
+      }
     }
   }
 
@@ -133,14 +135,13 @@ class UiLoggerTimer(
     progressBar.visibility = View.INVISIBLE
 
     if (!VM.objWindowLOG.value.isNullOrEmpty()) {
-      utlUi.changeMaterialIcon(btn, R.drawable.ic_objects)
-      utlUi.changeBackgroundMaterial(btn, R.color.yellowDark)
+      utlUi.changeMaterialIcon(btn, R.drawable.ic_delete)
+      utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
     } else {   // no results, hide the timer
       utlUi.removeMaterialIcon(btn)
       utlUi.fadeOut(btn)
     }
   }
-
 
   /**
    * Observes [VM.windowDetections] changes and updates
@@ -157,12 +158,6 @@ class UiLoggerTimer(
     } else {
       setToStoreMode()
     }
-  }
-
-  fun init() {
-    utlUi.removeMaterialIcon(uiLog.bottom.timer.btn)
-    utlUi.changeBackgroundMaterial(uiLog.bottom.timer.btn, R.color.redDark)
-    utlUi.fadeIn(uiLog.bottom.timer.btn)
   }
 
 }

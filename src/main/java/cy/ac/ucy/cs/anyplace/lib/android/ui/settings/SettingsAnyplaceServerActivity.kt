@@ -10,6 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ServerDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsServer
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.AnyplaceSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SettingsServerActivity: AnyplaceSettingsActivity() {
+class SettingsAnyplaceServerActivity: AnyplaceSettingsActivity() {
   private lateinit var settingsFragment: SettingsServerFragment
 
   override fun onCreate(savedInstanceState: Bundle?) {

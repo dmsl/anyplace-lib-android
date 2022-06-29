@@ -5,6 +5,7 @@ import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.os.Build
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
@@ -21,6 +22,7 @@ class UtilUI(
         val scope: CoroutineScope) : UtilAnimations(ctx, scope) {
 
   fun text(btn: Button, txt: String) = scope.launch(Dispatchers.Main) { btn.text=txt }
+  fun text(tv: TextView, txt: String) = scope.launch(Dispatchers.Main) { tv.text=txt }
 
   /**
    * Works for [MaterialButton]

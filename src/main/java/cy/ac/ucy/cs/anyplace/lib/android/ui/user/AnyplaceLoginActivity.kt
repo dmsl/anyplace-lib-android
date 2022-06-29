@@ -29,7 +29,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialogAnyplace
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel
@@ -274,7 +274,7 @@ class AnyplaceLoginActivity : BaseActivity() {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      MainSettingsDialog().show(supportFragmentManager, MainSettingsDialog.FROM_LOGIN)
+      MainSettingsDialogAnyplace().show(supportFragmentManager, MainSettingsDialogAnyplace.FROM_LOGIN)
     }
     return super.onOptionsItemSelected(item)
   }
