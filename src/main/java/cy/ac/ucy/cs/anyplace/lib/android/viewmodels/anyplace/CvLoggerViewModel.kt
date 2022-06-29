@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -17,7 +15,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
@@ -27,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.cacheGet
 import javax.inject.Inject
 
 enum class LoggingStatus {
@@ -55,7 +51,6 @@ class CvLoggerViewModel @Inject constructor(
         CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { CHAT(app.applicationContext) }
-  private val cache by lazy { Cache(application) }
 
   // TODO: move in new class..
   // var longClickFinished: Boolean = false
@@ -121,7 +116,7 @@ class CvLoggerViewModel @Inject constructor(
     val appendedDetections = objWindowLOG.value.orEmpty() + recognitions
     statObjWindowAll.postValue(appendedDetections.size)
 
-    LOG.E(TAG, "DETECTIONS IN MEM: ${objWindowLOG.value?.size}")
+    LOG.V3(TAG, "Appended detections: ${objWindowLOG.value?.size} (in mem)")
 
     if (windowStart==0L) windowStart=currentTime
 
@@ -173,39 +168,23 @@ class CvLoggerViewModel @Inject constructor(
   }
 
 
-  /**
-   * Upload Unique detections
+  /* TODO: BATCH STORING
+  - TODO 1: file cache: append to file
+
+  - TODO 2: upload button:
+   - show ONLY:
+     + if initially there is the file
+     + if we are calling this method...
    */
-  private fun uploadUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
+  private fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
     LOG.E(TAG,"$METHOD: CvModel: detections: ${recognitions.size}")
 
     viewModelScope.launch(Dispatchers.IO) {
-      // TODO:PM store on database (still will be a resp success..)
 
       app.cvUtils.initConversionTables(model.idSmas)
       val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
 
-      // LEFTHERE:
-      /* TODO: BATCH STORING
-      - TODO 1: file cache: append to file
-
-      - TODO 2: upload button:
-       - show ONLY:
-         + if initially there is the file
-         + if we are calling this method...
-       */
-
-
-      // CHECK:PM
-      // Can we upload at the end the local radiomap?
-      // UI TODO
-      // 1. BIND THE TIMER BUTTON
-
-      LOG.E(TAG, "uploadUniqueDetections: SKIPPING NW call here")
-      LOG.E(TAG, "TODO: [STORE THEM IN FILE CODE LOCATION]")
-
       cache.storeFingerprints(userCoords, detectionsReq, model)
-      // nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
     }
   }
 
@@ -263,18 +242,17 @@ class CvLoggerViewModel @Inject constructor(
    * a Hash Map of locations and object fingerprints
    */
 
-  fun addDetections(FH: FloorWrapper?, model: DetectionModel, latLong: LatLng) {
+  fun cacheDetectionsLocally(latLong: LatLng) {
     statObjTotal+=statObjWindowUNQ
     // TODO:PM do them in batch later on..
     val detections = objWindowLOG.value.orEmpty()
     objOnMAP[latLong] = detections
 
-    // floorH.spaceH.obj.id
     val userCoord = UserCoordinates(wFloor?.spaceH?.obj?.id!!,
             wFloor?.obj!!.floorNumber.toInt(),
             latLong.latitude, latLong.longitude)
 
-    uploadUniqueDetections(userCoord, detections)
+    cacheUniqueDetections(userCoord, detections)
   }
 
 

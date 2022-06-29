@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
@@ -83,6 +84,8 @@ open class CvViewModel @Inject constructor(
   lateinit var prefsCvNav: CvNavigationPrefs
   /** Updated on changes */
   lateinit var prefsCv: CvEnginePrefs
+
+  val cache by lazy { Cache(application) }
 
   // lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs

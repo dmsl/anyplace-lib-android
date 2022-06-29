@@ -12,10 +12,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
-import java.io.File
-import java.io.FileOutputStream
-import java.io.FileWriter
+import java.io.*
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * File cache using [ctx.filesDir]/spaces as a base directory.
@@ -37,10 +36,12 @@ open class Cache(val ctx: Context) {
     const val PNG_FLOORPLAN = "f.png"
   }
 
+  private val gson : Gson by lazy { GsonBuilder().create() }
+
   val baseDir get() = "${ctx.filesDir}"
 
   val spacesDir get() = "$baseDir/spaces"
-  val fingerprintsFilename get() = "$baseDir/fingerprints"
+  val fingerprintsFilename get() = "$baseDir/cv-fingerprints.jsonl"
 
   // SPACES
 
@@ -215,28 +216,70 @@ open class Cache(val ctx: Context) {
 
   fun hasFingerprints(): Boolean { return File(fingerprintsFilename).exists() }
 
-  fun uploadFingerprints(user: ChatUser) {
-  //   val entry = FingerprintEntry(userCoords, time, detectionsReq, model.idSmas)
-  //
-  //   val gson: Gson = GsonBuilder().create()
-  //   val fw= FileWriter(File(fingerprintsFilename), true)
-  //   val lineEntry = gson.toJson(entry)
-  //   LOG.D2(TAG, "STR: $lineEntry")
-  //   fw.write(lineEntry + "\n")
-  //   fw.close()
-  }
-
-
   fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
+    LOG.D(TAG, "$METHOD: to local cache")
     val time = utlTime.epoch().toString()
     val entry = FingerprintEntry(userCoords, time, detectionsReq, model.idSmas)
 
-    val gson: Gson = GsonBuilder().create()
+    // val gson: Gson = GsonBuilder().create()
     val fw= FileWriter(File(fingerprintsFilename), true)
     val lineEntry = gson.toJson(entry)
-    LOG.D2(TAG, "STR: $lineEntry")
+    LOG.D2(TAG, "$METHOD: ENTRY: $lineEntry")
     fw.write(lineEntry + "\n")
     fw.close()
+  }
+
+  fun topFingerprintsEntry(): FingerprintEntry? {
+    val str = File(fingerprintsFilename).bufferedReader().use { it.readLine() } ?: return null
+
+    return gson.fromJson(str, FingerprintEntry::class.java)
+  }
+
+  fun deleteFingerprintsCache() {
+    File(fingerprintsFilename).delete()
+  }
+
+  fun popFingerprintsEntry() {
+    removeFirstLine(fingerprintsFilename)
+
+    if (isEmptyFile(fingerprintsFilename))  deleteFingerprintsCache()
+  }
+
+  fun isEmptyFile(source: String): Boolean {
+    try {
+      for (line in Files.readAllLines(Paths.get(source))) {
+        if (line != null && line.trim { it <= ' ' }.isNotEmpty()) {
+          return false
+        }
+      }
+    } catch (e: IOException) {
+    }
+    // Default to true.
+    return true
+  }
+
+  /**
+   * https://stackoverflow.com/a/13178980/776345
+   */
+  private fun removeFirstLine(fileName: String?) {
+    val raf = RandomAccessFile(fileName, "rw")
+
+    // Initial write position
+    var writePosition: Long = raf.filePointer
+    raf.readLine()
+    // Shift the next lines upwards.
+    var readPosition: Long = raf.filePointer
+    val buff = ByteArray(1024)
+    var n: Int
+    while (-1 != raf.read(buff).also { n = it }) {
+      raf.seek(writePosition)
+      raf.write(buff, 0, n)
+      readPosition += n.toLong()
+      writePosition += n.toLong()
+      raf.seek(readPosition)
+    }
+    raf.setLength(writePosition)
+    raf.close()
   }
 
 }

@@ -35,9 +35,9 @@
       app:icon="@drawable/ic_folder">
 
     <Preference
-        android:title="Clear local CV Maps (json)"
+        android:title="Discard cached fingerprints"
         android:key="@string/pref_log_clear_cache_cv_fingerprints"
-        android:summary="Delete Object Maps that were not synced yet."
+        android:summary="Those were not uploaded, and will be lost."
         />
 
     <Preference

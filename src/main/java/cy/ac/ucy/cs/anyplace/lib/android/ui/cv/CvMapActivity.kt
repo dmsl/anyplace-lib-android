@@ -216,8 +216,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
-      // TODO method that updates ui based on internet connectivity: gray out settings button
-      Toast.makeText(applicationContext, "No internet.", Toast.LENGTH_LONG).show()
+      app.showToast(lifecycleScope, "No internet!")
     }
   }
 

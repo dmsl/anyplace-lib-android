@@ -7,6 +7,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
@@ -220,6 +221,18 @@ class GmapWrapper(private val ctx: Context,
   fun setUserLocationREMOTE(coord: Coord) {
     LOG.D(TAG, "$METHOD")
     markers.setLocationMarkerREMOTE(coord)
+  }
+
+  fun recenterCamera(location: LatLng) {
+    scope.launch(Dispatchers.Main) {
+      obj.animateCamera(
+              CameraUpdateFactory.newCameraPosition(
+                      CameraPosition(
+                              location, obj.cameraPosition.zoom,
+                              // don't alter tilt/bearing
+                              obj.cameraPosition.tilt,
+                              obj.cameraPosition.bearing)))
+    }
   }
 
 

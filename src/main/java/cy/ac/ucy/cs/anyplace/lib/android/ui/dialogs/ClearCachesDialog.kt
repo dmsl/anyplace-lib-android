@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.IntentExtras
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogClearCachesBinding
 import java.lang.IllegalStateException
 
+@Deprecated("Not needed - Used for Cv-Map Json fingerprints")
 class ClearCachesDialog(
   private val repo: RepoAP,
   private val cvDataStore: CvDataStore

@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
+import android.widget.Toast
 import android.widget.Toast.*
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -12,10 +13,15 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG.Companion.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -43,10 +49,99 @@ class CvFingerprintSendNW(
   private val C by lazy { CHAT(app.applicationContext) }
   private lateinit var chatUser : ChatUser
 
+  private val utlUi by lazy { UtilUI(app, VM.viewModelScope) }
+
+  suspend fun uploadFromCache(uiLog: CvLoggerUI) {
+    chatUser = app.dsChatUser.readUser.first()
+
+    LOG.E(TAG, "$METHOD: upload from cache")
+    val msg = "No internet!"
+
+    if (!app.hasInternet()) {
+      app.showToast(VM.viewModelScope, msg)
+      utlUi.enable(uiLog.btnUpload)
+      return
+    }
+
+    var total=0
+    var nullEntries=0
+    var uploadOK=0
+
+    while (VM.cache.hasFingerprints()) {
+      val entry = VM.cache.topFingerprintsEntry()
+
+      if (!app.hasInternet()) {
+        app.showToast(VM.viewModelScope, msg)
+        utlUi.enable(uiLog.btnUpload)
+        break
+      }
+
+      if (entry==null || entry.cvDetections.isNullOrEmpty()) {
+        LOG.E(TAG, "Ignoring null entry")
+        nullEntries++
+      } else {
+        if (uploadEntry(chatUser, entry)) {
+          uploadOK++
+        } else {
+          app.showToast(VM.viewModelScope, "Something went error during upload!")
+          break
+        }
+      }
+
+      VM.cache.popFingerprintsEntry()
+      total++
+    }
+    uiLog.checkForUploadCache(true)
+
+    delay(1000)
+    var reportMsg = "Uploaded objects in $total locations"
+    if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
+
+    app.showToast(VM.viewModelScope, reportMsg, Toast.LENGTH_LONG)
+  }
+
+  private suspend fun uploadEntry(chatUser: ChatUser, entry: FingerprintEntry): Boolean {
+    LOG.E(TAG, "ENTRY: $entry\n")
+
+    // LOG.D2(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
+    //
+    // resp.value = NetworkResult.Unset()
+    // resp.value = NetworkResult.Loading()
+
+    try {
+      val req= FingerprintSendReq(chatUser, entry)
+      LOG.D3(TAG, "FP-Send: ${req.time}: #: ${entry.cvDetections.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
+      val response = repo.remote.cvFingerprintSend(req)
+      LOG.D3(TAG, "FP-Send: Resp: ${response.message()}" )
+
+      return when (val resp = handleResponse(response)) {
+        is NetworkResult.Success -> {
+          val msg = "Uploaded objects: ${resp.data?.rows}"
+          LOG.W(TAG, msg)
+          app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+          true
+        }
+        else -> {
+          false
+        }
+      }
+
+    } catch(ce: ConnectException) {
+      val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
+      // handleException(msg, ce)
+      LOG.E(TAG, "$METHOD", ce)
+    } catch(e: Exception) {
+      val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+      LOG.E(TAG, "$METHOD", e)
+      // handleException(msg, e)
+    }
+    return false
+  }
+
+
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates,
-                       detectionsReq: List<CvDetectionREQ>, model: DetectionModel
-  ) {
+                       detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
     chatUser = app.dsChatUser.readUser.first()
 
     LOG.D2(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")

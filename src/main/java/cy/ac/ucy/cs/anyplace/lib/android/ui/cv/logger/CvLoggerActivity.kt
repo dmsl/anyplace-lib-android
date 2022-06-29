@@ -74,9 +74,12 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     LOG.D2()
     setupUiReactions()
 
-    // MERGE this was setupComputerVision()
-    // uiLog.uiBottom.setup() // TODO why special method?
-    // uiLog.setupBottomSheet() // TODO special method?
+    uiLog.setupUploadBtn()
+    uiLog.checkForUploadCache()
+
+    // CLR:PM MERGE this was setupComputerVision()
+    // uiLog.uiBottom.setup() // why special method?
+    // uiLog.setupBottomSheet() // special method?
   }
 
   private fun setupUiReactions() {

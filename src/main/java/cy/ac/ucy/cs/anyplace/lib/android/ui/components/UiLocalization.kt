@@ -25,9 +25,7 @@ class UiLocalization(
         private val button_id: Int) {
 
   private val ctx = act.applicationContext
-
   private val utlButton by lazy { UtilUI(act, scope) }
-
   val btn: MaterialButton by lazy { act.findViewById(button_id) }
 
   fun setupClick() {
@@ -71,42 +69,7 @@ class UiLocalization(
     wMap.mapView.alpha = mapAlpha
   }
 
-
   fun hide() = utlButton.fadeOut(btn)
-
   fun show() = utlButton.fadeIn(btn)
-
   fun visibilityGone() = utlButton.gone(btn)
-
-  // fun disable() {
-  //   btn.isEnabled = false
-  // }
-
-  // fun enable() {
-  //   btn.isEnabled = true
-  // }
-  //
-  // fun visible() {
-  //   btn.visibility = View.VISIBLE
-  // }
-
-    // CLR:PM not needed functionality? on long click: remove Json CV-Maps
-    // private var longClickClearCvMap=false
-    // btnDemoNav.setOnLongClickListener {
-    //   if (!longClickClearCvMap) {
-    //     scope.launch {
-    //       statusUpdater.showWarningAutohide("Delete CvMap?", "long-click again", 2000L)
-    //     }
-    //     longClickClearCvMap = true
-    //   } else {
-    //     scope.launch {
-    //       statusUpdater.showInfoAutohide("Deleted CvMap", 2000L)
-    //     }
-    //     VM.cvMapH?.clearCache()
-    //   }
-    //
-    //   true
-    // }
-    // }
-
 }

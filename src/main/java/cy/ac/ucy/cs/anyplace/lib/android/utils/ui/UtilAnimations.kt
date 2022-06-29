@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,10 @@ import kotlinx.coroutines.launch
 open class UtilAnimations(
         private val ctx: Context,
         private val scope: CoroutineScope) {
+
+
+  fun enable(v: View) = scope.launch(Dispatchers.Main) { v.isEnabled=true }
+  fun disable(v: View) = scope.launch(Dispatchers.Main) { v.isEnabled=false }
 
   fun fadeIn(v: View) = scope.launch(Dispatchers.Main) { v.fadeIn() }
 

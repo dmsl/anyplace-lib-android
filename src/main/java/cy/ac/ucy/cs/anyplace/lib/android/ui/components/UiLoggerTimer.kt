@@ -112,7 +112,6 @@ class UiLoggerTimer(
       } else {
         hideBtnClearObjects()
         utlUi.fadeOut(btn)
-        // uiStatusUpdater.hideStatus()
         VM.resetLoggingWindow()
       }
     }

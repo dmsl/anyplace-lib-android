@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.view.isVisible
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
@@ -92,6 +93,7 @@ class UiLoggingBtn(
   }
 
   fun handleMustStore() {
+    if (uploadButtonWasVisible) utlUi.fadeIn(uiLog.btnUpload)
     VM.disableCvDetection()
 
     LOG.D(TAG, "$METHOD: stopped must store: visible")
@@ -102,7 +104,12 @@ class UiLoggingBtn(
     uiLog.bottom.timer.setToStoreMode()
   }
 
+
+  var uploadButtonWasVisible=false
   fun startLogging() {
+    uploadButtonWasVisible = uiLog.btnUpload.isVisible
+    if (uploadButtonWasVisible) utlUi.fadeOut(uiLog.btnUpload)
+
     LOG.E(TAG, "$METHOD: TODO")
   //   btn.isEnabled=false
     VM.enableCvDetection()
@@ -127,6 +134,8 @@ class UiLoggingBtn(
     - these are also NOT STORED ON DISK!
    */
   fun notRunning() {
+    if (uploadButtonWasVisible) utlUi.fadeIn(uiLog.btnUpload)
+
     LOG.W(TAG, "$METHOD: logging")
     VM.disableCvDetection()
     ui.map.mapView.alpha = 1f

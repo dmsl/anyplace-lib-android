@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
@@ -17,7 +18,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ClearCachesDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
@@ -94,6 +94,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
     var floorsH: FloorsWrapper? = null
     var floorH: FloorWrapper? = null
 
+
+    val cache by lazy { Cache(requireActivity()) }
+
     @SuppressLint("ResourceAsColor")
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
       setPreferencesFromResource(R.xml.preferences_cv, rootKey)
@@ -127,12 +130,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
 
-        setupButtonClearCache(spaceH, floorsH, floorH)
-
         setupChangeCvModel()
         setupButtonServerSettings()
-
-        setupClearCvFingerprintsCache(spaceH, floorsH, floorH)
+        setupClearCvFingerprints()
         setupUiClearCvModelsDB()
       }
     }
@@ -142,19 +142,6 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
         startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
-        true
-      }
-    }
-
-    private fun setupButtonClearCache(
-            spaceH: SpaceWrapper?,
-            floorsH: FloorsWrapper?,
-            floorH: FloorWrapper?) {
-      val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
-      pref?.setOnPreferenceClickListener {
-        LOG.D(TAG_METHOD)
-        ClearCachesDialog.SHOW(requireActivity().supportFragmentManager,
-                repoAP, dsCv, spaceH, floorsH, floorH)
         true
       }
     }
@@ -173,16 +160,18 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       }
     }
 
-    private fun setupClearCvFingerprintsCache(
-            spaceH: SpaceWrapper?,
-            floorsH: FloorsWrapper?,
-            floorH: FloorWrapper?) {
+    private fun setupClearCvFingerprints() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.setOnPreferenceClickListener {
 
         val mgr=requireActivity().supportFragmentManager
-        ClearCachesDialog.SHOW(mgr,
-                repoAP, dsCv, spaceH, floorsH, floorH)
+        ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
+                "Will delete scanned objects that have not been uploaded yet to the database.\n" +
+                        "Proceed only if you want to discard the latest scans.") { // on confirmed
+          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+            cache.deleteFingerprintsCache()
+          }
+        }
         true
       }
     }
