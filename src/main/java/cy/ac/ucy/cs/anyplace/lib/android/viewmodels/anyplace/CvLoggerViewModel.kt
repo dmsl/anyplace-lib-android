@@ -104,8 +104,6 @@ class CvLoggerViewModel @Inject constructor(
       }
       else -> {
         LOG.E(TAG, "$METHOD: (ignoring objects)")
-        // activity.drawEmptyCanvas()
-        clearTracking() // TODO:PMX SF2
       }
     }
   }
@@ -130,9 +128,8 @@ class CvLoggerViewModel @Inject constructor(
         // windowElapsedPause = 0 // resetting any pause time
         windowStart=0L // resetting window
 
-        LOG.E(TAG, "WINDOW FINISHED")
+        LOG.D2(TAG, "WINDOW FINISHED")
         LOG.W(TAG, "Statuses: log; ${statusLogging.value} loc: ${statusLocalization.value}")
-        clearTracking() // TODO:PMX SF2
 
         // previouslyPaused=false
         if (appendedDetections.isEmpty()) {
@@ -141,8 +138,7 @@ class CvLoggerViewModel @Inject constructor(
         } else {
           LOG.E(TAG, "TODO: store in filesystem")
           LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")
-          val detectionsDedup =
-                  YoloV4Classifier.NMS(appendedDetections, detector.labels)
+          val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
 
           LOG.E(TAG, "TODO: detections to store: dedup: $detectionsDedup")
 
@@ -159,57 +155,17 @@ class CvLoggerViewModel @Inject constructor(
   }
 
 
-  /* TODO: BATCH STORING
-  - TODO 1: file cache: append to file
-
-  - TODO 2: upload button:
-   - show ONLY:
-     + if initially there is the file
-     + if we are calling this method...
-   */
   private fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
     LOG.E(TAG,"$METHOD: CvModel: detections: ${recognitions.size}")
 
     viewModelScope.launch(Dispatchers.IO) {
-
       app.cvUtils.initConversionTables(model.idSmas)
       val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
-
       cache.storeFingerprints(userCoords, detectionsReq, model)
     }
   }
 
   fun prefWindowLoggingMillis(): Int { return prefsCvLog.windowLoggingSec.toInt()*1000 }
-
-  /** Toggle [logging] between stopped (or notStarted), and started.
-   *  There will be no effect when in stoppedMustStore mode.
-   *
-   *  In that case it will wait for the user to store the logging data.
-   */
-  // fun toggleLogging() {
-  //   initialStart = false
-  //   when (logging.value) {
-  //     // Logging.finished-> {}
-  //     Logging.stoppedNoDetections,
-  //     Logging.stopped -> {
-  //       logging.value = Logging.running
-  //       val now = System.currentTimeMillis()
-  //       windowStart=now-windowElapsedPause
-  //     }
-  //     Logging.running -> {
-  //       previouslyPaused = true
-  //       logging.value = Logging.stopped
-  //       LOG.D(TAG, "$METHOD: paused")
-  //
-  //       // pause timer:
-  //       val now = System.currentTimeMillis()
-  //       windowElapsedPause = now-windowStart
-  //     }
-  //     else ->  {
-  //       LOG.W(TAG, "$METHOD: Ignoring: ${logging.value}")
-  //     }
-  //   }
-  // }
 
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
   fun getElapsedSecondsStr(): String { return utlTime.getSecondsPretty(getElapsedSeconds()) }
@@ -219,14 +175,6 @@ class CvLoggerViewModel @Inject constructor(
     objWindowLOG.value = emptyList()
     statusLogging.update { LoggingStatus.stopped }
   }
-
-  // fun startNewWindow() {
-  //   statObjWindowUNQ=0
-  //   objWindowLOG.value = emptyList()
-  //   // statusLogging=CvLoggerUI.LoggingStatus.running
-  //   // logging.value= Logging.stopped
-  //   // toggleLogging()
-  // }
 
   /**
    * Stores the detections on the [objOnMAP],
@@ -269,5 +217,44 @@ class CvLoggerViewModel @Inject constructor(
   //   mergedH.generateCvMapFast()
   //   cvMapH = mergedH
   //   objOnMAP.clear()
+  // }
+
+  /** Toggle [logging] between stopped (or notStarted), and started.
+   *  There will be no effect when in stoppedMustStore mode.
+   *
+   *  In that case it will wait for the user to store the logging data.
+   */
+  // fun toggleLogging() {
+  //   initialStart = false
+  //   when (logging.value) {
+  //     // Logging.finished-> {}
+  //     Logging.stoppedNoDetections,
+  //     Logging.stopped -> {
+  //       logging.value = Logging.running
+  //       val now = System.currentTimeMillis()
+  //       windowStart=now-windowElapsedPause
+  //     }
+  //     Logging.running -> {
+  //       previouslyPaused = true
+  //       logging.value = Logging.stopped
+  //       LOG.D(TAG, "$METHOD: paused")
+  //
+  //       // pause timer:
+  //       val now = System.currentTimeMillis()
+  //       windowElapsedPause = now-windowStart
+  //     }
+  //     else ->  {
+  //       LOG.W(TAG, "$METHOD: Ignoring: ${logging.value}")
+  //     }
+  //   }
+  // }
+
+
+  // fun startNewWindow() {
+  //   statObjWindowUNQ=0
+  //   objWindowLOG.value = emptyList()
+  //   // statusLogging=CvLoggerUI.LoggingStatus.running
+  //   // logging.value= Logging.stopped
+  //   // toggleLogging()
   // }
 }

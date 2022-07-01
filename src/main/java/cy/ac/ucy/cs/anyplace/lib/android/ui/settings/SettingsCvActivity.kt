@@ -121,7 +121,9 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
 
-        // TODO:PMX LMT 500ms
+        // setNumericInput(R.string.pref_smas_location_refresh,
+        //         R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
+        // TODO:PMX: LMT 500ms (above)
         setNumericInput(R.string.pref_smas_location_refresh,
                 R.string.summary_refresh_locations, prefs.locationRefreshMs, 0)
 
@@ -167,17 +169,18 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
     private fun setupClearCvFingerprints() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.isEnabled = cache.hasFingerprints()
+      pref?.isVisible=false  // TODO:PMX: V22
 
       pref?.setOnPreferenceClickListener {
         val mgr=requireActivity().supportFragmentManager
-        // TODO:PMX V22
-        ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
-                "These are scanned objects that have not been uploaded yet to the database.\n" +
-                        "Proceed only if you want to discard them.") { // on confirmed
-          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
-            cache.deleteFingerprintsCache()
-          }
-        }
+        // TODO:PMX: V22
+        // ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
+        //         "These are scanned objects that have not been uploaded yet to the database.\n" +
+        //                 "Proceed only if you want to discard them.") { // on confirmed
+        //   lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+        //     cache.deleteFingerprintsCache()
+        //   }
+        // }
         true
       }
     }

@@ -69,8 +69,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   override fun onResume() {
     super.onResume()
     LOG.D(TAG, "$METHOD [CvLogger]")
-
-    updateModelName()
+    // updateModelName() TODO:PMX: BN11c
   }
 
 

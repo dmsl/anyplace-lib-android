@@ -58,10 +58,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val method = METHOD
     val tag = TAG
     LOG.E(tag, "$method: setup: (long-click)")
-    ui.map.mapView.isLongClickable=false
-    ui.map.mapView.isLongClickable=true
-
+    // ui.map.mapView.isLongClickable=false // CHECK:PM for BFnt45
+    // ui.map.mapView.isLongClickable=true
     // mMapFragment.getView().setClickable(false);
+
     scope.launch(Dispatchers.IO) {
       delay(200)
       scope.launch(Dispatchers.Main) {
@@ -186,7 +186,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   var uploadButtonInit = false
   fun setupUploadBtn() {
-    if (uploadButtonInit) return
+    // if (uploadButtonInit) return // PMX: BFnt45
     uploadButtonInit = true
 
     LOG.E(TAG, "$METHOD: setup upload button")

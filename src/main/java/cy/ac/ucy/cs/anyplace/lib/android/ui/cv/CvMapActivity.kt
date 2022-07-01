@@ -161,7 +161,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   var initedGmap = false
   private fun setupUiGmap() {
     LOG.E(TAG, "SETUP CommonUI & GMAP")
-    if (initedGmap) return
+    // if (initedGmap) return // PMX: BFnt45 (main)
 
     LOG.E(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true

@@ -49,21 +49,6 @@ open class DetectorViewModel @Inject constructor(
   var modelEnumLoaded = false
   lateinit var model: DetectionModel
 
-  fun clearTracking() {
-    LOG.W(TAG, "$METHOD: Clear tracking.. CLEAR THIS ONE")
-    // // TODO:PM CLR THIS ONE...
-    // tracker.clear()
-    // trackingOverlay.postInvalidate()
-    // // TODO LEFTHERE:
-    // // TODO LEFTHERE:
-    // // TODO LEFTHERE:
-    // // DRAW EMPTY CANVAS...
-    // // tracker.draw(canvas)
-  }
-
-  /** Whether to run on skip detection/inference */
-
-
   fun setModel(modelName: String) {
     model = getModel(modelName)
     modelEnumLoaded = true
@@ -82,8 +67,8 @@ open class DetectorViewModel @Inject constructor(
    status.update { DetectorStatus.disabled }
   }
 
-  // TODO:PMX SKP-NGN return true always?
-  fun isDetecting() = status.value == DetectorStatus.enabled
+  // TODO:PMX: CO5
+  fun isDetecting() = status.value == DetectorStatus.enabled || true
 
   fun enableCvDetection() {
     status.update { DetectorStatus.enabled }

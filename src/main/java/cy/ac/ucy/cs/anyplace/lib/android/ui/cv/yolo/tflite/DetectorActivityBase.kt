@@ -220,11 +220,11 @@ abstract class DetectorActivityBase : CameraActivity(),
     readyForNextImage()
 
     // No mutex needed as this method is not reentrant.
-    if (!VMD.isDetecting()) { // TODO:PMX SF2
-      LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
-      skipDetection()
-      return
-    }
+    // if (!VMD.isDetecting()) { // TODO: PMX: CTR
+    //   LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
+    //   skipDetection()
+    //   return
+    // }
 
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {

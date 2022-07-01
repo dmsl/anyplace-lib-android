@@ -50,7 +50,7 @@ class UiLoggingBtn(
    */
   var btnInit = false
   fun setupClick() {
-    if (btnInit) return // PMX: NTI
+    // if (btnInit) return // PMX: BFnt45
     btnInit = true
 
     LOG.E(TAG, "$METHOD: setup logging button")
@@ -59,18 +59,13 @@ class UiLoggingBtn(
       LOG.D2(TAG, "loggingBtn: clicked: ${VM.statusLogging}")
       when (VM.statusLogging.value) {
 
-        LoggingStatus.running -> {
-          resetLogging()
-        }
+        LoggingStatus.running -> { resetLogging() }
+
         LoggingStatus.mustStore -> {
           app.showToast(scope, "Long-click on map to store detections", Toast.LENGTH_LONG)
         }
-        LoggingStatus.stopped -> {
-          VM.statusLogging.update { LoggingStatus.running }
-        }
-        else ->  {
-          LOG.D2(TAG, "$METHOD: ignoring click..")
-        }
+        LoggingStatus.stopped -> { VM.statusLogging.update { LoggingStatus.running } }
+        else ->  { LOG.D2(TAG, "$METHOD: ignoring click..") }
       }
     }
   }
@@ -102,7 +97,6 @@ class UiLoggingBtn(
   }
 
   fun handleMustStore() {
-    // if (uploadButtonWasVisible) showUploadBtn()
     VM.disableCvDetection()
 
     LOG.D(TAG, "$METHOD: stopped must store: visible")
