@@ -20,6 +20,13 @@
         app:defaultValue="@string/default_pref_smas_host"
         app:useSimpleSummaryProvider="true" />
 
+   <!-- TODO: PMX NXT  -->
+    <EditTextPreference
+        app:key="@string/pref_chat_server_path"
+        app:title="@string/server_path_title"
+        app:defaultValue="@string/default_pref_smas_path"
+        app:useSimpleSummaryProvider="true" />
+
     <ListPreference
         app:key="@string/pref_chat_server_protocol"
         app:defaultValue="https"

@@ -34,7 +34,7 @@ class MapMarkers(private val ctx: Context,
   // TODO:PM show storedMarkers with green color
   var stored: MutableList<Marker> = mutableListOf()
   /** Marker of the last location calculated remotely using SMAS */
-  var lastLocationREMOTE: Marker? = null
+  var lastLocation: Marker? = null
 
   /** Active users on the map */
   var users: MutableList<Marker> = mutableListOf()
@@ -50,12 +50,13 @@ class MapMarkers(private val ctx: Context,
   }
 
   /** Last Location marker REMOTE */
-  private fun locationMarkerREMOTE(coord: Coord) : MarkerOptions  {
+  private fun locationMarker(coord: Coord) : MarkerOptions  {
     val latLng = toLatLng(coord)
     return MarkerOptions().position(latLng)
             // TODO:PMX FR10
             // .userIcon(ctx, R.drawable.marker_location_smas)
             .userIcon(ctx, R.drawable.marker_objects_stored)
+            .zIndex(100f)
             .title("My Location")
             .snippet(getSnippetOwnLocation(coord))
   }
@@ -148,7 +149,7 @@ class MapMarkers(private val ctx: Context,
    * and show relevant info in the snippet
    */
   fun updateLocationMarkerBasedOnFloor(floorNum: Int) {
-    if (lastLocationREMOTE == null || lastCoord == null) return
+    if (lastLocation == null || lastCoord == null) return
 
     LOG.D(TAG, "$METHOD: floor: $floorNum. last one: ${lastCoord!!.level}")
 
@@ -163,11 +164,11 @@ class MapMarkers(private val ctx: Context,
     }
 
     scope.launch(Dispatchers.Main) {
-      lastLocationREMOTE?.alpha=alpha
-      lastLocationREMOTE?.snippet=snippet
-      if (lastLocationREMOTE?.isInfoWindowShown == true) {
-        lastLocationREMOTE?.hideInfoWindow()
-        lastLocationREMOTE?.showInfoWindow()
+      lastLocation?.alpha=alpha
+      lastLocation?.snippet=snippet
+      if (lastLocation?.isInfoWindowShown == true) {
+        lastLocation?.hideInfoWindow()
+        lastLocation?.showInfoWindow()
       }
     }
   }
@@ -179,16 +180,16 @@ class MapMarkers(private val ctx: Context,
 
     lastCoord=coord
 
-    if (lastLocationREMOTE == null) {
+    if (lastLocation == null) {
       LOG.D2(TAG, "$METHOD: initial marker")
       scope.launch(Dispatchers.Main) {
-        lastLocationREMOTE = map.addMarker(locationMarkerREMOTE(coord))
-        lastLocationREMOTE!!.tag = UserInfoMetadata(UserInfoType.OwnUser)
+        lastLocation = map.addMarker(locationMarker(coord))
+        lastLocation!!.tag = UserInfoMetadata(UserInfoType.OwnUser)
       }
     } else {
       LOG.D2(TAG, "$METHOD: updated marker")
       scope.launch(Dispatchers.Main) {
-        lastLocationREMOTE?.position = latLng
+        lastLocation?.position = latLng
       }
     }
 

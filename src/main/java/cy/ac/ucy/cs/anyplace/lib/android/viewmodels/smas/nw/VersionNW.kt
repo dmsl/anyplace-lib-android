@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatVersion
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
@@ -31,7 +31,7 @@ class VersionNW(
 
   private val resp: MutableStateFlow<NetworkResult<ChatVersion>> = MutableStateFlow(NetworkResult.Unset())
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
 
   /**
    * Gets version from remote and on success it updates the [dsChat]

@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -37,7 +38,6 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
   }
 
   var _binding : DialogPickModelBinding?= null
-
   private val binding get() = _binding!!
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -67,6 +67,9 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       val selectedModel = dsCv.read.first().modelName
       LOG.D2(TAG, "setupRadioButtons: selected model: $selectedModel")
 
+      app.showToast(lifecycleScope, "Please restart app.") // TODO:PM CLR
+      app.BFnt45=true
+
       DetectionModel.list.forEach {
         val rb = RadioButton(context)
         rb.tag = it.lowercase()
@@ -89,6 +92,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(rbSelectedId)
       val selectedModel = rb.tag.toString().lowercase()
       LOG.W(TAG, "Selected new DNN Model: $selectedModel")
+      app.showToast(lifecycleScope, "Please restart app.") // TODO:PM CLR
       dsCv.setModelName(selectedModel)
       dialog.dismiss()
     }

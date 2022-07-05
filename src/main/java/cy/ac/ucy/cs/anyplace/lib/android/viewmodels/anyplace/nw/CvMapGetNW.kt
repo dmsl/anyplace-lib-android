@@ -23,23 +23,24 @@ import java.lang.Exception
 import java.net.ConnectException
 
 /**
- * Downloads CvModels from remote
+ * Downloads CvMap from remote.
+ * This will be used for offline localization
  *
  * NOTE: this is from SMAS API.
  * But cv localization should have been Anyplace API.
  */
-class CvModelsGetNW(
+class CvMapGetNW(
         private val app: SmasApp,
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
-  private val tag = "CvModels"
+  val tag = "CvMap"
+
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
   /** Network Responses from API calls */
-  private val resp: MutableStateFlow<NetworkResult<CvModelsResp>> = MutableStateFlow(NetworkResult.Unset())
-
+  private val resp: MutableStateFlow<NetworkResult<CvMapResp>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var chatUser : ChatUser
@@ -51,38 +52,29 @@ class CvModelsGetNW(
 
     resp.value = NetworkResult.Loading()
 
-    if (repo.local.hasCvModelClassesDownloaded()) {
-      LOG.W(TAG, "$tag: already in DB")
-      resp.value = NetworkResult.Unset(NetworkResult.DB_LOADED)
-
-      // cache (once) the model ids for faster conversion
-      initCvClassConversion()
-      return
-    }
-
     if (app.hasInternet()) {
+      if (repo.local.hasCvMap()) {
+        LOG.W(TAG, "$tag: dropping CvMap")
+        repo.local.dropCvMap()
+      }
+
       try {
-        val response = repo.remote.cvModelsGet(ChatUserAuth(chatUser))
-        LOG.D4(TAG, "$tag: ${response.message()}" )
+        val response = repo.remote.cvMapGet(ChatUserAuth(chatUser))
+        LOG.D2(TAG, "CvModelsGet: ${response.message()}" )
         resp.value = handleResponse(response)
 
-        val cvModels = resp.value.data?.rows
-        if (cvModels == null) {
+        val cvMap = resp.value.data?.rows
+        if (cvMap == null) {
           val msg = "Downloading $tag: no classes fetched"
-
           LOG.W(TAG, msg)
         } else {
-          cvModels.forEach {
-            LOG.V3(TAG, "CvModel: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
-          }
-          persistToDB(cvModels)
-
+          persistToDB(cvMap)
         }
       } catch(ce: ConnectException) {
         val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "$TAG: $tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
     } else {
@@ -90,8 +82,8 @@ class CvModelsGetNW(
     }
   }
 
-  private fun handleResponse(resp: Response<CvModelsResp>): NetworkResult<CvModelsResp> {
-    LOG.D3(TAG)
+  private fun handleResponse(resp: Response<CvMapResp>): NetworkResult<CvMapResp> {
+    LOG.D2(TAG)
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
@@ -105,7 +97,7 @@ class CvModelsGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TAG, "handleResponse: unsuccessful")
+      LOG.E(TAG, "$tag: handleResponse: unsuccessful")
     }
 
     return NetworkResult.Error("$TAG: ${resp.message()}")
@@ -117,23 +109,22 @@ class CvModelsGetNW(
     resp.value = NetworkResult.Error(msg)
   }
 
-  var collectingCvModels = false
+  var collectingCvMap = false
   suspend fun collect() {
     LOG.D2(TAG, "$METHOD: $tag")
 
-    if (collectingCvModels) return
-
-    collectingCvModels=true
+    if (collectingCvMap) return
+    collectingCvMap=true
 
     resp.collect {
       when (it)  {
         is NetworkResult.Success -> {
           val cvModels = it.data
-          LOG.D2(TAG, "$tag: received: ${cvModels?.rows?.size} classes")
+          LOG.D2(TAG, "$tag: received: ${cvModels?.rows?.size} fingerprints")
         }
         is NetworkResult.Error -> {
           LOG.D3(TAG, "Error: msg: ${it.message}")
-          if (!err.handle(app, it.message, "loc-get")) {
+          if (!err.handle(app, it.message, "cvmap-get")) {
             val msg = it.message ?: "unspecified error"
             app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
           }
@@ -150,30 +141,12 @@ class CvModelsGetNW(
    * It does not store images (base64) to DB.
    * Those will be stored in [SmasCache] (file cache)
    */
-  private fun persistToDB(obj: List<CvModelClass>) {
-    LOG.W(TAG, "$METHOD: storing: ${obj.size} $tag classes")
+  private fun persistToDB(obj: List<CvMapRow>) {
+    LOG.W(TAG, "$METHOD: storing: ${obj.size} CvModel classes")
     VM.viewModelScope.launch(Dispatchers.IO) {
       obj.forEach {
-        repo.local.insertCvModelClass(it)
-      }
-    }
-    app.cvUtils.clearConvertionTables()
-    initCvClassConversion()
-  }
-
-  /**
-   * Initialize maps that speed up conversion between modelid
-   * and cid (YOLO-derived) to the oid that SMAS uses (CV backend).
-   */
-  private fun initCvClassConversion() {
-    VM.viewModelScope.launch(Dispatchers.IO) {
-      val ids = repo.local.getCvModelIds()
-      ids.forEach { id -> app.cvUtils.initConversionTables(id) }
-      if (app.cvUtils.showNotification) {
-        app.cvUtils.showNotification=false
-        app.showToastDEV(VM.viewModelScope, "CvModels are now ready!")
+        repo.local.insertCvMapRow(it)
       }
     }
   }
-
 }

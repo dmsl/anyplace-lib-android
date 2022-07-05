@@ -251,24 +251,23 @@
 
 
     <!--    FLOOR SELECTOR: START-->
-    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
+    <TextView
+        android:background="@drawable/bg_round_white_50"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
         android:id="@+id/textView_titleFloor"
         app:layout_constraintStart_toStartOf="@id/button_floorDown"
         app:layout_constraintEnd_toEndOf="@id/button_floorDown"
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
-
-        android:elevation="40dp"
         android:fontFamily="sans-serif-black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:translationY="-5dp"
-
         android:textSize="18sp"
         android:textColor="@color/colorPrimary"
-        app:outlineColor="@color/white"
-        android:text="floor"
-        app:outlineWidth="0.5dp"
-        />
+        android:text="@string/floor"
+        />>
     <!--    FLOOR SELECTOR: END-->
 
     <!--        <View-->

@@ -12,6 +12,16 @@ class DBG {
     const val D3 = LEVEL >= 3
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
+
+    const val CO5 = false
+    const val CTR = false
+
+    const val CVM = false
+
+    const val FLD = false
+    const val BFnt45 = false
+    const val LCLG = false
+    const val BN11c = false
   }
 }
 

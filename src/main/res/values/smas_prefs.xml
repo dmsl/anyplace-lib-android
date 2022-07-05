@@ -18,6 +18,7 @@
   <!--  PREFERENCE KEYS (PK) -->
   <string name="pref_chat_server">pref_chat_server</string>
   <string name="pref_chat_server_host">pref_chat_server_host</string>
+  <string name="pref_chat_server_path">pref_chat_server_path</string>
   <string name="pref_chat_server_protocol">pref_chat_server_protocol</string>
   <string name="pref_chat_server_access_token">pref_chat_server_access_token</string>
   <string name="pref_chat_server_port">pref_chat_server_port</string>
@@ -30,6 +31,7 @@
   <!-- DEFAULT PREF VALUES -->
   <string name="default_pref_smas_host">vgate.cs.ucy.ac.cy</string>
   <string name="default_pref_smas_protocol">https</string>
+  <string name="default_pref_smas_path">smas</string>
   <string name="default_pref_smas_access_token">CHAT_BEARER_TOKEN</string>
   <string name="default_pref_smas_port">443</string>
   <string name="default_pref_smas_chat_mdelivery">1</string>

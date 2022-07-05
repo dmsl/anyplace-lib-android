@@ -11,6 +11,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 
 fun ComponentActivity.registerForActivityResult(
         callback: ActivityResultCallback<ActivityResult>):ActivityResultLauncher<Intent> {
@@ -22,12 +23,12 @@ fun ComponentActivity.registerForActivityResult(
 val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dsServer: ServerDataStore get() = this.app.dsServer
 val Activity.dsCv: CvDataStore get() = this.app.dsCv
-val Activity.dsCvLog: CvLoggerDataStore get() = this.app.csCvLog
 val Activity.dsCvNav: CvNavDataStore get() = this.app.dsCvNav
 val Activity.dsMisc: MiscDataStore get() = this.app.dsMisc
 val Activity.dsUser: UserDataStore get() = this.app.dsUser
 
 val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
+
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
 
 const val TAG_ANYPLACE = "anyplace"

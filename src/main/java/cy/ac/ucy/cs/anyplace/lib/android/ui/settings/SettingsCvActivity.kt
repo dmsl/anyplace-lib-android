@@ -3,10 +3,13 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
@@ -22,6 +25,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.AnyplaceSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.IntentExtras
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +61,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
   }
 
   private lateinit var settingsFragment: SettingsCvFragment
+  private lateinit var VM: CvViewModel
 
   override fun onBackPressed() {
     super.onBackPressed()
@@ -69,9 +76,11 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    VM = ViewModelProvider(this)[SmasMainViewModel::class.java]
+
     // TODO: get whether we are from Smas or Logger apps
 
-    settingsFragment = SettingsCvFragment(dsCvNav, dsCv, repoAP, repoSmas)
+    settingsFragment = SettingsCvFragment(app, VM, dsCvNav, dsCv, repoAP, repoSmas)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO: icon not shown
@@ -79,6 +88,8 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvFragment(
+          private val app: AnyplaceApp,
+          private val VM: CvViewModel,
           /** Only this is binded to the activity */
           private val ds: CvNavDataStore,
           /** NOT binded to this activity. Only used to independently change (Dialog UI) the Model*/
@@ -95,7 +106,6 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
     var spaceH : SpaceWrapper? = null
     var floorsH: FloorsWrapper? = null
     var floorH: FloorWrapper? = null
-
 
     val cache by lazy { Cache(requireActivity()) }
 
@@ -133,13 +143,18 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         setNumericInput(R.string.pref_cv_localization_ms,
                 R.string.summary_localization_window, prefs.windowLocalizationMs, 0)
 
+        // TODO:PMX: LMT 1000ms (above)
+        setNumericInput(R.string.pref_cv_logging_ms,
+                R.string.summary_logging_window, prefs.windowLoggingMs, 0)
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
 
         setupChangeCvModel()
         setupButtonServerSettings()
         setupClearCvFingerprints()
-        setupUiClearCvModelsDB()
+        setupUiClearCvModelsDB(app, VM)
+
+        setupDownloadCvMap(app, VM)
       }
     }
 
@@ -166,6 +181,61 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       }
     }
 
+    private fun setupUiClearCvModelsDB(app: AnyplaceApp, VM: CvViewModel) {
+      val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_models))
+      pref?.setOnPreferenceClickListener {
+        LOG.W(TAG, "$METHOD: clear cache")
+        val mgr = requireActivity().supportFragmentManager
+        ConfirmActionDialog.SHOW(mgr, "Refresh CV Models",
+                "Will delete the CV Model classes.\n" +
+                        "and then download them again.", cancellable = true, isImportant = false) { // on confirmed
+
+          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+            if (!app.hasInternet()) {
+              app.showToast(VM.viewModelScope, "Internet connection is required")
+              return@launch
+            }
+
+            repoSmas.local.dropCvModelClasses()
+            app.cvUtils.showNotification=true
+            app.cvUtils.clearConvertionTables()
+            VM.nwCvModelsGet.safeCall()
+          }
+        }
+        true
+      }
+    }
+
+
+    private fun setupDownloadCvMap(app: AnyplaceApp, VM: CvViewModel) {
+      val pref = findPreference<Preference>(getString(R.string.pref_localization_cv_map))
+
+      if (!DBG.CVM) {
+        pref?.isVisible = false
+        return
+      }
+
+      pref?.setOnPreferenceClickListener {
+        LOG.W(TAG, "$METHOD: setting up")
+        val mgr = requireActivity().supportFragmentManager
+        ConfirmActionDialog.SHOW(mgr, "Download CvMap",
+                "Any previous downloads will be overridden.\n",
+                cancellable = true, isImportant = false) { // on confirmed
+
+          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+            if (!app.hasInternet()) {
+              app.showToast(VM.viewModelScope, "Internet connection is required")
+              return@launch
+            }
+
+            VM.nwCvMapGet.safeCall()
+            VM.nwCvMapGet.collect()
+          }
+        }
+        true
+      }
+    }
+
     private fun setupClearCvFingerprints() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.isEnabled = cache.hasFingerprints()
@@ -181,23 +251,6 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         //     cache.deleteFingerprintsCache()
         //   }
         // }
-        true
-      }
-    }
-
-    private fun setupUiClearCvModelsDB() {
-      val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_models))
-      pref?.setOnPreferenceClickListener {
-        LOG.W(TAG, "$METHOD: clear cache")
-        val mgr = requireActivity().supportFragmentManager
-        ConfirmActionDialog.SHOW(mgr, "Clear CV Models",
-                "Will delete CV Models from the database.\n" +
-                        "Those will have to be downloaded again.") { // on confirmed
-
-          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
-            repoSmas.local.dropCvModelClasses()
-          }
-        }
         true
       }
     }

@@ -12,6 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,7 +69,7 @@ open class DetectorViewModel @Inject constructor(
   }
 
   // TODO:PMX: CO5
-  fun isDetecting() = status.value == DetectorStatus.enabled || true
+  fun isDetecting() = status.value == DetectorStatus.enabled || !DBG.CO5
 
   fun enableCvDetection() {
     status.update { DetectorStatus.enabled }

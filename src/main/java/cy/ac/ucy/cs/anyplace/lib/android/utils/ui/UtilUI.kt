@@ -6,6 +6,7 @@ import android.graphics.BlendModeColorFilter
 import android.os.Build
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
@@ -24,6 +25,7 @@ class UtilUI(
   fun text(btn: Button, txt: String) = scope.launch(Dispatchers.Main) { btn.text=txt }
   fun text(tv: TextView, txt: String) = scope.launch(Dispatchers.Main) { tv.text=txt }
 
+
   /**
    * Works for [MaterialButton]
    */
@@ -33,6 +35,12 @@ class UtilUI(
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         btn.setBackgroundColor(compatColor)
       }
+    }
+  }
+
+  fun changeBackgroundDrawable(btn: Button, drawableId: Int) {
+    scope.launch(Dispatchers.Main) {
+      btn.background= AppCompatResources.getDrawable(ctx, drawableId)
     }
   }
 
@@ -60,5 +68,13 @@ class UtilUI(
       btn.icon =  null
     }
   }
+
+  fun textColor(tv: TextView, colorId: Int) {
+    scope.launch(Dispatchers.Main) {
+      val compatColor = ContextCompat.getColor(ctx, colorId)
+      tv.setTextColor(compatColor)
+    }
+  }
+
 
 }

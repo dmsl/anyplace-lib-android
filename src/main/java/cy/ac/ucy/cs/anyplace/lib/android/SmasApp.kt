@@ -89,7 +89,8 @@ class SmasApp : AnyplaceApp() {
     val prefsChat = dsChat.read
     prefsChat.asLiveData().observeForever { prefs ->
       rfhSmas.set(prefs)
-      LOG.V3(TAG, "Updated Chat backend URL: ${rfhSmas.baseURL}")
+
+      LOG.D2(TAG, "SMAS API URL: ${rfhSmas.baseURL} (${rfhSmas.retrofit.baseUrl()})")
     }
   }
 }

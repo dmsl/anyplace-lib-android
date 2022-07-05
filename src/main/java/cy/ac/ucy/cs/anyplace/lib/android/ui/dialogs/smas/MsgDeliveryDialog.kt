@@ -14,7 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogDeliveryModelBinding
@@ -30,7 +30,7 @@ class MsgDeliveryDialog(private val dsChat: ChatPrefsDataStore,
                         private val app: SmasApp,
                         vm: SmasChatViewModel) : DialogFragment() {
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
   private var VMchat = vm
 
   companion object {

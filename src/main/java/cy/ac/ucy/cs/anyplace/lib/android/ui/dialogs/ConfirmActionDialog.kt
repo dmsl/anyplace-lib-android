@@ -6,8 +6,10 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
@@ -19,6 +21,7 @@ open class ConfirmActionDialog(
         val title: String,
         val callback: () -> Unit,
         val subtitle: String?,
+        val isImportant: Boolean,
         val cancellable: Boolean) :
         DialogFragment() {
 
@@ -39,10 +42,11 @@ open class ConfirmActionDialog(
              subtitle: String?=null,
              /** cancel the dialog when clicking outside of it */
              cancellable: Boolean = true,
+             isImportant: Boolean = false,
              /** method to run when confirmed */
              callback: () -> Unit) {
 
-      val dialog = ConfirmActionDialog(title, callback, subtitle, cancellable)
+      val dialog = ConfirmActionDialog(title, callback, subtitle, isImportant, cancellable)
 
       val args = Bundle()
       dialog.arguments = args
@@ -62,6 +66,16 @@ open class ConfirmActionDialog(
       builder.setView(binding.root)
       val dialog = builder.create()
       dialog.window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+
+      // android:background="@drawable/button_delete"
+      val drawableId = if (isImportant) {
+         R.drawable.button_delete
+      } else {
+         R.drawable.button_confirm
+      }
+
+      binding.btnConfirm.background= AppCompatResources.getDrawable(requireContext(), drawableId)
 
       binding.tvTitle.text = title
       subtitle?.let { binding.tvSubtitle.text = subtitle }

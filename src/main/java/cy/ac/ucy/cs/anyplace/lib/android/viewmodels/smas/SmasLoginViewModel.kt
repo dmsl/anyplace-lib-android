@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginResp
@@ -34,7 +34,7 @@ class SmasLoginViewModel @Inject constructor(
         private val repo: RepoSmas,
         private val retrofitHolder: RetrofitHolderSmas) : AndroidViewModel(application) {
 
-  private val C by lazy { CHAT(application.applicationContext) }
+  private val C by lazy { SMAS(application.applicationContext) }
 
   private val _loginForm = MutableLiveData<LoginFormState>()
   val loginFormState: LiveData<LoginFormState> = _loginForm

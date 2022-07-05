@@ -3,6 +3,8 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.app.Activity
 import android.view.View
 import com.google.android.material.button.MaterialButton
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -19,12 +21,14 @@ import kotlinx.coroutines.launch
  */
 class UiLocalization(
         private val act: Activity,
+        private val app: AnyplaceApp,
         private val VM: CvViewModel,
         val scope: CoroutineScope,
         private val wMap: GmapWrapper,
         private val button_id: Int) {
 
   private val ctx = act.applicationContext
+  private val C by lazy { CONST(ctx) }
   private val utlButton by lazy { UtilUI(act, scope) }
   val btn: MaterialButton by lazy { act.findViewById(button_id) }
 
@@ -34,19 +38,34 @@ class UiLocalization(
     }
   }
 
+  var collecting = false
   fun collectStatus() {
+    if (collecting) return
+    collecting =true
+
     scope.launch{
-      VM.statusLocalization.collect { status ->
-        LOG.W(TAG_METHOD, "status: $status")
-        when(status) {
-          LocalizationStatus.running -> {  startLocalization()  }
-          LocalizationStatus.stopped -> {  endLocalization() }
-          else ->  {}
+    VM.statusLocalization.collect { status ->
+      LOG.W(TAG_METHOD, "status: $status")
+      when(status) {
+        LocalizationStatus.running -> {
+          VM.onLocalizationStarted()
+
+          if (!app.cvUtils.isModelInited()) {
+            app.showToast(scope, C.ERR_NO_CV_CLASSES)
+            return@collect
+          }
+
+          startLocalization()
         }
+        LocalizationStatus.stopped -> {
+          VM.onLocalizationEnded()
+          endLocalization()
+        }
+        else ->  {}
       }
     }
+    }
   }
-
 
   fun endLocalization() {
     VM.disableCvDetection()

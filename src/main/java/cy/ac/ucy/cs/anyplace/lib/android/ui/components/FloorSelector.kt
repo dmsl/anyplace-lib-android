@@ -2,7 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
 import android.content.Context
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.constraintlayout.widget.Group
 import com.google.android.material.button.MaterialButton
@@ -14,6 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.FloorplanLoader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
@@ -31,7 +31,7 @@ class FloorSelector(
         private val group: Group,
         private val tvFloorTitle: TextView,
         /** this is not treated as a button. used a button just for the background color.. */
-        private val btnSelectedFloor: Button,
+        private val btnSelectedFloor: MaterialButton,
         private val btnFloorUp: MaterialButton,
         private val btnFloorDown: MaterialButton,
 ) {
@@ -43,18 +43,50 @@ class FloorSelector(
     abstract fun after()
   }
 
-  private val utlButton by lazy { UtilUI(ctx, scope) }
+  private val utlUi by lazy { UtilUI(ctx, scope) }
 
   private val fpLoader by lazy { FloorplanLoader() }
   var callback : Callback ?= null
 
-  fun show() = utlButton.fadeIn(group)
-  fun hide() = utlButton.fadeOut(group)
+  fun show() = utlUi.fadeIn(group)
+  fun hide() = utlUi.fadeOut(group)
+
+  fun enable() {
+    LOG.V2(TAG, "Enabling FloorSelector")
+
+    if (!DBG.FLD) { show(); return }
+
+    utlUi.changeBackgroundMaterial(btnSelectedFloor, R.color.colorPrimary)
+    utlUi.alpha(btnSelectedFloor, 1f)
+    utlUi.changeBackgroundDrawable(btnFloorUp, R.drawable.button_round_top_normal)
+    utlUi.changeBackgroundDrawable(btnFloorDown, R.drawable.button_round_top_normal)
+
+    utlUi.enable(btnSelectedFloor)
+    utlUi.enable(btnFloorUp)
+    utlUi.enable(btnFloorDown)
+    utlUi.textColor(tvFloorTitle, R.color.colorPrimary)
+    utlUi.alpha(tvFloorTitle, 1f)
+  }
+
+  fun disable() {
+    LOG.V2(TAG, "Disabling FloorSelector")
+    if (!DBG.FLD) { hide(); return }
+    utlUi.changeBackgroundMaterial(btnSelectedFloor, R.color.darkGray)
+    utlUi.alpha(btnSelectedFloor, 0.4f)
+    utlUi.changeBackgroundDrawable(btnFloorUp, R.drawable.button_round_top_disabled)
+    utlUi.changeBackgroundDrawable(btnFloorDown, R.drawable.button_round_top_disabled)
+
+    utlUi.disable(btnSelectedFloor)
+    utlUi.disable(btnFloorUp)
+    utlUi.disable(btnFloorDown)
+    utlUi.textColor(tvFloorTitle, R.color.darkGray)
+    utlUi.alpha(tvFloorTitle, 0.3f)
+  }
 
   fun updateFloorSelector(floor: Floor?, FH: FloorsWrapper) {
     // if it has floors, then fade in..
     if (group.visibility != View.VISIBLE)
-      utlButton.fadeIn(group)
+      utlUi.fadeIn(group)
 
     if (floor == null) {
       updateSelectionButton(btnFloorUp, ctx, false)
@@ -75,10 +107,10 @@ class FloorSelector(
   private fun updateSelectionButton(btn: MaterialButton, ctx: Context, enable: Boolean) {
     if (enable) {
       btn.isClickable=true
-      utlButton.changeMaterialIcon(btn, R.drawable.arrow_up)
+      utlUi.changeMaterialIcon(btn, R.drawable.arrow_up)
     } else {
       btn.isClickable= false
-      utlButton.changeMaterialIcon(btn, R.drawable.ic_arrow_up_disabled)
+      utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_up_disabled)
     }
   }
 

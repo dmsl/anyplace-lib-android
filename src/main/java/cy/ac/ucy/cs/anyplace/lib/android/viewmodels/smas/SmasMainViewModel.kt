@@ -1,13 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas
 
-import android.app.Activity
 import android.app.Application
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
@@ -30,10 +29,8 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Provider
 
 /**
  * Extends [CvViewModel]:
@@ -52,7 +49,7 @@ class SmasMainViewModel @Inject constructor(
         RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
 
   // PREFERENCES
   val prefsChat = dsChat.read

@@ -14,20 +14,18 @@ repositories {
 }
 
 android {
-  compileSdkVersion 31
+  compileSdkVersion 32
 
   namespace 'cy.ac.ucy.cs.anyplace.lib'
 
   defaultConfig {
 
-    minSdkVersion 28
-    //noinspection OldTargetApi,ExpiredTargetSdkVersion
-    targetSdkVersion 30
+    minSdkVersion 30
+    targetSdkVersion 32
 
     // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'
 
-    versionName "${VERSION_CODE}-lib"
 
     // CLR
 //    // TODO use secrets-gradle-plugin (like w/ gmaps api)
@@ -150,10 +148,10 @@ dependencies {
   //// DataStore (new preferences)
   implementation "androidx.datastore:datastore-preferences:1.0.0"
   //// ROOM
-  api "androidx.room:room-runtime:2.4.2"
-  kapt "androidx.room:room-compiler:2.4.2"
-  implementation "androidx.room:room-ktx:2.4.2"
-  androidTestImplementation "androidx.room:room-testing:2.4.2"
+  api "androidx.room:room-runtime:$ver_room"
+  kapt "androidx.room:room-compiler:$ver_room"
+  implementation "androidx.room:room-ktx:$ver_room"
+  androidTestImplementation "androidx.room:room-testing:$ver_room"
 
   // Recyclerview
   implementation 'androidx.recyclerview:recyclerview:1.2.1'
@@ -201,7 +199,6 @@ dependencies {
   implementation "androidx.compose.material:material-icons-core:$ver_compose"
   implementation "androidx.compose.foundation:foundation:$ver_compose"
   /////// END-OF-CHAT
-
 
   // Shimmer
   implementation 'com.facebook.shimmer:shimmer:0.5.0'

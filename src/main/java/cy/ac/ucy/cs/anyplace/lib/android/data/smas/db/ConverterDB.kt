@@ -1,17 +1,15 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities
+package cy.ac.ucy.cs.anyplace.lib.android.data.smas.db
 
 import androidx.room.TypeConverter
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsgsResp
+import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_IMG
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelsResp
 
-class DatabaseConverters {
+class ConverterDB {
 
   companion object {
     fun chatMsgtoEntity(msg: ChatMsg): ChatMsgEntity {
@@ -73,17 +71,55 @@ class DatabaseConverters {
               e.name)
     }
 
+    fun cvMapRowToEntity(c: CvMapRow): CvMapRowEntity {
+      return CvMapRowEntity(
+              c.foid, c.flid, c.uid,
+              c.time,  c.timestr,
+              c.buid,  c.x, c.y, c.deck,
+              c.modelid,
+              c.flid1,
+              c.oid,
+              c.height, c.width,
+      )
+    }
+
+
+    fun entityToCvMapRow(c: CvMapRowEntity): CvMapRow {
+      return CvMapRow(
+              c.foid, c.flid, c.uid,
+              c.time, c.timestr,
+              c.buid, c.x, c.y, c.deck,
+              c.modelid,
+              c.flid1,
+              c.oid,
+              c.height, c.width,
+      )
+    }
+
+    fun localizationFingerprintTempToEntity(uid: String, c: CvDetectionREQ): FINGERPRINT_LOCALIZE_TEMP {
+      return FINGERPRINT_LOCALIZE_TEMP(uid, c.oid, c.height, c.width,
+      )
+    }
+
+    fun localizationResultToGeneric(lr: LocationOfl1) : LocationOfl {
+      return LocationOfl(lr.deck, 0f, lr.flid, lr.x, lr.y, lr.buid)
+    }
+
+    fun localizationResultToGeneric(lr: LocationOfl2) : LocationOfl {
+      return LocationOfl(lr.deck, lr.dissimilarity, lr.flid, lr.x, lr.y)
+    }
+
     /**
      * NOT USED
      */
-    fun entityTooCvModelClassesResp(tuples: List<CvModelClassEntity>): CvModelsResp {
-      return CvModelsResp(entityTooCvModelClasses(tuples), NetworkResult.DB_LOADED , "db", null)
+    fun entityToCvModelClassesResp(tuples: List<CvModelClassEntity>): CvModelsResp {
+      return CvModelsResp(entityToCvModelClasses(tuples), NetworkResult.DB_LOADED , "db", null)
     }
 
     /**
      * Converts chat tuples to a list of [CvModelClass]es
      */
-    fun entityTooCvModelClasses(tuples: List<CvModelClassEntity>): List<CvModelClass>{
+    fun entityToCvModelClasses(tuples: List<CvModelClassEntity>): List<CvModelClass>{
       val list = mutableListOf<CvModelClass>()
       tuples.forEach {  list .add(entityToCvModelClass(it))  }
       return list

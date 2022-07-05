@@ -1,12 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
 /**
  * Based on [ChatMsg]
  */
-@Entity(tableName = CHAT.DB_SMAS_MSGS)
+@Entity(tableName = SMAS.DB_MSGS)
 data class ChatMsgEntity(
   /** Message ID */
   @PrimaryKey(autoGenerate = false)

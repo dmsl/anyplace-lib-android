@@ -38,7 +38,6 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsServer: ServerDataStore
   @Inject lateinit var dsUser: UserDataStore
   @Inject lateinit var dsMisc: MiscDataStore
-  @Inject lateinit var csCvLog: CvLoggerDataStore
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvNav: CvNavDataStore
 
@@ -60,6 +59,10 @@ abstract class AnyplaceApp : Application() {
   @Deprecated("")  lateinit var prefs: Preferences
   @Deprecated("")  lateinit var fileCache: FileCache
   @Deprecated("")  lateinit var apiOld: Anyplace
+
+
+  @Deprecated("CLR PM")
+  var BFnt45: Boolean = false
 
   override fun onCreate() {
     super.onCreate()
@@ -87,8 +90,13 @@ abstract class AnyplaceApp : Application() {
     val serverPref = dsServer.read
     serverPref.asLiveData().observeForever { prefs ->
       RH.set(prefs)
-      LOG.V5(TAG, "Updated backend url: ${RH.baseURL}")
+      LOG.D2(TAG, "URL: ANYPLACE: ${RH.baseURL}")
     }
+  }
+
+  fun showToastDEV(scope: CoroutineScope, msg: String, len: Int = Toast.LENGTH_SHORT) {
+    val devMode = true
+    if (devMode) { showToast(scope, msg, len) }
   }
 
   private var toast: Toast ?= null

@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelperRM
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
@@ -22,23 +22,29 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvFingerprintSendNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvMapGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvModelsGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Error
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Success
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.*
@@ -88,6 +94,12 @@ open class CvViewModel @Inject constructor(
 
   val cache by lazy { Cache(application) }
 
+  // UI
+  //// COMPONENTS
+  lateinit var floorSelector: FloorSelector
+  /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
+  lateinit var ui: CvUI
+
   // lateinit var prefsCV: CvPrefs
   // lateinit var prefsNav: CvNavigationPrefs
   // lateinit var prefsNav: CvNavigationPrefs
@@ -99,6 +111,7 @@ open class CvViewModel @Inject constructor(
   var windowStart : Long = 0
 
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvMapGet by lazy { CvMapGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
 
@@ -130,8 +143,8 @@ open class CvViewModel @Inject constructor(
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
-  /** Holds the functionality of a [CvMap] and can generate the [CvMapFast] */
-  var cvMapH: CvMapHelper? = null
+  /** Holds the functionality of a [CvMapRM] and can generate the [CvMapFast] */
+  var cvMapH: CvMapHelperRM? = null
 
   // FLOOR PLANS
   fun getFloorplanFromRemote(FH: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
@@ -185,7 +198,7 @@ open class CvViewModel @Inject constructor(
 
   open fun processDetections(recognitions: List<Classifier.Recognition>,
                              activity: DetectorActivityBase) {
-    LOG.D2(TAG, "VM: CvBASE: $METHOD: ${recognitions.size}")
+    LOG.V2(TAG, "VM: CvBASE: $METHOD: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)
@@ -214,6 +227,11 @@ open class CvViewModel @Inject constructor(
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
+          if (!app.cvUtils.isModelInited()) {
+            LOG.E(TAG, "CvUtils: classes not inited")
+            return
+          }
+
           localizeCvMap(detectionsLOC.value)
 
           detectionsLOC.value = emptyList()
@@ -232,15 +250,31 @@ open class CvViewModel @Inject constructor(
     LOG.D2(TAG, "$METHOD: performing remote localization")
 
     // TODO convert detections
-    val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
+    val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)
     viewModelScope.launch(Dispatchers.IO) {
-      nwCvLocalize.safeCall(wSpace.obj.id, detectionsReq, model)
 
       if (!collectingCvLocalization) {
-       collectingCvLocalization=true
+        collectingCvLocalization=true
         nwCvLocalize.collect()
       }
+
+      if (DBG.CVM) {
+        lcz(detectionsReq)
+        // return@launch
+      }
+
+      nwCvLocalize.safeCall(wSpace.obj.id, detectionsReq, model)
     }
+  }
+
+  suspend fun lcz(detectionsReq: List<CvDetectionREQ>) {
+    if (!repoSmas.local.hasCvMap()) {
+      app.showToast(viewModelScope, "Cannot localize. (No CvMap)")
+      return
+    }
+
+    val chatUser = app.dsUser.readUser.first()
+    repoSmas.local.localizeTemp(this, model.idSmas, space!!.id, detectionsReq, chatUser)
   }
 
   /** TODO in new class
@@ -304,4 +338,10 @@ open class CvViewModel @Inject constructor(
   fun unsetBackFromSettings() = saveBackFromSettings(false)
   private fun saveBackFromSettings(value: Boolean) =
           viewModelScope.launch(Dispatchers.IO) {  dsMisc.saveBackFromSettings(value) }
+
+  open fun onLocalizationStarted() {
+  }
+
+  open fun onLocalizationEnded() {
+  }
 }

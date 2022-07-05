@@ -73,7 +73,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
 
     private fun setupClearMessagesButton() {
       val title= "Clearing all messages?"
-      val subtitle = "To fetch those again, you must close and reopen the app (intentional).\n"+
+      val subtitle = "To fetch those again, you must close and reopen the app (intentional).\n\n"+
       "Given internet connectivity, messages will be fetched again."
 
       val mgr = requireActivity().supportFragmentManager
@@ -84,7 +84,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
           if (!cacheChat.hasImgCache() && !repo.local.hasMsgs()) {
             appSmas.showToast(lifecycleScope, "No messages found")
           } else {
-            ConfirmActionDialog.SHOW(mgr, title, subtitle) { // on confirmed
+            ConfirmActionDialog.SHOW(mgr, title, subtitle, cancellable = true, isImportant = true) { // on confirmed
               clearMessages()
             }
           }

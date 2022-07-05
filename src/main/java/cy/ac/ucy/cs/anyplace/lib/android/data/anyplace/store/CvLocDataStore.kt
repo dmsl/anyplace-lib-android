@@ -21,9 +21,9 @@ import javax.inject.Singleton
 /**
  * Navigation settings:
  * - used by Smas
- * - TODO use by regular Navigator app
  *
- * Make this extend (or merge) with CvDataStore?
+ * merge this with CvDataStore
+ *
  */
 @Singleton
 class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
@@ -35,6 +35,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
   private val validKeys = setOf(
           C.PREF_CV_WINDOW_LOCALIZATION_MS,
+          C.PREF_CV_WINDOW_LOGGING_MS,
           C.PREF_CV_SCAN_DELAY,
           C.PREF_CV_DEV_MODE,
           C.PREF_CVNAV_MAP_ALPHA,
@@ -43,6 +44,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
   private class Keys(c: CONST) {
     val windowLocalizationMs = stringPreferencesKey(c.PREF_CV_WINDOW_LOCALIZATION_MS)
+    val windowLoggingMs = stringPreferencesKey(c.PREF_CV_WINDOW_LOGGING_MS)
     val scanDelay = stringPreferencesKey(c.PREF_CV_SCAN_DELAY)
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
     val mapAlpha = stringPreferencesKey(c.PREF_CVNAV_MAP_ALPHA)
@@ -81,6 +83,9 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_WINDOW_LOCALIZATION_MS->
             it[KEY.windowLocalizationMs] = value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
 
+          C.PREF_CV_WINDOW_LOGGING_MS->
+            it[KEY.windowLoggingMs] = value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS
+
           C.PREF_CV_SCAN_DELAY-> it[KEY.scanDelay] = value ?: C.DEFAULT_PREF_CV_SCAN_DELAY
           C.PREF_CVNAV_MAP_ALPHA-> it[KEY.mapAlpha] = value ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
           C.PREF_SMAS_LOCATION_REFRESH_MS-> it[KEY.locationRefreshMs] = value ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
@@ -108,6 +113,7 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_WINDOW_LOCALIZATION_MS-> prefs.windowLocalizationMs
+        C.PREF_CV_WINDOW_LOGGING_MS-> prefs.windowLoggingMs
         C.PREF_CV_SCAN_DELAY-> { prefs.scanDelay }
         C.PREF_CVNAV_MAP_ALPHA-> prefs.mapAlpha
         C.PREF_SMAS_LOCATION_REFRESH_MS-> prefs.locationRefreshMs
@@ -123,19 +129,21 @@ class CvNavDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             } else { throw exception }
           }
           .map { preferences ->
-            val windowLocalizationMs = preferences[KEY.windowLocalizationMs] ?:
-            C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
+            val windowLocalizationMs = preferences[KEY.windowLocalizationMs] ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
+            val windowLoggingMs= preferences[KEY.windowLoggingMs] ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS
+
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVNAV_MAP_ALPHA
             val scanDelay= preferences[KEY.scanDelay] ?: C.DEFAULT_PREF_CV_SCAN_DELAY
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
             val locationRefresh= preferences[KEY.locationRefreshMs] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
-            val prefs = CvNavigationPrefs(windowLocalizationMs, scanDelay, mapAlpha, devMode, locationRefresh)
+            val prefs = CvNavigationPrefs(windowLocalizationMs, windowLoggingMs, scanDelay, mapAlpha, devMode, locationRefresh)
             prefs
           }
 }
 
 data class CvNavigationPrefs(
         val windowLocalizationMs: String,
+        val windowLoggingMs: String,
         /** Save power by introducing artificial delay between CV scans */
         val scanDelay: String,
         /** visibility of the google maps layer */

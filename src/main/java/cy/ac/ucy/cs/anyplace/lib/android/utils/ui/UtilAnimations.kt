@@ -43,6 +43,8 @@ open class UtilAnimations(
 
   fun visible(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
 
+  fun alpha(v: View, a: Float) = scope.launch(Dispatchers.Main) { v.alpha=a }
+
 }
 
 

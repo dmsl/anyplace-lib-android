@@ -7,15 +7,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.LocationOfl
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
+import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -44,7 +45,7 @@ class CvLocalizeNW(
   private val resp: MutableStateFlow<NetworkResult<CvLocalizationResp>>
   = MutableStateFlow(NetworkResult.Unset())
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var chatUser : ChatUser
 
   /** Send the [Chatuser]'s location (safecall) */
@@ -52,8 +53,6 @@ class CvLocalizeNW(
                        detectionsReq: List<CvDetectionREQ>,
                        model: DetectionModel) {
     chatUser = app.dsChatUser.readUser.first()
-
-    LOG.D2(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
 
     resp.value = NetworkResult.Unset()
 
@@ -65,22 +64,32 @@ class CvLocalizeNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        val req=CvLocalizationReq(chatUser, utlTime.epoch().toString(),
+        val req= CvLocalizationReq(chatUser, utlTime.epoch().toString(),
                 buid, model.idSmas, detectionsReq, CV_LOC_ALGORITHM)
-        LOG.D2(TAG, "$TAG_TASK: ${req.time}: #: ${detectionsReq.size}")
+        LOG.V2(TAG, "$TAG_TASK: ${req.time}: #: ${detectionsReq.size}")
         val response = repo.remote.cvLocalization(req)
 
-        LOG.D2(TAG, "$TAG_TASK: Resp: ${response.message()}" )
+        LOG.V2(TAG, "$TAG_TASK: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        val msg = "Something went wrong ($TAG)" + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
     } else {
       resp.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
+    }
+  }
+
+  fun postResult(l: LocationOfl?) {
+    if (l==null) {
+      resp.value=NetworkResult.Error("Failed to get location")
+    } else {
+      val r=CvLocalizationResp(uid="",
+              listOf(CvLocalization(l.deck, l.dissimilarity, l.flid, l.x, l.y)), status="")
+      resp.value=NetworkResult.Success(r)
     }
   }
 
@@ -121,7 +130,8 @@ class CvLocalizeNW(
               VM.locationSmas.value = LocalizationResult.Unset()
             } else {
               val cvLoc = it.data!!.rows[0]
-              val msg = "$TAG_TASK: REMOTE: coords: ${cvLoc.x} ${cvLoc.y}, FL: ${cvLoc.deck} FLID: ${cvLoc.flid} diss: ${cvLoc.dissimilarity}"
+              val msg = "$TAG_TASK: REMOTE: $cvLoc"
+              // val msg = "$TAG_TASK: REMOTE: coords: ${cvLoc.x} ${cvLoc.y}, FL: ${cvLoc.deck} FLID: ${cvLoc.flid} diss: ${cvLoc.dissimilarity}"
 
               LOG.W(TAG, msg)
               // app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)

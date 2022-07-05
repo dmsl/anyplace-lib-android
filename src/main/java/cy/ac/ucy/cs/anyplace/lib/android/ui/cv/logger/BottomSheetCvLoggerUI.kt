@@ -4,29 +4,25 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggerTimer
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggingBtn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 
 class BottomSheetCvLoggerUI(
-        private val act: CvLoggerActivity,
-        val VMlog: CvLoggerViewModel,
-        val ui: CvCommonUI,
-        val uiLog: CvLoggerUI,
-        val id_bottomsheet: Int,
-        val id_btn_logging: Int)
+  private val act: CvLoggerActivity,
+  val VMlog: CvLoggerViewModel,
+  val id_bottomsheet: Int,
+  val id_btn_logging: Int)
   : BottomSheetCvUI(act as DetectorActivityBase, true) {
 
   // val llBottomSheet: ConstraintLayout by lazy {act.findViewById(id_bottomsheet) }
@@ -38,8 +34,8 @@ class BottomSheetCvLoggerUI(
   private val id_btn_timer = R.id.button_cameraTimer
   private val id_progressBar_timer = R.id.progressBar_timer
   private val id_btn_clearObjs = R.id.button_clearObjects
-  val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope, ui, uiLog, id_btn_logging) }
-  val timer by lazy { UiLoggerTimer(act, VMlog, act.lifecycleScope, ui, uiLog,
+  val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope, VMlog.ui, VMlog.uiLog, id_btn_logging) }
+  val timer by lazy { UiLoggerTimer(act, VMlog, act.lifecycleScope, VMlog.ui, VMlog.uiLog,
           id_btn_timer, id_progressBar_timer, id_btn_clearObjs) }
 
   val tvWindowObjectsAll : TextView by lazy { act.findViewById(R.id.tv_windowObjectsAll) }

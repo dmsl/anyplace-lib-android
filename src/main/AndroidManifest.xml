@@ -28,16 +28,19 @@
     <activity
         android:name=".android.ui.user.AnyplaceLoginActivity"
         android:exported="true"
+        android:theme="@style/AppTheme.Compat"
         android:label="@string/title_activity_login" />
     <activity
         android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
         android:exported="true"
+        android:screenOrientation="portrait"
         android:label="Server Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
     <activity
         android:name=".android.ui.settings.SettingsCvActivity"
+        android:screenOrientation="portrait"
         android:exported="true"
-        android:label="Map Settings" />
+        android:label="Settings" />
 
     <!-- SMAS ACTIVITIES -->
     <activity

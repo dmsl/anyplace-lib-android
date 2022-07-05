@@ -122,7 +122,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     // VM.nwUpdateLocationsLOOP(true, "main")
     updateLocationsLOOP()
 
-    VM.collectLocations(VMchat, ui.map)
+    VM.collectLocations(VMchat, VM.ui.map)
     // collect alert TODO:PMX
   }
 
@@ -395,7 +395,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   // TODO:PMX FR
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     LOG.D2(TAG, "$METHOD: SmasMainActivity")
-    ui.onInferenceRan()
+    VM.ui.onInferenceRan()
 
     // if (detections.isNotEmpty()) {
     //   // LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")

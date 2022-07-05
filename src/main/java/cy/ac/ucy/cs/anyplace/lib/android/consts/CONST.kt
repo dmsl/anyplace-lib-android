@@ -16,6 +16,7 @@ open class CONST(ctx: Context) {
   val STATUS_OK = 200
   // EXCEPTIONS (messages set by 3rd party libs)
   val ERR_MSG_NO_INTERNET= "No Internet Connection."
+  val ERR_NO_CV_CLASSES= "Cannot recognize objects.\n(CvModel not initialized)"
 
   val ERR_MSG_HTTP_FORBIDEN = "not permitted by network security policy"
   val ERR_MSG_ILLEGAL_STATE = "java.lang.IllegalStateException"
@@ -52,14 +53,14 @@ open class CONST(ctx: Context) {
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
-  val PREF_CVLOG_WINDOW_LOGGING_SECONDS = ctx.getString(R.string.pref_cvlog_window_logging_seconds)
+  val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
   // COMMON DEFAULTS
   val DEFAULT_PREF_CV_DEV_MODE = false
   val DEFAULT_PREF_CV_SCAN_DELAY= "500"
+  //// LOGGING
+  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "2000"
   //// LOCALIZATION
-  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_SECONDS = "5" // TODO in ms
-
   val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS = "2000"
 
   //// Settings for Cv Navigator/Localization apps

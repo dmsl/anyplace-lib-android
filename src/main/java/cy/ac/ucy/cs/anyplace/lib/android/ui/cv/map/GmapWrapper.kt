@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 
 class GmapWrapper(private val ctx: Context,
                   private val scope: CoroutineScope,
-                  private val UI: CvCommonUI) {
+                  private val UI: CvUI) {
 
   lateinit var obj: GoogleMap
   lateinit var VM: CvViewModel

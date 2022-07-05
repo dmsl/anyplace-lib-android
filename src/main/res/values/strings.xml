@@ -92,6 +92,7 @@
   <string name="indoor_space">Indoor Space</string>
   <string name="server_header">Anyplace Server</string>
   <string name="server_host_url_title">Host address</string>
+  <string name="server_path_title">Path</string>
   <string name="server_protocol_title">Protocol</string>
   <string name="user_header">User</string>
   <string name="misc_header">Misc</string>
@@ -153,24 +154,27 @@
      to the scanned objects
    - this is done by long-clicking on a map location
    - Steps (1), (2) may repeated as necessary
-   - \"Upload Scans\": updates the cloud fingerprints"
   </string>
+
+  <!-- TODO:PMX: TUT -->
+  <!--  - \"Upload Scans\": updates the cloud fingerprints"-->
   <string name="tutorial_cvscan_discard">DISCARDING OBJECTS:</string>
   <!-- TUTORIALS -->
+<!--  - In settings: you can discard all local fingerprints. -->
   <string name="tutorial_cvscan_finish_details">
 "   - While scanning: \"cancel\" discards current window
-   - On window finish: can discard it using the UI
-   - In settings: you can discard all local fingerprints."
+   - On window finish: can discard it using the UI"
   </string>
+
   <string name="tutorial_restrictions">RESTRICTIONS IMPOSED:</string>
   <string name="tutorial_restrictions_details">
 "   - While in (1) or (2) you cannot change a floor
    - Localization in logger is unavailable while there are
-     local fingerprints. Either discard them or upload them."
+     local fingerprints. Either discard them or upload them. (future)"
   </string>
 
   <string name="clear">Clear</string>
-  <string name="clear_window">Clear window</string>
+  <string name="clear_window">Confirm</string>
   <string name="upper_floor">Upper floor</string>
   <string name="prefs_header_cvmap">Object Maps</string>
   <string name="prefs_header_cache">Cache</string>
@@ -180,9 +184,9 @@
   <string name="confirm">Confirm</string>
   <string name="for_var_var">for %1$s %2$s</string>
   <string name="clear_local_cv_maps">Clear local CV maps</string>
-  <string name="summary_logging_window">Log objects for %1$s ms per location.</string>
-  <string name="summary_refresh_locations">Every %1$s ms it pulls other user locations.</string>
-  <string name="summary_localization_window">Scan for %1$s seconds before localizing.</string>
+  <string name="summary_logging_window">Log objects for %1$sms per location.</string>
+  <string name="summary_refresh_locations">Every %1$sms it pulls other user locations.</string>
+  <string name="summary_localization_window">Scan for %1$sms before localizing.</string>
   <string name="change_cv_model">Change Object Recognition Model</string>
   <string name="tfe_od_camera_error" translation_description="Error regarding camera support[CHAR_LIMIT=40]">This device doesn\'t support Camera2 API.</string>
   <string name="summary_map_alpha">Map is %1$s opaque.</string>

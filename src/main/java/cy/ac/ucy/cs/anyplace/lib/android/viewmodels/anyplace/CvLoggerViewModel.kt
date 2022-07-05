@@ -1,10 +1,10 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
-import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -14,14 +14,18 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -51,13 +55,15 @@ class CvLoggerViewModel @Inject constructor(
         RHsmas: RetrofitHolderSmas):
         CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
+
+  val utlUi by lazy { UtilUI(application, viewModelScope) }
+  lateinit var uiLog: CvLoggerUI
 
   // TODO: move in new class..
   // var longClickFinished: Boolean = false
   var circleTimerAnimation: TimerAnimation = TimerAnimation.reset
 
-  lateinit var prefsCvLog : CvLoggerPrefs
 
   val statusLogging = MutableStateFlow(LoggingStatus.stopped)
 
@@ -85,6 +91,10 @@ class CvLoggerViewModel @Inject constructor(
     return (statusLogging.value == LoggingStatus.mustStore)
   }
 
+  fun canRecognizeObjects() : Boolean {
+    return app.cvUtils.isModelInited()
+  }
+
   /**
    * CHECK:PM this was part of a VM that had the detections
    * (deep in the CV engine).
@@ -95,7 +105,7 @@ class CvLoggerViewModel @Inject constructor(
    */
   override fun processDetections(recognitions: List<Classifier.Recognition>,
                                  activity: DetectorActivityBase) {
-    LOG.D2(TAG, "VM: CvLogger: $METHOD: ${recognitions.size}")
+    LOG.V2(TAG, "VM: CvLogger: $METHOD: ${recognitions.size}")
     super.processDetections(recognitions, activity)
 
     when (statusLogging.value) {
@@ -103,7 +113,7 @@ class CvLoggerViewModel @Inject constructor(
         updateLoggingRecognitions(recognitions)
       }
       else -> {
-        LOG.E(TAG, "$METHOD: (ignoring objects)")
+        LOG.V2(TAG, "$METHOD: (ignoring objects)")
       }
     }
   }
@@ -118,34 +128,40 @@ class CvLoggerViewModel @Inject constructor(
     val appendedDetections = objWindowLOG.value.orEmpty() + recognitions
     statObjWindowAll.postValue(appendedDetections.size)
 
-    LOG.V3(TAG, "Appended detections: ${objWindowLOG.value?.size} (in mem)")
+    LOG.V3(TAG, "$METHOD: appended detections: ${objWindowLOG.value?.size} (in mem)")
 
     if (windowStart==0L) windowStart=currentTime
 
     when {
-      // WINDOW FINISHED:
-      currentTime-windowStart > prefWindowLoggingMillis() -> {
-        // windowElapsedPause = 0 // resetting any pause time
+      // window finished:
+      currentTime-windowStart > prefWindowLoggingMs() -> {
         windowStart=0L // resetting window
 
         LOG.D2(TAG, "WINDOW FINISHED")
-        LOG.W(TAG, "Statuses: log; ${statusLogging.value} loc: ${statusLocalization.value}")
 
-        // previouslyPaused=false
         if (appendedDetections.isEmpty()) {
           app.showToast(viewModelScope, "No detections.")
           statusLogging.update { LoggingStatus.stopped }
         } else {
-          LOG.E(TAG, "TODO: store in filesystem")
           LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")
           val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
 
-          LOG.E(TAG, "TODO: detections to store: dedup: $detectionsDedup")
+          LOG.W(TAG, "$METHOD: detections to store: dedup: ${detectionsDedup.size}")
 
-          statObjWindowUNQ=detectionsDedup.size
-          statObjTotal+=statObjWindowUNQ
+          objWindowLOG.postValue(detectionsDedup)
 
-          statusLogging.update { LoggingStatus.mustStore }
+          statObjWindowUNQ = detectionsDedup.size
+          statObjTotal += statObjWindowUNQ
+
+          LOG.E(TAG, "$METHOD: detections unique: $statObjWindowUNQ")
+
+          viewModelScope.launch(Dispatchers.IO) {
+            delay(50) // workaround:
+            // little bit of delay before updating status,
+            // so the [objWindowLOG] gets fully propagated
+
+            statusLogging.update { LoggingStatus.mustStore }
+          }
         }
       }
       else -> { // Within a window
@@ -160,13 +176,14 @@ class CvLoggerViewModel @Inject constructor(
 
     viewModelScope.launch(Dispatchers.IO) {
       app.cvUtils.initConversionTables(model.idSmas)
-      val detectionsReq = app.cvUtils.toCvDetections(recognitions, model)
-      cache.storeFingerprints(userCoords, detectionsReq, model)
+      val detectionsReq = app.cvUtils.toCvDetections(this, recognitions, model)
+      // cache.storeFingerprints(userCoords, detectionsReq, model) // TODO:PMX UPL
+      nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
     }
   }
 
-  fun prefWindowLoggingMillis(): Int { return prefsCvLog.windowLoggingSec.toInt()*1000 }
-
+  fun prefWindowLoggingMs(): Int { return prefsCvNav.windowLoggingMs.toInt() }
+  fun prefWindowLoggingSeconds(): Int { return prefsCvNav.windowLoggingMs.toInt() /1e3.toInt() }
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
   fun getElapsedSecondsStr(): String { return utlTime.getSecondsPretty(getElapsedSeconds()) }
 
@@ -174,6 +191,8 @@ class CvLoggerViewModel @Inject constructor(
     statObjWindowUNQ=0
     objWindowLOG.value = emptyList()
     statusLogging.update { LoggingStatus.stopped }
+
+    if (!cache.hasFingerprints()) ui.localization.show()
   }
 
   /**
@@ -190,71 +209,26 @@ class CvLoggerViewModel @Inject constructor(
     cacheUniqueDetections(userCoord, detections)
   }
 
-  // CLR:OFL
-  /**
-   * Generates a [cvMap] from the stored detections.
-   * Then it reads any local [CvMap] and merges with it.
-   * Finally the merged [CvMap] is written to cache (overriding previous one),
-   * and stored in [CvViewModelBase].
-   */
-  // fun storeDetectionsLOCAL(FH: FloorWrapper?) {
-  //   LOG.E(TAG, "storeDetectionsLOCAL: updating heatmaps etc?")
-  //   if (FH == null) {
-  //     LOG.E(TAG, "$METHOD: floorHelper is null.")
-  //     return
-  //   }
-  //
-  //   // MERGE:PM:TODO
-  //   // TODO: UPDATE radiomap (this was a trial todo?)
-  //   val curMap = CvMapHelper.generate(app, model, FH, objOnMAP)
-  //   val curMapH = CvMapHelper(curMap, detector.labels, FH)
-  //   LOG.D(TAG, "$METHOD: has cache: ${curMapH.hasCache()}") // CLR:PM
-  //   val merged = curMapH.readLocalAndMerge()
-  //   val mergedH = CvMapHelper(merged, detector.labels, FH)
-  //   mergedH.storeToCache()
-  //
-  //   LOG.D(TAG, "$METHOD: has cache: ${cvMapH?.hasCache()}") // CLR:PM
-  //   mergedH.generateCvMapFast()
-  //   cvMapH = mergedH
-  //   objOnMAP.clear()
-  // }
+  override fun onLocalizationStarted() {
+    super.onLocalizationStarted()
+    if (!DBG.LCLG) return // PMX: LCLG
 
-  /** Toggle [logging] between stopped (or notStarted), and started.
-   *  There will be no effect when in stoppedMustStore mode.
-   *
-   *  In that case it will wait for the user to store the logging data.
-   */
-  // fun toggleLogging() {
-  //   initialStart = false
-  //   when (logging.value) {
-  //     // Logging.finished-> {}
-  //     Logging.stoppedNoDetections,
-  //     Logging.stopped -> {
-  //       logging.value = Logging.running
-  //       val now = System.currentTimeMillis()
-  //       windowStart=now-windowElapsedPause
-  //     }
-  //     Logging.running -> {
-  //       previouslyPaused = true
-  //       logging.value = Logging.stopped
-  //       LOG.D(TAG, "$METHOD: paused")
-  //
-  //       // pause timer:
-  //       val now = System.currentTimeMillis()
-  //       windowElapsedPause = now-windowStart
-  //     }
-  //     else ->  {
-  //       LOG.W(TAG, "$METHOD: Ignoring: ${logging.value}")
-  //     }
-  //   }
-  // }
+    LOG.E(TAG, "LOCALIZE: RUNNING")
+    // hide all logging UI when localizing
 
+    uiLog.bottom.logging.uploadWasVisible = uiLog.btnUpload.isVisible
+    utlUi.fadeOut(uiLog.btnUpload)
+    ui.floorSelector.hide()
+    uiLog.bottom.logging.hide()
+  }
 
-  // fun startNewWindow() {
-  //   statObjWindowUNQ=0
-  //   objWindowLOG.value = emptyList()
-  //   // statusLogging=CvLoggerUI.LoggingStatus.running
-  //   // logging.value= Logging.stopped
-  //   // toggleLogging()
-  // }
+  override fun onLocalizationEnded() {
+    super.onLocalizationEnded()
+
+    if (!DBG.LCLG) return // PMX: LCLG
+
+    if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.btnUpload)
+      ui.floorSelector.show()
+      uiLog.bottom.logging.show()
+  }
 }

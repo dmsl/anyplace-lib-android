@@ -2,16 +2,17 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.content.Context
 import android.widget.Toast
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapFast
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapFastRM
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelperRM
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMap
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMapRM
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -21,11 +22,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 open class FloorHandler(
-        protected val VM: CvViewModel,
-        protected val scope: CoroutineScope,
-        protected val ctx: Context,
-        private val UI: CvCommonUI,
-        /** [GoogleMap] overlays */
+  protected val VM: CvViewModel,
+  protected val scope: CoroutineScope,
+  protected val ctx: Context,
+  private val UI: CvUI,
+  /** [GoogleMap] overlays */
         protected val overlays: Overlays
         ) {
 
@@ -47,13 +48,13 @@ open class FloorHandler(
           is NetworkResult.Error -> {
             val msg = ": Failed to fetch ${VM.wSpace.prettyType}: ${VM.space?.name}: [${response.message}]"
             LOG.E(TAG, "Error: observeFloorplanChanges: $msg")
-            Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+            showToast(msg, Toast.LENGTH_SHORT)
           }
           is NetworkResult.Success -> {
             if (VM.wFloor == null) {
               val msg = "No floor/deck selected."
               LOG.W(msg)
-              Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show()
+              showToast(msg, Toast.LENGTH_SHORT)
             } else {
               LOG.D(TAG, "$METHOD: observeFloorplanChanges: success: loading floorplan")
               fpLoader.render(overlays, gmap, response.data, VM.wFloor!!)
@@ -64,6 +65,12 @@ open class FloorHandler(
           else -> {}
         }
       }
+    }
+  }
+
+  fun showToast(msg: String, len: Int) {
+    VM.viewModelScope.launch(Dispatchers.Main) {
+      Toast.makeText(ctx, msg, len).show()
     }
   }
 
@@ -115,8 +122,8 @@ open class FloorHandler(
 
 
   /**
-   * Reads the [CvMap] from cache and if it exists it:
-   * - parses it into the optimized [CvMapFast] structure
+   * Reads the [CvMapRM] from cache and if it exists it:
+   * - parses it into the optimized [CvMapFastRM] structure
    * - it renders a heatmap of the detections
    */
   suspend fun loadCvMapAndHeatmap(gmap: GoogleMap) {
@@ -136,13 +143,13 @@ open class FloorHandler(
     when {
       !FH.hasFloorCvMap(model) -> { LOG.V3(TAG, "No local CvMap") }
       cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
-      cvMap.schema < CvMap.SCHEMA -> {
-        LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMap.SCHEMA}")
+      cvMap.schema < CvMapRM.SCHEMA -> {
+        LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMapRM.SCHEMA}")
         LOG.E(TAG, "outdated cv-map")
         FH.clearCacheCvMaps()
       }
       else -> { // all is good, render.
-        VM.cvMapH = CvMapHelper(cvMap, VM.detector.labels, FH)
+        VM.cvMapH = CvMapHelperRM(cvMap, VM.detector.labels, FH)
         VM.cvMapH?.generateCvMapFast()
         UI.renderHeatmap(gmap, VM.cvMapH)
       }

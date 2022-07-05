@@ -8,18 +8,17 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG.Companion.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
+import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +45,7 @@ class CvFingerprintSendNW(
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<FingerprintSendResp>> = MutableStateFlow(NetworkResult.Unset())
 
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var chatUser : ChatUser
 
   private val utlUi by lazy { UtilUI(app, VM.viewModelScope) }
@@ -100,14 +99,8 @@ class CvFingerprintSendNW(
     app.showToast(VM.viewModelScope, reportMsg, Toast.LENGTH_LONG)
   }
 
-  private suspend fun uploadEntry(chatUser: ChatUser, entry: FingerprintEntry): Boolean {
+  private suspend fun uploadEntry(chatUser: ChatUser, entry: FingerprintScanEntry): Boolean {
     LOG.E(TAG, "ENTRY: $entry\n")
-
-    // LOG.D2(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
-    //
-    // resp.value = NetworkResult.Unset()
-    // resp.value = NetworkResult.Loading()
-
     try {
       val req= FingerprintSendReq(chatUser, entry)
       LOG.D3(TAG, "FP-Send: ${req.time}: #: ${entry.cvDetections.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
@@ -146,20 +139,23 @@ class CvFingerprintSendNW(
 
     LOG.D2(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
 
+    LOG.W(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
+
     resp.value = NetworkResult.Unset()
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
         val req= FingerprintSendReq(chatUser, userCoords, utlTime.epoch().toString(),
                 detectionsReq, model.idSmas)
-        LOG.D3(TAG, "FP-Send: ${req.time}: #: ${detectionsReq.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
+        LOG.W(TAG, "FP-Send: ${req.time}: #: ${detectionsReq.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.cvFingerprintSend(req)
-        LOG.D3(TAG, "FP-Send: Resp: ${response.message()}" )
+        LOG.W(TAG, "FP-Send: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
+        LOG.W(TAG, "WILL THROW MSG")
         val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
@@ -172,6 +168,9 @@ class CvFingerprintSendNW(
     LOG.D3(TAG, "handleResponse")
     if(resp.isSuccessful) {
       when {
+        resp.errorBody() != null -> {
+          return NetworkResult.Error(resp.body().toString())
+        }
         resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
         resp.isSuccessful -> {
           // SMAS special handling (errors should not be 200/OK)
@@ -189,6 +188,7 @@ class CvFingerprintSendNW(
   }
 
   private fun handleException(msg: String, e: Exception) {
+    LOG.W(TAG, "handling exception")
     resp.value = NetworkResult.Error(msg)
     LOG.E(TAG, msg)
     LOG.E(TAG, e)

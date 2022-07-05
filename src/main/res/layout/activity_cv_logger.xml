@@ -114,6 +114,7 @@
         />
 
 
+    <!-- TODO:PMX UPL-->
     <Button
         android:id="@+id/button_upload"
         android:layout_width="wrap_content"
@@ -122,6 +123,7 @@
         android:paddingLeft="30dp"
         android:drawableEnd="@drawable/ic_upload"
         tools:visibility="visible"
+        android:alpha="0"
         android:visibility="invisible"
         app:drawableTint="@color/white"
         android:textSize="15sp"
@@ -192,10 +194,8 @@
         app:layout_constraintBottom_toTopOf="@id/button_floorDown"
         />
 
-
-
     <TextView
-        android:background="@drawable/bg_round_white_20"
+        android:background="@drawable/bg_round_white_50"
         android:layout_marginTop="10dp"
         android:paddingLeft="3dp"
         android:paddingRight="3dp"
@@ -209,7 +209,6 @@
         android:translationY="-5dp"
         android:textSize="18sp"
         android:textColor="@color/colorPrimary"
-        app:outlineColor="@color/white"
         android:text="@string/floor"
         />
     <!-- end: floor selector (6) -->

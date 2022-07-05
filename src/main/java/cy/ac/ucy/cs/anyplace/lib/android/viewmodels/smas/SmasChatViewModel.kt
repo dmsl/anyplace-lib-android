@@ -14,7 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ReplyToMessage
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
@@ -50,7 +50,7 @@ class SmasChatViewModel @Inject constructor(
 ) : AndroidViewModel(_application) {
 
   private val app = _application as SmasApp
-  private val C by lazy { CHAT(app.applicationContext) }
+  private val C by lazy { SMAS(app.applicationContext) }
 
   val nwMsgGet by lazy { MsgGetNW(app, this, RFH, repoSmas) }
   private val nwMsgSend by lazy { MsgSendNW(app, this, RFH, repoSmas) }

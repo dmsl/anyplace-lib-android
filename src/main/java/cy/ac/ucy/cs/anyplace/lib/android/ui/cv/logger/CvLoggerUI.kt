@@ -2,16 +2,16 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.content.Context
 import android.widget.Toast
-import androidx.core.view.isVisible
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
@@ -23,13 +23,12 @@ import kotlinx.coroutines.launch
 open class CvLoggerUI(private val act: CvLoggerActivity,
                       private val scope: CoroutineScope,
                       private val VM: CvLoggerViewModel,
-                      private val ui: CvCommonUI) {
+                      private val ui: CvUI) {
 
   private val app = act.app
 
   fun onInferenceRan() {
-    LOG.D2(TAG, "$METHOD: CvLoggerUI")
-
+    LOG.V2(TAG, "$METHOD: CvLoggerUI")
     bottom.timer.render()
     ui.onInferenceRan()
   }
@@ -58,14 +57,13 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val method = METHOD
     val tag = TAG
     LOG.E(tag, "$method: setup: (long-click)")
-    // ui.map.mapView.isLongClickable=false // CHECK:PM for BFnt45
-    // ui.map.mapView.isLongClickable=true
-    // mMapFragment.getView().setClickable(false);
 
     scope.launch(Dispatchers.IO) {
       delay(200)
       scope.launch(Dispatchers.Main) {
         ui.map.obj.setOnMapLongClickListener { location ->
+          if (app.BFnt45) return@setOnMapLongClickListener // PMX:BFnt45
+
           LOG.E(tag, "$method: storing detections (long-click)")
           if (VM.canStoreDetections()) {
             LOG.V3(tag, "clicked at: $location")
@@ -93,8 +91,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     }
   }
 
+  // CHECK: TODO: PMX: UPL: in future: shouldn't be invisible?
   fun canPerformLocalization() =
-          btnUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
+          VM.statusLogging.value == LoggingStatus.stopped
+          // btnUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
 
   fun setupButtonSettings() {
     LOG.D2()
@@ -132,7 +132,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             location.latitude, location.longitude)
 
     VM.cacheDetectionsLocally(userCoord, location)
-    bottom.logging.showUploadBtn()
+    checkForUploadCache(true) // TODO:PMX UPL: CLR this one?
+    // bottom.logging.showUploadBtn() / /TODO:PMX UPL
 
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
@@ -186,19 +187,20 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   var uploadButtonInit = false
   fun setupUploadBtn() {
-    // if (uploadButtonInit) return // PMX: BFnt45
+    if (DBG.BFnt45){ if (uploadButtonInit) return } // PMX: BFnt45
+
     uploadButtonInit = true
 
     LOG.E(TAG, "$METHOD: setup upload button")
-    btnUpload.setOnClickListener {
-      LOG.E(TAG, "$METHOD: clicked upload")
-      scope.launch(Dispatchers.IO) {
-        utlUi.disable(btnUpload)
-        utlUi.text(btnUpload, ctx.getString(R.string.uploading))
-        utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
-        VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
-      }
-    }
+    // btnUpload.setOnClickListener {
+    //   LOG.E(TAG, "$METHOD: clicked upload")
+    //   scope.launch(Dispatchers.IO) { // TODO:PMX UPL
+    //     utlUi.disable(btnUpload)
+    //     utlUi.text(btnUpload, ctx.getString(R.string.uploading))
+    //     utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
+    //     VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
+    //   }
+    // }
   }
 
   /**

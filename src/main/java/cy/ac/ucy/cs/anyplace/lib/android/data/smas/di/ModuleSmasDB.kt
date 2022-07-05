@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.smas.di
 
 import android.content.Context
 import androidx.room.Room
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.SmasDB
 import dagger.Module
 import dagger.Provides
@@ -21,7 +21,7 @@ object ModuleSmasDB {
           @ApplicationContext ctx: Context) = Room.databaseBuilder(
           ctx,
           SmasDB::class.java,
-          CHAT(ctx).DB_SMAS_NAME)
+          SMAS(ctx).DB_SMAS_NAME)
           .build()
 
   @Singleton

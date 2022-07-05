@@ -9,8 +9,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvDetection
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMap
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetection
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMapRM
+import kotlinx.coroutines.CoroutineScope
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.min
@@ -54,11 +55,12 @@ class DistanceRow(val distance: Double, val row: Int): Comparable<DistanceRow> {
 }
 
 /**
- * Optimized representation of a [CvMap].
+ * Optimized representation of a [CvMapRM].
  */
-class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
+@Deprecated("DELETE")
+class CvMapFastRM(private val cvMapRM: CvMapRM, private val labels: List<String>) {
   /** [rows] are the different locations where objects were detected.  */
-  private val rows = cvMap.locations.size
+  private val rows = cvMapRM.locationOLDS.size
 
   /** [columns] is the number of classes. It depends on the used YOLO detectionModel. */
   private val columns = labels.size
@@ -109,10 +111,10 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
    */
   fun populateBitmap() {
     LOG.D2(TAG, "populateBitmap")
-    for (locationIndex in cvMap.locations.indices) {
-      val location = cvMap.locations[locationIndex]
+    for (locationIndex in cvMapRM.locationOLDS.indices) {
+      val location = cvMapRM.locationOLDS[locationIndex]
 
-      val coord = Coord.get(location.lat, location.lon, cvMap.floorNumber.toInt())
+      val coord = Coord.get(location.lat, location.lon, cvMapRM.floorNumber.toInt())
       val dbgkey = coord.lat.toString()+"_"+coord.lon.toString()
       _locNames[dbgkey] = "LOC${locationIndex+1}"
       var locValues = ""
@@ -250,15 +252,16 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
   }
 
   @Deprecated("")
-  fun estimatePosition(cvUtils: CvUtils,
+  fun estimatePosition(scope: CoroutineScope,
+                       cvUtils: CvUtils,
                        model: DetectionModel,
                        detections: List<Classifier.Recognition>)
           : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (model.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (model.modelName.lowercase() != cvMapRM.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${model.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${model.modelName} instead of ${cvMapRM.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }
@@ -267,7 +270,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
     detections.forEach {
       val idx = labelMap[it.title]!!
-      val cvDetection = CvMapHelper.toCvDetection(cvUtils, model, it)
+      val cvDetection = CvMapHelperRM.toCvDetection(scope, cvUtils, model, it)
       if (inputMap[idx] == null) {
         inputMap[idx] = mutableListOf(cvDetection)
       } else {
@@ -282,14 +285,15 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
 
 
   fun estimatePositionNEW(
+          scope: CoroutineScope,
           cvUtils: CvUtils,
           model: DetectionModel,
           detections: List<Classifier.Recognition>) : LocalizationResult {
     LOG.W(TAG, "estimatePosition")
 
-    if (model.modelName.lowercase() != cvMap.detectionModel.lowercase()) {
+    if (model.modelName.lowercase() != cvMapRM.detectionModel.lowercase()) {
       val msg = "Wrong model used"
-      val details = "${model.modelName} instead of ${cvMap.detectionModel}"
+      val details = "${model.modelName} instead of ${cvMapRM.detectionModel}"
       LOG.E(TAG, "$msg: $details")
       return LocalizationResult.Error(msg, details)
     }
@@ -298,7 +302,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
     val inputMap: HashMap<Int, MutableList<CvDetection>> = HashMap()
     detections.forEach {
       val idx = labelMap[it.title]!!
-      val cvDetection = CvMapHelper.toCvDetection(cvUtils, model, it)
+      val cvDetection = CvMapHelperRM.toCvDetection(scope, cvUtils, model, it)
       if (inputMap[idx] == null) {
         inputMap[idx] = mutableListOf(cvDetection)
       } else {
@@ -357,7 +361,7 @@ class CvMapFast(private val cvMap: CvMap, private val labels: List<String>) {
 
 
   /**
-   * Calculates the Euclidean Distance between a [CvMapFast] [row] and
+   * Calculates the Euclidean Distance between a [CvMapFastRM] [row] and
    * an [inputMap] [HashMap] of detections.
    *
    * [inputMap] has:

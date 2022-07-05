@@ -12,8 +12,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvCommonUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -57,11 +58,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
-
-  // UI
-  //// COMPONENTS
-  protected lateinit var floorSelector: FloorSelector
-  protected lateinit var ui: CvCommonUI
 
   override fun postResume() {
     // super.postResume()
@@ -131,7 +127,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   /**
    * Initialize bottom sheet by reading the [VM.prefsNav]
    */
-  open fun lazyInitBottomSheet() {
+  open fun setupUiAfterGmap() {
     uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsCvNav.devMode)
   }
 
@@ -143,32 +139,31 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     // there is demo localization in Logger too,
     // to validate findings according to the latest CvMap
-    ui.localization.collectStatus()
+    VM.ui.localization.collectStatus()
 
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvNav.read.collect {
         LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
-        lazyInitBottomSheet()
+        setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
       }
     }
 
     checkInternet()
-    ui.setupOnFloorSelectionClick()
+    VM.ui.setupOnFloorSelectionClick()
   }
 
   var initedGmap = false
   private fun setupUiGmap() {
-    LOG.E(TAG, "SETUP CommonUI & GMAP")
-    // if (initedGmap) return // PMX: BFnt45 (main)
+    LOG.D2(TAG, "Setup CommonUI & GMap")
+    if (DBG.BFnt45){ if (initedGmap) return } // PMX: BFnt45 (main)
 
     LOG.E(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
-    ui = CvCommonUI(VM, lifecycleScope,
-            this@CvMapActivity,
-            supportFragmentManager, floorSelector)
-    ui.map.attach(VM, this, R.id.mapView)
+    VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
+            supportFragmentManager, VM.floorSelector)
+    VM.ui.map.attach(VM, this, R.id.mapView)
   }
 
   var floorSelectorInited = false
@@ -176,7 +171,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     if (floorSelectorInited) return
     floorSelectorInited=true
 
-    floorSelector = FloorSelector(applicationContext,
+    VM.floorSelector = FloorSelector(applicationContext,
             lifecycleScope,
             findViewById(R.id.group_floorSelector),
             findViewById(R.id.textView_titleFloor),
@@ -189,8 +184,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun before() {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
-        ui.removeHeatmap()
-        ui.map.removeUserLocations()
+        VM.ui.removeHeatmap()
+        VM.ui.map.removeUserLocations()
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
       }
@@ -198,7 +193,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun after() { }
     }
 
-    floorSelector.callback = fsCallback
+    VM.floorSelector.callback = fsCallback
   }
 
   private fun setMapOpacity() {
@@ -212,8 +207,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.E(TAG, "onMapReadyCallback: [CvMap]")
-    ui.map.setup(googleMap)
-    ui.localization.setupClick()
+    VM.ui.map.setup(googleMap)
+    VM.ui.localization.setupClick()
 
     collectLocationREMOTE()
   }
@@ -249,7 +244,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   open fun onFloorLoaded() {
     LOG.D2(TAG, "Floor loaded: ${VM.wFloor?.floorNumber()}")
     if (VM.wFloor != null) {
-      ui.map.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
+      VM.ui.map.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
     }
   }
 
@@ -302,7 +297,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { ui.map.setUserLocationREMOTE(it) }
+            result.coord?.let { VM.ui.map.setUserLocationREMOTE(it) }
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.TAG_TASK}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.D2(TAG, msg)

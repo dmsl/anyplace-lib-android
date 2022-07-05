@@ -19,6 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayVie
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.BorderedText
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -159,6 +160,7 @@ abstract class DetectorActivityBase : CameraActivity(),
       }
       else -> {
         val elapsedTime = currentTime - lastScan
+        LOG.V5(TAG, "elapsed: $elapsedTime")
         if (elapsedTime >= scanDelay) {
           lastScan = currentTime
           return true
@@ -210,8 +212,6 @@ abstract class DetectorActivityBase : CameraActivity(),
       return
     }
 
-    LOG.V2(TAG_METHOD, "Running inference..")
-
     val currTimestamp = timestamp
     computingDetection = true
     LOG.V3(TAG_METHOD, "Preparing image $currTimestamp for detection in bg thread.")
@@ -220,11 +220,14 @@ abstract class DetectorActivityBase : CameraActivity(),
     readyForNextImage()
 
     // No mutex needed as this method is not reentrant.
-    // if (!VMD.isDetecting()) { // TODO: PMX: CTR
-    //   LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
-    //   skipDetection()
-    //   return
-    // }
+    // PMX: BUG
+    if (!VMD.isDetecting() ) {
+      LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
+      if (DBG.CTR) skipDetection() // TODO: PMX: CTR
+      return
+    }
+
+    LOG.V2(TAG_METHOD, "RUNNING INFERENCE..")
 
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
@@ -250,17 +253,9 @@ abstract class DetectorActivityBase : CameraActivity(),
     val canvas = Canvas(croppedBitmap)
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
-    // val results = emptyList<Classifier.Recognition>()
-
     cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
-    // canvas = Canvas(cropCopyBitmap)
 
     // Flows here
-    // val detections = storeResults(results, canvas)
-    // onInferenceRan(detections)
-
-    // finalize detection:
-    // View
     VMD.tracker.clear()
     VMD.trackingOverlay.postInvalidate()
     computingDetection = false
@@ -323,7 +318,6 @@ abstract class DetectorActivityBase : CameraActivity(),
     for (result in results) {
       val location = result.location
       if (result.confidence >= minimumConfidence) {
-        LOG.D(TAG, "drawing: ${result.title} DABase")
         canvas.drawRect(location, paint)
         cropToFrameTransform!!.mapRect(location)
         result.location = location

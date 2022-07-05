@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.CHAT
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -21,10 +21,10 @@ import javax.inject.Singleton
 @Singleton
 class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
-  private val C by lazy { CHAT(ctx) }
+  private val C by lazy { SMAS(ctx) }
   private val Context.dsChatUser by preferencesDataStore(name = C.PREF_CHAT_USER)
 
-  private class Keys(c: CHAT) {
+  private class Keys(c: SMAS) {
     val uid = stringPreferencesKey(c.PREF_USER_ID)
     val sessionkey = stringPreferencesKey(c.PREF_USER_ACCESS_TOKEN)
   }

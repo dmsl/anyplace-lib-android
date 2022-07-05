@@ -13,6 +13,12 @@
         />
 
     <EditTextPreference
+        app:key="@string/pref_cv_logging_ms"
+        app:title="Logging Window (ms)"
+        app:summary="@string/summary_logging_window"
+        />
+
+    <EditTextPreference
         app:key="@string/pref_smas_location_refresh"
         app:title="Refresh Other User Locations (ms)"
         app:summary="@string/summary_refresh_locations"
@@ -38,12 +44,21 @@
         android:title="Discard cached fingerprints"
         android:key="@string/pref_log_clear_cache_cv_fingerprints"
         android:summary="Those were not uploaded, and will be lost."
+        app:isPreferenceVisible="false"
         />
 
     <Preference
-        android:title="Clear local CV Model "
+        android:title="Update CV Model classes"
         android:key="@string/pref_log_clear_cache_cv_models"
-        android:summary="Delete CV Model names (RESTART APP)."
+        android:summary="Deletes and downloads again the model classes."
+        />
+
+    <!-- TODO:PMX CVM -->
+    <!--    Updates the CV map.-->
+    <Preference
+        android:title="CvMap"
+        android:key="@string/pref_localization_cv_map"
+        android:summary=""
         />
 
     <Preference

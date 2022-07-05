@@ -106,6 +106,7 @@
             android:id="@+id/tv_restrictions"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             style="@style/BottomSheetSection"
             android:text="@string/tutorial_restrictions"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -115,6 +116,7 @@
         <TextView
             android:id="@+id/tv_restrictionsDetails"
             android:layout_width="0dp"
+            android:visibility="gone"
             android:layout_height="wrap_content"
             android:gravity="start|top"
             android:text="@string/tutorial_restrictions_details"
@@ -122,11 +124,13 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_restrictions" />
 
+        <!-- TODO:PMX: TUT -->
         <TextView
             android:layout_marginTop="20dp"
             android:id="@+id/textView_tutorialFinish"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             style="@style/BottomSheetSection"
             android:textColor="@color/redDark"
             android:text="@string/tutorial_cvscan_discard"
@@ -139,6 +143,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="start|top"
+            android:visibility="gone"
             android:text="@string/tutorial_cvscan_finish_details"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -393,10 +398,8 @@
         android:layout_width="0dp"
         android:layout_height="42dp"
         android:layout_margin="6dp"
-
         android:visibility="invisible"
         tools:visibility="visible"
-        android:alpha="0.5"
         android:backgroundTint="@color/redDark"
         android:enabled="false"
         android:text="@string/clear_window"
