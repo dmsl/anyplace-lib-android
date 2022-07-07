@@ -4,10 +4,10 @@ import android.app.Activity
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
+import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelperRM
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
@@ -68,14 +68,30 @@ open class CvUI(
     }
   }
 
-  fun renderHeatmap(map: GoogleMap, cvMapH: CvMapHelperRM?) {
+  @Deprecated("update to work with fingerprint")
+  fun renderHeatmap(map: GoogleMap, cvMapH: Any?) { // was: cvMapH: CvMapHelperRM?
     if (cvMapH == null) {
       LOG.W(TAG, "renderHeatmap: floorHelper or cvMap are null.")
       return
     }
 
-    LOG.D2(TAG, "renderHeatmap: locations ${cvMapH.cvMapRM.locationOLDS.size}")
-    this.map.overlays.createHeatmap(map, cvMapH.getWeightedLocationList())
+    val points= emptyList<WeightedLatLng>()  // cvMapH.getWeightedLocationList() see below sample coce
+    this.map.overlays.createHeatmap(map, points)
   }
+
+  // Sample code: getWeightedLocationList
+  // fun getWeightedLocationList() : List<WeightedLatLng> {
+  //   var locations : MutableList<WeightedLatLng> = mutableListOf()
+  //   cvMapRM.locationOLDS.forEach { cvLoc ->
+  //     try {
+  //       // TODO:CV calculate intensity (how strong a cvLoc is) differently.
+  //       // e.g., unique objects count extra..
+  //       val intensity : Double = cvLoc.detections.size.toDouble()
+  //       val loc = LatLng(cvLoc.lat.toDouble(), cvLoc.lon.toDouble())
+  //       locations.add(WeightedLatLng(loc, intensity))
+  //     } catch (e: Exception) {}
+  //   }
+  //   return locations
+  // }
 
 }

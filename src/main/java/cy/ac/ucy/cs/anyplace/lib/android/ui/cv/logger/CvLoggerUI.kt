@@ -202,11 +202,4 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     //   }
     // }
   }
-
-  /**
-   * DEPRECATED CALLS:
-   *
-   * VM.storeDetectionsLOCAL(VM.wFloor)
-   * VM.cvMapH?.let { ui.map.overlays.refreshHeatmap(gmap, it.getWeightedLocationList()) }
-   */
 }

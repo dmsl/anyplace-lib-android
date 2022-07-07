@@ -118,18 +118,18 @@ class ClearCachesDialog(
     }
   }
 
-  // TODO: on CvLoggerActivity (or fragment) resume: redraw the heatmap
+  // on CvLoggerActivity (or fragment) resume: redraw the heatmap
   // (or set a boolean if we must redraw)
   private fun setupConfirmButton() {
    val btn = binding.btnConfirm
     btn.setOnClickListener {
       when {
         // clear all
-        binding.radioButtonAll.isChecked -> { Cache(requireActivity()).deleteCvMapsLocal() }
-        // clear all floors
-        binding.radioButtonSpace.isChecked -> { floorsH?.clearCacheCvMaps() }
-        // clear specified floor
-        binding.radioButtonFloor.isChecked -> { floorH?.clearCacheCvMaps() }
+        // binding.radioButtonAll.isChecked -> { Cache(requireActivity()).deleteCvMapsLocal() }
+        // // clear all floors
+        // binding.radioButtonSpace.isChecked -> { floorsH?.clearCacheCvMaps() }
+        // // clear specified floor
+        // binding.radioButtonFloor.isChecked -> { floorH?.clearCacheCvMaps() }
       }
 
       cvDataStore.setReloadCvMaps(true)

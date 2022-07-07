@@ -61,14 +61,12 @@ class FloorWrapper(val obj: Floor,
   // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
   /** Deletes the cvmap folder that might contain several CvMaps
    * created with different [DetectionModel]s */
-  fun clearCacheCvMaps() { cache.deleteFloorCvMapsLocal(obj) }
   fun clearCache() {
     clearCacheFloorplan()
-    clearCacheCvMaps()
+    // Other cache?
   }
   fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(obj, bitmap) } }
-  fun hasFloorCvMap(model: DetectionModel) = cache.hasJsonFloorCvMapModelLocal(obj, model)
-  fun loadCvMapFromCache(model: DetectionModel) = cache.readFloorCvMap(obj, model)
+
 
   // CLR:PM
   // https://ap-dev.cs.ucy.ac.cy:9001/api/floorplans64/vessel_9bdb1052-ff23-4f9b-b9f9-aae5095af468_1634646807927/-2

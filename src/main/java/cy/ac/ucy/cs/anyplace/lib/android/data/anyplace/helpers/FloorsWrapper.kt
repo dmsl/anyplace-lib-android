@@ -52,9 +52,6 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
   /** Deletes all cached floorplans */
   fun clearCacheFloorplans() = clearCache("floorplans") { clearCacheFloorplan() }
 
-  /** Deletes all cached [CvMap]s */
-  fun clearCacheCvMaps() = clearCache("CvMaps") { clearCacheCvMaps() }
-
   /** Deletes all the cache related to a floor */
   fun clearCaches() = clearCache("all") { clearCache() }
 

@@ -5,8 +5,6 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapFastRM
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelperRM
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -22,13 +20,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 open class FloorHandler(
-  protected val VM: CvViewModel,
-  protected val scope: CoroutineScope,
-  protected val ctx: Context,
-  private val UI: CvUI,
-  /** [GoogleMap] overlays */
+        protected val VM: CvViewModel,
+        protected val scope: CoroutineScope,
+        protected val ctx: Context,
+        private val UI: CvUI,
+        /** [GoogleMap] overlays */
         protected val overlays: Overlays
-        ) {
+) {
 
   private val fpLoader by lazy { FloorplanLoader() }
 
@@ -58,7 +56,7 @@ open class FloorHandler(
             } else {
               LOG.D(TAG, "$METHOD: observeFloorplanChanges: success: loading floorplan")
               fpLoader.render(overlays, gmap, response.data, VM.wFloor!!)
-              loadCvMapAndHeatmap(gmap)
+              loadHeatmap(gmap)
             }
           }
           // ignore Unset
@@ -120,38 +118,37 @@ open class FloorHandler(
   }
 
 
-
   /**
-   * Reads the [CvMapRM] from cache and if it exists it:
-   * - parses it into the optimized [CvMapFastRM] structure
-   * - it renders a heatmap of the detections
+   * TODO: must be done for FINGERPRINT (SMAS type..)
+   *
+   * This was done for the [CvMapRM] / [CvMapFastRM] optimized structures
+   * that were deleted by this commit.
+   *
+   * How to implement:
+   * - if not prep:
+   * - prep: store all points for all floors in mem
+   * - load heatmap of cur floor
    */
-  suspend fun loadCvMapAndHeatmap(gmap: GoogleMap) {
+  suspend fun loadHeatmap(gmap: GoogleMap) {
     LOG.V3()
 
     // BUGFIX: artificial delay workaround; could implement this better)
-   while (!VM.modelEnumLoaded) {
-     LOG.W(TAG, "$METHOD: waiting for model to be loaded..")
-     delay(200)
-   }
+    while (!VM.modelEnumLoaded) {
+      LOG.W(TAG, "$METHOD: waiting for model to be loaded..")
+      delay(200)
+    }
 
-    val model = VM.model // TODO
+    // TODO: load fingerprint points..
+    val model = VM.model
     if (VM.wFloor==null) return
     val FH = VM.wFloor!!
-    val cvMap = if (FH.hasFloorCvMap(model)) VM.wFloor?.loadCvMapFromCache(model) else null
     UI.removeHeatmap()
     when {
-      !FH.hasFloorCvMap(model) -> { LOG.V3(TAG, "No local CvMap") }
-      cvMap == null -> { LOG.W(TAG, "Can't load CvMap") }
-      cvMap.schema < CvMapRM.SCHEMA -> {
-        LOG.W(TAG, "CvMap outdated: version: ${cvMap.schema} (current: ${CvMapRM.SCHEMA}")
-        LOG.E(TAG, "outdated cv-map")
-        FH.clearCacheCvMaps()
-      }
+      false -> { LOG.V3(TAG, "No local CvMap") } // case that has no fingerprints for floor..
       else -> { // all is good, render.
-        VM.cvMapH = CvMapHelperRM(cvMap, VM.detector.labels, FH)
-        VM.cvMapH?.generateCvMapFast()
-        UI.renderHeatmap(gmap, VM.cvMapH)
+        // VM.cvMapH = CvMapHelperRM(cvMap, VM.detector.labels, FH)
+        // VM.cvMapH?.generateCvMapFast()
+        UI.renderHeatmap(gmap, null)
       }
     }
   }

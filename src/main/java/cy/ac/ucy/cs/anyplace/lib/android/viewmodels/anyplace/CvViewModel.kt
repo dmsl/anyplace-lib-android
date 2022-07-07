@@ -11,7 +11,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.CvMapHelperRM
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
@@ -144,7 +143,6 @@ open class CvViewModel @Inject constructor(
   var lastValSpaces: LastValSpaces = LastValSpaces()
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
   /** Holds the functionality of a [CvMapRM] and can generate the [CvMapFast] */
-  var cvMapH: CvMapHelperRM? = null
 
   // FLOOR PLANS
   fun getFloorplanFromRemote(FH: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(FH) }

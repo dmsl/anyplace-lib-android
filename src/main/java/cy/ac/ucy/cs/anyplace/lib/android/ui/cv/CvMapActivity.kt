@@ -106,16 +106,15 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
+  // CHECK: is this needed
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
     if (cvEnginePrefs.reloadCvMaps) {
       LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
-      // CLR:PM OLD LOCAL CODE...
-      // refresh CvMap+Heatmap only when needed
-      // TODO do something similar with floorplans when necessary as well
-      // loadCvMapAndHeatmap() // TODO call this..
+      LOG.E(TAG, "CHECK: might need to reload headmap")
+      // loadHeatmap() on the floor
       // dsCv.setReloadCvMaps(false)
     } else {
-      LOG.D(TAG_METHOD, "not reloading (cvmap or caches)")
+      LOG.D(TAG_METHOD, "not reloading (fingerprint or caches)")
     }
   }
 
