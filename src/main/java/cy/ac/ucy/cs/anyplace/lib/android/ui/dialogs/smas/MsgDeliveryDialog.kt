@@ -94,7 +94,7 @@ class MsgDeliveryDialog(private val dsChat: ChatPrefsDataStore,
     btn.setOnClickListener {
       val checkedBtn = rbGroup.checkedRadioButtonId
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(checkedBtn)
-      dsChat.putString(C.PREF_CHAT_MDELIVERY, rb.tag.toString())
+      dsChat.putString(C.PREF_SMAS_MDELIVERY, rb.tag.toString())
       VMchat.mdelivery = rb.tag.toString()
 
       dismiss()

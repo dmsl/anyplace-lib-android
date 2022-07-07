@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
-import cy.ac.ucy.cs.anyplace.lib.smas.models.FingerprintScanEntry
+import cy.ac.ucy.cs.anyplace.lib.smas.models.FingerprintScan
 import java.io.*
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -221,7 +221,7 @@ open class Cache(val ctx: Context) {
   fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
     LOG.D(TAG, "$METHOD: to local cache")
     val time = utlTime.epoch().toString()
-    val entry = FingerprintScanEntry(userCoords, time, detectionsReq, model.idSmas)
+    val entry = FingerprintScan(userCoords, time, detectionsReq, model.idSmas)
 
     // val gson: Gson = GsonBuilder().create()
     val fw= FileWriter(File(fingerprintsFilename), true)
@@ -231,10 +231,10 @@ open class Cache(val ctx: Context) {
     fw.close()
   }
 
-  fun topFingerprintsEntry(): FingerprintScanEntry? {
+  fun topFingerprintsEntry(): FingerprintScan? {
     val str = File(fingerprintsFilename).bufferedReader().use { it.readLine() } ?: return null
 
-    return gson.fromJson(str, FingerprintScanEntry::class.java)
+    return gson.fromJson(str, FingerprintScan::class.java)
   }
 
   fun deleteFingerprintsCache() {

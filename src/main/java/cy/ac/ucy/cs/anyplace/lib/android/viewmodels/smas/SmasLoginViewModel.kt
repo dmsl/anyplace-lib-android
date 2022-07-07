@@ -15,8 +15,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginReq
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginResp
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginResp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,11 +40,11 @@ class SmasLoginViewModel @Inject constructor(
   val loginFormState: LiveData<LoginFormState> = _loginForm
 
   //// RETROFIT
-  val resp: MutableStateFlow<NetworkResult<ChatLoginResp>> = MutableStateFlow(NetworkResult.Unset())
+  val resp: MutableStateFlow<NetworkResult<SmasLoginResp>> = MutableStateFlow(NetworkResult.Unset())
 
-  fun login(req: ChatLoginReq) = viewModelScope.launch { safeCall(req) }
+  fun login(req: SmasLoginReq) = viewModelScope.launch { safeCall(req) }
 
-  private suspend fun safeCall(req: ChatLoginReq) {
+  private suspend fun safeCall(req: SmasLoginReq) {
     LOG.D(TAG_METHOD)
     resp.value = NetworkResult.Loading()
     var exception : Exception? = null
@@ -101,13 +101,13 @@ class SmasLoginViewModel @Inject constructor(
     LOG.E(TAG, e)
   }
 
-  private fun handleResponse(response: Response<ChatLoginResp>):
-          NetworkResult<ChatLoginResp> {
+  private fun handleResponse(response: Response<SmasLoginResp>):
+          NetworkResult<SmasLoginResp> {
     return when {
       response.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
       !response.isSuccessful-> {
         val rawErrorResponse = response.errorBody()!!.string()
-        val errorReponse = Gson().fromJson(rawErrorResponse, ChatLoginResp::class.java)
+        val errorReponse = Gson().fromJson(rawErrorResponse, SmasLoginResp::class.java)
         NetworkResult.Error(errorReponse.descr)
       }
       response.isSuccessful -> {

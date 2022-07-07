@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
@@ -49,17 +49,17 @@ class LocationGetNW(
   private val resp: MutableStateFlow<NetworkResult<UserLocations>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser : ChatUser
+  private lateinit var smasUser : SmasUser
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D3(TAG, "LocationGet")
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        val response = repo.remote.locationGet(ChatUserAuth(chatUser))
+        val response = repo.remote.locationGet(ChatUserAuth(smasUser))
         LOG.D4(TAG, "LocationGet: ${response.message()}" )
         resp.value = handleResponse(response)
 
@@ -147,15 +147,15 @@ class LocationGetNW(
     val sameFloorUsers = locations.rows.filter { userLocation ->
       userLocation.buid == FH.spaceH.obj.id &&  // same space
               userLocation.deck == FH.obj.floorNumber.toInt() && // same deck
-              userLocation.uid != chatUser.uid // not current user
+              userLocation.uid != smasUser.uid // not current user
     }
 
     val alertingUsers = locations.rows.filter { userLocation ->
       userLocation.alert == 1 &&
-              userLocation.uid != chatUser.uid // not current user
+              userLocation.uid != smasUser.uid // not current user
     }
 
-    val ownLocation = locations.rows.filter { it.uid == chatUser.uid }
+    val ownLocation = locations.rows.filter { it.uid == smasUser.uid }
     if (ownLocation.isNotEmpty()) {
       // when the current user has not (ever) reported its own location,
       // then it might not be included in the locations DB

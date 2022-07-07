@@ -42,7 +42,7 @@ class MsgGetNW(
 
   private val C by lazy { SMAS(app.applicationContext) }
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
-  private lateinit var chatUser: ChatUser
+  private lateinit var smasUser: SmasUser
 
   /** Show warning only once */
   var warnNoInternet = false
@@ -68,7 +68,7 @@ class MsgGetNW(
 
     resp.value = NetworkResult.Loading()
     // LOG.D2(TAG, "msg-get: size: ${app.msgList.size} after resetting..")
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     if (app.hasInternet()) {
       try {
@@ -77,10 +77,10 @@ class MsgGetNW(
         val response : Response<ChatMsgsResp>
         if (lastTimestamp==null) {
           LOG.W(TAG, "Will fetch ALL messages")
-          response = repo.remote.messagesGet(MsgGetReq(chatUser))
+          response = repo.remote.messagesGet(MsgGetReq(smasUser))
         } else {
           incrementalFetch=true
-          response = repo.remote.messagesGetFrom(MsgGetReq(chatUser), lastTimestamp)
+          response = repo.remote.messagesGetFrom(MsgGetReq(smasUser), lastTimestamp)
         }
 
         LOG.D2(TAG, "Messages: ${response.message()}")

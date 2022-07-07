@@ -30,11 +30,11 @@ data class RetrofitHolderSmas(
   companion object {
     fun getDefaultBaseUrl(ctx: Context): String {
       val c = SMAS(ctx)
-      val protocol = c.DEFAULT_PREF_CHAT_SERVER_PROTOCOL
-      val host = c.DEFAULT_PREF_CHAT_SERVER_HOST
-      val port = c.DEFAULT_PREF_CHAT_SERVER_PORT
+      val protocol = c.DEFREF_SMAS_SERVER_PROTOCOL
+      val host = c.DEFPREF_SMAS_SERVER_HOST
+      val port = c.DEFPREF_SMAS_SERVER_PORT
 
-      val path = c.DEFAULT_PREF_CHAT_SERVER_PATH
+      val path = c.DEFPREF_SMAS_SERVER_PATH
 
       return getBaseUrl(protocol, host, port)
     }

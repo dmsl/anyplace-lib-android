@@ -14,8 +14,15 @@ limitations under the License.
 ==============================================================================*/
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
-import android.graphics.Bitmap
-import android.graphics.RectF
+import android.content.Context
+import android.graphics.*
+import android.util.SparseArray
+import com.google.android.gms.vision.Frame
+import com.google.android.gms.vision.text.TextBlock
+import com.google.android.gms.vision.text.TextRecognizer
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import javax.xml.transform.OutputKeys.METHOD
 
 /** Generic interface for interacting with different recognition engines.  */
 interface Classifier {
@@ -47,7 +54,7 @@ interface Classifier {
     /** YOLO ID for the class detection (zero based) */
     var detectedClass = 0
 
-    /** TODO:PM OCM. any other field? */
+    /** Filled with OCR */
     var ocr: String? = null
 
     constructor(
@@ -59,14 +66,61 @@ interface Classifier {
     }
 
     constructor(
-      id: String, title: String, confidence: Float,
-      location: RectF, detectedClass: Int) {
+            ctx: Context, bitmap: Bitmap,
+            id: String, title: String, confidence: Float,
+            location: RectF, detectedClass: Int) {
       this.id = id
       this.title = title
       this.confidence = confidence
       this.location = location
       this.detectedClass = detectedClass
+      this.ocr=getOCR(ctx, bitmap)
     }
+
+    fun getOCR(ctx: Context, bitmap: Bitmap) : String? {
+      if (!isOCR(title)) return null
+
+      LOG.D2(TAG, "$METHOD: has OCR")
+      val cropped_bitmap = getCropBitmapByRect(bitmap, location)
+      val str=getOcrFromBitmap(ctx, cropped_bitmap)
+      LOG.D2(TAG, "$METHOD: text: '$str'")
+
+      return str
+    }
+
+    fun isOCR(className: String) = className.endsWith("OCR")
+
+    private fun getOcrFromBitmap(ctx: Context, source: Bitmap): String? {
+      val textRecognizer = TextRecognizer.Builder(ctx).build()
+      val frame = Frame.Builder().setBitmap(source).build()
+      val sparseArray: SparseArray<TextBlock> = textRecognizer.detect(frame)
+      var stringBuilder = ""
+      for (i in 0 until sparseArray.size()) {
+        val tx = sparseArray[i]
+        val str = tx.value
+        stringBuilder+=str+"\n"
+      }
+      return stringBuilder.ifEmpty { null }
+    }
+
+    private fun getCropBitmapByRect(source: Bitmap, cropRectF: RectF): Bitmap {
+      val resultBitmap = Bitmap.createBitmap(cropRectF.width().toInt(),
+              cropRectF.height().toInt(), source.config)
+      val cavas = Canvas(resultBitmap)
+
+      // draw background
+      val paint = Paint(Paint.FILTER_BITMAP_FLAG)
+      paint.setColor(Color.WHITE)
+      cavas.drawRect( //from  w w  w. ja v  a  2s. c  om
+              RectF(0F, 0F, cropRectF.width(), cropRectF.height()), paint)
+      val matrix = Matrix()
+      matrix.postTranslate(-cropRectF.left, -cropRectF.top)
+      cavas.drawBitmap(source, matrix, paint)
+
+      return resultBitmap
+    }
+
+
 
     // fun getLocation(): RectF {  return RectF(location) }
     // fun setLocation(location: RectF?) { this.location = location }

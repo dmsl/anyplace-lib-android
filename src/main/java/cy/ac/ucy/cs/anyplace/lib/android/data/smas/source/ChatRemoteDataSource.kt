@@ -17,10 +17,10 @@ class ChatRemoteDataSource @Inject constructor(
         private val RH: RetrofitHolderSmas) {
 
   // MISC
-  suspend fun getVersion(): Response<ChatVersion>  = RH.api.version(RH.path)
+  suspend fun getVersion(): Response<SmasVersion>  = RH.api.version(RH.path)
 
   // USER
-  suspend fun userLogin(r: ChatLoginReq) : Response<ChatLoginResp> = RH.api.login(RH.path, r)
+  suspend fun userLogin(r: SmasLoginReq) : Response<SmasLoginResp> = RH.api.login(RH.path, r)
 
   // LOCATION
   /** Get locations of all other users */

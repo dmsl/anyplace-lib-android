@@ -133,7 +133,7 @@
             android:visibility="gone"
             style="@style/BottomSheetSection"
             android:textColor="@color/redDark"
-            android:text="@string/tutorial_cvscan_discard"
+            android:text="@string/tutorial_discard_obj_title"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_restrictionsDetails" />
@@ -144,12 +144,32 @@
             android:layout_height="wrap_content"
             android:gravity="start|top"
             android:visibility="gone"
-            android:text="@string/tutorial_cvscan_finish_details"
+            android:text="@string/tutorial_discard_obj_desc"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView_tutorialFinish" />
 
+        <TextView
+            android:layout_marginTop="20dp"
+            android:id="@+id/textView_demoModeTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            style="@style/BottomSheetSection"
+            android:textColor="@color/black"
+            android:text="@string/tutorial_demo_title"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView_tutorialFinishDetails" />
 
+        <TextView
+            android:id="@+id/textView_demoModeDesc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="start|top"
+            android:text="@string/tutorial_demo_desc"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView_demoModeTitle" />
 
         <View
             android:id="@+id/divider_beforeDevSettings"
@@ -160,7 +180,7 @@
             android:background="@color/mediumGray"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textView_tutorialFinishDetails"
+            app:layout_constraintTop_toBottomOf="@id/textView_demoModeDesc"
             tools:layout_editor_absoluteX="1dp"
             tools:layout_editor_absoluteY="87dp" />
 

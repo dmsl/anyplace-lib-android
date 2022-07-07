@@ -182,6 +182,7 @@ abstract class DetectorActivityBase : CameraActivity(),
       scanDelay = prefsCvNav.scanDelay.toLong()
 
       VMD.detector = YoloV4Classifier.create(
+              applicationContext,
               assets,
               VMD.model.filename,
               VMD.model.labelFilePath,

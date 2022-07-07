@@ -138,7 +138,7 @@ class UiLoggerTimer(
     btnTimer.text = ""
     progressBar.visibility = View.INVISIBLE
 
-    LOG.D2(TAG, "$METHOD: storing: ${VM.objWindowLOG.value?.size}")
+    LOG.V3(TAG, "$METHOD: objects: ${VM.objWindowLOG.value?.size}")
     if (!VM.objWindowLOG.value.isNullOrEmpty()) {
       utlUi.fadeIn(btnTimer)
       utlUi.changeMaterialIcon(btnTimer, R.drawable.ic_delete)

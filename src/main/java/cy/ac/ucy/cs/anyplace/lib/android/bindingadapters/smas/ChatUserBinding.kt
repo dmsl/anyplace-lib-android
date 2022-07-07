@@ -5,7 +5,7 @@ import androidx.databinding.BindingAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.setTextOrHide
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 
 class ChatUserBinding {
   companion object {
@@ -13,7 +13,7 @@ class ChatUserBinding {
     @JvmStatic
     fun readUserId(
       view:TextView,
-      user: ChatUser?) {
+      user: SmasUser?) {
       // BUG: it's null
       LOG.D(TAG, "UserBinding: $user")
       view.setTextOrHide(user?.uid, "")

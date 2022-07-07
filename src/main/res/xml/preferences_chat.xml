@@ -6,7 +6,7 @@
   <PreferenceCategory app:title="@string/prefs_header_cache">
 <!--    TODO: delete image copy as well.. -->
     <Preference
-        app:key="@string/pref_chat_delete_local_msgs"
+        app:key="@string/pref_smas_delete_local_msgs"
         app:title="@string/delete_local_msgs"
         app:summary="Internet required to download them again."
         />
@@ -15,20 +15,19 @@
   <PreferenceCategory app:title="@string/chat_server">
 
     <EditTextPreference
-        app:key="@string/pref_chat_server_host"
+        app:key="@string/pref_smas_server_host"
         app:title="@string/server_host_url_title"
         app:defaultValue="@string/default_pref_smas_host"
         app:useSimpleSummaryProvider="true" />
 
-   <!-- TODO: PMX NXT  -->
     <EditTextPreference
-        app:key="@string/pref_chat_server_path"
+        app:key="@string/pref_smas_server_path"
         app:title="@string/server_path_title"
         app:defaultValue="@string/default_pref_smas_path"
         app:useSimpleSummaryProvider="true" />
 
     <ListPreference
-        app:key="@string/pref_chat_server_protocol"
+        app:key="@string/pref_smas_server_protocol"
         app:defaultValue="https"
         app:entries="@array/server_protocol_entries"
         app:entryValues="@array/server_protocol_values"
@@ -37,13 +36,13 @@
 
     <!--app:key="pref_server_port"-->
     <EditTextPreference
-        app:key="pref_chat_server_port"
+        app:key="@string/pref_smas_server_port"
         app:title="@string/server_port_title"
         app:defaultValue="@string/default_pref_smas_port"
         app:useSimpleSummaryProvider="true" />
 
     <Preference
-        app:key="@string/pref_chat_server_version"
+        app:key="@string/pref_smas_server_version"
         app:title="@string/connection_status"
         />
 

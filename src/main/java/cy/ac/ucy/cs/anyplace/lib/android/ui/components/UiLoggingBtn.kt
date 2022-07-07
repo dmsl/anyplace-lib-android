@@ -61,11 +61,13 @@ class UiLoggingBtn(
       LOG.D2(TAG, "loggingBtn: clicked: ${VM.statusLogging}")
       when (VM.statusLogging.value) {
 
+        LoggingStatus.recognizeOnly -> { endRecognitionDemo() }
         LoggingStatus.running -> { resetLogging() }
 
         LoggingStatus.mustStore -> {
           app.showToast(scope, "Long-click on map to store detections", Toast.LENGTH_LONG)
         }
+
         LoggingStatus.stopped -> {
           if (!VM.canRecognizeObjects()) {
             app.showToast(scope, C.ERR_NO_CV_CLASSES)
@@ -76,6 +78,17 @@ class UiLoggingBtn(
         }
         else ->  { LOG.D2(TAG, "$METHOD: ignoring click..") }
       }
+    }
+
+    btn.setOnLongClickListener {
+      when (VM.statusLogging.value)  {
+        LoggingStatus.stopped -> {
+          VM.statusLogging.update { LoggingStatus.recognizeOnly }
+        }
+        LoggingStatus.recognizeOnly -> { endRecognitionDemo() }
+        else -> {}
+      }
+      true
     }
   }
 
@@ -101,8 +114,9 @@ class UiLoggingBtn(
     VM.statusLogging.collect { status ->
       LOG.D2(TAG, "logging status: $status")
       when(status) {
+        LoggingStatus.recognizeOnly -> { startRecognitionDemo() }
         LoggingStatus.running -> {  startLogging()  }
-        LoggingStatus.stopped -> {  notRunning() }
+        LoggingStatus.stopped -> {  stopLogging() }
         LoggingStatus.mustStore -> {  handleMustStore() }
       }
     }
@@ -146,7 +160,7 @@ class UiLoggingBtn(
     utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
   }
 
-  fun notRunning() {
+  fun stopLogging() {
     if (uploadWasVisible) showUploadBtn()
     ui.floorSelector.enable()
 
@@ -160,9 +174,36 @@ class UiLoggingBtn(
 
     utlUi.changeBackgroundCompat(btn, R.color.colorPrimary)
 
-    // LOG.D2(TAG, "call: showLocalizationButton (from notRunning)")
+    // LOG.D2(TAG, "call: showLocalizationButton (from notRunning)") // PMX: V22
     // uiLog.showLocalizationButton(VM.cache.hasFingerprints())
     utlUi.text(btn, "scan")
+  }
+
+  fun startRecognitionDemo() {
+    LOG.W(TAG, "$METHOD: Not logging. Only obj-rec.")
+    uploadWasVisible = uiLog.btnUpload.isVisible
+    if (uploadWasVisible) utlUi.fadeOut(uiLog.btnUpload)
+
+    VM.objWindowLOG.postValue(emptyList())
+    VM.statObjWindowUNQ=0
+
+    VM.enableCvDetection()
+
+    ui.localization.hide()
+    ui.map.mapView.alpha = alphaMin
+
+    utlUi.text(btn, "stop demo")
+    utlUi.changeBackgroundCompat(uiLog.bottom.logging.btn, R.color.darkGray)
+    app.showToast(scope, "Object Recognition Demo")
+
+    utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
+  }
+
+
+  fun endRecognitionDemo() {
+    LOG.D3(TAG, "$METHOD: stopping demo")
+    VM.statusLogging.update { LoggingStatus.stopped }
+    uiLog.showLocalizationButton(VM.cache.hasFingerprints())
   }
 
   fun hide() = utlUi.fadeOut(btn)
@@ -172,16 +213,17 @@ class UiLoggingBtn(
     btn.visibility = View.GONE
   }
 
+  // TODO:PMX UPL
+  // implement something like the below
   fun showUploadBtn() {
-    if(true) return // TODO:PMX UPL
-    // ui.localization.hide()
-    // ui.localization.visibilityGone()
+    // ui.localization.hide(view)
+    // ui.localization.visibilitygone()
     //
-    // utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
-    // utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
-    // utlUi.enable(uiLog.btnUpload)
+    // utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_uploaded)
+    // utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scan))
+    // utlUi.enable(uiLog.btnUploaded)
     //
-    // utlUi.fadeInAnyway(uiLog.btnUpload)
+    // utlUi.fadeInAnyway(uiLog.btnUploaded)
   }
 
 }

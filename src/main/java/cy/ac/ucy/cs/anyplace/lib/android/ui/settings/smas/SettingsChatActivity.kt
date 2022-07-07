@@ -77,7 +77,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
       "Given internet connectivity, messages will be fetched again."
 
       val mgr = requireActivity().supportFragmentManager
-      val prefBtn : Preference? = findPreference(getString(R.string.pref_chat_delete_local_msgs))
+      val prefBtn : Preference? = findPreference(getString(R.string.pref_smas_delete_local_msgs))
 
       prefBtn?.setOnPreferenceClickListener {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -116,7 +116,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
     }
 
     private fun setupVersionButton() {
-      val prefBtn: Preference? = findPreference(getString(R.string.pref_chat_server_version))
+      val prefBtn: Preference? = findPreference(getString(R.string.pref_smas_server_version))
       prefBtn?.setOnPreferenceClickListener {
         prefBtn.icon = null
         prefBtn.summary = "refreshing.."

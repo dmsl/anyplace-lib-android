@@ -28,36 +28,36 @@ class ChatPrefsDataStore @Inject constructor(@ApplicationContext private val ctx
   : PreferenceDataStore() {
 
   private val C by lazy { SMAS(ctx) }
-  private val Context.dsChat by preferencesDataStore(name = C.PREF_CHAT_SERVER)
+  private val Context.dsChat by preferencesDataStore(name = C.PREF_SMAS_SERVER)
   private val datastore = ctx.dsChat
 
   private val validKeys = setOf(
           // BACKEND SETTINGS
-          C.PREF_CHAT_SERVER_PROTOCOL,
-          C.PREF_CHAT_SERVER_HOST,
-          C.PREF_CHAT_SERVER_PATH,
-          C.PREF_CHAT_SERVER_PORT,
+          C.PREF_SMAS_SERVER_PROTOCOL,
+          C.PREF_SMAS_SERVER_HOST,
+          C.PREF_SMAS_SERVER_PATH,
+          C.PREF_SMAS_SERVER_PORT,
           // MESSAGING SETTINGS
-          C.PREF_CHAT_MDELIVERY,
+          C.PREF_SMAS_MDELIVERY,
           // TEMPORARY FLAGS
-          C.FLAG_CHAT_NEWMSGS
+          C.FLAG_SMAS_NEWMSGS
   )
 
   // CHECK: is this needed?
   // these are not actual preferences. just placeholders to display some information
   // like backend version when displaying the connection status.
-  private val ignoreKeys = setOf(C.PREF_SERVER_VERSION, C.FLAG_CHAT_NEWMSGS)
+  private val ignoreKeys = setOf(C.PREF_SERVER_VERSION, C.FLAG_SMAS_NEWMSGS)
 
   private class Keys(c: SMAS) {
-    val protocol= stringPreferencesKey(c.PREF_CHAT_SERVER_PROTOCOL)
-    val host = stringPreferencesKey(c.PREF_CHAT_SERVER_HOST)
-    val path = stringPreferencesKey(c.PREF_CHAT_SERVER_PATH)
-    val port = stringPreferencesKey(c.PREF_CHAT_SERVER_PORT)
-    val mdelivery = stringPreferencesKey(c.PREF_CHAT_MDELIVERY)
+    val protocol= stringPreferencesKey(c.PREF_SMAS_SERVER_PROTOCOL)
+    val host = stringPreferencesKey(c.PREF_SMAS_SERVER_HOST)
+    val path = stringPreferencesKey(c.PREF_SMAS_SERVER_PATH)
+    val port = stringPreferencesKey(c.PREF_SMAS_SERVER_PORT)
+    val mdelivery = stringPreferencesKey(c.PREF_SMAS_MDELIVERY)
     /** backend version */
-    val version = stringPreferencesKey(c.PREF_CHAT_SERVER_VERSION)
+    val version = stringPreferencesKey(c.PREF_SMAS_SERVER_VERSION)
 
-    val flagNewMsgs = booleanPreferencesKey(c.FLAG_CHAT_NEWMSGS)
+    val flagNewMsgs = booleanPreferencesKey(c.FLAG_SMAS_NEWMSGS)
   }
 
   private val KEY = Keys(C)
@@ -76,19 +76,19 @@ class ChatPrefsDataStore @Inject constructor(@ApplicationContext private val ctx
     runBlocking {
       datastore.edit {
         when (key) {
-          C.PREF_CHAT_SERVER_HOST -> it[KEY.host] = value?: C.DEFAULT_PREF_CHAT_SERVER_HOST
-          C.PREF_CHAT_SERVER_PATH -> it[KEY.path] = value?: C.DEFAULT_PREF_CHAT_SERVER_PATH
-          C.PREF_CHAT_SERVER_PORT -> {
+          C.PREF_SMAS_SERVER_HOST -> it[KEY.host] = value?: C.DEFPREF_SMAS_SERVER_HOST
+          C.PREF_SMAS_SERVER_PATH -> it[KEY.path] = value?: C.DEFPREF_SMAS_SERVER_PATH
+          C.PREF_SMAS_SERVER_PORT -> {
             val storeValue : String =
-                    if (NetUtils.isValidPort(value)) value!! else C.DEFAULT_PREF_CHAT_SERVER_PORT
+                    if (NetUtils.isValidPort(value)) value!! else C.DEFPREF_SMAS_SERVER_PORT
             it[KEY.port] =  storeValue
           }
           C.PREF_SERVER_PROTOCOL -> {
             if(NetUtils.isValidProtocol(value))
-              it[KEY.protocol] = value?: C.DEFAULT_PREF_CHAT_SERVER_PROTOCOL
+              it[KEY.protocol] = value?: C.DEFREF_SMAS_SERVER_PROTOCOL
           }
 
-          C.PREF_CHAT_MDELIVERY -> it[KEY.mdelivery] = value?: C.DEFAULT_PREF_CHAT_MDELIVERY
+          C.PREF_SMAS_MDELIVERY -> it[KEY.mdelivery] = value?: C.DEFPREF_SMAS_CHAT_MDELIVERY
         }
       }
     }
@@ -99,11 +99,11 @@ class ChatPrefsDataStore @Inject constructor(@ApplicationContext private val ctx
     return runBlocking(Dispatchers.IO) {
       val prefs = read.first()
       return@runBlocking when (key) {
-        C.PREF_CHAT_SERVER_HOST -> prefs.host
-        C.PREF_CHAT_SERVER_PATH -> prefs.path
-        C.PREF_CHAT_SERVER_PORT -> prefs.port
-        C.PREF_CHAT_SERVER_PROTOCOL -> prefs.protocol
-        C.PREF_CHAT_MDELIVERY -> prefs.mdelivery
+        C.PREF_SMAS_SERVER_HOST -> prefs.host
+        C.PREF_SMAS_SERVER_PATH -> prefs.path
+        C.PREF_SMAS_SERVER_PORT -> prefs.port
+        C.PREF_SMAS_SERVER_PROTOCOL -> prefs.protocol
+        C.PREF_SMAS_MDELIVERY -> prefs.mdelivery
         else -> null
       }
     }
@@ -119,11 +119,11 @@ class ChatPrefsDataStore @Inject constructor(@ApplicationContext private val ctx
             } else { throw exception }
           }
           .map { preferences ->
-            val protocol = preferences[KEY.protocol] ?: C.DEFAULT_PREF_CHAT_SERVER_PROTOCOL
-            val host = preferences[KEY.host] ?: C.DEFAULT_PREF_CHAT_SERVER_HOST
-            val path = preferences[KEY.path] ?: C.DEFAULT_PREF_CHAT_SERVER_PATH
-            val port = preferences[KEY.port] ?: C.DEFAULT_PREF_CHAT_SERVER_PORT
-            val mdelivery = preferences[KEY.mdelivery] ?: C.DEFAULT_PREF_CHAT_MDELIVERY
+            val protocol = preferences[KEY.protocol] ?: C.DEFREF_SMAS_SERVER_PROTOCOL
+            val host = preferences[KEY.host] ?: C.DEFPREF_SMAS_SERVER_HOST
+            val path = preferences[KEY.path] ?: C.DEFPREF_SMAS_SERVER_PATH
+            val port = preferences[KEY.port] ?: C.DEFPREF_SMAS_SERVER_PORT
+            val mdelivery = preferences[KEY.mdelivery] ?: C.DEFPREF_SMAS_CHAT_MDELIVERY
             val version = preferences[KEY.version]
             SmasPrefs(protocol, host, path, port, mdelivery, version)
           }

@@ -73,7 +73,7 @@
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat"
-        android:label="Chat Settings" />
+        android:label="SMAS Settings" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

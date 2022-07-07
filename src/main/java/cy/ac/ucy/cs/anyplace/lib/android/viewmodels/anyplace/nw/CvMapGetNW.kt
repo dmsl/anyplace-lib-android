@@ -43,12 +43,12 @@ class CvMapGetNW(
   private val resp: MutableStateFlow<NetworkResult<CvMapResp>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser : ChatUser
+  private lateinit var smasUser : SmasUser
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D2(TAG, "$METHOD: $tag")
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     resp.value = NetworkResult.Loading()
 
@@ -59,7 +59,7 @@ class CvMapGetNW(
       }
 
       try {
-        val response = repo.remote.cvMapGet(ChatUserAuth(chatUser))
+        val response = repo.remote.cvMapGet(ChatUserAuth(smasUser))
         LOG.D2(TAG, "CvModelsGet: ${response.message()}" )
         resp.value = handleResponse(response)
 

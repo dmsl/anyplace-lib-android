@@ -93,7 +93,7 @@ class GmapWrapper(private val ctx: Context,
   fun onFloorLoaded() {
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    scope.launch(Dispatchers.IO) { VM.wFloors.fetchAllFloorplans() }
+    scope.launch(Dispatchers.IO) { VM.wFloors.fetchAllFloorplans(VM) }
 
     val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
 

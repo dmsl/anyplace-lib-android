@@ -1,10 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
@@ -68,11 +70,20 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
    * TODO: this must be called from a "Select Space" activity
    * (not on the logging/nav. in a earlier activity).
    */
-  suspend fun fetchAllFloorplans() {
+  var showedMsgDownloading=false
+  var showedMsgDone=true
+  suspend fun fetchAllFloorplans(VM: CvViewModel) {
     var alreadyCached=""
     obj.forEach { floor ->
       val FH = FloorWrapper(floor, spaceH)
       if (!FH.hasFloorplanCached()) {
+        // at least one floor needs to be downloaded:
+        // show notification now (and when done [showedMsgDone]
+        if (!showedMsgDownloading) {
+          VM.app.showToast(VM.viewModelScope, "Dowloading all ${FH.prettyFloors} ..")
+          showedMsgDownloading=true
+          showedMsgDone=false // show another msg at the end
+        }
         val bitmap = FH.requestRemoteFloorplan()
         if (bitmap != null) {
           FH.cacheFloorplan(bitmap)
@@ -81,6 +92,11 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
       } else {
         alreadyCached+="${FH.obj.floorNumber}, "
       }
+    }
+
+    if (!showedMsgDone) {
+      showedMsgDone=true
+      VM.app.showToast(VM.viewModelScope, "All ${VM.wFloors.size} ${VM.wSpace.prettyFloors} downloaded!")
     }
 
     if (alreadyCached.isNotEmpty()) {

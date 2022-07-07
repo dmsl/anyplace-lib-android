@@ -30,17 +30,17 @@ class MsgSendNW(private val app: SmasApp,
   private val resp: MutableStateFlow<NetworkResult<MsgSendResp>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser: ChatUser
+  private lateinit var smasUser: SmasUser
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
   suspend fun safeCall(userCoords: UserCoordinates, mdelivery: String, mtype: Int, msg: String?, mexten: String?) {
     LOG.D2(TAG_METHOD)
     resp.value = NetworkResult.Loading()
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     if (app.hasInternet()) {
       try {
-        val req = MsgSendReq(chatUser, userCoords, mdelivery, msg, mtype, mexten, utlTime.epoch().toString())
+        val req = MsgSendReq(smasUser, userCoords, mdelivery, msg, mtype, mexten, utlTime.epoch().toString())
         val content = if (ChatMsgHelper.isImage(mtype)) "<base64>" else msg
         LOG.D2(TAG, "MSG-SEND: Send: ${req.time}: mtype: ${mtype} msg: ${content} x,y: ${userCoords.lat},${userCoords.lon} deck: ${userCoords.level} ")
         val response = repo.remote.messagesSend(req)

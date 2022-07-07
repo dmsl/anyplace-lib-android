@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -22,7 +22,7 @@ import javax.inject.Singleton
 class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { SMAS(ctx) }
-  private val Context.dsChatUser by preferencesDataStore(name = C.PREF_CHAT_USER)
+  private val Context.dsChatUser by preferencesDataStore(name = C.PREF_SMAS_USER)
 
   private class Keys(c: SMAS) {
     val uid = stringPreferencesKey(c.PREF_USER_ID)
@@ -30,7 +30,7 @@ class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx:
   }
   private val KEY = Keys(C)
 
-  val readUser: Flow<ChatUser> =
+  val readUser: Flow<SmasUser> =
     ctx.dsChatUser.data
         .catch { exception ->
          if (exception is IOException)  { emit(emptyPreferences()) } else { throw exception }
@@ -38,11 +38,11 @@ class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx:
         .map {
           val sessionkey = it[KEY.sessionkey] ?: ""
           val uid = it[KEY.uid] ?: ""
-          ChatUser(uid, sessionkey)
+          SmasUser(uid, sessionkey)
         }
 
   /** Stores a logged in user to the datastore */
-  suspend fun storeUser(user: ChatUser) {
+  suspend fun storeUser(user: SmasUser) {
     ctx.dsChatUser.edit {
       it[KEY.uid] = user.uid
       it[KEY.sessionkey] = user.sessionkey

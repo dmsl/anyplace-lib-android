@@ -11,11 +11,17 @@ limitations under the License.
 ==============================================================================*/
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
+import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier.Recognition
 import android.graphics.RectF
 import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
+import android.util.SparseArray
+import com.google.android.gms.vision.Frame
+import com.google.android.gms.vision.text.TextBlock
+import com.google.android.gms.vision.text.TextRecognizer
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.Utils
@@ -54,12 +60,15 @@ open class YoloV4Classifier private constructor()
      */
     @Throws(IOException::class)
     fun create(
+            ctx: Context,
             assetManager: AssetManager,
             modelFilename: String?,
             labelFilename: String,
             isQuantized: Boolean
     ): Classifier {
       val d = YoloV4Classifier()
+      
+      d.ctx=ctx
 
       val labelsFilename = labelFilename
               .split("file:///android_asset/")
@@ -221,6 +230,7 @@ open class YoloV4Classifier private constructor()
     if (tfLite != null) tfLite!!.setUseNNAPI(isChecked)
   }
 
+  private lateinit var ctx: Context
   private var isModelQuantized = false
 
   // Config values.
@@ -311,7 +321,7 @@ open class YoloV4Classifier private constructor()
           Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
           Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
         )
-        detections.add(Recognition("" + i, labels[detectedClass], score, rectF, detectedClass))
+        detections.add(Recognition(ctx, bitmap,"" + i, labels[detectedClass], score, rectF, detectedClass))
       }
     }
     return detections
@@ -364,7 +374,8 @@ open class YoloV4Classifier private constructor()
           Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
           Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
         )
-        detections.add(Recognition("" + i, labels[detectedClass], score, rectF, detectedClass))
+
+        detections.add(Recognition(ctx, bitmap,"" + i, labels[detectedClass], score, rectF, detectedClass))
       }
     }
     return detections

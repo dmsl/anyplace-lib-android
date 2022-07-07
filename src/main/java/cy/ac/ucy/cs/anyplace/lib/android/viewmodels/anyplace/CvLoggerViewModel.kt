@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class LoggingStatus {
+  recognizeOnly,
   running,
   mustStore,
   stopped,
@@ -189,7 +190,7 @@ class CvLoggerViewModel @Inject constructor(
 
   fun resetLoggingWindow() {
     statObjWindowUNQ=0
-    objWindowLOG.value = emptyList()
+    objWindowLOG.postValue(emptyList())
     statusLogging.update { LoggingStatus.stopped }
 
     if (!cache.hasFingerprints()) ui.localization.show()

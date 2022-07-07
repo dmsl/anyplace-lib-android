@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendResp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
@@ -58,19 +58,19 @@ class LocationSendNW(
   }
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser : ChatUser
+  private lateinit var smasUser : SmasUser
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates) {
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
-    LOG.D4(TAG, "Session: ${chatUser.uid} ${chatUser.sessionkey}")
+    LOG.D4(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
 
     resp.value = NetworkResult.Unset()
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        val req= LocationSendReq(chatUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
+        val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
         LOG.D3(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)
         LOG.D4(TAG, "LocationSend: Resp: ${response.message()}" )

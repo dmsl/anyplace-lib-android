@@ -23,8 +23,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatLoginReq
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatUser
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
@@ -101,7 +101,7 @@ class SmasLoginActivity : BaseActivity() {
             val user = username.text.toString()
             val pass = password.text.toString()
             setLoginButtonLoading()
-            VM.login(ChatLoginReq(user, pass))
+            VM.login(SmasLoginReq(user, pass))
           }
         }
         false
@@ -113,7 +113,7 @@ class SmasLoginActivity : BaseActivity() {
         val user = username.text.toString()
         val pass = password.text.toString()
         setLoginButtonLoading()
-        VM.login(ChatLoginReq(user, pass))
+        VM.login(SmasLoginReq(user, pass))
       }
 
       setOnTouchListener { _, event ->
@@ -171,7 +171,7 @@ class SmasLoginActivity : BaseActivity() {
             // Store user in datastore
             val user = response.data
             user?.let {
-              appSmas.dsChatUser.storeUser(ChatUser(user.uid, user.sessionkey))
+              appSmas.dsChatUser.storeUser(SmasUser(user.uid, user.sessionkey))
               openLoggedInActivity()
             }
           }
@@ -224,7 +224,7 @@ class SmasLoginActivity : BaseActivity() {
     // done for a different account..
     LOG.W(TAG_METHOD)
     // val demoUser = ChatUserLoginForm(BuildConfig.LASH_DEMO_LOGIN_UID, BuildConfig.LASH_DEMO_LOGIN_PASS)
-    val demoUser = ChatLoginReq("username", "password")
+    val demoUser = SmasLoginReq("username", "password")
     VM.login(demoUser)
     lifecycleScope.launch {
       VM.resp.collect {

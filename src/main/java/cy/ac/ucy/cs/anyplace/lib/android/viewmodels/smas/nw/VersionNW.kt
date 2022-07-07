@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatVersion
+import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasVersion
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import kotlinx.coroutines.flow.MutableStateFlow
 import retrofit2.Response
@@ -29,14 +29,14 @@ class VersionNW(
         private val RH: RetrofitHolderSmas,
         private val repoSmas: RepoSmas) {
 
-  private val resp: MutableStateFlow<NetworkResult<ChatVersion>> = MutableStateFlow(NetworkResult.Unset())
+  private val resp: MutableStateFlow<NetworkResult<SmasVersion>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
 
   /**
    * Gets version from remote and on success it updates the [dsChat]
    */
-  suspend fun getVersion(): NetworkResult<ChatVersion> {
+  suspend fun getVersion(): NetworkResult<SmasVersion> {
     val response = repoSmas.remote.getVersion()
     val resp = handleVersionResponse(response)
     val version = resp.data
@@ -104,7 +104,7 @@ class VersionNW(
     versionPref?.summary = spannableMsg
   }
 
-  private fun handleVersionResponse(response: Response<ChatVersion>): NetworkResult<ChatVersion> {
+  private fun handleVersionResponse(response: Response<SmasVersion>): NetworkResult<SmasVersion> {
     return when {
       response.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
       response.body()!!.rows.version.isEmpty() -> NetworkResult.Error("Version not found.")

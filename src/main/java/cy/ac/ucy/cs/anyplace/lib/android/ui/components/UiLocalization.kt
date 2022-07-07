@@ -88,6 +88,7 @@ class UiLocalization(
     wMap.mapView.alpha = mapAlpha
   }
 
+
   fun hide() = utlButton.fadeOut(btn)
   fun show() = utlButton.fadeIn(btn)
   fun visibilityGone() = utlButton.gone(btn)

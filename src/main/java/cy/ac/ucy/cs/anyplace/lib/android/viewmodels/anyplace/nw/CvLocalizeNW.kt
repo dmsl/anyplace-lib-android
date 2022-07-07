@@ -46,13 +46,13 @@ class CvLocalizeNW(
   = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser : ChatUser
+  private lateinit var smasUser : SmasUser
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(buid: String,
                        detectionsReq: List<CvDetectionREQ>,
                        model: DetectionModel) {
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     resp.value = NetworkResult.Unset()
 
@@ -64,7 +64,7 @@ class CvLocalizeNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        val req= CvLocalizationReq(chatUser, utlTime.epoch().toString(),
+        val req= CvLocalizationReq(smasUser, utlTime.epoch().toString(),
                 buid, model.idSmas, detectionsReq, CV_LOC_ALGORITHM)
         LOG.V2(TAG, "$TAG_TASK: ${req.time}: #: ${detectionsReq.size}")
         val response = repo.remote.cvLocalization(req)

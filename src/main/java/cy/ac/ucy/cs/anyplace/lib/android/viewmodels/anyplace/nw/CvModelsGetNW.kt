@@ -42,12 +42,12 @@ class CvModelsGetNW(
 
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var chatUser : ChatUser
+  private lateinit var smasUser : SmasUser
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D2(TAG, "$METHOD: $tag")
-    chatUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsChatUser.readUser.first()
 
     resp.value = NetworkResult.Loading()
 
@@ -62,7 +62,7 @@ class CvModelsGetNW(
 
     if (app.hasInternet()) {
       try {
-        val response = repo.remote.cvModelsGet(ChatUserAuth(chatUser))
+        val response = repo.remote.cvModelsGet(ChatUserAuth(smasUser))
         LOG.D4(TAG, "$tag: ${response.message()}" )
         resp.value = handleResponse(response)
 
