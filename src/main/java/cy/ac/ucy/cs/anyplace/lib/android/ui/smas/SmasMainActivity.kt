@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -39,9 +40,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 
 /**
- * TODO:
  */
 @AndroidEntryPoint
 class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
@@ -51,7 +52,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_cvmap
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
-
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
@@ -91,6 +91,28 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
+
+    setupMapLongClick()
+  }
+
+  var handlingGmapLongClick= false
+  private fun setupMapLongClick() {
+    if (handlingGmapLongClick) return
+    handlingGmapLongClick=true
+
+    lifecycleScope.launch(Dispatchers.Main) {
+      VM.ui.map.obj.setOnMapLongClickListener {
+        forceUserLocation(it)
+      }
+    }
+  }
+
+  private fun forceUserLocation(forcedLocation: LatLng) {
+    LOG.W(TAG, "forcing location: $forcedLocation")
+
+    val floorNum = VM.wFloor!!.floorNumber()
+    val loc = forcedLocation.toCoord(floorNum)
+    VM.locationSmas.update { LocalizationResult.Success(loc) }
   }
 
   /**
@@ -101,7 +123,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.D2()
 
     LOG.W(TAG, "main: postResume")
-
     VM = _vm as SmasMainViewModel
     VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
     appSmas.setMainActivityVMs(VM, VMchat)
@@ -123,7 +144,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     updateLocationsLOOP()
 
     VM.collectLocations(VMchat, VM.ui.map)
-    // collect alert TODO:PMX
+    // collect alert? TODO:PMX
   }
 
 
@@ -196,21 +217,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     // NOTE: [collectOtherUsersLocations] is done on floorLoaded
     // collectUserLocalizationStatus(): localizing or not localizing
   }
-
-  @Deprecated("TODO replace with Anyplace Location")
-  private fun setupFakeUserLocation(mapH: GmapWrapper) {
-    val floorNum = VM.wFloor!!.floorNumber()
-    val loc = VM.wSpace.latLng().toCoord(floorNum)
-    VM.locationSmas.value = LocalizationResult.Success(loc)
-
-    lifecycleScope.launch(Dispatchers.Main) {
-      mapH.obj.setOnMapLongClickListener {
-        LOG.W(TAG, "Setting fake location: $it")
-        VM.locationSmas.value = LocalizationResult.Success(it.toCoord(floorNum))
-      }
-    }
-  }
-
 
   /**
    * Update the UI button when new msgs come in
@@ -394,7 +400,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   // TODO:PMX FR
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.D2(TAG, "$METHOD: SmasMainActivity")
+    LOG.D3(TAG, "$METHOD: SmasMainActivity")
     VM.ui.onInferenceRan()
 
     // if (detections.isNotEmpty()) {

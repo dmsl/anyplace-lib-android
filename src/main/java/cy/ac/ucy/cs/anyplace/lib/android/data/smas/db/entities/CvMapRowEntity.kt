@@ -19,4 +19,5 @@ data class CvMapRowEntity(
         val flid1: Int,
         val oid: Int,
         val height: Double, val width: Double,
+        val ocr: String?,
 )

@@ -70,10 +70,11 @@ class LocationSendNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
+        LOG.E(TAG, "LOC SEND")
         val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
-        LOG.D3(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
+        LOG.D2(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)
-        LOG.D4(TAG, "LocationSend: Resp: ${response.message()}" )
+        LOG.D2(TAG, "LocationSend: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
@@ -88,7 +89,7 @@ class LocationSendNW(
   }
 
   private fun handleResponse(resp: Response<LocationSendResp>): NetworkResult<LocationSendResp> {
-    LOG.D3(TAG, "handleResponse")
+    LOG.D2(TAG, "handleResponse")
     if(resp.isSuccessful) {
       when {
         resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
@@ -96,20 +97,21 @@ class LocationSendNW(
           // SMAS special handling (errors should not be 200/OK)
           val r = resp.body()!!
           if (r.status == "err")  {
+            LOG.E(TAG, "Error: ${r.descr}")
             return NetworkResult.Error(r.descr)
           }
-
           return NetworkResult.Success(r)
         } // can be nullable
         else -> return NetworkResult.Error(resp.message())
       }
     }
-
     return NetworkResult.Error("$TAG: ${resp.message()}")
   }
 
   private fun handleException(msg: String, e: Exception) {
+    LOG.W(TAG, "Handle Exception")
     resp.value = NetworkResult.Error(msg)
+    LOG.E(TAG, "ERROR HERE")
     LOG.E(TAG, msg)
     LOG.E(TAG, e)
   }

@@ -7,8 +7,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetection
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObject
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -53,20 +53,17 @@ class CvUtils(
 
   private fun isModelInited(modelId: Int) = initedClasses.contains(modelId)
 
-  fun toCvDetection(scope: CoroutineScope, detection: Classifier.Recognition, model: DetectionModel) : CvDetection? {
+  /**
+   * Converts the YOLO [Classifier.Recognition] to [CvObject] that can be used by SMAS
+   *
+   * Requests further trim it to [CvObjectReq]
+   */
+  fun toCvDetection(scope: CoroutineScope, detection: Classifier.Recognition, model: DetectionModel) : CvObject? {
     val modelId = model.idSmas
     if (!isModelInited(modelId)) {
       app.showToast(scope, "Cannot process detection (model classes not found)")
       return null
     }
-
-    // CHECK: probably not needed as the above check will exit anyway
-    // // to proceed: Must have CvModels on DB first
-    // if (!repoSmas.local.hasCvModelClassesDownloaded()) {
-    //   val msg = "Cannot upload detections (must download CvModels first)"
-    //   LOG.E(TAG, "$METHOD: $msg")
-    //   return null
-    // }
 
     val key = CvKey(modelId, detection.detectedClass)
     val oid = hmap[key]
@@ -75,10 +72,10 @@ class CvUtils(
       LOG.E(TAG, "$METHOD: No class for: ${detection.detectedClass}:${detection.title}")
       null
     } else {
-      return CvDetection(oid,
+      return CvObject(oid,
               detection.location.width().toDouble(),
               detection.location.height().toDouble(),
-              null, detection.title)
+              detection.title, detection.ocr)
     }
   }
 
@@ -86,10 +83,10 @@ class CvUtils(
    * Converts a list of [Classifier.Recognition] (YOLOV4),
    * to a list of CvDetectionREQ that the SMAS backend understands.
    */
-  fun toCvDetections(scope: CoroutineScope, recognitions: List<Classifier.Recognition>, model: DetectionModel) : List<CvDetectionREQ> {
+  fun toCvDetections(scope: CoroutineScope, recognitions: List<Classifier.Recognition>, model: DetectionModel) : List<CvObjectReq> {
     LOG.D2(TAG, METHOD)
     // build detections request
-    val detections = mutableListOf<CvDetectionREQ>()
+    val detections = mutableListOf<CvObjectReq>()
     recognitions.forEach { detection ->
       val detectionStr = "${detection.detectedClass}:${detection.title}"
       val modelStr = "${model.idSmas}:${model.modelName}"
@@ -98,7 +95,7 @@ class CvUtils(
 
       val cvd = app.cvUtils.toCvDetection(scope, detection, model)
       if (cvd != null) {
-        val detReq = CvDetectionREQ(cvd)
+        val detReq = CvObjectReq(cvd)
         LOG.V3(TAG, "$METHOD: CvModel: READY: ${detReq.oid}: w:${detReq.width} h:${detReq.height}")
         detections.add(detReq)
       }

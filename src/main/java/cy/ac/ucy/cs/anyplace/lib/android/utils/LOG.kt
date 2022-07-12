@@ -13,8 +13,8 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val CO5 = false
-    const val CTR = false
+    const val CO5 = true
+    const val CTR = true
 
     const val CVM = false
 
@@ -22,6 +22,15 @@ class DBG {
     const val BFnt45 = false
     const val LCLG = false
     const val BN11c = false
+  }
+}
+
+/**
+ * EXPERIMENT MODE
+ */
+class EXP {
+  companion object {
+    const val LOCALIZATION = true
   }
 }
 

@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.FingerprintScan
 import java.io.*
 import java.nio.file.Files
@@ -115,7 +115,7 @@ open class Cache(val ctx: Context) {
 
   fun hasFingerprints(): Boolean { return File(fingerprintsFilename).exists() }
 
-  fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
+  fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvObjectReq>, model: DetectionModel) {
     LOG.D(TAG, "$METHOD: to local cache")
     val time = utlTime.epoch().toString()
     val entry = FingerprintScan(userCoords, time, detectionsReq, model.idSmas)

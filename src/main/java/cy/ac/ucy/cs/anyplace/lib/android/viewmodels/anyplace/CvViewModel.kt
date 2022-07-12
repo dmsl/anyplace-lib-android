@@ -38,7 +38,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Error
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Success
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -265,7 +265,7 @@ open class CvViewModel @Inject constructor(
     }
   }
 
-  suspend fun lcz(detectionsReq: List<CvDetectionREQ>) {
+  suspend fun lcz(detectionsReq: List<CvObjectReq>) {
     if (!repoSmas.local.hasCvMap()) {
       app.showToast(viewModelScope, "Cannot localize. (No CvMap)")
       return

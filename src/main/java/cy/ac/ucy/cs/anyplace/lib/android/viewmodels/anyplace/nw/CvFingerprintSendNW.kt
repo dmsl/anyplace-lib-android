@@ -42,6 +42,8 @@ class CvFingerprintSendNW(
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
+  val tag = "fp-send"
+
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<FingerprintSendResp>> = MutableStateFlow(NetworkResult.Unset())
 
@@ -99,13 +101,19 @@ class CvFingerprintSendNW(
     app.showToast(VM.viewModelScope, reportMsg, Toast.LENGTH_LONG)
   }
 
+  /**
+   * Uploads a single entry
+   *
+   * TODO:PMX OFL Implement this for offline
+   */
   private suspend fun uploadEntry(smasUser: SmasUser, entry: FingerprintScan): Boolean {
-    LOG.E(TAG, "ENTRY: $entry\n")
+    LOG.W(TAG, "$tag: $METHOD: $entry\n")
     try {
       val req= FingerprintSendReq(smasUser, entry)
-      LOG.D3(TAG, "FP-Send: ${req.time}: #: ${entry.cvDetections.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
+      val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
+      LOG.D3(TAG, "$tag: ${req.time}: #: ${entry.cvDetections.size} coords: $coordStr")
       val response = repo.remote.cvFingerprintSend(req)
-      LOG.D3(TAG, "FP-Send: Resp: ${response.message()}" )
+      LOG.D3(TAG, "$tag: Resp: ${response.message()}" )
 
       return when (val resp = handleResponse(response)) {
         is NetworkResult.Success -> {
@@ -121,12 +129,12 @@ class CvFingerprintSendNW(
 
     } catch(ce: ConnectException) {
       val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-      // handleException(msg, ce)
-      LOG.E(TAG, "$METHOD", ce)
+      handleException(msg, ce)
+      LOG.E(TAG, METHOD, ce)
     } catch(e: Exception) {
-      val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-      LOG.E(TAG, "$METHOD", e)
-      // handleException(msg, e)
+      val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+      LOG.E(TAG, METHOD, e)
+      handleException(msg, e)
     }
     return false
   }
@@ -134,12 +142,10 @@ class CvFingerprintSendNW(
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates,
-                       detectionsReq: List<CvDetectionREQ>, model: DetectionModel) {
+                       detectionsReq: List<CvObjectReq>, model: DetectionModel) {
     smasUser = app.dsChatUser.readUser.first()
 
     LOG.D2(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
-
-    LOG.W(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
 
     resp.value = NetworkResult.Unset()
     resp.value = NetworkResult.Loading()
@@ -147,16 +153,16 @@ class CvFingerprintSendNW(
       try {
         val req= FingerprintSendReq(smasUser, userCoords, utlTime.epoch().toString(),
                 detectionsReq, model.idSmas)
-        LOG.W(TAG, "FP-Send: ${req.time}: #: ${detectionsReq.size} coords: deck: ${req.deck}: x:${req.x} y:${req.y}")
+        val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
+        LOG.W(TAG, "$tag: ${req.time}: #: ${detectionsReq.size} coords: $coordStr")
         val response = repo.remote.cvFingerprintSend(req)
-        LOG.W(TAG, "FP-Send: Resp: ${response.message()}" )
+        LOG.W(TAG, "$tag: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
-        LOG.W(TAG, "WILL THROW MSG")
-        val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
     } else {
@@ -184,7 +190,7 @@ class CvFingerprintSendNW(
         else -> return NetworkResult.Error(resp.message())
       }
     }
-    return NetworkResult.Error("$TAG: ${resp.message()}")
+    return NetworkResult.Error("$tag: ${resp.message()}")
   }
 
   private fun handleException(msg: String, e: Exception) {

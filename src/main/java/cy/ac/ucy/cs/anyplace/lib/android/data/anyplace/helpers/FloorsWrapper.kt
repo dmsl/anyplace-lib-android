@@ -77,7 +77,7 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          VM.app.showToast(VM.viewModelScope, "Dowloading all ${FH.prettyFloors} ..")
+          VM.app.showToast(VM.viewModelScope, "Downloading all ${FH.prettyFloors} ..\n(keep app open)")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }

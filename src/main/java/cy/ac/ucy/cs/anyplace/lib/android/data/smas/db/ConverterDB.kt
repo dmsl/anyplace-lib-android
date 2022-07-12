@@ -79,10 +79,9 @@ class ConverterDB {
               c.modelid,
               c.flid1,
               c.oid,
-              c.height, c.width,
+              c.height, c.width, c.ocr
       )
     }
-
 
     fun entityToCvMapRow(c: CvMapRowEntity): CvMapRow {
       return CvMapRow(
@@ -92,13 +91,12 @@ class ConverterDB {
               c.modelid,
               c.flid1,
               c.oid,
-              c.height, c.width,
+              c.height, c.width, c.ocr
       )
     }
 
-    fun localizationFingerprintTempToEntity(uid: String, c: CvDetectionREQ): FINGERPRINT_LOCALIZE_TEMP {
-      return FINGERPRINT_LOCALIZE_TEMP(uid, c.oid, c.height, c.width,
-      )
+    fun localizationFingerprintTempToEntity(uid: String, c: CvObjectReq): FINGERPRINT_LOCALIZE_TEMP {
+      return FINGERPRINT_LOCALIZE_TEMP(uid, c.oid, c.height, c.width, c.ocr)
     }
 
     fun localizationResultToGeneric(lr: LocationOfl1) : LocationOfl {

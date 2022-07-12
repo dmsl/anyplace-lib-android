@@ -298,7 +298,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           is LocalizationResult.Success -> {
             result.coord?.let { VM.ui.map.setUserLocationREMOTE(it) }
             val coord = result.coord!!
-            val msg = "${CvLocalizeNW.TAG_TASK}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
+            val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.D2(TAG, msg)
             val curFloor = VM.wFloor?.floorNumber()
             if (coord.level != curFloor) {
@@ -311,5 +311,4 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
     }
   }
-
 }

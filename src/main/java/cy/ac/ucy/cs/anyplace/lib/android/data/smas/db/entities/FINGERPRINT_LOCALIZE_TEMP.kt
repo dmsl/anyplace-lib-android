@@ -15,6 +15,7 @@ data class FINGERPRINT_LOCALIZE_TEMP(
         val oid: Int,
         val width: Double,
         val height: Double,
+        val ocr: String?,
 )
 
 data class LocationOfl1(

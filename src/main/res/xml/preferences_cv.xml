@@ -57,6 +57,7 @@
     <!--    Updates the CV map.-->
     <Preference
         android:title="CvMap"
+        tools:visibility="gone"
         android:key="@string/pref_localization_cv_map"
         android:summary=""
         />

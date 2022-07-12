@@ -177,7 +177,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       } else {
         utlUi.fadeOut(btnUpload)
         // only when required (as markers are lazily initialized)
-        if(clearMarkers) ui.map.markers.hideCvObjMarkers()
+        // TODO:PMX CVM
+        // if(clearMarkers) ui.map.markers.hideCvObjMarkers()
 
         LOG.E(TAG, "call: showLocalizationButton checkForUploadCache..")
         showLocalizationButton()  // show again localization button

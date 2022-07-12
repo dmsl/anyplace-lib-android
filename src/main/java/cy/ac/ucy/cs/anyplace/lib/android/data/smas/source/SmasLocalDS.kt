@@ -1,7 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
-import android.database.sqlite.SQLiteQuery
-import androidx.sqlite.db.SimpleSQLiteQuery
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.SmasDAO
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -11,12 +9,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvMa
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvModelClassToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToCvModelClasses
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.localizationFingerprintTempToEntity
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.localizationResultToGeneric
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvDetectionREQ
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvMapRow
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
 import kotlinx.coroutines.flow.Flow
@@ -87,7 +85,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     DAO.dropCvMap()
   }
 
-  suspend fun localizeTemp(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvDetectionREQ>, chatUser: User) {
+  suspend fun localizeTemp(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUser: User) {
     // Preparation: fill tmp array with scans
     DAO.dropLocalizeFpTemp()
     detectionsReq.forEach {
@@ -106,7 +104,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     val res3 = DAO.localizeAlgo3(DAO.getQueryAlgo3(modelid, buid))
     if (res3.isNotEmpty()) {
      val loc3 = res3[0]
-      LOG.W(TAG, "ALGO3: $loc3")
+      LOG.W(TAG, "${CvLocalizeNW.tag}: ALGO3: $loc3")
     }
   }
 }

@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.consts
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 
@@ -45,7 +46,7 @@ open class CONST(ctx: Context) {
   val PREF_RELOAD_CVMAPS = "pref_cv_reload_cvmaps"
   val PREF_RELOAD_FLOORPLAN = "pref_cv_reload_floorplans"  // TODO
 
-  val DEFAULT_PREF_MODEL_NAME = "coco"
+  val DEFAULT_PREF_MODEL_NAME = DetectionModel.LASHCO.modelName
 
   // Settings used in both contexts (Logger, Navigator)
   val PREF_CV_WINDOW_LOCALIZATION_MS = ctx.getString(R.string.pref_cv_localization_ms)

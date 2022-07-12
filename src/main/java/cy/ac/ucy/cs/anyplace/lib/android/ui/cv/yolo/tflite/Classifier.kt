@@ -16,10 +16,14 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite
 
 import android.content.Context
 import android.graphics.*
-import android.util.SparseArray
-import com.google.android.gms.vision.Frame
-import com.google.android.gms.vision.text.TextBlock
-import com.google.android.gms.vision.text.TextRecognizer
+import com.google.android.gms.tasks.Tasks
+// import android.util.SparseArray
+// import com.google.android.gms.vision.Frame
+// import com.google.android.gms.vision.text.TextBlock
+// import com.google.android.gms.vision.text.TextRecognizer
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import javax.xml.transform.OutputKeys.METHOD
@@ -55,7 +59,7 @@ interface Classifier {
     var detectedClass = 0
 
     /** Filled with OCR */
-    var ocr: String? = null
+    var ocr: String?=null
 
     constructor(
       id: String, title: String, confidence: Float, location: RectF) {
@@ -74,33 +78,35 @@ interface Classifier {
       this.confidence = confidence
       this.location = location
       this.detectedClass = detectedClass
-      this.ocr=getOCR(ctx, bitmap)
+      this.ocr=getOCR(bitmap)
     }
 
-    fun getOCR(ctx: Context, bitmap: Bitmap) : String? {
-      if (!isOCR(title)) return null
+    fun getOCR(bitmap: Bitmap) : String? {
+      if (!isOCR(title)) return ""
 
       LOG.D2(TAG, "$METHOD: has OCR")
       val cropped_bitmap = getCropBitmapByRect(bitmap, location)
-      val str=getOcrFromBitmap(ctx, cropped_bitmap)
-      LOG.D2(TAG, "$METHOD: text: '$str'")
+      val str=getOcrFromBitmap(cropped_bitmap)
+      LOG.D2(TAG, "$METHOD: text: final: '$str'")
 
       return str
     }
 
     fun isOCR(className: String) = className.endsWith("OCR")
 
-    private fun getOcrFromBitmap(ctx: Context, source: Bitmap): String? {
-      val textRecognizer = TextRecognizer.Builder(ctx).build()
-      val frame = Frame.Builder().setBitmap(source).build()
-      val sparseArray: SparseArray<TextBlock> = textRecognizer.detect(frame)
-      var stringBuilder = ""
-      for (i in 0 until sparseArray.size()) {
-        val tx = sparseArray[i]
-        val str = tx.value
-        stringBuilder+=str+"\n"
+    private fun getOcrFromBitmap(source: Bitmap): String? {
+      val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+      val image = InputImage.fromBitmap(source, 0)
+
+      try {
+        val recognition = recognizer.process(image)
+        Tasks.await(recognition)  // blocking wait
+        if (!recognition.isSuccessful) return null
+        val text = recognition.result.text
+        return text.ifBlank { null }
+      } catch (e: Exception) {
+        return null
       }
-      return stringBuilder.ifEmpty { null }
     }
 
     private fun getCropBitmapByRect(source: Bitmap, cropRectF: RectF): Bitmap {

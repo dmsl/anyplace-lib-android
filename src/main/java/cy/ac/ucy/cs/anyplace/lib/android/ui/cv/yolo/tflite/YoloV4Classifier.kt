@@ -17,11 +17,6 @@ import android.graphics.RectF
 import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
-import android.util.SparseArray
-import com.google.android.gms.vision.Frame
-import com.google.android.gms.vision.text.TextBlock
-import com.google.android.gms.vision.text.TextRecognizer
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.Utils
