@@ -22,15 +22,16 @@ object utlException {
     }
 
     if (e != null)  {
-      val errorMsg =
-              when (e) {
-                is MalformedJsonException -> "Malformed server answer (json/$tag)"
-                is ConnectException -> "Connection failed ($tag) \n${RHB.retrofit.baseUrl()}"
-                else -> "Something went wrong ($tag/${e.javaClass}/${e.message})" // generic
-              }
-      LOG.E(TAG, e.stackTraceToString())
+      val errorMsg = when (e) {
+        is MalformedJsonException -> "Malformed server answer (json/$tag)"
+        is ConnectException -> "Connection failed ($tag) \n${RHB.retrofit.baseUrl()}"
+        else -> {
+          "Something went wrong ($tag/${e.javaClass}/${e.message})"
+        } // generic
+      }
 
-      resultMsg="$tag\n$errorMsg" // augment msg with exception info
+      LOG.E(TAG, e.stackTraceToString())
+      resultMsg="$errorMsg" // augment msg with exception info
     }
 
     app.showToastDEV(scope, resultMsg)
