@@ -9,21 +9,23 @@ import okhttp3.ResponseBody
 /**
  * Anyplace DataSource
  */
-class DataSourceRemote @Inject constructor(private val retrofitHolderAP: RetrofitHolderAP) {
+class DataSourceRemote @Inject constructor(private val RH: RetrofitHolderAP) {
 
   // FLOORS
   // TODO FloorsAll
 
   // FLOORPLANS
   suspend fun getFloorplanBase64(buid: String, floorNum: String) : Response<ResponseBody>
-      = retrofitHolderAP.api.floorplanBase64(buid, floorNum)
+      = RH.api.floorplanBase64(buid, floorNum)
 
   // MISC
-  suspend fun getVersion(): Response<Version>  = retrofitHolderAP.api.getVersion()
+  suspend fun getVersion(): Response<Version>  = RH.api.getVersion()
 
+  suspend fun getSpaceConnectionsAll(buid: String) : Response<ConnectionsResp>
+          = RH.api.connectionsSpaceAll(ReqSpaceConnections(buid))
 
-
-
+  suspend fun getSpacePOIsAll(buid: String) : Response<POIsResp>
+          = RH.api.poisSpaceAll(ReqSpacePOIs(buid))
 
 
 
@@ -44,11 +46,11 @@ class DataSourceRemote @Inject constructor(private val retrofitHolderAP: Retrofi
   // DEMO CODE:
   // USER
   suspend fun userLoginLocal(obj: UserLoginLocalForm) : Response<UserLoginResponse>
-      = retrofitHolderAP.api.userLoginLocal(obj)
+      = RH.api.userLoginLocal(obj)
 
   suspend fun userLoginGoogle(obj: UserLoginGoogleData) : Response<UserLoginResponse>
-      = retrofitHolderAP.api.userLoginGoogle(obj)
+      = RH.api.userLoginGoogle(obj)
 
   // SPACES
-  suspend fun getSpacesPublic() : Response<Spaces> = retrofitHolderAP.api.getSpacesPublic()
+  suspend fun getSpacesPublic() : Response<Spaces> = RH.api.getSpacesPublic()
 }

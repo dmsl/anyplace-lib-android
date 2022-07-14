@@ -83,7 +83,7 @@ class FloorSelector(
     utlUi.alpha(tvFloorTitle, 0.3f)
   }
 
-  fun updateFloorSelector(floor: Floor?, FH: FloorsWrapper) {
+  fun updateFloorSelector(floor: Floor?, FW: FloorsWrapper) {
     // if it has floors, then fade in..
     if (group.visibility != View.VISIBLE)
       utlUi.fadeIn(group)
@@ -93,14 +93,14 @@ class FloorSelector(
       updateSelectionButton(btnFloorUp, ctx, false)
     } else {
       btnSelectedFloor.text = floor.floorNumber
-      tvFloorTitle.text = FH.spaceH.prettyFloor
+      tvFloorTitle.text = FW.spaceH.prettyFloor
 
-      val isFirstFloor = floor.floorNumber==FH.getFirstFloor().floorNumber
+      val isFirstFloor = floor.floorNumber==FW.getFirstFloor().floorNumber
       updateSelectionButton(btnFloorDown, ctx, !isFirstFloor)
 
-      val isLastFloor = floor.floorNumber==FH.getLastFloor().floorNumber
+      val isLastFloor = floor.floorNumber==FW.getLastFloor().floorNumber
       updateSelectionButton(btnFloorUp, ctx, !isLastFloor)
-      LOG.V2(TAG_METHOD, "floors: ${FH.getFirstFloor().floorNumber} - ${FH.getLastFloor().floorNumber}")
+      LOG.V2(TAG_METHOD, "floors: ${FW.getFirstFloor().floorNumber} - ${FW.getLastFloor().floorNumber}")
     }
   }
 
@@ -178,15 +178,15 @@ class FloorSelector(
       return
     }
 
-    val FH = VM.wFloor!!
-    LOG.D2(TAG, "loadFloor: ${FH.prettyFloorName()}")
+    val FW = VM.wFloor!!
+    LOG.D2(TAG, "loadFloor: ${FW.prettyFloorName()}")
     scope.launch(Dispatchers.IO) {
-      if (FH.hasFloorplanCached()) {
+      if (FW.hasFloorplanCached()) {
         LOG.W(TAG, "loadFloor: local")
-        fpLoader.readFromCache(VM, FH)
+        fpLoader.readFromCache(VM, FW)
       } else {
         LOG.D2(TAG, "loadFloor: remote")
-        VM.getFloorplanFromRemote(FH)
+        VM.getFloorplanFromRemote(FW)
       }
     }
 

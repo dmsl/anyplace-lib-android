@@ -9,8 +9,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -202,7 +202,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // No mutex needed as this method is not reentrant.
     if (!delayPassed()) {
-      LOG.V2(TAG, "$METHOD: Skipping inference.. (delay)")
+      LOG.V3(TAG, "$METHOD: Skipping inference.. (delay)")
       readyForNextImage()
       return
     }
@@ -223,7 +223,7 @@ abstract class DetectorActivityBase : CameraActivity(),
     // No mutex needed as this method is not reentrant.
     // PMX: BUG
     if (!VMD.isDetecting() ) {
-      LOG.V2(TAG, "$METHOD: Skipping inference.. (disabled)")
+      LOG.V3(TAG, "$METHOD: Skipping inference.. (disabled)")
       if (DBG.CTR) skipDetection() // TODO: PMX: CTR
       return
     }
@@ -304,7 +304,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
   fun storeResults(results: List<Classifier.Recognition>, canvas: Canvas):
           MutableList<Classifier.Recognition> {
-    val minScore = YoloConstants.MINIMUM_SCORE
+    val minScore = CONST.MINIMUM_SCORE
     val minimumConfidence: Float = when (MODE) {
       DetectorMode.TF_OD_API -> minScore
     }

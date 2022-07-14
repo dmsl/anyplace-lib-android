@@ -70,7 +70,7 @@ class LocationSendNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        LOG.E(TAG, "LOC SEND")
+        LOG.V2(TAG, "LOC SEND")
         val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
         LOG.D2(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)

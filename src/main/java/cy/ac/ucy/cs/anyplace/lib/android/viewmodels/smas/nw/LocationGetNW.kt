@@ -143,10 +143,10 @@ class LocationGetNW(
     LOG.D3(TAG_METHOD)
     if (locations == null) return
 
-    val FH = FloorWrapper(VM.floor.value!!, VM.wSpace)
+    val FW = FloorWrapper(VM.floor.value!!, VM.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
-      userLocation.buid == FH.spaceH.obj.id &&  // same space
-              userLocation.deck == FH.obj.floorNumber.toInt() && // same deck
+      userLocation.buid == FW.spaceH.obj.id &&  // same space
+              userLocation.deck == FW.obj.floorNumber.toInt() && // same deck
               userLocation.uid != smasUser.uid // not current user
     }
 
@@ -170,7 +170,7 @@ class LocationGetNW(
      alertingUser.value = null
     }
 
-    LOG.D3(TAG, "UserLocations: current floor: ${FH.prettyFloorName()}")
+    LOG.D3(TAG, "UserLocations: current floor: ${FW.prettyFloorName()}")
     // val dataset = MutableList<>(); // TODO: scalability?
     gmap.renderUserLocations(sameFloorUsers)
 

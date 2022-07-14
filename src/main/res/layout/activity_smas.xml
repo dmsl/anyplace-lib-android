@@ -44,7 +44,6 @@
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_location_found"
         app:iconGravity="textStart"
-
         app:iconPadding="0dp"
         app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -52,6 +51,24 @@
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
         app:layout_constraintVertical_bias="0.22"
         />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_imu"
+        style="@style/MaterialButtonIcon"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/darkGray"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_compass"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_localization"
+        app:layout_constraintBottom_toBottomOf="@id/btn_localization"
+    />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_userAlert"
@@ -268,6 +285,7 @@
         android:textColor="@color/colorPrimary"
         android:text="@string/floor"
         />>
+
     <!--    FLOOR SELECTOR: END-->
 
     <!--        <View-->

@@ -8,9 +8,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 
 open class CONST(ctx: Context) {
 
-  //// ROOM
   companion object {
+    // ROOM (SQLite)
     const val DB_TBL_SPACES = "spaces"
+
+    // YOLO
+    const val INPUT_SIZE = 416
+    const val OUTPUT_WIDTH_TINY = 2535
+    const val MINIMUM_SCORE: Float = 0.5f
   }
   val DB_NAME = "anyplace_db"
 
@@ -58,7 +63,7 @@ open class CONST(ctx: Context) {
 
   // COMMON DEFAULTS
   val DEFAULT_PREF_CV_DEV_MODE = false
-  val DEFAULT_PREF_CV_SCAN_DELAY= "500"
+  val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "2000"
   //// LOCALIZATION

@@ -5,6 +5,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderBase
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -19,12 +20,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 data class RetrofitHolderSmas(
         val ctx: Context,
         val okHttpClientChat: OkHttpClient,
-        val gsonCF: GsonConverterFactory) {
+        val gsonCF: GsonConverterFactory) : RetrofitHolderBase() {
 
-  lateinit var baseURL: String
-  lateinit var retrofit: Retrofit
   lateinit var api: ChatAPI
-
   lateinit var path: String
 
   companion object {

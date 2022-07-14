@@ -141,7 +141,7 @@ open class FloorHandler(
     // TODO: load fingerprint points..
     val model = VM.model
     if (VM.wFloor==null) return
-    val FH = VM.wFloor!!
+    val FW = VM.wFloor!!
     UI.removeHeatmap()
     when {
       false -> { LOG.V3(TAG, "No local CvMap") } // case that has no fingerprints for floor..

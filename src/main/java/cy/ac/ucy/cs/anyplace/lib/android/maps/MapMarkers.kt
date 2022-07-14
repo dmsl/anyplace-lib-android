@@ -6,8 +6,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -49,15 +49,24 @@ class MapMarkers(private val ctx: Context,
     return toString(toLatLng(coord))
   }
 
+  private fun getLocationDrawable(manuallySet: Boolean): Int {
+    return if (manuallySet) R.drawable.marker_location_manually
+      else R.drawable.marker_location_smas
+  }
+
+
   /** Last Location marker REMOTE */
-  private fun locationMarker(coord: Coord) : MarkerOptions  {
+  private fun locationMarker(coord: Coord, manuallySet: Boolean) : MarkerOptions  {
     val latLng = toLatLng(coord)
+    var title = "Location"
+    if (manuallySet) title+=" (manual)"
+
     return MarkerOptions().position(latLng)
-            // TODO:PMX FR10
+            // TODO:PMX FR10: CHECK with above?
             // .userIcon(ctx, R.drawable.marker_location_smas)
-            .userIcon(ctx, R.drawable.marker_objects_stored)
+            .userIcon(ctx, getLocationDrawable(manuallySet))
             .zIndex(100f)
-            .title("My Location")
+            .title(title)
             .snippet(getSnippetOwnLocation(coord))
   }
 
@@ -142,7 +151,7 @@ class MapMarkers(private val ctx: Context,
     }
   }
 
-  private fun getSnippetOwnLocation(coord: Coord)=toString(coord)
+  private fun getSnippetOwnLocation(coord: Coord) = toString(coord)
 
   /**
    * If the location marker is on a different floor it will become transparent,
@@ -174,33 +183,31 @@ class MapMarkers(private val ctx: Context,
   }
 
   var lastCoord : Coord?=null
-  fun setLocationMarkerREMOTE(coord: Coord) {
+  fun setLocationMarker(coord: Coord, manuallySet: Boolean) {
     val latLng = toLatLng(coord)
     LOG.D2()
 
     lastCoord=coord
+    animateToLocation(latLng)
 
-    if (lastLocation == null) {
-      LOG.D2(TAG, "$METHOD: initial marker")
-      scope.launch(Dispatchers.Main) {
-        lastLocation = map.addMarker(locationMarker(coord))
-        lastLocation!!.tag = UserInfoMetadata(UserInfoType.OwnUser)
+    scope.launch(Dispatchers.Main) {
+      if (lastLocation != null) { // hide previous location
+        lastLocation!!.remove()
+        lastLocation=null
       }
-    } else {
-      LOG.D2(TAG, "$METHOD: updated marker")
-      scope.launch(Dispatchers.Main) {
-        lastLocation?.position = latLng
-      }
+
+      lastLocation = map.addMarker(locationMarker(coord, manuallySet))
+      lastLocation!!.tag = UserInfoMetadata(UserInfoType.OwnUser)
     }
 
     updateLocationMarkerBasedOnFloor(coord.level)
-    animateToMarker(latLng)
   }
+
 
   /**
    * Pan camera to new location
    */
-  fun animateToMarker(latLng: LatLng) {
+  fun animateToLocation(latLng: LatLng) {
     // map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, map.maxZoomLevel))
 
     scope.launch(Dispatchers.Main) {
@@ -210,8 +217,13 @@ class MapMarkers(private val ctx: Context,
               map.cameraPosition.tilt,
               map.cameraPosition.bearing)
 
+      // val cancellableCallback= object : GoogleMap.CancelableCallback {
+      //   override fun onCancel() {}
+      //   override fun onFinish() {}
+      // }
+
       val newCameraPosition = CameraUpdateFactory.newCameraPosition(cameraPosition)
-      map.animateCamera(newCameraPosition)
+      map.moveCamera(newCameraPosition)
     }
   }
 

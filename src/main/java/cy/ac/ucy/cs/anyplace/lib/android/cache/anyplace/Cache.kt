@@ -26,8 +26,10 @@ open class Cache(val ctx: Context) {
   companion object {
     // FILES
     //// Space
-    const val JS_SPACE = "s.json"
-    const val JS_SPACE_LASTVAL = "s.lastval.json" // Cached settings, like last floor
+    const val JS_SPACE="s.json"
+    const val JS_SPACE_LASTVAL="s.lastval.json" // Cached settings, like last floor
+    const val JS_SPACE_CONNECTIONS="s.connections.json"
+    const val JS_SPACE_POIS="s.pois.json"
     const val JS_FLOORS = "f.json"
     //// Space/Floor
     const val PNG_FLOORPLAN = "f.png"
@@ -50,6 +52,7 @@ open class Cache(val ctx: Context) {
   fun jsonSpaceLastValues(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_LASTVAL" }
   fun hasSpaceLastValues(space: Space): Boolean { return File(jsonSpaceLastValues(space)).exists() }
   fun deleteSpaceLastValues(space: Space) {  File(jsonSpaceLastValues(space)).delete()  }
+
   fun saveSpaceLastValues(space: Space, lastVal: LastValSpaces): Boolean {
     val filename = jsonSpaceLastValues(space)
     return try {
@@ -65,6 +68,7 @@ open class Cache(val ctx: Context) {
       false
     }
   }
+
   fun readSpaceLastValues(space: Space): LastValSpaces? {
     val filename = jsonSpaceLastValues(space)
     LOG.V4(TAG, "readSpaceLastValues: file: $filename")
@@ -74,8 +78,71 @@ open class Cache(val ctx: Context) {
     } catch (e: Exception) {
       LOG.E(TAG, "readSpaceLastValues: $filename: ${e.message}")
     }
-
     return null
+  }
+
+  fun jsonSpaceConnections(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_CONNECTIONS" }
+  fun hasSpaceConnections(space: Space): Boolean { return File(jsonSpaceConnections(space)).exists() }
+  fun deleteSpaceConnections(space: Space) {  File(jsonSpaceConnections(space)).delete()  }
+
+  fun saveSpaceConnections(space: Space, connections: ConnectionsResp): Boolean {
+    val filename = jsonSpaceConnections(space)
+    return try {
+      File(dirSpace(space)).mkdirs()
+      val fw= FileWriter(File(filename))
+      Gson().toJson(connections, fw)
+      fw.close()
+      true
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      false
+    }
+  }
+
+  fun readSpaceConnections(space: Space): ConnectionsResp? {
+    val filename = jsonSpaceConnections(space)
+    LOG.V4(TAG, "$METHOD: file: $filename")
+    try {
+      val json = File(filename).readText()
+      return Gson().fromJson(json, ConnectionsResp::class.java)
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+    }
+    return null
+  }
+
+
+  fun jsonSpacePOIs(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_POIS" }
+  fun hasSpacePOIs(space: Space): Boolean { return File(jsonSpacePOIs(space)).exists() }
+  fun deleteSpacePOIs(space: Space) {  File(jsonSpacePOIs(space)).delete()  }
+  fun saveSpacePois(space: Space, pois: POIsResp) : Boolean {
+    val filename = jsonSpacePOIs(space)
+    return try {
+      File(dirSpace(space)).mkdirs()
+      val fw= FileWriter(File(filename))
+      Gson().toJson(pois, fw)
+      fw.close()
+      true
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      false
+    }
+  }
+
+  fun readSpacePOIs(space: Space): POIsResp? {
+    val filename = jsonSpacePOIs(space)
+    LOG.V4(TAG, "$METHOD: file: $filename")
+    try {
+      val json = File(filename).readText()
+      return Gson().fromJson(json, POIsResp::class.java)
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+    }
+    return null
+  }
+
+  fun hasSpaceConnectionsAndPois(space: Space): Boolean {
+    return hasSpacePOIs(space) && hasSpaceConnections(space)
   }
 
   // FLOORS TODO:PM download and cache it here!

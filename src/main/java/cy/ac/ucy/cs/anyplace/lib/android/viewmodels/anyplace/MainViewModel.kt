@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
@@ -18,6 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.ConnectionsGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Version
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,8 +39,8 @@ TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
 @HiltViewModel
 class MainViewModel @Inject constructor(
         app: Application,
-        private val repoAP: RepoAP,
-        private val retrofitHolderAP: RetrofitHolderAP,
+        private val repo: RepoAP,
+        private val RH: RetrofitHolderAP,
         serverDS: ServerDataStore,
         userDataStoreDS: UserDataStore,
         private val miscDS: MiscDataStore,
@@ -67,7 +69,7 @@ class MainViewModel @Inject constructor(
     viewModelScope.launch { displayBackendVersionSafeCall(versionPreferences) }
 
   private suspend fun displayBackendVersionSafeCall(versionPreferences: Preference?) {
-    LOG.D4(TAG, "getVersionSafeCall: ${retrofitHolderAP.baseURL}")
+    LOG.D4(TAG, "getVersionSafeCall: ${RH.baseURL}")
     versionPreferences?.summary = "reaching server .."
 
     var msg = ""
@@ -76,7 +78,7 @@ class MainViewModel @Inject constructor(
     
     if (app.hasInternet()) {
       try {
-        val response = repoAP.remote.getVersion()
+        val response = repo.remote.getVersion()
         versionResp.value = handleVersionResponse(response)
         val version = versionResp.value!!.data
         if (version != null) {

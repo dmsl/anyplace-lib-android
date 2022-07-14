@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -21,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
@@ -29,10 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvFingerprintSendNW
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvMapGetNW
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvModelsGetNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -93,6 +92,9 @@ open class CvViewModel @Inject constructor(
 
   val cache by lazy { Cache(application) }
 
+  lateinit var mu: IMU
+  var miEnabled = false
+
   // UI
   //// COMPONENTS
   lateinit var floorSelector: FloorSelector
@@ -108,6 +110,9 @@ open class CvViewModel @Inject constructor(
   /** related to cv scan window */
   var currentTime : Long = 0
   var windowStart : Long = 0
+
+  val nwConnections by lazy { ConnectionsGetNW(app, this, RH, repo) }
+  val nwPOIs by lazy { POIsGetNW(app, this, RH, repo) }
 
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvMapGet by lazy { CvMapGetNW(app as SmasApp, this, RHsmas, repoSmas) }
@@ -145,7 +150,7 @@ open class CvViewModel @Inject constructor(
   /** Holds the functionality of a [CvMapRM] and can generate the [CvMapFast] */
 
   // FLOOR PLANS
-  fun getFloorplanFromRemote(FH: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(FH) }
+  fun getFloorplanFromRemote(fw: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
   private fun loadFloorplanFromAsset() {
     LOG.W(TAG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()

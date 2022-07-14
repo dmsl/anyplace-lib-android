@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -24,7 +25,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilNotify
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
@@ -34,6 +34,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -75,6 +76,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /** whether this activity is active or not */
   private var isActive = false
 
+  private var tag = "SmasACT"
+
   /**
    * Called by [CvMapActivity]
    */
@@ -87,7 +90,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     setupButtonChat()
     setupButtonFlir()
     setupButtonAlert()
+
+    setupClickm()
   }
+
+
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
@@ -100,19 +107,24 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     if (handlingGmapLongClick) return
     handlingGmapLongClick=true
 
-    lifecycleScope.launch(Dispatchers.Main) {
       VM.ui.map.obj.setOnMapLongClickListener {
+        LOG.W(TAG, "$tag: long click")
         forceUserLocation(it)
       }
+
+    VM.ui.map.obj.setOnMapClickListener {
+      LOG.W(TAG, "ignoring short click.. (workaround?")
     }
   }
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
 
+    app.showToast(lifecycleScope, "Location set manually")
+
     val floorNum = VM.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
-    VM.locationSmas.update { LocalizationResult.Success(loc) }
+    VM.locationSmas.update { LocalizationResult.Success(loc, LocalizationResult.MANUAL) }
   }
 
   /**
@@ -182,7 +194,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!isActive) msg+=" [inactive]"
         if (!hasRegisteredLocation) msg+=" [no-user-location-registered]"
 
-        LOG.W(TAG, "loop-location: main: $msg")
+        LOG.V2(TAG, "loop-location: main: $msg")
 
         VM.nwLocationGet.safeCall()
         delay(VM.prefsCvNav.locationRefreshMs.toLong())
@@ -196,12 +208,16 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     super.onResume()
     LOG.W(TAG, "main: resumed")
     isActive = true
+
+    if (DBG.uim) VMsensors.registerListeners()
   }
 
   override fun onPause() {
     super.onPause()
     LOG.W(TAG, "main: paused")
     isActive = false
+
+    if (DBG.uim) VMsensors.unregisterListener()
   }
 
   /**
@@ -324,6 +340,50 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       MainSettingsDialog.SHOW(supportFragmentManager,
               MainSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
     }
+  }
+
+  var setupClickm = false
+  private fun setupClickm() {
+    if (setupClickm) return
+    if (!DBG.uim) return
+    setupClickm=true
+    // TODO: PM: put in localization button component?
+    // - hide along with localization
+    // - put also in XML: activity_cv_logger
+    LOG.E(TAG, "$METHOD")
+
+    val btn = findViewById<MaterialButton>(R.id.btn_imu)
+    btn.visibility= View.VISIBLE
+
+    btn.setOnClickListener {
+      VM.miEnabled=!VM.miEnabled
+
+      if (VM.miEnabled) mToggleOn(btn) else mToggleOff(btn)
+
+      when {
+        !initedGmap -> {
+          app.showToast(lifecycleScope, "Cannot start (map not ready)")
+          mToggleOff(btn)
+        }
+
+        VM.locationSmas.value.coord == null -> {
+          app.showToast(lifecycleScope, "Cannot start (need an initial location)")
+          mToggleOff(btn)
+        }
+
+        VM.miEnabled -> { VM.mu.start() }
+      }
+    }
+  }
+
+  fun mToggleOn(btn: MaterialButton) {
+    utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+    VM.miEnabled=true
+  }
+
+  fun mToggleOff(btn: MaterialButton) {
+    utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
+    VM.miEnabled=false
   }
 
   private fun setupButtonFlir() {

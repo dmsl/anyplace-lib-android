@@ -15,6 +15,7 @@ class UtilColor(private val ctx: Context) {
   fun Black() = get(R.color.black)
   fun GrayLighter() = get(R.color.lighterGray)
   fun ColorPrimaryDark() = get(R.color.colorPrimaryDark)
+  fun ColorPrimaryDark50() = get(R.color.colorPrimaryDark50)
   fun ColorPrimary() = get(R.color.colorPrimary)
   fun ColorError() = get(R.color.redDark)
   fun ColorYellowDark() = get(R.color.yellowDark)

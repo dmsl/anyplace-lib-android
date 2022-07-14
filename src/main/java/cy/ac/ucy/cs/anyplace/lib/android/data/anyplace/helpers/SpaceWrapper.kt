@@ -13,7 +13,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.resizeTo
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.setColor
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.ConnectionsResp
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.LastValSpaces
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.POIsResp
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 
 /**
@@ -98,5 +100,13 @@ class SpaceWrapper(val ctx: Context,
     } else {
       LastValSpaces()
     }
+  }
+
+  fun cacheConnections(connections: ConnectionsResp) {
+    cache.saveSpaceConnections(obj, connections)
+  }
+
+  fun cachePois(pois: POIsResp) {
+    cache.saveSpacePois(obj, pois)
   }
 }

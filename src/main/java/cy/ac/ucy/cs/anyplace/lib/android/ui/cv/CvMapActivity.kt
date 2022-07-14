@@ -1,7 +1,9 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -10,11 +12,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.SensorsViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -54,15 +59,24 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvViewModel
 
   // UTILITY OBJECTS
-  // protected lateinit var wMap: GmapWrapper TODO in CvMapUi
+  protected val utlColor by lazy { UtilColor(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
+  lateinit var VMsensors: SensorsViewModel
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    VMsensors = ViewModelProvider(this)[SensorsViewModel::class.java]
+  }
+
   override fun postResume() {
     // super.postResume()
+
     VM = _vm as CvViewModel
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
+
 
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
@@ -158,11 +172,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.D2(TAG, "Setup CommonUI & GMap")
     if (DBG.BFnt45){ if (initedGmap) return } // PMX: BFnt45 (main)
 
-    LOG.E(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
+    LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
     VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
             supportFragmentManager, VM.floorSelector)
     VM.ui.map.attach(VM, this, R.id.mapView)
+    VM.mu = IMU(this,VM, VM.ui.map)
   }
 
   var floorSelectorInited = false
@@ -244,7 +259,22 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.D2(TAG, "Floor loaded: ${VM.wFloor?.floorNumber()}")
     if (VM.wFloor != null) {
       VM.ui.map.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
+      lifecycleScope.launch(Dispatchers.IO) {
+        test()
+      }
     }
+  }
+
+  suspend fun test() {
+      if (!DBG.uim) return
+
+      if (VM.space!=null && !VM.cache.hasSpaceConnectionsAndPois(VM.space!!)) {
+        LOG.E(TAG, "will get pois conns")
+        VM.nwPOIs.safeCall(VM.space!!.id)
+        VM.nwConnections.safeCall(VM.space!!.id)
+      }
+
+      VM.ui.map.lines.loadPolylines(VM.wFloor!!.floorNumber())
   }
 
 
@@ -296,7 +326,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
           }
           is LocalizationResult.Success -> {
-            result.coord?.let { VM.ui.map.setUserLocationREMOTE(it) }
+
+            val isManual = LocalizationResult.isManual(result)
+            LOG.W(TAG, "Collected: isManual: $isManual")
+            result.coord?.let { VM.ui.map.setUserLocation(it, isManual) }
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.D2(TAG, msg)

@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.maps.MapLines
 import cy.ac.ucy.cs.anyplace.lib.android.maps.MapMarkers
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
@@ -59,6 +60,8 @@ class GmapWrapper(private val ctx: Context,
   /** Initialized onMapReady */
   lateinit var markers : MapMarkers
 
+  lateinit var lines : MapLines
+
   fun setup(googleMap: GoogleMap) {
     LOG.D()
 
@@ -66,6 +69,7 @@ class GmapWrapper(private val ctx: Context,
     // TODO:PMX FR10
     // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
     markers = MapMarkers(ctx, scope, VM, obj)
+    lines = MapLines(ctx, scope, VM, obj)
 
     // ON FLOOR LOADED....
     obj.uiSettings.apply {
@@ -76,13 +80,14 @@ class GmapWrapper(private val ctx: Context,
       isIndoorLevelPickerEnabled = false
     }
 
-    onMapRreadySpecialize()
 
     // TODO Space must be sent here using some SelectSpaceActivity (w/ SafeArgs?)
     // (maybe using Bundle is easier/better)
     loadSpaceAndFloor()
 
     // async continues by [onFloorLoaded]
+
+    // onMapReadySpecialize()
   }
 
   /**
@@ -128,8 +133,8 @@ class GmapWrapper(private val ctx: Context,
     }
   }
 
-  protected fun onMapRreadySpecialize() {
-  }
+  // protected fun onMapReadySpecialize() {
+  // }
 
   /**
    * Loads from assets the Space and the Space's Floors
@@ -217,10 +222,12 @@ class GmapWrapper(private val ctx: Context,
 
   /**
    * Sets a new marker location on the map.
+   *
+   * - [userSet]: whether the location was manually added by user
    */
-  fun setUserLocationREMOTE(coord: Coord) {
+  fun setUserLocation(coord: Coord, manuallySet: Boolean) {
     LOG.D(TAG, "$METHOD")
-    markers.setLocationMarkerREMOTE(coord)
+    markers.setLocationMarker(coord, manuallySet)
   }
 
   fun recenterCamera(location: LatLng) {

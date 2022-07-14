@@ -15,10 +15,10 @@ class FloorplanLoader {
   /**
    * Reads a floorplan image form the devices cache
    */
-  fun readFromCache(VM: CvViewModel, FH: FloorWrapper) {
-    LOG.W(TAG_METHOD, FH.prettyFloorName())
+  fun readFromCache(VM: CvViewModel, FW: FloorWrapper) {
+    LOG.W(TAG_METHOD, FW.prettyFloorName())
     val localResult =
-            when (val bitmap = FH.loadFromCache()) {
+            when (val bitmap = FW.loadFromCache()) {
               null -> {
                 val msg ="Failed to load from local cache"
                 LOG.W(TAG, "$METHOD: msg")

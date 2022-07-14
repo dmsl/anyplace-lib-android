@@ -60,7 +60,6 @@ abstract class AnyplaceApp : Application() {
   @Deprecated("")  lateinit var fileCache: FileCache
   @Deprecated("")  lateinit var apiOld: Anyplace
 
-
   @Deprecated("CLR PM")
   var BFnt45: Boolean = false
 

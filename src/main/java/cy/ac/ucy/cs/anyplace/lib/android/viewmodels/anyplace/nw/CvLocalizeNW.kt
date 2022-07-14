@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.LocationOfl
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.utils.EXP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
-import java.net.ConnectException
 
 /**
  * Sends recognized objects to the SMAS backend and receives the user's location.
@@ -36,7 +35,7 @@ class CvLocalizeNW(
         private val repo: RepoSmas) {
 
   companion object {
-   const val CV_LOG_ALGORITHM = 2
+    const val CV_LOG_ALGORITHM = 2
     const val tag = "cv-loc"
   }
 
@@ -44,7 +43,7 @@ class CvLocalizeNW(
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<CvLocalizeResp>>
-  = MutableStateFlow(NetworkResult.Unset())
+          = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var user : SmasUser
@@ -68,30 +67,33 @@ class CvLocalizeNW(
         val algo = CV_LOG_ALGORITHM
         val prevCoord  = VM.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
-        val req =  if (prevCoord!=null)
+        val req =  if (prevCoord!=null) {
           CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, prevCoord)
-        else {
-          if (EXP.LOCALIZATION) {
-           val floorNum = VM.wFloor?.floorNumber()!!
-            LOG.E(TAG,"EXP MODE: FLOOR: $floorNum")
-            CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, Coord(0.0, 0.0, floorNum))
-          } else {
-            CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo)
-          }
-
+        } else {
+          // if (EXP.LOCALIZATION) {
+          //   // forcing current floor..
+          //   val floorNum = VM.wFloor?.floorNumber()!!
+          //   LOG.E(TAG,"EXP MODE: FLOOR: $floorNum")
+          //   CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, Coord(0.0, 0.0, floorNum))
+          // } else {
+          CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo)
+          // }
         }
 
         LOG.V2(TAG, "$tag: ${req.time}: #: ${detections.size}")
+        LOG.W(TAG, "$tag: calling remote endpoint..")
         val response = repo.remote.cvLocalization(req)
 
-        LOG.V2(TAG, "$tag: Resp: ${response.message()}" )
+        LOG.W(TAG, "$tag: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
-      } catch(ce: ConnectException) {
-        val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-        handleException(msg, ce)
+        // CLR:PM
+        // } catch(ce: ConnectException) {
+      //   LOG.E(TAG, "SOMETHING WRONG.. connect ext")
+      //   val msg = "Connection failed ($tag):\n${RH.retrofit.baseUrl()}"
+      //   handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "Something went wrong ($TAG)" + "\nURL: ${RH.retrofit.baseUrl()}"
-        handleException(msg, e)
+        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        resp.value = NetworkResult.Error(msg)
       }
     } else {
       resp.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
@@ -127,12 +129,6 @@ class CvLocalizeNW(
       }
     }
     return NetworkResult.Error("$TAG: ${resp.message()}")
-  }
-
-  private fun handleException(msg: String, e: Exception) {
-    resp.value = NetworkResult.Error(msg)
-    LOG.E(TAG, msg)
-    LOG.E(TAG, e)
   }
 
   fun collect() {

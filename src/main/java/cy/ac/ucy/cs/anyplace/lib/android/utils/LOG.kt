@@ -18,6 +18,8 @@ class DBG {
 
     const val CVM = false
 
+    const val uim= false
+
     const val FLD = false
     const val BFnt45 = false
     const val LCLG = false

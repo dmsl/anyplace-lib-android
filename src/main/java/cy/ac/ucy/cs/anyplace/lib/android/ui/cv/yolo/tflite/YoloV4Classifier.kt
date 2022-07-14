@@ -17,8 +17,8 @@ import android.graphics.RectF
 import android.graphics.Bitmap
 import kotlin.Throws
 import android.content.res.AssetManager
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.YoloConstants
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.Utils
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
@@ -231,7 +231,7 @@ open class YoloV4Classifier private constructor()
   // Config values.
   // Pre-allocated buffers.
   override lateinit var labels: List<String>
-  override var objThresh = YoloConstants.MINIMUM_SCORE
+  override var objThresh = CONST.MINIMUM_SCORE
   override var statString = ""
 
   private lateinit var intValues: IntArray

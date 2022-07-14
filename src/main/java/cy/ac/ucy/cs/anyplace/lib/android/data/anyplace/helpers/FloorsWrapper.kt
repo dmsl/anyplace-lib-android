@@ -57,9 +57,9 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
 
   private fun clearCache(msg: String, method: FloorWrapper.() -> Unit) {
     obj.forEach { floor ->
-      val FH = FloorWrapper(floor, spaceH)
-      FH.method()
-      LOG.D5(TAG, "clearCache:$msg: ${FH.prettyFloorplanNumber()}.")
+      val FW = FloorWrapper(floor, spaceH)
+      FW.method()
+      LOG.D5(TAG, "clearCache:$msg: ${FW.prettyFloorplanNumber()}.")
     }
   }
 
@@ -72,22 +72,22 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
   suspend fun fetchAllFloorplans(VM: CvViewModel) {
     var alreadyCached=""
     obj.forEach { floor ->
-      val FH = FloorWrapper(floor, spaceH)
-      if (!FH.hasFloorplanCached()) {
+      val FW = FloorWrapper(floor, spaceH)
+      if (!FW.hasFloorplanCached()) {
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          VM.app.showToast(VM.viewModelScope, "Downloading all ${FH.prettyFloors} ..\n(keep app open)")
+          VM.app.showToast(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }
-        val bitmap = FH.requestRemoteFloorplan()
+        val bitmap = FW.requestRemoteFloorplan()
         if (bitmap != null) {
-          FH.cacheFloorplan(bitmap)
-          LOG.V2("Downloaded: ${FH.prettyFloorplanNumber()}.")
+          FW.cacheFloorplan(bitmap)
+          LOG.V2("Downloaded: ${FW.prettyFloorplanNumber()}.")
         }
       } else {
-        alreadyCached+="${FH.obj.floorNumber}, "
+        alreadyCached+="${FW.obj.floorNumber}, "
       }
     }
 

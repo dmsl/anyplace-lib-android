@@ -12,6 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
-import java.net.ConnectException
 
 /**
  * Downloads CvMap from remote.
@@ -70,12 +70,15 @@ class CvMapGetNW(
         } else {
           persistToDB(cvMap)
         }
-      } catch(ce: ConnectException) {
-        val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
-        handleException(msg, ce)
+        // CLR:PM
+      // } catch(ce: ConnectException) {
+      //   val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
+      //   handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-        handleException(msg, e)
+        // val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        // handleException(msg, e)
+        val errMsg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        resp.value = NetworkResult.Error(errMsg)
       }
     } else {
       resp.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
@@ -101,12 +104,6 @@ class CvMapGetNW(
     }
 
     return NetworkResult.Error("$TAG: ${resp.message()}")
-  }
-
-  private fun handleException(msg:String, e: Exception) {
-    LOG.E(TAG, msg)
-    LOG.E(TAG, e)
-    resp.value = NetworkResult.Error(msg)
   }
 
   var collectingCvMap = false

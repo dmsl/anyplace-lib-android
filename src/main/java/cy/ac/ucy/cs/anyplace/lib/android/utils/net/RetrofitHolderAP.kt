@@ -8,6 +8,13 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
+open class RetrofitHolderBase {
+  lateinit var retrofit: Retrofit
+  lateinit var baseURL: String
+}
+
+
 /**
  * Retrofit Holder For Anyplace.
  * It's purpose:
@@ -17,10 +24,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 data class RetrofitHolderAP(
         val ctx: Context,
         val okHttpClient: OkHttpClient,
-        val gsonConverterFactory: GsonConverterFactory)  {
+        val gsonConverterFactory: GsonConverterFactory) : RetrofitHolderBase() {
 
-  lateinit var baseURL: String
-  lateinit var retrofit: Retrofit
   lateinit var api: API
 
   companion object {

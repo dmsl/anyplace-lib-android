@@ -11,7 +11,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
@@ -45,15 +44,15 @@ class ClearCachesDialog(
     fun SHOW(fragmentManager: FragmentManager,
              repo: RepoAP,
              cvDataStore: CvDataStore,
-             SH: SpaceWrapper?,
-             FSH: FloorsWrapper?,
-             FH: FloorWrapper?) {
+             SW: SpaceWrapper?,
+             FSW: FloorsWrapper?,
+             FW: FloorWrapper?) {
       val args = Bundle()
 
-      SH?.let { sh ->
+      SW?.let { sh ->
         args.putString(KEY_SPACE, sh.toString())
-        FSH?.let { args.putString(KEY_FLOORS, it.toString()) }
-        FH?.let { args.putString(KEY_FLOOR, it.toString()) }
+        FSW?.let { args.putString(KEY_FLOORS, it.toString()) }
+        FW?.let { args.putString(KEY_FLOOR, it.toString()) }
       }
 
       val dialog = ClearCachesDialog(repo, cvDataStore)

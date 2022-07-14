@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace
 
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.CONFIG.Companion.INPUT_SIZE
-import cy.ac.ucy.cs.anyplace.lib.android.legacy_cv_gnk.enums.CONFIG.Companion.OUTPUT_WIDTH_TINY
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.INPUT_SIZE
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.OUTPUT_WIDTH_TINY
 
 /**
  * Enum which describes tflite models used by Detector.
