@@ -21,6 +21,11 @@ class UtilNotify(val ctx: Context) {
     toneGenerator.startTone(ToneGenerator.TONE_CDMA_ALERT_AUTOREDIAL_LITE)
   }
 
+  private fun beepAlertReceived() {
+    val toneGenerator = ToneGenerator(AudioManager.STREAM_ALARM, 100)
+    toneGenerator.startTone(ToneGenerator.TONE_CDMA_ABBR_ALERT)
+  }
+
   private fun vibrate() {
     val buzzer = ctx.getSystemService<Vibrator>()
     val pattern = longArrayOf(0, 200, 100, 300)
@@ -34,8 +39,28 @@ class UtilNotify(val ctx: Context) {
     }
   }
 
+
+  private fun vibrateAlert() {
+    val buzzer = ctx.getSystemService<Vibrator>()
+    val pattern = longArrayOf(50, 500, 50, 500, 50, 500)
+    buzzer?.let {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        buzzer.vibrate(VibrationEffect.createWaveform(pattern, -1))
+      } else {
+        //deprecated in API 26
+        buzzer.vibrate(pattern, -1)
+      }
+    }
+  }
+
   fun msgReceived() {
     beepMsgReceived()
     vibrate()
+  }
+
+  fun alertReceived() {
+    beepAlertReceived()
+    vibrateAlert()
+    beepAlertReceived()
   }
 }

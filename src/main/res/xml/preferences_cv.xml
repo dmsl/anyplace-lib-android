@@ -78,7 +78,7 @@
       app:icon="@drawable/ic_developer_options">
 
     <EditTextPreference
-        app:key="@string/pref_cvnav_map_alpha"
+        app:key="@string/prev_cvmap_alpha"
         app:title="Map transparency percentage"
         app:summary="@string/summary_map_alpha"
         />

@@ -62,9 +62,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       delay(200)
       scope.launch(Dispatchers.Main) {
         ui.map.obj.setOnMapLongClickListener { location ->
-          if (app.BFnt45) return@setOnMapLongClickListener // PMX:BFnt45
-
-          LOG.E(tag, "$method: storing detections (long-click)")
+          LOG.W(tag, "$method: storing detections (long-click)")
           if (VM.canStoreDetections()) {
             LOG.V3(tag, "clicked at: $location")
             handleStoreDetections(location)
@@ -188,8 +186,6 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   var uploadButtonInit = false
   fun setupUploadBtn() {
-    if (DBG.BFnt45){ if (uploadButtonInit) return } // PMX: BFnt45
-
     uploadButtonInit = true
 
     LOG.E(TAG, "$METHOD: setup upload button")

@@ -5,6 +5,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 
 class DBG {
   companion object {
+
     const val LEVEL = 2
 
     const val D1 = LEVEL >= 1
@@ -13,26 +14,15 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val CO5 = true
-    const val CTR = true
+    const val CO5 = false
+    const val CTR = false
 
     const val CVM = false
 
     const val uim= false
 
     const val FLD = false
-    const val BFnt45 = false
     const val LCLG = false
-    const val BN11c = false
-  }
-}
-
-/**
- * EXPERIMENT MODE
- */
-class EXP {
-  companion object {
-    const val LOCALIZATION = true
   }
 }
 

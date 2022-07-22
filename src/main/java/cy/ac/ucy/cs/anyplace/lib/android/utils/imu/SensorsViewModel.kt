@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.sensor.imu
+package cy.ac.ucy.cs.anyplace.lib.android.utils.imu
 
 import android.app.Application
 import android.content.Context

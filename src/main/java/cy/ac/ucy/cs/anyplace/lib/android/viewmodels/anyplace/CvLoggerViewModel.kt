@@ -19,7 +19,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
@@ -45,16 +44,16 @@ enum class TimerAnimation { running,  reset  }
  */
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
-        application: Application,
-        dsCv: CvDataStore,
-        dsCvNav: CvNavDataStore,
-        dsMisc: MiscDataStore,
+  application: Application,
+  dsCv: CvDataStore,
+  dsCvMap: CvMapDataStore,
+  dsMisc: MiscDataStore,
         // dsCvLog: CvLoggerDataStore,
-        repoAP: RepoAP,
-        repoSmas: RepoSmas,
-        RHap: RetrofitHolderAP,
-        RHsmas: RetrofitHolderSmas):
-        CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
+  repoAP: RepoAP,
+  repoSmas: RepoSmas,
+  RHap: RetrofitHolderAP,
+  RHsmas: RetrofitHolderSmas):
+        CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { SMAS(app.applicationContext) }
 
@@ -77,11 +76,6 @@ class CvLoggerViewModel @Inject constructor(
   /** for stats, and for enabling scanned objects clear (on current window) (MERGE: objectsWindowUnique) */
   var statObjWindowUNQ = 0
   var statObjTotal = 0
-
-  // PREFERENCES (CHECK:PM these were SMAS).
-  // val prefsChat = dsChat.read
-  /** How often to refresh UI components from backend (in ms) */
-  // var refreshMs : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
 
   override fun prefWindowLocalizationMs(): Int {
     // modify properly for Smas?
@@ -111,7 +105,7 @@ class CvLoggerViewModel @Inject constructor(
 
     when (statusLogging.value) {
       LoggingStatus.running -> {
-        updateLoggingRecognitions(recognitions)
+        updateDetectionsLogging(recognitions)
       }
       else -> {
         LOG.V2(TAG, "$METHOD: (ignoring objects)")
@@ -122,8 +116,8 @@ class CvLoggerViewModel @Inject constructor(
   /**
    * Update detections that concern only the logging phase.
    */
-  private fun updateLoggingRecognitions(recognitions: List<Classifier.Recognition>) {
-    LOG.D2(TAG, "$METHOD: ${statusLogging.value}")
+  private fun updateDetectionsLogging(recognitions: List<Classifier.Recognition>) {
+    LOG.D3(TAG, "$METHOD: ${statusLogging.value}")
     currentTime = System.currentTimeMillis()
 
     val appendedDetections = objWindowLOG.value.orEmpty() + recognitions
@@ -145,7 +139,8 @@ class CvLoggerViewModel @Inject constructor(
           statusLogging.update { LoggingStatus.stopped }
         } else {
           LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")
-          val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
+          val detectionsDedup = appendedDetections
+          // val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
 
           LOG.W(TAG, "$METHOD: detections to store: dedup: ${detectionsDedup.size}")
 
@@ -183,8 +178,8 @@ class CvLoggerViewModel @Inject constructor(
     }
   }
 
-  fun prefWindowLoggingMs(): Int { return prefsCvNav.windowLoggingMs.toInt() }
-  fun prefWindowLoggingSeconds(): Int { return prefsCvNav.windowLoggingMs.toInt() /1e3.toInt() }
+  fun prefWindowLoggingMs(): Int { return prefsCvMap.windowLoggingMs.toInt() }
+  fun prefWindowLoggingSeconds(): Int { return prefsCvMap.windowLoggingMs.toInt() /1e3.toInt() }
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
   fun getElapsedSecondsStr(): String { return utlTime.getSecondsPretty(getElapsedSeconds()) }
 

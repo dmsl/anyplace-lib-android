@@ -133,7 +133,7 @@ open class FloorHandler(
     LOG.V3()
 
     // BUGFIX: artificial delay workaround; could implement this better)
-    while (!VM.modelEnumLoaded) {
+    while (!VM.detectorLoaded) {
       LOG.W(TAG, "$METHOD: waiting for model to be loaded..")
       delay(200)
     }

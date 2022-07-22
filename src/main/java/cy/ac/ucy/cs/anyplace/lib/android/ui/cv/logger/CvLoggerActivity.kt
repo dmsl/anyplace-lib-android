@@ -1,25 +1,23 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.content.Intent
-import android.widget.TextView
+import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -29,11 +27,20 @@ import kotlinx.coroutines.launch
 class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.activity_cv_logger
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    app.dsCvMap.setMainActivity(CONST.START_ACT_LOGGER)
+  }
+
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   val id_btn_logging: Int get() = R.id.button_logging
 
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
+  override val actName = "logger"
+
+  private val tag = "act-cvlog"
 
   // private lateinit var binding: ActivityCvLoggerBinding
   // private lateinit var VM: CvLoggerViewModel
@@ -56,7 +63,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
       // CHECK: if this crashes (latinit not inited),
       // do something similar with the [readPrefsAndContinue] methods
       // or alternatively it could be put in [setupUi]
-      // VM.prefsCvNav = dsCvNav.read.first()
+      // VM.prefsCvMap = dsCvMap.read.first()
     }
 
     setupCollectors()
@@ -64,23 +71,8 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.D(TAG, "$METHOD [CvLogger]")
-    if (DBG.BN11c) updateModelName() // TODO:PMX: BN11c
   }
 
-
-  /**
-   * TODO: for this (and any similar code that loops+delay):
-   * - create a variable and observe it (a Flow or something observable/collactable)
-   */
-  fun updateModelName() {
-    val tvTitle = findViewById<TextView>(R.id.tvTitle)
-    lifecycleScope.launch(Dispatchers.IO)
-    {
-      while (!VM.modelEnumLoaded) delay(100)
-      utlUi.text(tvTitle, "logger (model: ${VM.model.modelName})")
-    }
-  }
 
   /**
    * nothing here as most setup is done at [setupUiAfterGmap]
@@ -106,7 +98,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    *   This is because the logging UI is part of the BottomSheet.
    */
   override fun setupUiAfterGmap() {
-    LOG.D(TAG, "$METHOD: init logging click")
+    LOG.D(TAG, "$tag $METHOD: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
     VM.uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity,
@@ -165,7 +157,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun collectLoggedInChatUser() {
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
-      appSmas.dsChatUser.readUser.collect { user ->
+      appSmas.dsSmasUser.read.collect { user ->
         if (user.sessionkey.isBlank()) {
           finish()
           startActivity(Intent(this@CvLoggerActivity, SmasLoginActivity::class.java))
@@ -180,7 +172,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
-    LOG.E(TAG, "onMapReadyCallback: [CvLogger]")
+    LOG.E(TAG, "$tag: onMapReady [callback]")
     VM.uiLog.setupOnMapLongClick()
   }
 

@@ -62,7 +62,7 @@ class LocationSendNW(
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates) {
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     LOG.D4(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
 

@@ -68,7 +68,7 @@ class MsgGetNW(
 
     resp.value = NetworkResult.Loading()
     // LOG.D2(TAG, "msg-get: size: ${app.msgList.size} after resetting..")
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     if (app.hasInternet()) {
       try {

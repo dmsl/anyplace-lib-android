@@ -47,7 +47,7 @@ class CvModelsGetNW(
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D2(TAG, "$METHOD: $tag")
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     resp.value = NetworkResult.Loading()
 

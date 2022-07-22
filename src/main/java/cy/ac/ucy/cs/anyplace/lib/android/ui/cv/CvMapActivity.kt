@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -12,8 +13,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.IMU
-import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.SensorsViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.SensorsViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
@@ -28,6 +29,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -44,6 +46,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected abstract val id_gmap: Int
+  protected abstract val actName: String
 
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
@@ -58,28 +61,40 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   /** extends [DetectorViewModel] */
   private lateinit var VM: CvViewModel
 
+  private val tvTitle by lazy { findViewById<TextView>(R.id.tvTitle) }
+
   // UTILITY OBJECTS
   protected val utlColor by lazy { UtilColor(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
   protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
-  lateinit var VMsensors: SensorsViewModel
+  private val tag = "act-cvcomm"
+
+  lateinit var VMs: SensorsViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    VMsensors = ViewModelProvider(this)[SensorsViewModel::class.java]
+    VMs = ViewModelProvider(this)[SensorsViewModel::class.java]
   }
 
   override fun postResume() {
-    // super.postResume()
+    super.postResume()
 
     VM = _vm as CvViewModel
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
+    LOG.D(TAG, "$tag: $METHOD")
+
+    updateModelName()
 
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
+      LOG.E(TAG, "FUTURE: get fingerprints too here?")
+      // TODO: DZ: endpoint: accept timestamp (like chat) of LAST UPDATE
+      // (we may delete a fingerprint. update.. etc..)
+      // must be a different table: per spaceId
+      // return either: empty
       VM.nwCvModelsGet.safeCall()
       VM.nwCvModelsGet.collect()
     }
@@ -100,19 +115,16 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   private fun readPrefsAndContinue() {
     lifecycleScope.launch(Dispatchers.IO) {
-      LOG.V()
+      LOG.W(TAG, "$tag: $METHOD")
       dsCv.read.first { prefs ->
-
         VM.prefsCv= prefs
         onLoadedPrefsCvEngine(prefs)
         true
       }
 
-      LOG.E(TAG, "CvMapActivity: readPrefsAndContinue")
-      dsCvNav.read.first { prefs ->
-        VM.prefsCvNav= prefs
-        LOG.E(TAG, "readPrefsAndContinue")
-        onLoadedPrefsCvNavigation()
+      dsCvMap.read.first { prefs ->
+        VM.prefsCvMap=prefs
+        onLoadedPrefsCvMap()
         true
       }
 
@@ -132,8 +144,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-  private fun onLoadedPrefsCvNavigation() {
-    LOG.E(TAG, "onLoadedPrefsCvNavigation")
+  private fun onLoadedPrefsCvMap() {
+    LOG.W()
     setupUi()
   }
 
@@ -141,12 +153,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * Initialize bottom sheet by reading the [VM.prefsNav]
    */
   open fun setupUiAfterGmap() {
-    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsCvNav.devMode)
+    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsCvMap.devMode)
   }
 
   protected open fun setupUi() {
     LOG.E(TAG, "setupUi")
-    setMapOpacity()
+    setMapOpacity()  // TODO:PMX NXT
     setupUiFloorSelector()
     setupUiGmap()
 
@@ -156,7 +168,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
-      app.dsCvNav.read.collect {
+      app.dsCvMap.read.collect {
         LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
@@ -170,7 +182,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   var initedGmap = false
   private fun setupUiGmap() {
     LOG.D2(TAG, "Setup CommonUI & GMap")
-    if (DBG.BFnt45){ if (initedGmap) return } // PMX: BFnt45 (main)
+    if (initedGmap) return
 
     LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
@@ -212,7 +224,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   private fun setMapOpacity() {
     val view = findViewById<View>(id_gmap)
-    val value =VM.prefsCvNav.mapAlpha.toInt()
+    val value =VM.prefsCvMap.mapAlpha.toInt()
+    LOG.E(TAG, "$METHOD: setting opacity: $value")
     view.alpha=value/100f
   }
 
@@ -273,10 +286,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         VM.nwPOIs.safeCall(VM.space!!.id)
         VM.nwConnections.safeCall(VM.space!!.id)
       }
-
       VM.ui.map.lines.loadPolylines(VM.wFloor!!.floorNumber())
   }
-
 
   var observingFloors = false
   /**
@@ -344,4 +355,22 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
     }
   }
+
+
+  /**
+   * TODO: for this (and any similar code that loops+delay):
+   * - create a variable and observe it (a Flow or something observable/collactable)
+   */
+  fun updateModelName() {
+    val method = METHOD
+    LOG.W(TAG, method)
+    lifecycleScope.launch(Dispatchers.IO) {
+      while (!VM.detectorLoaded) delay(100)
+
+      val modelInfo = "$actName (model: ${VM.model.modelName})"
+      LOG.W(TAG, "$method: $modelInfo")
+      utlUi.text(tvTitle, modelInfo)
+    }
+  }
+
 }

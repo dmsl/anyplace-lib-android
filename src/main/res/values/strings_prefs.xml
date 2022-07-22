@@ -13,13 +13,14 @@
   <!--  NOTE: these are just common keys. they are stored in different apps though. -->
   <string name="pref_cv_dev_mode">pref_cv_dev_mode</string>
   <string name="pref_cv_scan_delay">pref_cv_scan_delay</string>
+  <string name="pref_cv_start_act">pref_cv_start_act</string>
   <!-- PREFERENCES: CV LOGGER -->
   <string name="pref_cvlog">pref_cvlog</string>
   <string name="pref_cv_logging_ms">pref_cv_logging_ms</string>
   <string name="pref_cv_localization_ms">pref_cv_localization_ms</string>
   <!-- PREFERENCES: CV NAVIGATOR-->
-  <string name="pref_cvnav">pref_cvnav</string>
-  <string name="pref_cvnav_map_alpha">pref_cvnav_map_alpha</string>
+  <string name="pref_cvmap">pref_cvmap</string>
+  <string name="prev_cvmap_alpha">prev_cvmap_alpha</string>
   <!-- PREFERENCES: SMAS -->
   <string name="pref_smas_location_refresh">pref_smas_location_refresh</string>
 

@@ -67,9 +67,6 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       val selectedModel = dsCv.read.first().modelName
       LOG.D2(TAG, "setupRadioButtons: selected model: $selectedModel")
 
-      app.showToast(lifecycleScope, "Please restart app.") // TODO:PM CLR
-      app.BFnt45=true
-
       DetectionModel.list.forEach {
         val rb = RadioButton(context)
         rb.tag = it.lowercase()
@@ -92,7 +89,6 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(rbSelectedId)
       val selectedModel = rb.tag.toString().lowercase()
       LOG.W(TAG, "Selected new DNN Model: $selectedModel")
-      app.showToast(lifecycleScope, "Please restart app.") // TODO:PM CLR
       dsCv.setModelName(selectedModel)
       dialog.dismiss()
     }

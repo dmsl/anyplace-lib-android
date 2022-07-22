@@ -53,7 +53,7 @@ class CvFingerprintSendNW(
   private val utlUi by lazy { UtilUI(app, VM.viewModelScope) }
 
   suspend fun uploadFromCache(uiLog: CvLoggerUI) {
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     LOG.E(TAG, "$METHOD: upload from cache")
     val msg = "No internet!"
@@ -144,7 +144,7 @@ class CvFingerprintSendNW(
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates,
                        detectionsReq: List<CvObjectReq>, model: DetectionModel) {
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     LOG.D2(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
 

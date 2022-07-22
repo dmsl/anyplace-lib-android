@@ -52,7 +52,7 @@ class UiLoggingBtn(
    */
   var btnInit = false
   fun setupClick() {
-    if (DBG.BFnt45) { if (btnInit) return } // PMX: BFnt45
+    if (btnInit) return
     btnInit = true
 
     LOG.E(TAG, "$METHOD: setup logging button")

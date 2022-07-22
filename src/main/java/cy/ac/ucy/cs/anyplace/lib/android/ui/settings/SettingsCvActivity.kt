@@ -18,7 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
  * NOTE: this should have been in the SMAS source code
  *
  *
- * CvNavDS
+ * CvMapDS
  */
 @AndroidEntryPoint
 class SettingsCvActivity: AnyplaceSettingsActivity() {
@@ -80,7 +80,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
     // TODO: get whether we are from Smas or Logger apps
 
-    settingsFragment = SettingsCvFragment(app, VM, dsCvNav, dsCv, repoAP, repoSmas)
+    settingsFragment = SettingsCvFragment(app, VM, dsCvMap, dsCv, repoAP, repoSmas)
     setupFragment(settingsFragment, savedInstanceState)
 
     // TODO: icon not shown
@@ -88,14 +88,14 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
   }
 
   class SettingsCvFragment(
-          private val app: AnyplaceApp,
-          private val VM: CvViewModel,
-          /** Only this is binded to the activity */
-          private val ds: CvNavDataStore,
-          /** NOT binded to this activity. Only used to independently change (Dialog UI) the Model*/
+    private val app: AnyplaceApp,
+    private val VM: CvViewModel,
+    /** Only this is binded to the activity */
+          private val ds: CvMapDataStore,
+    /** NOT binded to this activity. Only used to independently change (Dialog UI) the Model*/
           private val dsCv: CvDataStore,
-          private val repoAP: RepoAP,
-          private val repoSmas: RepoSmas,
+    private val repoAP: RepoAP,
+    private val repoSmas: RepoSmas,
   ) : PreferenceFragmentCompat() {
 
     override fun onResume() {
@@ -126,8 +126,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         val prefs = ds.read.first()
         LOG.E(TAG, "SCAN: SNAct: scanDelay: ${prefs.scanDelay}")
 
-        // val prefsCvNav= DS.read.first()
-        setPercentageInput(R.string.pref_cvnav_map_alpha,
+        setPercentageInput(R.string.prev_cvmap_alpha,
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
 

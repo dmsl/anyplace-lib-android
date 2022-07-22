@@ -25,7 +25,7 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
-
+  override val actName: String = "act-cv-search"
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =

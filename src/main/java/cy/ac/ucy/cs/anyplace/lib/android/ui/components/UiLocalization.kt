@@ -84,7 +84,7 @@ class UiLocalization(
     VM.windowStart = VM.currentTime
     VM.statusLocalization.value = LocalizationStatus.running
     btn.visibility = View.VISIBLE
-    val mapAlpha = VM.prefsCvNav.mapAlpha.toFloat()/100
+    val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
     wMap.mapView.alpha = mapAlpha
   }
 

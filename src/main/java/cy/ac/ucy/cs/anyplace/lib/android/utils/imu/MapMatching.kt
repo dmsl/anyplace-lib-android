@@ -1,11 +1,10 @@
 /*Author: Ioannis Ioannides*/
 
-package cy.ac.ucy.cs.anyplace.lib.android.sensor.imu
+package cy.ac.ucy.cs.anyplace.lib.android.utils.imu
 
 import android.location.Location
 import android.util.Log
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import java.lang.Float.POSITIVE_INFINITY
 import java.lang.Math.*

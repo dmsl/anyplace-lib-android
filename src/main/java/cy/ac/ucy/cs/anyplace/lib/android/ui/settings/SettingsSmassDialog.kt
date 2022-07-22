@@ -123,23 +123,16 @@ class MainSettingsDialog(
   private fun setupButtonSwitch(parentActivity: Activity) {
     val btnSwitch = binding.btnSwitchMode
 
-    var directive ="Switching to"
     var actName = "Activity"
     var  klass : Class<Activity>? = null
 
+    val directive="Switch to"
     if (parentActivity is CvLoggerActivity) {
-      directive="Back to"
       actName="SMAS"
       klass = SmasMainActivity::class.java as Class<Activity>
-      // btnSwitch.icon
-      // btnSwitch.setCompoundDrawablesRelativeWithIntrinsicBounds
-      // (R.drawable.ic_lashfire_logo,0,0,0)
     } else if (parentActivity is SmasMainActivity) {
-      directive="Switch to"
       actName="Logger"
       klass = CvLoggerActivity::class.java as Class<Activity>
-      // btnSwitch.setCompoundDrawablesRelativeWithIntrinsicBounds(
-      // R.drawable.ic_anyplace,0,0,0)
     }
 
     btnSwitch.text = "$directive $actName"
@@ -154,7 +147,7 @@ class MainSettingsDialog(
 
   private fun setupChatUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val chatUser = requireActivity().appSmas.dsChatUser.readUser.first()
+      val chatUser = requireActivity().appSmas.dsSmasUser.read.first()
       if (chatUser.sessionkey.isNotBlank()) {
         binding.user = chatUser
         binding.tvAccountType.isVisible = true
@@ -207,8 +200,8 @@ class MainSettingsDialog(
     binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val chatUserDS = requireActivity().appSmas.dsChatUser
-        val user = chatUserDS.readUser.first()
+        val chatUserDS = requireActivity().appSmas.dsSmasUser
+        val user = chatUserDS.read.first()
         if (user.sessionkey.isNotBlank()) {
           msg = "Logging out ${app.dsUser.readUser.first().name}.."
           chatUserDS.deleteUser()

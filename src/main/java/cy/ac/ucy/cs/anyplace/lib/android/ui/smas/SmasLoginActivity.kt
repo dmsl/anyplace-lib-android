@@ -15,12 +15,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
@@ -30,6 +29,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 
@@ -37,17 +37,13 @@ import org.jetbrains.annotations.TestOnly
 @AndroidEntryPoint
 class SmasLoginActivity : BaseActivity() {
 
-  companion object {
-    val OPEN_ACT = "act.open"
-    val OPEN_ACT_SMAS= "act.open.smas"
-    val OPEN_ACT_LOGGER = "act.open.logger"
-  }
 
   private lateinit var VM: SmasLoginViewModel
   private var _binding: ActivitySmasLoginBinding?= null
   private val binding get() = _binding!!
 
   private val utlButton by lazy { UtilUI(applicationContext, lifecycleScope) }
+  private val C by lazy { CONST(applicationContext) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -171,7 +167,7 @@ class SmasLoginActivity : BaseActivity() {
             // Store user in datastore
             val user = response.data
             user?.let {
-              appSmas.dsChatUser.storeUser(SmasUser(user.uid, user.sessionkey))
+              appSmas.dsSmasUser.storeUser(SmasUser(user.uid, user.sessionkey))
               openLoggedInActivity()
             }
           }
@@ -194,18 +190,9 @@ class SmasLoginActivity : BaseActivity() {
   }
 
   private fun openLoggedInActivity() {
-    if (intent != null) {
-      val openActivity = intent.getStringExtra(OPEN_ACT)
-      LOG.W(TAG, "$METHOD: opening $openActivity")
-      val cls = when (openActivity) {
-        OPEN_ACT_LOGGER -> CvLoggerActivity::class.java
-        OPEN_ACT_SMAS -> SmasMainActivity::class.java
-        else -> null
-      }
-      startActivity(Intent(this@SmasLoginActivity, cls))
-      finish()
-    } else {
-      app.showToast(lifecycleScope, "Login: no activity given to open")
+    lifecycleScope.launch {
+      val prefsCv = appSmas.dsCvMap.read.first()
+      StartActivity.openActivity(prefsCv.startActivity, this@SmasLoginActivity)
     }
   }
 
@@ -215,9 +202,6 @@ class SmasLoginActivity : BaseActivity() {
     }
   }
 
-  /**
-   * TODO: make this a test case
-   */
   @TestOnly
   private fun loginProgrammatically() {
     // BUG: how login affects communicating w/ version?

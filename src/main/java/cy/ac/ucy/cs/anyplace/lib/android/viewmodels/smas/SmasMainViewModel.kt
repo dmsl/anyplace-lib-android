@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
@@ -38,24 +38,21 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SmasMainViewModel @Inject constructor(
-        application: Application,
-        repoAP: RepoAP,
-        repoSmas: RepoSmas,
-        val dsChat: ChatPrefsDataStore,
-        dsCv: CvDataStore,
-        dsCvNav: CvNavDataStore,
-        dsMisc: MiscDataStore,
-        RHsmas: RetrofitHolderSmas,
-        RHap: RetrofitHolderAP):
-        CvViewModel(application, dsCv, dsMisc, dsCvNav, repoAP, RHap, repoSmas, RHsmas) {
+  application: Application,
+  repoAP: RepoAP,
+  repoSmas: RepoSmas,
+  val dsChat: ChatPrefsDataStore,
+  dsCv: CvDataStore,
+  dsCvMap: CvMapDataStore,
+  dsMisc: MiscDataStore,
+  RHsmas: RetrofitHolderSmas,
+  RHap: RetrofitHolderAP):
+        CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { SMAS(app.applicationContext) }
 
   // PREFERENCES
   val prefsChat = dsChat.read
-
-  /** How often to refresh UI components from backend (in ms) */
-  // var refreshMs : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
 
   override fun prefWindowLocalizationMs(): Int {
     // modify properly for Smas?
@@ -76,21 +73,17 @@ class SmasMainViewModel @Inject constructor(
    */
   fun displayVersion(p: Preference?) = viewModelScope.launch { nwVersion.safeCallAndUpdateUi(p) }
 
-  // CHECK:PM VERIFY:PM is it updating correclty?? (if so CLR refreshMs)
-  // fun collectRefreshMs() {
-  //   viewModelScope.launch(Dispatchers.IO) {
-  //     dsCvNav.read.collectLatest {
-  //       refreshMs = it.locationRefresh.toLong()*1000L
-  //     }
-  //   }
-  // }
+
 
   /**
    * React to user location updates:
    * - for current user [nwLocationSend]
    * - for other users [nwLocationGet]
    */
+  var collectingLocations = false
   fun collectLocations(VMchat: SmasChatViewModel,mapH: GmapWrapper) {
+    if (collectingLocations) return
+    collectingLocations=true
     if (floor.value == null) {  // floor not ready yet
       LOG.W(TAG_METHOD, "Floor not loaded yet")
       return

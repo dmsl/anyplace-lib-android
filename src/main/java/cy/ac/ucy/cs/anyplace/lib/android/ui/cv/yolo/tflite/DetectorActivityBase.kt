@@ -84,7 +84,11 @@ abstract class DetectorActivityBase : CameraActivity(),
   private var timestamp: Long = 0
   private var cropToFrameTransform: Matrix? = null
 
+  override fun onResume() {
+    super.onResume()
+  }
   override fun postResume() {
+    VMD.unsetDetectorLoaded()
   }
 
   // TODO: this method is problematic even for the original project.
@@ -95,8 +99,8 @@ abstract class DetectorActivityBase : CameraActivity(),
     // TODO:PMX OPT
     lifecycleScope.launch {
       if (!setupDetector()) {
-        Toast.makeText(applicationContext, "Can't set up detector.", Toast.LENGTH_LONG).show()
-        Toast.makeText(applicationContext, "Are there any models available?", Toast.LENGTH_LONG).show()
+        // You have to put models in the assets before building the app (see README)
+        Toast.makeText(applicationContext, "Can't set up detector.\nAre yolo models app's assets?", Toast.LENGTH_LONG).show()
         finish()
       }
       val textSizePx = TypedValue.applyDimension(
@@ -172,14 +176,14 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   suspend fun setupDetector(): Boolean {
-    LOG.I()
+    // modelEnumLoaded must unset it first..
+    LOG.W(TAG, "$METHOD: setting up detector..")
     try {
       // Read DS Preferences:
       val prefsCv = VMD.dsCv.read.first()
-      VMD.setModel(prefsCv.modelName)
-      LOG.D(TAG, "setupDetector: calls read")
-      val prefsCvNav = VMD.dsCvNav.read.first()
-      scanDelay = prefsCvNav.scanDelay.toLong()
+      VMD.setModelName(prefsCv.modelName)
+      val prefsCvMap = VMD.dsCvMap.read.first()
+      scanDelay = prefsCvMap.scanDelay.toLong()
 
       VMD.detector = YoloV4Classifier.create(
               applicationContext,
@@ -187,6 +191,7 @@ abstract class DetectorActivityBase : CameraActivity(),
               VMD.model.filename,
               VMD.model.labelFilePath,
               VMD.model.isQuantized)
+      VMD.setDetectorLoaded()
     } catch (e: IOException) {
       val msg = "Cant initialize classifier"
       LOG.E(TAG_METHOD, msg, e)

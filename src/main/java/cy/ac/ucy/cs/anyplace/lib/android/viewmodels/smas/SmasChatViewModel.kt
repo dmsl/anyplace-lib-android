@@ -7,7 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvNavDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -41,12 +41,12 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SmasChatViewModel @Inject constructor(
-        private val _application: Application,
-        private val repoSmas: RepoSmas,
-        private val RFH: RetrofitHolderSmas,
-        private val dsChat: ChatPrefsDataStore,
-        dsCvNav: CvNavDataStore,
-        private val dsMisc: MiscDataStore,
+  private val _application: Application,
+  private val repoSmas: RepoSmas,
+  private val RFH: RetrofitHolderSmas,
+  private val dsChat: ChatPrefsDataStore,
+  dsCvMap: CvMapDataStore,
+  private val dsMisc: MiscDataStore,
 ) : AndroidViewModel(_application) {
 
   private val app = _application as SmasApp
@@ -58,7 +58,7 @@ class SmasChatViewModel @Inject constructor(
   val chatCache by lazy { SmasCache(app.applicationContext) }
 
   // Preferences
-  val prefsCvNav = dsCvNav.read
+  val prefsCvMap = dsCvMap.read
 
   //Variables observed by composable functions
   var reply: String by mutableStateOf("")
@@ -74,7 +74,7 @@ class SmasChatViewModel @Inject constructor(
   fun getLoggedInUser(): String {
     var uid = ""
     viewModelScope.launch {
-      uid = app.dsChatUser.readUser.first().uid
+      uid = app.dsSmasUser.read.first().uid
     }
     return uid
   }
@@ -112,29 +112,6 @@ class SmasChatViewModel @Inject constructor(
       nwMsgGet.safeCall(showToast)
     }
   }
-
-  /** How often to refresh UI components from backend (in ms) */
-  // private var locationRefresh : Long = C.DEFAULT_PREF_SMAS_LOCATION_REFRESH.toLong()*1000L
-  // private fun collectRefreshMs() {
-  //   viewModelScope.launch(Dispatchers.IO) {
-  //     prefsCvNav.collectLatest{ locationRefresh = it.locationRefresh.toLong()*1000L }
-  //   }
-  // }
-  /**
-   * Not pulling any msgs.
-   * This is done by the [SmasMainViewModel]
-   * (which stays active while the [SmasChatActivity] runs)
-   */
-  // fun netPullMessagesLOOP()  {
-  //   viewModelScope.launch(Dispatchers.IO) {
-  //     collectRefreshMs()
-  //     while (true) {
-  //       LOG.D2(TAG, "loop: pull-msgs")
-  //       nwMsgGet.safeCall()
-  //       delay(locationRefresh)
-  //     }
-  //   }
-  // }
 
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
     var userCoord : UserCoordinates? = null

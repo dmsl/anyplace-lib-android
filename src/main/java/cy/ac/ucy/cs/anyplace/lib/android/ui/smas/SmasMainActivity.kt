@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -22,6 +23,7 @@ import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -58,6 +60,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override val view_model_class: Class<DetectorViewModel> =
           SmasMainViewModel::class.java as Class<DetectorViewModel>
 
+  override val actName = "SMAS"
+
   // VIEW MODELS
   /** extends [CvViewModel] */
   private lateinit var VM: SmasMainViewModel
@@ -77,6 +81,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private var isActive = false
 
   private var tag = "SmasACT"
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    LOG.D2(TAG, "$tag: $METHOD")
+    app.dsCvMap.setMainActivity(CONST.START_ACT_SMAS)
+  }
 
   /**
    * Called by [CvMapActivity]
@@ -132,9 +142,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    */
   override fun postResume() {
     super.postResume()
-    LOG.D2()
-
-    LOG.W(TAG, "main: postResume")
+    LOG.D2(TAG, "$tag: $METHOD")
     VM = _vm as SmasMainViewModel
     VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
     appSmas.setMainActivityVMs(VM, VMchat)
@@ -147,16 +155,14 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Runs only once, when any of the floors is loaded for the first time.
    */
   override fun onFirstFloorLoaded() {
-    LOG.D2(TAG_METHOD, "Floor: ${VM.floor.value}")
+    LOG.E(TAG, "$tag: $METHOD: Floor: ${VM.floor.value}")
 
     super.onFirstFloorLoaded()
 
-    // Send own location, and receive other users locations
-    // VM.nwUpdateLocationsLOOP(true, "main")
-    updateLocationsLOOP()
+    updateLocationsLOOP()  // send own location & receive other users locations
 
     VM.collectLocations(VMchat, VM.ui.map)
-    // collect alert? TODO:PMX
+    collectAlertingUser()
   }
 
 
@@ -173,10 +179,13 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    *  - TODO:PM get from anyplace location
    *  - TODO:PM get a list of those locations: how? parse json?
    */
+  var updatingLocationsLoop = false
   private fun updateLocationsLOOP()  {
+    if (updatingLocationsLoop) return
+    updatingLocationsLoop=true
+
     lifecycleScope.launch(Dispatchers.IO) {
 
-      // VM.collectRefreshMs()
       while (true) {
         var msg = "pull"
         val hasRegisteredLocation = VM.locationSmas.value.coord != null
@@ -197,7 +206,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         LOG.V2(TAG, "loop-location: main: $msg")
 
         VM.nwLocationGet.safeCall()
-        delay(VM.prefsCvNav.locationRefreshMs.toLong())
+        delay(VM.prefsCvMap.locationRefreshMs.toLong())
       }
     }
   }
@@ -206,32 +215,27 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.W(TAG, "main: resumed")
+    LOG.W(TAG, "$tag: $METHOD")
     isActive = true
-
-    if (DBG.uim) VMsensors.registerListeners()
+    if (DBG.uim) VMs.registerListeners()
   }
 
   override fun onPause() {
     super.onPause()
-    LOG.W(TAG, "main: paused")
+    LOG.W(TAG, "$tag: $METHOD")
     isActive = false
 
-    if (DBG.uim) VMsensors.unregisterListener()
+    if (DBG.uim) VMs.unregisterListener()
   }
 
   /**
    * Async Collection of remotely fetched data
-   * TODO local cache (SQLITE)
    */
   private fun setupCollectors() {
     LOG.D()
 
     collectLoggedInUser()
     observeFloors()
-
-    // NOTE: [collectOtherUsersLocations] is done on floorLoaded
-    // collectUserLocalizationStatus(): localizing or not localizing
   }
 
   /**
@@ -242,7 +246,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
       VM.readHasNewMessages.observeForever { hasNewMsgs ->
         val btn = btnChat as MaterialButton
         val ctx = this@SmasMainActivity
-        LOG.E(TAG,"NEW-MSGS: $hasNewMsgs")
+        LOG.W(TAG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
           utlUi.changeBackgroundMaterial(btn, R.color.redDark)
@@ -260,17 +264,21 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Reacts to updates on [ChatUser]'s login status:
    * Only authenticated users are allowed to use this activity
    */
+  var collectingUser = false
   private fun collectLoggedInUser() {
+    if (collectingUser) return
+    collectingUser = true
+
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
-      appSmas.dsChatUser.readUser.collect { user ->
-        if (user.sessionkey.isBlank()) {
-          finish()
-          startActivity(Intent(this@SmasMainActivity, SmasLoginActivity::class.java))
-        } else {
-          lifecycleScope.launch(Dispatchers.Main) {
-            Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
-          }
+
+      val user= appSmas.dsSmasUser.read.first()
+      if (user.sessionkey.isBlank()) {
+        finish()
+        startActivity(Intent(this@SmasMainActivity, SmasLoginActivity::class.java))
+      } else {
+        lifecycleScope.launch(Dispatchers.Main) {
+          Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
         }
       }
     }
@@ -279,20 +287,25 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /**
    * React when a user is in alert mode
    */
+  var notifiedForAlert = false
+  var collectingAlertingUser = false
   @SuppressLint("SetTextI18n")
-  private fun collectAlertingUser() { // TODO:PMX
-    lifecycleScope.launch {
-      val group: Group = findViewById(R.id.group_userAlert)
-      val tvUserAlert: OutlineTextView = findViewById(R.id.tv_alertUser)
-      val tvAlertTitle: OutlineTextView = findViewById(R.id.tv_alertTitle)
+  private fun collectAlertingUser() {
+    if (collectingAlertingUser) return
+    collectingAlertingUser=true
+
+    val group: Group = findViewById(R.id.group_userAlert)
+    val tvUserAlert: OutlineTextView = findViewById(R.id.tv_alertUser)
+    val tvAlertTitle: OutlineTextView = findViewById(R.id.tv_alertTitle)
+
+    lifecycleScope.launch(Dispatchers.IO) {
       VM.alertingUser.collect {
         if (it == null) { // no user alerting
-          // btnAlert.visibility = View.VISIBLE
           utlUi.fadeOut(group)
           delay(100)
           utlUi.fadeIn(btnAlert)
           tvAlertTitle.clearAnimation()
-          // group.visibility = View.INVISIBLE
+          notifiedForAlert=false
         } else { // user alerting
           tvUserAlert.text = "${it.name} ${it.surname}"
           utlUi.fadeOut(btnAlert)
@@ -300,8 +313,10 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           utlUi.fadeIn(group)
           delay(100)
           utlUi.flashingLoop(tvAlertTitle)
-          // btnAlert.visibility = View.INVISIBLE
-          // group.visibility = View.VISIBLE
+          if (!notifiedForAlert) {  // only when the alert is initially raised
+            notifiedForAlert=true
+            utlNotify.alertReceived()
+          }
         }
       }
     }
@@ -314,6 +329,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
 
     btnAlert.setOnLongClickListener {
+
+      if (VM.locationSmas.value is LocalizationResult.Unset) {
+        app.showToast(lifecycleScope, "Localize first (or manually set location)")
+        return@setOnLongClickListener true
+      }
+
       when (VM.toggleAlert()) {
         LocationSendNW.Mode.alert -> {
           utlUi.flashingLoop(btnAlert)
@@ -458,14 +479,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  // TODO:PMX FR
+  // TODO:PMX FR ?
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     LOG.D3(TAG, "$METHOD: SmasMainActivity")
     VM.ui.onInferenceRan()
 
-    // if (detections.isNotEmpty()) {
-    //   // LOG.D3(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
-    // }
     VM.processDetections(detections, this@SmasMainActivity)
   }
 

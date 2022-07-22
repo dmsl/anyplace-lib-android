@@ -54,7 +54,7 @@ class LocationGetNW(
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D3(TAG, "LocationGet")
-    smasUser = app.dsChatUser.readUser.first()
+    smasUser = app.dsSmasUser.read.first()
 
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {

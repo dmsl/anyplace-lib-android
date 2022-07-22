@@ -16,6 +16,10 @@ open class CONST(ctx: Context) {
     const val INPUT_SIZE = 416
     const val OUTPUT_WIDTH_TINY = 2535
     const val MINIMUM_SCORE: Float = 0.5f
+
+    // START ACTIVITY OF THE APP (see [StartActivity])
+    const val START_ACT_SMAS= "act.start.smas"
+    const val START_ACT_LOGGER = "act.start.logger"
   }
   val DB_NAME = "anyplace_db"
 
@@ -65,16 +69,18 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CV_DEV_MODE = false
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
-  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "2000"
+  val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
   //// LOCALIZATION
-  val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS = "2000"
+  val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS = "3000"
 
   //// Settings for Cv Navigator/Localization apps
-  val PREF_CVNAV = ctx.getString(R.string.pref_cvnav)
-  val PREF_CVNAV_MAP_ALPHA= ctx.getString(R.string.pref_cvnav_map_alpha)
+  val PREF_CVMAP = ctx.getString(R.string.pref_cvmap)
+  val PREV_CVMAP_ALPHA= ctx.getString(R.string.prev_cvmap_alpha)
   //// NAVIGATION
-  // val DEFAULT_PREF_CVNAV_WINDOW_LOCALIZATION_SECONDS = "2"
-  val DEFAULT_PREF_CVNAV_MAP_ALPHA= "90"
+  val DEFAULT_PREF_CVMAP_ALPHA= "50"
+
+  val PREF_CV_START_ACT=  ctx.getString(R.string.pref_cv_start_act)
+  val DEFAULT_PREF_CVMAP_START_ACT= START_ACT_SMAS
 
   //// SMAS
   // this should have been in separate SMAS settings

@@ -39,7 +39,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsUser: UserDataStore
   @Inject lateinit var dsMisc: MiscDataStore
   @Inject lateinit var dsCv: CvDataStore
-  @Inject lateinit var dsCvNav: CvNavDataStore
+  @Inject lateinit var dsCvMap: CvMapDataStore
 
 
   @Inject lateinit var repoAP: RepoAP
@@ -59,9 +59,6 @@ abstract class AnyplaceApp : Application() {
   @Deprecated("")  lateinit var prefs: Preferences
   @Deprecated("")  lateinit var fileCache: FileCache
   @Deprecated("")  lateinit var apiOld: Anyplace
-
-  @Deprecated("CLR PM")
-  var BFnt45: Boolean = false
 
   override fun onCreate() {
     super.onCreate()

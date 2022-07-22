@@ -1,6 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
-import android.widget.Toast.*
+import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -35,7 +35,8 @@ class CvLocalizeNW(
         private val repo: RepoSmas) {
 
   companion object {
-    const val CV_LOG_ALGORITHM = 2
+    const val CV_LOG_ALGO_GLOBAL = 3
+    const val CV_LOG_ALGO_NEW = 4
     const val tag = "cv-loc"
   }
 
@@ -52,7 +53,7 @@ class CvLocalizeNW(
   suspend fun safeCall(buid: String,
                        detections: List<CvObjectReq>,
                        model: DetectionModel) {
-    user = app.dsChatUser.readUser.first()
+    user = app.dsSmasUser.read.first()
 
     resp.value = NetworkResult.Unset()
 
@@ -64,21 +65,26 @@ class CvLocalizeNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        val algo = CV_LOG_ALGORITHM
+        var algo = CV_LOG_ALGO_NEW
         val prevCoord  = VM.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
+
+        var strInfo = "OIDs:"
+        detections.forEach {
+          strInfo+= "${it.oid} "
+        }
+
+
         val req =  if (prevCoord!=null) {
           CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, prevCoord)
         } else {
-          // if (EXP.LOCALIZATION) {
-          //   // forcing current floor..
-          //   val floorNum = VM.wFloor?.floorNumber()!!
-          //   LOG.E(TAG,"EXP MODE: FLOOR: $floorNum")
-          //   CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, Coord(0.0, 0.0, floorNum))
-          // } else {
+          algo= CV_LOG_ALGO_GLOBAL
           CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo)
-          // }
         }
+
+        strInfo+="\nAlgo: $algo"
+        app.showToastDEV(VM.viewModelScope, strInfo, Toast.LENGTH_LONG)
+
 
         LOG.V2(TAG, "$tag: ${req.time}: #: ${detections.size}")
         LOG.W(TAG, "$tag: calling remote endpoint..")
@@ -86,11 +92,6 @@ class CvLocalizeNW(
 
         LOG.W(TAG, "$tag: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
-        // CLR:PM
-        // } catch(ce: ConnectException) {
-      //   LOG.E(TAG, "SOMETHING WRONG.. connect ext")
-      //   val msg = "Connection failed ($tag):\n${RH.retrofit.baseUrl()}"
-      //   handleException(msg, ce)
       } catch(e: Exception) {
         val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
         resp.value = NetworkResult.Error(msg)
@@ -137,13 +138,14 @@ class CvLocalizeNW(
         when (it)  {
           is NetworkResult.Success -> {
             if (it.data==null || it.data!!.rows.isEmpty()) {
-              val msg = "Failed to get location (from SMAS)"
-              app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+              val msg = "Failed to get location (from SMAS)\n(long-press to set manually)"
+              LOG.E(TAG, "$msg")
+              app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
               VM.locationSmas.value = LocalizationResult.Unset()
+              LOG.E(TAG, "$tag: Failed to get location: ${it.message.toString()}")
             } else {
               val cvLoc = it.data!!.rows[0]
               val msg = "$tag: REMOTE: $cvLoc"
-
               LOG.W(TAG, msg)
 
               // Propagating the result
@@ -154,7 +156,7 @@ class CvLocalizeNW(
           is NetworkResult.Error -> {
             val msg = it.message ?: "unspecified error"
             LOG.E(TAG, "$tag: $msg")
-            app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+            app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
           }
           else -> {}
         }

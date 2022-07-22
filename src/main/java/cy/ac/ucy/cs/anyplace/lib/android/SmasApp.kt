@@ -37,7 +37,7 @@ class SmasApp : AnyplaceApp() {
   /** SMAS Chat Server preferences */
   @Inject lateinit var dsChat: ChatPrefsDataStore
   /** Logged-in SMAS user */
-  @Inject lateinit var dsChatUser: ChatUserDataStore
+  @Inject lateinit var dsSmasUser: ChatUserDataStore
   @Inject lateinit var rfhSmas: RetrofitHolderSmas
 
   /** list of messages shown on screen by [LazyColumn] */

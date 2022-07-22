@@ -60,7 +60,7 @@
         android:text=""
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_compass"
-        tools:visibility="visible"
+        tools:visibility="invisible"
         android:visibility="invisible"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
@@ -207,6 +207,21 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.appcompat.widget.Toolbar>
+
+
+    <!-- TV TITLE -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/smas"
+        android:textColor="@color/black"
+        android:alpha="0.3"
+        android:textSize="20sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <!--    START OF FLOOR SELECTOR-->
     <androidx.constraintlayout.widget.Group

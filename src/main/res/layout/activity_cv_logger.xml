@@ -98,8 +98,7 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-
-    <!-- TV LOGGER-->
+    <!-- TV TITLE -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"

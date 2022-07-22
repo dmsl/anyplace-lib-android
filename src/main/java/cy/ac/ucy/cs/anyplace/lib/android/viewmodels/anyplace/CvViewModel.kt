@@ -22,12 +22,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.sensor.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.YoloV4Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
@@ -78,15 +77,15 @@ open class CvViewModel @Inject constructor(
         application: Application,
         dsCv: CvDataStore,
         private val dsMisc: MiscDataStore,
-        dsCvNav: CvNavDataStore,
+        dsCvMap: CvMapDataStore,
         val repo: RepoAP,
         val RH: RetrofitHolderAP,
         val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
-        val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvNav) {
+        val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
   private val C by lazy { CONST(app) }
   /** Updated on changes */
-  lateinit var prefsCvNav: CvNavigationPrefs
+  lateinit var prefsCvMap: CvMapPrefs
   /** Updated on changes */
   lateinit var prefsCv: CvEnginePrefs
 
@@ -100,10 +99,6 @@ open class CvViewModel @Inject constructor(
   lateinit var floorSelector: FloorSelector
   /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
   lateinit var ui: CvUI
-
-  // lateinit var prefsCV: CvPrefs
-  // lateinit var prefsNav: CvNavigationPrefs
-  // lateinit var prefsNav: CvNavigationPrefs
 
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
   // e.g., each window might be 5seconds.
@@ -186,17 +181,17 @@ open class CvViewModel @Inject constructor(
   }
 
   /**
-   * React to [CvEnginePrefs] and [CvNavigationPrefs] changes
+   * React to [CvEnginePrefs] and [CvMapPrefs] changes
    */
   fun reactToPrefChanges() {
     viewModelScope.launch (Dispatchers.IO){
-      dsCvNav.read.collectLatest { prefsCvNav=it }
+      dsCvMap.read.collectLatest { prefsCvMap=it }
       dsCv.read.collectLatest { prefsCv=it }
     }
   }
 
   protected open fun prefWindowLocalizationMs(): Int {
-    return prefsCvNav.windowLocalizationMs.toInt()
+    return prefsCvMap.windowLocalizationMs.toInt()
   }
 
   open fun processDetections(recognitions: List<Classifier.Recognition>,
@@ -218,14 +213,19 @@ open class CvViewModel @Inject constructor(
     currentTime = System.currentTimeMillis()
     val appendedDetections = detectionsLOC.value + detections
 
+    /**
+     - HOW many objects are sending up
+
+     */
+
     when {
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
         statusLocalization.tryEmit(LocalizationStatus.stopped)
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
           // deduplicate detections (as we are scanning things in a window of a few seconds)
-          val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
-          detectionsLOC.value = detectionsDedup
+          val detectionsDedup = detectionsLOC.value
+          // val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
 
           LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
 

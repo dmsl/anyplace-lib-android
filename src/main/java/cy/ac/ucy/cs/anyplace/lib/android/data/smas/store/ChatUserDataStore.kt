@@ -30,7 +30,7 @@ class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx:
   }
   private val KEY = Keys(C)
 
-  val readUser: Flow<SmasUser> =
+  val read: Flow<SmasUser> =
     ctx.dsChatUser.data
         .catch { exception ->
          if (exception is IOException)  { emit(emptyPreferences()) } else { throw exception }

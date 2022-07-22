@@ -59,7 +59,7 @@ class MapMarkers(private val ctx: Context,
   private fun locationMarker(coord: Coord, manuallySet: Boolean) : MarkerOptions  {
     val latLng = toLatLng(coord)
     var title = "Location"
-    if (manuallySet) title+=" (manual)"
+    if (manuallySet) title+=" (M)"  // TODO:PMX: Manual
 
     return MarkerOptions().position(latLng)
             // TODO:PMX FR10: CHECK with above?
