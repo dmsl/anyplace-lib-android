@@ -307,7 +307,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           tvAlertTitle.clearAnimation()
           notifiedForAlert=false
         } else { // user alerting
-          tvUserAlert.text = "${it.name} ${it.surname}"
+          utlUi.text(tvUserAlert, "${it.name} ${it.surname}")
           utlUi.fadeOut(btnAlert)
           delay(100)
           utlUi.fadeIn(group)
