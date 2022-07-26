@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import android.util.Base64
+import androidx.compose.ui.text.capitalize
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
@@ -34,6 +35,7 @@ class FloorWrapper(val obj: Floor,
   fun prettyFloorNumber() = "${spaceH.prettyFloor}${obj.floorName}"
   fun prettyFloorName() = "${spaceH.prettyFloor} ${obj.floorName}"
 
+  val prettyFloorCapitalize : String get() = prettyFloor.replaceFirstChar(Char::uppercase)
   val prettyFloor : String get() = spaceH.prettyFloor
   val prettyFloors : String get() = spaceH.prettyFloors
   val prettyFloorPlan : String get() = spaceH.prettyFloorplan

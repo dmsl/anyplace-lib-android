@@ -19,12 +19,6 @@
         />
 
     <EditTextPreference
-        app:key="@string/pref_smas_location_refresh"
-        app:title="Refresh Other User Locations (ms)"
-        app:summary="@string/summary_refresh_locations"
-        />
-
-    <EditTextPreference
         app:key="@string/pref_cv_scan_delay"
         app:title="Delay between CV scans (ms)"
         app:summary="@string/summary_cv_scan_delay"
@@ -35,6 +29,24 @@
         app:title="Change Detection Model"
         app:summary="Pick different Object Detection model"
         />
+  </PreferenceCategory>
+
+  <PreferenceCategory app:title="@string/prefs_header_user_locations"
+      app:icon="@drawable/ic_folder">
+
+    <EditTextPreference
+        app:key="@string/pref_smas_location_refresh"
+        app:title="Refresh Other User Locations (ms)"
+        app:summary="@string/summary_refresh_locations"
+        />
+
+    <SwitchPreferenceCompat
+        app:key="@string/pref_cv_autoset_initial_location"
+        android:defaultValue="true"
+        app:title="Auto-set initial location"
+        app:summary="When app opens, only if last location was within 10 minutes"
+        />
+
   </PreferenceCategory>
 
   <PreferenceCategory app:title="@string/prefs_header_cache"

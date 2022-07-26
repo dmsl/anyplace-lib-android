@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogDeliveryModelBinding
 import kotlinx.coroutines.flow.first
@@ -26,7 +26,7 @@ import java.lang.IllegalStateException
  *  Dialog that is shown when the user clicks on the [DeliveryCard].
  *  Users can select who is going to receive their messages.
  */
-class MsgDeliveryDialog(private val dsChat: ChatPrefsDataStore,
+class MsgDeliveryDialog(private val dsChat: SmasDataStore,
                         private val app: SmasApp,
                         vm: SmasChatViewModel) : DialogFragment() {
 
@@ -36,7 +36,7 @@ class MsgDeliveryDialog(private val dsChat: ChatPrefsDataStore,
   companion object {
 
     /** Creating the dialog. */
-    fun SHOW(fragmentManager: FragmentManager, dsChat: ChatPrefsDataStore, app: SmasApp, vm : SmasChatViewModel) {
+    fun SHOW(fragmentManager: FragmentManager, dsChat: SmasDataStore, app: SmasApp, vm : SmasChatViewModel) {
       val args = Bundle()
       val dialog = MsgDeliveryDialog(dsChat, app, vm)
       dialog.arguments = args

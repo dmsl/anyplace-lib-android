@@ -1,51 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:theme="@style/AppTheme"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
-    android:background="@drawable/bg_round_white">
+    >
 
-  <TextView
-      android:id="@+id/tv_title"
+  <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_width="wrap_content"
+      android:id="@+id/constraintLayout_infoWin"
       android:layout_height="wrap_content"
-      tools:text="Title"
-      android:textColor="@color/black"
-      android:textSize="18sp"
-      android:textStyle="bold"
-      app:layout_constraintTop_toTopOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      />
+      android:paddingTop="3dp"
+      android:paddingBottom="5dp"
+      android:paddingLeft="10dp"
+      android:paddingRight="10dp"
+      android:background="@drawable/bg_round_white"
+      >
 
-  <TextView
-      android:id="@+id/tv_subtitle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      tools:text="Subtitle goes here"
-      android:textSize="12sp"
-      app:layout_constraintTop_toBottomOf="@id/tv_title"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      />
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Title"
+        android:textColor="@color/black"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
-  <Button
-      android:id="@+id/button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Button"
-      android:visibility="gone"
-      android:layout_marginTop="30dp"
-      app:layout_constraintTop_toBottomOf="@id/tv_subtitle"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      tools:layout_editor_absoluteX="182dp"
-      tools:layout_editor_absoluteY="89dp" />
+    <TextView
+        android:id="@+id/tv_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Subtitle goes here"
+        android:textColor="@color/darkGray"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintBottom_toTopOf="@id/btn_coordinates"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_coordinates"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:text="[coords]"
+        android:textSize="8sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button_primary"
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        app:icon="@drawable/ic_location_found"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        app:iconSize="12sp"
+
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+<!--    android:drawableStart="@drawable/ic_location_found"-->
+    <!--    android:padding="5dp"-->
+<!--    android:paddingLeft="5dp"-->
+<!--    android:paddingRight="5dp"-->
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="5dp"
+    />
+</LinearLayout>

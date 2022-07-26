@@ -18,7 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ReplyToMessage
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -27,8 +27,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MsgDeliveryDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgSendNW
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_LOCATION
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_TXT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -42,12 +45,12 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SmasChatViewModel @Inject constructor(
-  private val _application: Application,
-  private val repoSmas: RepoSmas,
-  private val RFH: RetrofitHolderSmas,
-  private val dsChat: ChatPrefsDataStore,
-  dsCvMap: CvMapDataStore,
-  private val dsMisc: MiscDataStore,
+        private val _application: Application,
+        private val repoSmas: RepoSmas,
+        private val RFH: RetrofitHolderSmas,
+        private val dsChat: SmasDataStore,
+        dsCvMap: CvMapDataStore,
+        private val dsMisc: MiscDataStore,
 ) : AndroidViewModel(_application) {
 
   val tag = "vm-smas-chat"
@@ -138,15 +141,89 @@ class SmasChatViewModel @Inject constructor(
             latLng.longitude)
   }
 
+  data class ClipboardLocation(
+          val uid: String,
+          val deck: Int,
+          val lat: Double,
+          val lon: Double,
+          ) {
+    override fun toString() = "$uid,$deck,$lat,$lon"
+    companion object {
+      fun fromString(str: String?) : ClipboardLocation? {
+        if (str==null) return null
+
+        val arr = str.split(",").toTypedArray()
+        if (arr.size != 4) return null
+
+        return try {
+          val uid = arr[0].toString()
+          val deck = arr[1].toInt()
+          val lat = arr[2].toDouble()
+          val lon = arr[3].toDouble()
+
+          ClipboardLocation(uid, deck, lat, lon)
+        } catch (e: Exception) {
+          null
+        }
+      }
+    }
+  }
+
   fun sendMessage(newMsg: String?, mtype: Int) {
-    viewModelScope.launch {
-      var userCoordinates = getUserCoordinates()
-      if (userCoordinates==null) {
+    viewModelScope.launch(Dispatchers.IO) {
+
+      var ownUserCoords = getUserCoordinates()
+      if (ownUserCoords==null) {
         val msg = "Cannot attach location to msg.\nUsing selected floor's (${app.floor.value?.floorNumber}) center."
-        LOG.E(TAG, "$tag: $METHOD: msg")
-        userCoordinates = getCenterOfFloor()
+        LOG.E(TAG, "$tag: $METHOD: $msg")
+        ownUserCoords = getCenterOfFloor()
       }
 
+      var msgSent = false
+      // text type might have a pasted [ClipboardLocation]
+      if (mtype == MTYPE_TXT) {
+        val pastedLocation = ClipboardLocation.fromString(newMsg)
+        if (pastedLocation != null) {
+
+          // if sharing through clipboard the location of another user (not ourself)
+          // send 2 messages:
+          // 1. a text, acknowledging the location sharing
+          // 2. a location message of the attached location
+          // otherwise: if it's our own location, just share it as normal..
+
+          val ownUid = app.dsSmasUser.read.first().uid
+
+          // share location
+          val otherUserCoords = UserCoordinates(app.space!!.id,
+                  pastedLocation.deck,
+                  pastedLocation.lat,
+                  pastedLocation.lon)
+          sendMessageInternal(otherUserCoords, null, MTYPE_LOCATION)
+
+          if (pastedLocation.uid != ownUid) { // not our own location, share an additional fixed text
+            LOG.E(TAG, "$tag: sharing loc of another user")
+            sendMessageInternal(ownUserCoords, "(shared ${pastedLocation.uid}'s location)", MTYPE_TXT)
+            // delay(100)  // artificial delay to ensure order of msgs
+          } else {
+            LOG.W(TAG, "$tag: sharing our own user's location..")
+          }
+
+          msgSent=true
+        }
+      }
+
+      if (!msgSent) {
+        sendMessageInternal(ownUserCoords, newMsg, mtype)
+      }
+
+      delay(100)
+      collectMsgsSend()
+    }
+  }
+
+
+  private fun sendMessageInternal(userCoords: UserCoordinates, newMsg: String?, mtype: Int) {
+    viewModelScope.launch(Dispatchers.IO) {
       val chatPrefs = dsChat.read.first()
       val mdelivery = chatPrefs.mdelivery
       var mexten: String? = null
@@ -154,25 +231,16 @@ class SmasChatViewModel @Inject constructor(
         mexten = utlImg.getMimeType(imageUri!!, app)
       }
 
-      nwMsgSend.safeCall(userCoordinates, mdelivery, mtype, newMsg, mexten)
-
-      // can be more strict: send msg only if location was available
-      // if (userCoord != null)
-      //   nwMsgsSend.safeCall(userCoord, mdelivery, mtype, newMsg, mexten)
-      // else{
-      //   Toast.makeText(app,"Localization problem. Message cannot be delivered.",Toast.LENGTH_SHORT)
-      //   LOG.E("Localization problem. Message cannot be delivered.")
-      // }
+      nwMsgSend.safeCall(userCoords, mdelivery, mtype, newMsg, mexten)
     }
-
-    collectMsgsSend()
   }
+
 
   /**
    * React to flow that is populated by [nwMsgSend] safeCall
    */
   fun collectMsgsSend() {
-    viewModelScope.launch {
+    viewModelScope.launch(Dispatchers.IO) {
       nwMsgSend.collect()
     }
   }

@@ -61,12 +61,15 @@ open class CONST(ctx: Context) {
   val PREF_CV_WINDOW_LOCALIZATION_MS = ctx.getString(R.string.pref_cv_localization_ms)
   val PREF_CV_SCAN_DELAY = ctx.getString(R.string.pref_cv_scan_delay)
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
+  val PREF_CV_AUTOSET_INITIAL_LOCATION= ctx.getString(R.string.pref_cv_autoset_initial_location)
+
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
   // COMMON DEFAULTS
   val DEFAULT_PREF_CV_DEV_MODE = false
+  val DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION= true
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
@@ -85,23 +88,23 @@ open class CONST(ctx: Context) {
   //// SMAS
   // this should have been in separate SMAS settings
   val PREF_SMAS_LOCATION_REFRESH_MS= ctx.getString(R.string.pref_smas_location_refresh)
-  val DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS= "2000"
+  val DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS= "1000"
 
   //// MISC
   val PREF_MISC_NAME = "pref_misc"
   val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
   val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
 
-  //// USER
-  val PREF_USER = "pref_user"
-  val PREF_USER_ACCESS_TOKEN = "pref_user_access_token"
-  val PREF_USER_NAME = "pref_user_name"
-  val PREF_USER_EMAIL = "pref_user_email"
-  val PREF_USER_TYPE = "pref_user_type"
-  val PREF_PHOTO_URI = "pref_photo_uro"
-  val PREF_USER_ACCOUNT = "pref_user_account"
-  val PREF_USER_ID = "pref_user_id"
-  val PREF_USER_USERNAME = "pref_user_username"
+  //// Anyplace USER (NOT SMAS user
+  val PREF_AP_USER = "pref_user"
+  val PREF_AP_USER_ACCESS_TOKEN = "pref_user_access_token"
+  val PREF_AP_USER_NAME = "pref_user_name"
+  val PREF_AP_USER_EMAIL = "pref_user_email"
+  val PREF_AP_USER_TYPE = "pref_user_type"
+  val PREF_AP_PHOTO_URI = "pref_photo_uro"
+  val PREF_AP_USER_ACCOUNT = "pref_user_account"
+  val PREF_AP_USER_ID = "pref_user_id"
+  val PREF_AP_USER_USERNAME = "pref_user_username"
 
   // public, accessible, owned
   val PREF_MISC_QUERY_SPACE_OWNERSHIP = "pref_misc_queryType_space_ownership"

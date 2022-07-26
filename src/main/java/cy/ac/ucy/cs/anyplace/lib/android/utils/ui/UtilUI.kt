@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.os.Build
+import android.util.TypedValue
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
@@ -76,5 +77,10 @@ class UtilUI(
     }
   }
 
+  fun setTextSizeSp(b: Button, v: Float) {
+    scope.launch(Dispatchers.Main) {
+      b.setTextSize(TypedValue.COMPLEX_UNIT_SP, v)
+    }
+  }
 
 }

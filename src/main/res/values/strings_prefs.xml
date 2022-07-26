@@ -12,6 +12,7 @@
   <!-- PREFERENCES: COMMON KEYS -->
   <!--  NOTE: these are just common keys. they are stored in different apps though. -->
   <string name="pref_cv_dev_mode">pref_cv_dev_mode</string>
+  <string name="pref_cv_autoset_initial_location">pref_cv_autoset_initial_location</string>
   <string name="pref_cv_scan_delay">pref_cv_scan_delay</string>
   <string name="pref_cv_start_act">pref_cv_start_act</string>
   <!-- PREFERENCES: CV LOGGER -->

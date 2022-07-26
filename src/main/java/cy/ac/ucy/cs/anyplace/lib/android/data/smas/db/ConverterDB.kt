@@ -7,7 +7,7 @@ import com.google.gson.reflect.TypeToken
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_IMG
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_IMG
 
 class ConverterDB {
 
@@ -15,7 +15,7 @@ class ConverterDB {
     fun chatMsgtoEntity(msg: ChatMsg): ChatMsgEntity {
       // skip saving base64 on SQLite.
       // Those will be stored in [SmasCache] (file cache)
-      val content = if (msg.mtype == TP_SEND_IMG) " " else msg.msg
+      val content = if (msg.mtype == MTYPE_IMG) " " else msg.msg
       return ChatMsgEntity(
               msg.mid,
               msg.uid,

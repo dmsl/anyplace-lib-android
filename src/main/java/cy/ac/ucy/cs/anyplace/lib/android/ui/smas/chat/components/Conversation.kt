@@ -28,11 +28,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.Black
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTimeSmas
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 
@@ -55,8 +56,7 @@ fun Conversation(
         VMchat: SmasChatViewModel,
         manager: FragmentManager,
         repo: RepoSmas,
-        returnLoc: (lat: Double, lng: Double) -> Unit
-) {
+        returnCoords: (lat: Double, lng: Double, level: Int) -> Unit) {
   Column {
     LazyColumn(
             modifier = Modifier
@@ -74,7 +74,7 @@ fun Conversation(
 
       if (!app.msgList.isEmpty()) {
         itemsIndexed(app.msgList) { _, message ->
-          MessageCard(message, VMchat, manager, repo, returnLoc)
+          MessageCard(message, VMchat, manager, repo, returnCoords)
         }
       }
     }
@@ -100,7 +100,7 @@ fun MessageCard(
         VMchat: SmasChatViewModel,
         manager: FragmentManager,
         repo: RepoSmas,
-        returnLoc: (lat: Double, lng: Double) -> Unit
+        returnCoords: (lat: Double, lng: Double, level: Int) -> Unit
 ) {
   val senderIsLoggedUser = (VMchat.getLoggedInUser() == message.uid)
   val ctx = LocalContext.current
@@ -113,6 +113,8 @@ fun MessageCard(
             else -> Alignment.Start
           }
   ) {
+
+    val app = VMchat.app
     val senderUsername = message.uid
     // TODO: no reply support in SMAS API (backend DB)
     var reply by remember { mutableStateOf(false) }
@@ -223,11 +225,12 @@ fun MessageCard(
                   }
                   // When the message is either a location or an alert..
                   if (message.mtype == 3 || message.mtype == 4) {
+                    val deckInfo = "${app.wSpace.prettyFloor} ${message.deck}"
                     Column {
                       Text(
                               text = when (message.mtype) {
-                                3 -> "View location on the map"
-                                else -> "ALERT - REQUIRES ATTENTION"
+                                3 -> "View on map ($deckInfo)"
+                                else -> "ALERT - On $deckInfo"
                               },
                               style = MaterialTheme.typography.subtitle1,
                               modifier = Modifier
@@ -240,7 +243,7 @@ fun MessageCard(
                       )
                       IconButton(
                               onClick = {
-                                returnLoc(message.x, message.y)
+                                returnCoords(message.x, message.y, message.deck)
                               },
                               modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
                       ) {
@@ -250,7 +253,7 @@ fun MessageCard(
                                 modifier = Modifier.size(35.dp),
                                 tint = when {
                                   senderIsLoggedUser -> White
-                                  message.mtype == 4 -> White //When the message is an alert
+                                  message.mtype == 4 -> White // when the message is an alert
                                   else -> AnyplaceBlue
                                 }
                         )
@@ -258,13 +261,13 @@ fun MessageCard(
                     }
                   }
 
-                  val sameDay = utlTimeSmas.isSameDay(message.timestr)
+                  val sameDay = utlTime.isSameDay(message.timestr)
                   Text(
                           text = when (sameDay) {
-                            true -> utlTimeSmas.getTimeFromStrFull(message.timestr)
+                            true -> utlTime.getTimeFromStrFull(message.timestr)
                             else -> {
-                              val msgHour = utlTimeSmas.getTimeFromStr(message.timestr)
-                              val msgDate = utlTimeSmas.getDateFromStr(message.timestr)
+                              val msgHour = utlTime.getTimeFromStr(message.timestr)
+                              val msgDate = utlTime.getDateFromStr(message.timestr)
 
                               "$msgDate $msgHour"
                             }

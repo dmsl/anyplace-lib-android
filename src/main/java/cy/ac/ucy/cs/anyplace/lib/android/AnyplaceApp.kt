@@ -14,6 +14,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
@@ -39,10 +41,15 @@ abstract class AnyplaceApp : Application() {
 
   // DATASTORES (Preferences/Settings)
   @Inject lateinit var dsServer: ServerDataStore
-  @Inject lateinit var dsUser: UserDataStore
+  @Inject lateinit var dsApUser: ApUserDataStore
   @Inject lateinit var dsMisc: MiscDataStore
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
+
+  /** SMAS Server preferences */
+  @Inject lateinit var dsSmas: SmasDataStore
+  /** Logged-in SMAS user */
+  @Inject lateinit var dsSmasUser: SmasUserDataStore
 
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas

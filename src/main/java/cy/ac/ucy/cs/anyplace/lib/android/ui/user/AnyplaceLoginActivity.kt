@@ -220,7 +220,7 @@ class AnyplaceLoginActivity : BaseActivity() {
             val user = response.data?.user
             user?.let {
               Toast.makeText(this@AnyplaceLoginActivity, "Welcome: " + user.name, Toast.LENGTH_SHORT).show()
-              app.dsUser.storeUser(user)
+              app.dsApUser.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()
             }

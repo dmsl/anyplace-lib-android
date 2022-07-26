@@ -8,6 +8,9 @@ import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import java.util.*
 
+// extension function
+fun Coord.toLatLng() = LatLng(this.lat, this.lon)
+
 // TODO:PM Request permissions then call from onStart and onConnected.
 // TODO:PM Move all fake gps here?
 object utlLoc {

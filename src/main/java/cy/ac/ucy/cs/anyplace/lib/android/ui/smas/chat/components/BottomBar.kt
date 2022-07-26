@@ -37,7 +37,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.LightGray
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.MildGray
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_IMG
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_LOCATION
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_TXT
 
 /**
  *
@@ -191,7 +193,7 @@ fun TextBox(VMchat: SmasChatViewModel, modifier: Modifier) {
                         onClick = {
                           newMsg = reply
 
-                          VMchat.sendMessage(newMsg, 1)
+                          VMchat.sendMessage(newMsg, MTYPE_TXT)
                           //focusManager.clearFocus()
                         },
                         enabled = sendEnabled
@@ -219,8 +221,7 @@ fun TextBox(VMchat: SmasChatViewModel, modifier: Modifier) {
           keyboardActions = KeyboardActions(
                   onSend = {
                     newMsg = reply
-
-                    VMchat.sendMessage(newMsg, 1)
+                    VMchat.sendMessage(newMsg, MTYPE_TXT)
                     focusManager.clearFocus()
                   }
           ),
@@ -297,7 +298,8 @@ fun ShareLocAlert(VMchat: SmasChatViewModel) {
             confirmButton = {
               TextButton(
                       onClick = {
-                        VMchat.sendMessage(null, 3)
+                        // TODO: make a method to share custom location..
+                        VMchat.sendMessage(null, MTYPE_LOCATION)
                         VMchat.showDialog = false
                       }) {
                 Text("Confirm", color = AnyplaceBlue)
@@ -358,7 +360,7 @@ fun ShowSelectedImg(VMchat: SmasChatViewModel) {
       }
       IconButton(
               onClick = {
-                VMchat.sendMessage(utlImg.encodeBase64(imageUri, ctx), 2)
+                VMchat.sendMessage(utlImg.encodeBase64(imageUri, ctx), MTYPE_IMG)
                 VMchat.clearImgUri()
               }
       ) {

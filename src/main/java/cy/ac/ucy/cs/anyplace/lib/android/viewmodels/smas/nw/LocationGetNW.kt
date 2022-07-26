@@ -5,9 +5,6 @@ import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -18,10 +15,17 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.toCoord
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
 import java.net.ConnectException
@@ -113,7 +117,7 @@ class LocationGetNW(
       when (it)  {
         is NetworkResult.Success -> {
           val locations = it.data
-          LOG.D4(TAG, "Got user locatiens: ${locations?.rows?.size}")
+          LOG.D4(TAG, "Got user locations: ${locations?.rows?.size}")
           processUserLocations(VMchat, locations, gmap)
         }
         is NetworkResult.Error -> {
@@ -155,11 +159,14 @@ class LocationGetNW(
               userLocation.uid != smasUser.uid // not current user
     }
 
-    val ownLocation = locations.rows.filter { it.uid == smasUser.uid }
-    if (ownLocation.isNotEmpty()) {
+    val ownLocations = locations.rows.filter { it.uid == smasUser.uid }
+    if (ownLocations.isNotEmpty()) {
+      val ownLocation = ownLocations[0]
       // when the current user has not (ever) reported its own location,
       // then it might not be included in the locations DB
-      checkForNewMsgs(VMchat, ownLocation[0].lastMsgTime)
+      checkForNewMsgs(VMchat, ownLocation.lastMsgTime)
+
+      autoSetInitialLocation(ownLocation)
     }
 
     // pick the first alerting user
@@ -177,6 +184,32 @@ class LocationGetNW(
     if (DBG.D2) {
       sameFloorUsers.forEach {
         LOG.D4(TAG, "User: ${it.uid} on floor: ${it.deck}")
+      }
+    }
+  }
+
+  /**
+   * When the user has no last location (i.e., app opened, and have not localized yet),
+   * and has set the option to auto-update location,
+   * and the last location was within 10 minutes, then auto assign to user that location
+   */
+  var triedAutosettingLocation = false
+  private fun autoSetInitialLocation(ownLocation: UserLocation) {
+    if (triedAutosettingLocation) return
+
+    VM.viewModelScope.launch(Dispatchers.IO) {
+      val prefsCvMap = app.dsCvMap.read.first()
+      if (prefsCvMap.autoSetInitialLocation && !app.hasLastLocation() ) {
+        triedAutosettingLocation=true
+
+        if (utlTime.isWithinMinutes(ownLocation.time, 10)) {
+          app.locationSmas.update {
+            LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
+          }
+          app.showToast(VM.viewModelScope, "Automatically setting most recent location")
+        } else {
+          app.showToast(VM.viewModelScope, "Cannot auto-set location. (no recent enough last location)")
+        }
       }
     }
   }

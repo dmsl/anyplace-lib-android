@@ -7,19 +7,17 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ServerDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.UserDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.ConnectionsGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Version
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -42,7 +40,7 @@ class MainViewModel @Inject constructor(
         private val repo: RepoAP,
         private val RH: RetrofitHolderAP,
         serverDS: ServerDataStore,
-        userDataStoreDS: UserDataStore,
+        apUserDataStoreDS: ApUserDataStore,
         private val miscDS: MiscDataStore,
   ): AndroidViewModel(app) {
 
@@ -60,7 +58,7 @@ class MainViewModel @Inject constructor(
   var backOnline = false
   // TODO:PM: bind this when connectivity status changes
   var readBackOnline = miscDS.readBackOnline.asLiveData()
-  var readUserLoggedIn = userDataStoreDS.readUser.asLiveData()
+  var readUserLoggedIn = apUserDataStoreDS.readUser.asLiveData()
 
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= miscDS.readBackFromSettings.asLiveData()

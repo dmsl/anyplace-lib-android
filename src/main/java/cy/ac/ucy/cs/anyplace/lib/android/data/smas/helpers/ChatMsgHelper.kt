@@ -9,10 +9,10 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.STP_IMG
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.STP_LOCATION
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.STP_TP4
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.STP_TXT
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_4
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_IMG
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_LOCATION
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.TP_SEND_TXT
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_ALERT
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_IMG
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_LOCATION
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_TXT
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 
 /**
@@ -29,10 +29,10 @@ class ChatMsgHelper(val ctx: Context,
 
     fun parse(str: String): ChatMsg = Gson().fromJson(str, ChatMsg::class.java)
 
-    fun isImage(tp: Int) = tp == TP_SEND_IMG
-    fun isText(tp: Int) = tp == TP_SEND_TXT
+    fun isImage(tp: Int) = tp == MTYPE_IMG
+    fun isText(tp: Int) = tp == MTYPE_TXT
     @Deprecated("alerts are sent differently")
-    fun isAlert(tp: Int) = tp == TP_SEND_LOCATION
+    fun isAlert(tp: Int) = tp == MTYPE_LOCATION
 
     fun content(obj: ChatMsg) : String {
       return when {
@@ -47,10 +47,10 @@ class ChatMsgHelper(val ctx: Context,
   val prettyType: String
     get() {
       return when (obj.mtype) {
-        TP_SEND_TXT -> STP_TXT
-        TP_SEND_IMG -> STP_IMG
-        TP_SEND_LOCATION ->  STP_LOCATION
-        TP_SEND_4 -> STP_TP4
+        MTYPE_TXT -> STP_TXT
+        MTYPE_IMG -> STP_IMG
+        MTYPE_LOCATION ->  STP_LOCATION
+        MTYPE_ALERT -> STP_TP4
         else -> "UnknownType"
       }
     }

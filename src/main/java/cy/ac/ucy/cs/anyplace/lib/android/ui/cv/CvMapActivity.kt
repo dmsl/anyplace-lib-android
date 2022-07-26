@@ -275,7 +275,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       if (app.wFloor != null) {
       while (!VM.uiLoaded()) delay(100) // workaround (not the best one..)
 
-      VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
+        val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
+        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber(), usedMethod)
         test()
       }
     }
@@ -340,10 +341,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
           }
           is LocalizationResult.Success -> {
-
-            val isManual = LocalizationResult.isManual(result)
-            LOG.W(TAG, "Collected: isManual: $isManual")
-            result.coord?.let { VM.ui.map.setUserLocation(it, isManual) }
+            val usedMethod = LocalizationResult.getUsedMethod(result)
+            LOG.W(TAG, "Collected: method: $usedMethod")
+            result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.D2(TAG, msg)

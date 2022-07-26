@@ -40,11 +40,10 @@ open class UtilAnimations(
           = scope.launch(Dispatchers.Main) { v.flashView(delay) }
 
   fun gone(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
-
   fun visible(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
 
   fun alpha(v: View, a: Float) = scope.launch(Dispatchers.Main) { v.alpha=a }
-
+  fun clearAnimation(v: View) = scope.launch(Dispatchers.Main) { v.clearAnimation() }
 }
 
 

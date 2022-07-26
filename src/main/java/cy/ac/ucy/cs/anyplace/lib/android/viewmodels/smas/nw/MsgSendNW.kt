@@ -104,7 +104,7 @@ class MsgSendNW(private val app: SmasApp,
 
           if (data.level != null) msg+=" (${app.wSpace.prettyFloor}: ${data.level})"
           else if (data.mdelivery != MDELIVERY_SAME_DECK) {
-            msg += "(${prettyMDelivery(data.mdelivery)}})"
+            msg += " (${prettyMDelivery(data.mdelivery)})"
           }
           app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
         }

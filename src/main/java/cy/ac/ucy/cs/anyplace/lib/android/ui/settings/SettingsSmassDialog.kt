@@ -187,7 +187,7 @@ class MainSettingsDialog(
   private fun setupVersion(version: String) {
     CoroutineScope(Dispatchers.Main).launch {
 
-      val prefsChat = requireActivity().appSmas.dsChat.read.first()
+      val prefsChat = requireActivity().appSmas.dsSmas.read.first()
       LOG.W(TAG, "Ver: $prefsChat")
       var versionStr = version
       if (prefsChat.version != null) versionStr += " (${prefsChat.version})"
@@ -203,7 +203,7 @@ class MainSettingsDialog(
         val chatUserDS = requireActivity().appSmas.dsSmasUser
         val user = chatUserDS.read.first()
         if (user.sessionkey.isNotBlank()) {
-          msg = "Logging out ${app.dsUser.readUser.first().name}.."
+          msg = "Logging out ${app.dsApUser.readUser.first().name}.."
           chatUserDS.deleteUser()
           dialog?.dismiss()
         } else {

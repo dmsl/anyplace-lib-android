@@ -138,9 +138,9 @@ class CvLocalizeNW(
         when (it)  {
           is NetworkResult.Success -> {
             if (it.data==null || it.data!!.rows.isEmpty()) {
-              val msg = "Failed to get location (from SMAS)\n(long-press to set manually)"
-              LOG.E(TAG, "$msg")
-              app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+              val msg = "Unable to localize.\nPlease collect more fingerprints with Logger\nor set manually (long-press)"
+              LOG.E(TAG, "$tag: $msg")
+              app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_LONG)
               app.locationSmas.value = LocalizationResult.Unset()
               LOG.E(TAG, "$tag: Failed to get location: ${it.message.toString()}")
             } else {

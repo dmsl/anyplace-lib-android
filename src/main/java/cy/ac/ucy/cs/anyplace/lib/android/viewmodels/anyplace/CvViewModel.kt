@@ -13,15 +13,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
@@ -31,7 +28,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
-import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Error
@@ -265,7 +261,7 @@ open class CvViewModel @Inject constructor(
       return
     }
 
-    val chatUser = app.dsUser.readUser.first()
+    val chatUser = app.dsApUser.readUser.first()
     repoSmas.local.localizeTemp(this, model.idSmas, app.space!!.id, detectionsReq, chatUser)
   }
 

@@ -17,7 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.entityToSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsUser
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsApUser
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
@@ -67,7 +67,7 @@ class SpaceListFragment : Fragment() {
     if(VM.backFromSettings) {
       LOG.D2(TAG, "handleBackToFragment: from settings")
       lifecycleScope.launch {
-        val user = requireActivity().dsUser.readUser.first()
+        val user = requireActivity().dsApUser.readUser.first()
         if (user.accessToken.isBlank()) {
           requireActivity().finish()
         } else {

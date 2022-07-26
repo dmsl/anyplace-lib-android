@@ -40,6 +40,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_DEV_MODE,
           C.PREV_CVMAP_ALPHA,
           C.PREF_SMAS_LOCATION_REFRESH_MS,
+          C.PREF_CV_AUTOSET_INITIAL_LOCATION,
   )
 
   private class Keys(c: CONST) {
@@ -50,6 +51,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     val devMode = booleanPreferencesKey(c.PREF_CV_DEV_MODE)
     val mapAlpha = stringPreferencesKey(c.PREV_CVMAP_ALPHA)
     val locationRefreshMs = stringPreferencesKey(c.PREF_SMAS_LOCATION_REFRESH_MS)
+    val autoSetInitialLocation = booleanPreferencesKey(c.PREF_CV_AUTOSET_INITIAL_LOCATION)
   }
   private val KEY = Keys(C)
 
@@ -66,6 +68,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         LOG.E(TAG, "putBoolean: $key:$value" )
         when (key) {
           C.PREF_CV_DEV_MODE -> it[KEY.devMode] = value
+          C.PREF_CV_AUTOSET_INITIAL_LOCATION-> it[KEY.autoSetInitialLocation] = value
         }
       }
     }
@@ -105,6 +108,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_DEV_MODE -> prefs.devMode
+        C.PREF_CV_AUTOSET_INITIAL_LOCATION-> prefs.autoSetInitialLocation
         else -> false
       }
     }
@@ -141,6 +145,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val scanDelay= preferences[KEY.scanDelay] ?: C.DEFAULT_PREF_CV_SCAN_DELAY
             val devMode = preferences[KEY.devMode] ?: C.DEFAULT_PREF_CV_DEV_MODE
             val locationRefresh= preferences[KEY.locationRefreshMs] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
+            val autoSetInitialLocation = preferences[KEY.autoSetInitialLocation] ?: C.DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION
 
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
@@ -148,7 +153,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     scanDelay,
                     mapAlpha,
                     devMode,
-                    locationRefresh)
+                    locationRefresh,
+                    autoSetInitialLocation)
             prefs
           }
 
@@ -166,4 +172,5 @@ data class CvMapPrefs(
         val devMode: Boolean,
         /** how often to fetch nearby users location (in seconds) */
         val locationRefreshMs: String,
+        val autoSetInitialLocation: Boolean
 )

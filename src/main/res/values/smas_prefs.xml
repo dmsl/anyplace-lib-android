@@ -3,9 +3,9 @@
   <!-- Delivery options-->
   <string-array name="delivery_options_entries">
     <item>All users</item>
-    <item>Same deck</item>
-    <item>Nearest K</item>
-    <item>Bounding Box</item>
+    <item>Same deck users</item>
+    <item>Nearest Users</item>
+    <item>Users in Bounding Box (100m)</item>
   </string-array>
 
   <string-array name="delivery_options_values">

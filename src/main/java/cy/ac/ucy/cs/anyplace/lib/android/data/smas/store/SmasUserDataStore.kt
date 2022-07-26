@@ -19,14 +19,14 @@ import javax.inject.Singleton
  * DataStore for the Logged-in SMAS user
  */
 @Singleton
-class ChatUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
+class SmasUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { SMAS(ctx) }
   private val Context.dsChatUser by preferencesDataStore(name = C.PREF_SMAS_USER)
 
   private class Keys(c: SMAS) {
-    val uid = stringPreferencesKey(c.PREF_USER_ID)
-    val sessionkey = stringPreferencesKey(c.PREF_USER_ACCESS_TOKEN)
+    val uid = stringPreferencesKey(c.PREF_AP_USER_ID)
+    val sessionkey = stringPreferencesKey(c.PREF_AP_USER_ACCESS_TOKEN)
   }
   private val KEY = Keys(C)
 

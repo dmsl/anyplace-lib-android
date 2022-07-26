@@ -14,6 +14,8 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
+    // TODO: PMX
+    const val GREs = false
     const val CO5 = false
     const val CTR = false
 

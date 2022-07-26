@@ -147,6 +147,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 R.string.summary_logging_window, prefs.windowLoggingMs, 0)
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
+        setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
 
         setupChangeCvModel()
         setupButtonServerSettings()

@@ -181,7 +181,11 @@ class CvLoggerViewModel @Inject constructor(
   fun prefWindowLoggingMs(): Int { return prefsCvMap.windowLoggingMs.toInt() }
   fun prefWindowLoggingSeconds(): Int { return prefsCvMap.windowLoggingMs.toInt() /1e3.toInt() }
   fun getElapsedSeconds(): Float { return (currentTime - windowStart)/1000f }
-  fun getElapsedSecondsStr(): String { return utlTime.getSecondsPretty(getElapsedSeconds()) }
+  fun getElapsedSecondsStr(): String {
+    val res = "%.1f".format(getElapsedSeconds()) + "s"
+    if (res.length > 4) return "0.0s"
+    return res
+  }
 
   fun resetLoggingWindow() {
     statObjWindowUNQ=0

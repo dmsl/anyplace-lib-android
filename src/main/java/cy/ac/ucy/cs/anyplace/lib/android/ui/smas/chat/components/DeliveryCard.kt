@@ -58,7 +58,9 @@ fun DeliveryCard(VMchat: SmasChatViewModel, manager: FragmentManager) {
             .fillMaxWidth()
             .background(White, RoundedCornerShape(10.dp))
             .border(Dp.Hairline, AnyplaceBlue, RoundedCornerShape(5.dp))) {
+
       Row {
+
         Text(text = "Messages are delivered to ",
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -70,7 +72,7 @@ fun DeliveryCard(VMchat: SmasChatViewModel, manager: FragmentManager) {
                   MDELIVERY_ALL -> "ALL USERS."
                   MDELIVERY_SAME_DECK -> "SAME ${app.wSpace.prettyFloorAllCaps} USERS."
                   MDELIVERY_KNN -> "NEAREST USERS."
-                  MDELIVERY_BBOX -> "USERS IN 100M."
+                  MDELIVERY_BBOX -> "USERS IN 100M"
                   else -> "error"
                 },
                 fontWeight = FontWeight.Bold,
@@ -79,6 +81,7 @@ fun DeliveryCard(VMchat: SmasChatViewModel, manager: FragmentManager) {
                         .padding(end = 10.dp),
                 color = AnyplaceBlue
         )
+
       }
     }
   }

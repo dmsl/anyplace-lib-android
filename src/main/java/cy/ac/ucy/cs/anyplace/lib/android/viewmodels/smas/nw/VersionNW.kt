@@ -42,7 +42,7 @@ class VersionNW(
     val version = resp.data
 
     if (version != null) {  // SUCCESS
-      app.dsChat.storeVersion(version.rows.version)
+      app.dsSmas.storeVersion(version.rows.version)
     }
 
     return resp

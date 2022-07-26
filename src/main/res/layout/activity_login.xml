@@ -2,6 +2,12 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools">
+  <!--  ANYPLACE LOGIN
+  This is not in use, but it could provide Anyplace login
+  (incl. Google login into anyplace).
+  Might not work out of the box, play around with it..
+
+   -->
   <!-- INFO this XML has multiple screen configurations.
   The changes must be reflected in all configurations,
   otherwise the bindings will be nullable.

@@ -19,7 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
@@ -45,7 +45,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
     VM = ViewModelProvider(this)[SmasMainViewModel::class.java]
     VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
 
-    settingsFragment = SettingsChatFragment(VM, VMchat, RFH, this.appSmas.dsChat, cacheChat, repo)
+    settingsFragment = SettingsChatFragment(VM, VMchat, RFH, this.appSmas.dsSmas, cacheChat, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -55,12 +55,12 @@ class SettingsChatActivity: BaseSettingsActivity() {
   }
 
   class SettingsChatFragment(
-    private val VM: SmasMainViewModel,
-    private val VMchat: SmasChatViewModel,
-    private val RFH: RetrofitHolderSmas,
-    private val dsChat: ChatPrefsDataStore,
-    private val cacheChat: SmasCache,
-    private val repo: RepoSmas) : PreferenceFragmentCompat() {
+          private val VM: SmasMainViewModel,
+          private val VMchat: SmasChatViewModel,
+          private val RFH: RetrofitHolderSmas,
+          private val dsChat: SmasDataStore,
+          private val cacheChat: SmasCache,
+          private val repo: RepoSmas) : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       preferenceManager.preferenceDataStore = dsChat

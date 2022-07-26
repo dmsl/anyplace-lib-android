@@ -24,7 +24,7 @@ import javax.inject.Singleton
  * Chat Backend Preferences
  */
 @Singleton // INFO cannot be ViewModelScoped, as it is used by NetworkModule
-class ChatPrefsDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
+class SmasDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
   private val C by lazy { SMAS(ctx) }

@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import java.sql.Date
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /** Time Utils */
@@ -22,10 +25,26 @@ object utlTime {
     return rounded.toString()
   }
 
-  fun getSecondsPretty(num: Float): String {
-    val res = "%.1f".format(num) + "s"
-    if (res.length > 4) return "0.0s"
-    return res
+  fun getSecondsPretty(seconds: Long): String {
+    return when {
+      seconds >= 60*60*24 -> {
+        val days: Int = (seconds/(60*60*24)).toInt()
+        return "$days days"
+      }
+      seconds >= 60*60 -> {
+        val hours: Int = (seconds/(60*60)).toInt()
+        val remaining = seconds%(60*60)
+        val mins : Int = (remaining/60).toInt()
+        "${hours}h ${mins}m"
+      }
+      seconds >= 60 -> {
+        val mins : Int = (seconds/60).toInt()
+        "${mins}m"
+      }
+      else -> {
+        "${seconds}s"
+      }
+    }
   }
 
   const val TIMEZONE_CY = "Asia/Nicosia"
@@ -59,4 +78,55 @@ object utlTime {
   fun minutesElapsed(time: Long) : Long {
     return secondsElapsed(time)/60
   }
+
+
+
+
+
+  //returns the current date and formats in the pattern [Jan 01, 2022]
+  fun getLocalDateString() : String {
+    val currDate =  LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+    val formattedDate = currDate.format(formatter)
+    return formattedDate
+  }
+
+  fun getLocalTimeString() : String {
+    return LocalTime.now().toString().substringBeforeLast('.').substringBeforeLast(":")
+  }
+
+  fun getDateFromStr(date : String) : String{
+    return date.substringBeforeLast(' ')
+  }
+
+  fun getTimeFromStr(date : String) : String{
+    return date.substringAfterLast(' ').substringBeforeLast(":")
+  }
+
+  fun getTimeFromStrFull(date : String) : String{
+    return date.substringAfterLast(' ')
+  }
+
+  //checks if the current date is the same as the one specified in timestr
+  fun isSameDay(timestr: String) : Boolean {
+    val currDate = getLocalDateString()
+    val date = getDateFromStr(timestr)
+
+    if (currDate.equals(date))
+      return true
+    return false
+  }
+
+  /**
+   * Returns whether if [time] (a given epoch/unix time)
+   * is within [minutes] minutes from current time
+   */
+  fun isWithinMinutes(time: Long, minutes: Int) : Boolean {
+    val curTime = epoch()
+    val seconds = minutes*60
+
+    val timeRange = curTime - seconds
+    return time >= timeRange
+  }
+
 }

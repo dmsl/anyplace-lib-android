@@ -14,11 +14,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -38,15 +37,15 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SmasMainViewModel @Inject constructor(
-  application: Application,
-  repoAP: RepoAP,
-  repoSmas: RepoSmas,
-  val dsChat: ChatPrefsDataStore,
-  dsCv: CvDataStore,
-  dsCvMap: CvMapDataStore,
-  dsMisc: MiscDataStore,
-  RHsmas: RetrofitHolderSmas,
-  RHap: RetrofitHolderAP):
+        application: Application,
+        repoAP: RepoAP,
+        repoSmas: RepoSmas,
+        val dsChat: SmasDataStore,
+        dsCv: CvDataStore,
+        dsCvMap: CvMapDataStore,
+        dsMisc: MiscDataStore,
+        RHsmas: RetrofitHolderSmas,
+        RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { SMAS(app.applicationContext) }
@@ -64,7 +63,6 @@ class SmasMainViewModel @Inject constructor(
   val nwLocationGet by lazy { LocationGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwLocationSend by lazy { LocationSendNW(app as SmasApp, this, RHsmas, repoSmas) }
 
-
   val alertingUser : MutableStateFlow<UserLocation?>
     get() = nwLocationGet.alertingUser
 
@@ -72,8 +70,6 @@ class SmasMainViewModel @Inject constructor(
    * [p]: the Chat [Preference] row that will be replaced with the result of the version call
    */
   fun displayVersion(p: Preference?) = viewModelScope.launch { nwVersion.safeCallAndUpdateUi(p) }
-
-
 
   /**
    * React to user location updates:

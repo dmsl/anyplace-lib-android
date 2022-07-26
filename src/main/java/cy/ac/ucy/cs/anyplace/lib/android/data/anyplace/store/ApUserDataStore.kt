@@ -16,20 +16,20 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class UserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
+class ApUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { CONST(ctx) }
-  private val Context.dataStoreUser by preferencesDataStore(name = C.PREF_USER)
+  private val Context.dataStoreUser by preferencesDataStore(name = C.PREF_AP_USER)
 
   private class Keys(c: CONST) {
-    val accessToken = stringPreferencesKey(c.PREF_USER_ACCESS_TOKEN)
-    val name = stringPreferencesKey(c.PREF_USER_NAME)
-    val username = stringPreferencesKey(c.PREF_USER_USERNAME)
-    val id = stringPreferencesKey(c.PREF_USER_ID)
-    val email = stringPreferencesKey(c.PREF_USER_EMAIL)
-    val account = stringPreferencesKey(c.PREF_USER_ACCOUNT)
-    val type = stringPreferencesKey(c.PREF_USER_TYPE)
-    val photoUri= stringPreferencesKey(c.PREF_PHOTO_URI)
+    val accessToken = stringPreferencesKey(c.PREF_AP_USER_ACCESS_TOKEN)
+    val name = stringPreferencesKey(c.PREF_AP_USER_NAME)
+    val username = stringPreferencesKey(c.PREF_AP_USER_USERNAME)
+    val id = stringPreferencesKey(c.PREF_AP_USER_ID)
+    val email = stringPreferencesKey(c.PREF_AP_USER_EMAIL)
+    val account = stringPreferencesKey(c.PREF_AP_USER_ACCOUNT)
+    val type = stringPreferencesKey(c.PREF_AP_USER_TYPE)
+    val photoUri= stringPreferencesKey(c.PREF_AP_PHOTO_URI)
   }
   private val KEY = Keys(C)
 

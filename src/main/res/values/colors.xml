@@ -16,8 +16,8 @@
 -->
 <resources>
 
-  <color name="lightRed">#ef3038</color>
-  <color name="red">#D8171B</color>
+  <color name="lightRed">#cd5c5c</color>
+  <color name="red">#F74331</color>
   <color name="redDark">#A41507</color>
   <!--<color name="blue">#0d47a1</color>-->
   <color name="blue">#0063BE</color>

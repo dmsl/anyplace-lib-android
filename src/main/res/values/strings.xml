@@ -183,6 +183,7 @@
   <string name="upper_floor">Upper floor</string>
   <string name="prefs_header_cvmap">Object Maps</string>
   <string name="prefs_header_cache">Cache</string>
+  <string name="prefs_header_user_locations">User Locations</string>
   <string name="prefs_header_application">Application</string>
   <string name="apply_just_to">Apply just to</string>
   <string name="for_all_spaces">for all spaces</string>

@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
@@ -16,18 +17,21 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.maps.MapLines
-import cy.ac.ucy.cs.anyplace.lib.android.maps.MapMarkers
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.copyToClipboard
+import cy.ac.ucy.cs.anyplace.lib.android.maps.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.internal.cookieToString
 
 class GmapWrapper(
                   private val app: AnyplaceApp,
@@ -66,13 +70,13 @@ class GmapWrapper(
   lateinit var lines : MapLines
 
   var gmapWrLoaded = false
+  @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap) {
     LOG.D()
     LOG.E(TAG, "$tag: setup")
 
     obj = googleMap
-    // TODO:PMX FR10
-    // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
+    obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))   // TODO:PMX FR10
     markers = MapMarkers(app, scope, VM, obj)
     lines = MapLines(app, scope, VM, obj)
 
@@ -90,9 +94,48 @@ class GmapWrapper(
     // (maybe using Bundle is easier/better)
     loadSpaceAndFloor()
 
-    // async continues by [onFloorLoaded]
+    obj.setOnMapClickListener {
+      // clearing last opened user
+      markers.lastOpenedUser = null
+    }
+    obj.setOnMarkerClickListener {  // PotentialBehaviorOverride
+      // clearing last opened user
+      markers.lastOpenedUser = null
+      return@setOnMarkerClickListener false
+    }
+    obj.setOnInfoWindowClickListener { // PotentialBehaviorOverride
 
+      val metadata = it.tag as UserInfoMetadata?
+      if (metadata != null) {
+       if(metadata.type == UserInfoType.SharedLocation) {
+         LOG.W(TAG, "Cannot share (again) a location share")
+         return@setOnInfoWindowClickListener
+       }
+
+        LOG.E(TAG, "USER: ${metadata.uid}")
+        LOG.E(TAG, "LOCATION: ${metadata.coord}")
+
+        val uid = metadata.uid
+        val deck = metadata.coord.level
+        val lat = metadata.coord.lat
+        val lon = metadata.coord.lon
+        val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
+        clipboardLocation.toString().copyToClipboard(ctx)
+
+        scope.launch(Dispatchers.IO) {
+          val ownUid = app.dsSmasUser.read.first().uid
+          if (ownUid == uid) {
+            app.showToast(scope, "Copied own location to clipboard")
+          } else {
+            app.showToast(scope, "Copied ${metadata.uid}'s location to clipboard")
+          }
+        }
+      }
+    }
+
+    // async continues by [onFloorLoaded]
     // onMapReadySpecialize()
+
     gmapWrLoaded = true
   }
 
@@ -200,8 +243,7 @@ class GmapWrapper(
   }
 
   fun renderUserLocations(userLocation: List<UserLocation>) {
-    removeUserLocations() // TODO: update instead of hiding and rendering again..
-    // TODO:OPT add all markers at once
+    removeUserLocations()
     addUserMarkers(userLocation, scope)
   }
 
@@ -231,9 +273,9 @@ class GmapWrapper(
    *
    * - [userSet]: whether the location was manually added by user
    */
-  fun setUserLocation(coord: Coord, manuallySet: Boolean) {
+  fun setUserLocation(coord: Coord, locMethod: LocalizationMethod) {
     LOG.D(TAG, "$METHOD")
-    markers.setLocationMarker(coord, manuallySet)
+    markers.setLocationMarker(coord, locMethod)
   }
 
   fun recenterCamera(location: LatLng) {
@@ -247,6 +289,5 @@ class GmapWrapper(
                               obj.cameraPosition.bearing)))
     }
   }
-
 
 }

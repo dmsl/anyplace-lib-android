@@ -24,7 +24,7 @@ val Activity.dsServer: ServerDataStore get() = this.app.dsServer
 val Activity.dsCv: CvDataStore get() = this.app.dsCv
 val Activity.dsCvMap: CvMapDataStore get() = this.app.dsCvMap
 val Activity.dsMisc: MiscDataStore get() = this.app.dsMisc
-val Activity.dsUser: UserDataStore get() = this.app.dsUser
+val Activity.dsApUser: ApUserDataStore get() = this.app.dsApUser
 
 val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
 

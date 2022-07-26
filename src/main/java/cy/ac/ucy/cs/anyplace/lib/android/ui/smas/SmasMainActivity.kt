@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -37,9 +36,12 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_ALERT
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
@@ -73,7 +75,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private lateinit var btnChat: Button
   private lateinit var btnFlir: Button
   private lateinit var btnSettings: Button
-  private lateinit var btnAlert: Button
+  private lateinit var btnAlert: MaterialButton
 
   private val utlNotify by lazy { UtilNotify(applicationContext) }
 
@@ -127,7 +129,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
 
-    app.showToast(lifecycleScope, "Location set manually (long-clicked)")
+    app.showToast(lifecycleScope, "Location set manually (long-click)")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -168,6 +170,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /* Runs when any of the floors is loaded */
   override fun onFloorLoaded() {
     super.onFloorLoaded()
+
+    VM.ui.map.markers.clearChatLocationMarker()
   }
 
   /**
@@ -294,8 +298,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     collectingAlertingUser=true
 
     val group: Group = findViewById(R.id.group_userAlert)
-    val tvUserAlert: OutlineTextView = findViewById(R.id.tv_alertUser)
-    val tvAlertTitle: OutlineTextView = findViewById(R.id.tv_alertTitle)
+    val btnAlertOngoing: MaterialButton = findViewById(R.id.btnAlertOngoing)
 
     lifecycleScope.launch(Dispatchers.IO) {
       VM.alertingUser.collect {
@@ -303,15 +306,15 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           utlUi.fadeOut(group)
           delay(100)
           utlUi.fadeIn(btnAlert)
-          tvAlertTitle.clearAnimation()
+          btnAlertOngoing.clearAnimation()
           notifiedForAlert=false
         } else { // user alerting
-          utlUi.text(tvUserAlert, "${it.name} ${it.surname}")
+          utlUi.text(btnAlertOngoing, "${it.name} ${it.surname}")
           utlUi.fadeOut(btnAlert)
           delay(100)
           utlUi.fadeIn(group)
           delay(100)
-          utlUi.flashingLoop(tvAlertTitle)
+          utlUi.flashingLoop(btnAlertOngoing)
           if (!notifiedForAlert) {  // only when the alert is initially raised
             notifiedForAlert=true
             utlNotify.alertReceived()
@@ -319,43 +322,62 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         }
       }
     }
+
+    btnAlertOngoing.setOnClickListener {
+      val alertingUser = VM.alertingUser.value ?: return@setOnClickListener
+
+      val alertingUserCoords = Coord(alertingUser.x,
+              alertingUser.y,
+              alertingUser.deck)
+
+      val curFloor = app.wFloor?.floorNumber()
+      if (alertingUser.deck != curFloor) {
+        app.wFloors.moveToFloor(VM, alertingUser.deck)
+      }
+
+      VM.ui.map.markers.animateToLocation(alertingUserCoords.toLatLng())
+    }
   }
 
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
-      Toast.makeText(applicationContext, "long-press (to alert)", Toast.LENGTH_SHORT).show()
+      Toast.makeText(applicationContext, "long-press (to toggle alert)", Toast.LENGTH_SHORT).show()
     }
 
     btnAlert.setOnLongClickListener {
-
       if (app.locationSmas.value is LocalizationResult.Unset) {
-        app.showToast(lifecycleScope, "Localize first (or manually set location)")
+        app.showToast(lifecycleScope, "Localize first, or set location manually (long-click)")
         return@setOnLongClickListener true
       }
 
       when (VM.toggleAlert()) {
-        LocationSendNW.Mode.alert -> {
-          utlUi.flashingLoop(btnAlert)
-          btnAlert.text = "ALERTING"
-          utlUi.changeBackgroundCompat(btnAlert, R.color.redDark)
-          btnAlert.setTextColor(Color.WHITE)
-        }
-        LocationSendNW.Mode.normal -> {
-          btnAlert.clearAnimation()
-          btnAlert.text = "SEND ALERT"
-          btnAlert.setTextColor(Color.BLACK)
-          utlUi.changeBackgroundCompat(btnAlert, R.color.yellowDark)
-        }
+        LocationSendNW.Mode.alert -> { issueAlert() }
+        LocationSendNW.Mode.normal -> { cancelAlert() }
       }
       true
     }
   }
 
+  fun issueAlert() {
+    utlUi.flashingLoop(btnAlert)
+    utlUi.text(btnAlert, "ALERTING")
+    utlUi.setTextSizeSp(btnAlert, 52f)
+    utlUi.changeBackgroundMaterial(btnAlert, R.color.redDark)
+
+    VMchat.sendMessage("", MTYPE_ALERT)  // submit also an alert msg
+  }
+
+  fun cancelAlert() {
+    utlUi.clearAnimation(btnAlert)
+    utlUi.text(btnAlert, "SEND ALERT")
+    utlUi.setTextSizeSp(btnAlert, 42f)
+    utlUi.changeBackgroundMaterial(btnAlert, R.color.gray)
+  }
+
   private fun setupButtonSettings() {
     btnSettings = findViewById(R.id.button_settings)
     btnSettings.setOnClickListener {
-
       val versionStr = BuildConfig.VERSION_CODE
       MainSettingsDialog.SHOW(supportFragmentManager,
               MainSettingsDialog.FROM_MAIN, this@SmasMainActivity, versionStr)
@@ -429,14 +451,30 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+  /**
+   * starts an activity and listens for a result
+   */
+  private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+  { result: ActivityResult ->
+    if (!DBG.GREs) return@registerForActivityResult
     if (result.resultCode == Activity.RESULT_OK) {
       val intent: Intent? = result.data
       if (intent != null) {
-        val lat = intent.getDoubleExtra("latitude", 0.0)
-        val lon = intent.getDoubleExtra("longitude", 0.0)
+        val lat = intent.getDoubleExtra("lat", 0.0)
+        val lon = intent.getDoubleExtra("lon", 0.0)
+        val level = intent.getIntExtra("level", Int.MIN_VALUE)
 
-        LOG.E(TAG, "GOT LOC FROM CHAT: $lat $lon")
+        if (level != Int.MIN_VALUE) {
+          LOG.E(TAG, "VALID LOC from chat: $lat $lon $level")
+
+          val curFloor = app.wFloor?.floorNumber()
+          if (level != curFloor) {
+            // app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
+            app.wFloors.moveToFloor(VM, level)
+          }
+
+          VM.ui.map.markers.addChatLocationMarker(Coord(lat, lon, level))
+        }
       }
     }
   }
@@ -452,14 +490,19 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     btnChat.setOnClickListener {
       lifecycleScope.launch {
         if (!app.hasLastLocation()) {
-          var msg = "You haven't localized yet.\n"
-          msg+= "If needed, chat will use ${app.wFloor?.prettyFloorNumber()} (current selection)"
+          var msg = "Please localize at least once, or set location manually (long-click)\n"
+          msg+= "before opening chat"
           app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
+          return@launch
         }
+
+        LOG.W(TAG, "Clearing markers before opening chat..")
+        VM.ui.map.markers.clearChatLocationMarker()
         startForResult.launch(Intent(applicationContext, SmasChatActivity::class.java))
       }
     }
   }
+
 
   var collectorMsgsEnabled = false  // BUGFIX: setting up multiple collectors
   /**
@@ -476,7 +519,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun readBackendVersion() {
     CoroutineScope(Dispatchers.IO).launch {
-      val prefsChat = appSmas.dsChat.read.first()
+      val prefsChat = appSmas.dsSmas.read.first()
       if (prefsChat.version == null) {
         VM.nwVersion.getVersion()
       }
@@ -487,7 +530,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     LOG.D3(TAG, "$METHOD: SmasMainActivity")
     VM.ui.onInferenceRan()
-
     VM.processDetections(detections, this@SmasMainActivity)
   }
 

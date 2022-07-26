@@ -76,13 +76,13 @@
         tools:visibility="visible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="viewAlertBg,tv_alertTitle,tv_alertUser,tv_alertOrder" />
+        app:constraint_referenced_ids="viewAlertBg,btnAlertOngoing,tv_alertOrder" />
 
     <View
         android:id="@+id/viewAlertBg"
         tools:visibility="invisible"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="130dp"
         app:layout_constraintBottom_toBottomOf="@+id/container"
         android:alpha="0.7"
         app:layout_constraintEnd_toEndOf="parent"
@@ -91,46 +91,35 @@
         android:background="@color/redDark"
         />
 
-    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
-        android:id="@+id/tv_alertTitle"
-        android:layout_width="wrap_content"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAlertOngoing"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/alert"
         android:textAllCaps="true"
+        android:background="@drawable/button_alert"
+        app:backgroundTint="@color/redDark"
+        app:cornerRadius="0dp"
         app:layout_constraintBottom_toTopOf="@id/viewAlertBg"
         app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
         app:layout_constraintRight_toRightOf="@id/viewAlertBg"
         android:layout_marginTop="4dp"
         tools:visibility="invisible"
-        app:outlineColor="@color/white"
-        app:outlineWidth="2dp"
-        android:textSize="52dp"
-        android:textColor="@color/redDark"
+        app:icon="@drawable/ic_warning"
+        app:iconSize="42dp"
+        android:textSize="26dp"
+        android:textColor="@color/white"
         android:textStyle="bold"
       />
 
-    <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
-        android:id="@+id/tv_alertUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="Name Surname"
-        app:layout_constraintTop_toTopOf="@id/viewAlertBg"
-        app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
-        android:layout_marginTop="8dp"
-        app:layout_constraintRight_toRightOf="@id/viewAlertBg"
-        android:textSize="32dp"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        app:outlineColor="@color/redDark"
-        app:outlineWidth="1dp"
-        />
+
 
     <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
         android:id="@+id/tv_alertOrder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="needs help."
-        app:layout_constraintTop_toBottomOf="@id/tv_alertUser"
+        android:text="needs help"
+        app:layout_constraintBottom_toTopOf="@id/button_flir"
         app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
         app:layout_constraintRight_toRightOf="@id/viewAlertBg"
         android:textSize="32dp"
@@ -142,16 +131,20 @@
 
 
     <!-- ALERT -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAlert"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:backgroundTint="@color/yellowDark"
-        tools:visibility="visible"
+        android:backgroundTint="@color/gray"
+        tools:visibility="invisible"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        app:strokeColor="@color/redDark"
+        app:strokeWidth="7dp"
+        app:cornerRadius="5dp"
         android:text="@string/send_alert"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="42sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/container"
@@ -333,7 +326,7 @@
         android:layout_height="78dp"
         android:layout_width="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="6dp"
         android:elevation="50dp"
         android:backgroundTint="@color/colorPrimaryDark"
         android:text="Flir"
@@ -358,7 +351,7 @@
         android:text="Chat"
         app:cornerRadius="10dp"
         app:icon="@drawable/ic_chat"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="6dp"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="42dp"

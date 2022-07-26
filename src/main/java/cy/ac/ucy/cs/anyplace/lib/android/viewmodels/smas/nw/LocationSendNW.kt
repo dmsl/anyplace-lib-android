@@ -116,9 +116,6 @@ class LocationSendNW(
     LOG.E(TAG, e)
   }
 
-  // TODO: make icons gray.. if time delay......
-  // TODO: show initials in icons....... (don't commit..)
-  // TODO: model.. UCY
   suspend fun collect() {
     resp.collect {
       when (it)  {

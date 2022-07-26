@@ -81,7 +81,7 @@ class MainSettingsDialogAnyplace : DialogFragment() {
 
   private fun setupUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val user = app.dsUser.readUser.first()
+      val user = app.dsApUser.readUser.first()
       if (user.accessToken.isNotBlank()) {
         binding.user = user
       }
@@ -94,10 +94,10 @@ class MainSettingsDialogAnyplace : DialogFragment() {
     binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val user = app.dsUser.readUser.first()
+        val user = app.dsApUser.readUser.first()
         if (user.accessToken.isNotBlank()) {
-          msg = "Logging out ${app.dsUser.readUser.first().name}.."
-          app.dsUser.deleteUser()
+          msg = "Logging out ${app.dsApUser.readUser.first().name}.."
+          app.dsApUser.deleteUser()
           dialog?.dismiss()
         } else {
           msg = "No logged in user."

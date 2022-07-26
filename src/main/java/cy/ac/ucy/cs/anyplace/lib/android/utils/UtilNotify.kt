@@ -59,8 +59,9 @@ class UtilNotify(val ctx: Context) {
   }
 
   fun alertReceived() {
-    beepAlertReceived()
-    vibrateAlert()
-    beepAlertReceived()
+    // TODO:PMX enable
+    // beepAlertReceived()
+    // vibrateAlert()
+    // beepAlertReceived()
   }
 }

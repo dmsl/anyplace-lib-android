@@ -49,7 +49,7 @@ class SmasChatActivity : AppCompatActivity() {
     setContent {
       Scaffold(
               topBar = { TopMessagesBar(::onBackClick) },
-              content = { Conversation(appSmas, VM, VMchat, supportFragmentManager, repo, ::returnLoc) },
+              content = { Conversation(appSmas, VM, VMchat, supportFragmentManager, repo, ::returnCoords) },
               backgroundColor = WhiteGray
       )
     }
@@ -62,9 +62,13 @@ class SmasChatActivity : AppCompatActivity() {
   }
 
   //Called when the location button in a message is clicked
-  private fun returnLoc(latitude: Double, longitude: Double) {
-    // TODO:PMX put deck here also?
-    setResult(Activity.RESULT_OK, Intent().putExtra("latitude", latitude).putExtra("longitude", longitude))
+  private fun returnCoords(lat: Double, lon: Double, level: Int) {
+    // TODO:PMX GREs
+    setResult(Activity.RESULT_OK, Intent()
+            .putExtra("lat", lat)
+            .putExtra("lon", lon)
+            .putExtra("level", level)
+    )
     finish()
   }
 }

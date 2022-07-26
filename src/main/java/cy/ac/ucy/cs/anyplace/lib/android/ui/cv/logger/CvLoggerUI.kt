@@ -136,9 +136,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Point: $curPoint"
-    // val snippet=""
-    val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
-    // val snippet="Objects: $windowDetections\n${FW.prettyFloor}: ${FW.obj.floorNumber}" // TODO:PMX FR10
+    // val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
+    val snippet="Objects: $windowDetections\n${FW.prettyFloor}: ${FW.obj.floorNumber}" // TODO:PMX FR10
 
     ui.map.markers.addCvMarker(location, msg, snippet)
     ui.map.recenterCamera(location)
