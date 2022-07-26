@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -29,6 +30,8 @@ class MsgSendNW(private val app: SmasApp,
 
   private val resp: MutableStateFlow<NetworkResult<MsgSendResp>> = MutableStateFlow(NetworkResult.Unset())
 
+  val tag = "nw-smas-msg-send"
+
   private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var smasUser: SmasUser
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
@@ -42,16 +45,13 @@ class MsgSendNW(private val app: SmasApp,
       try {
         val req = MsgSendReq(smasUser, userCoords, mdelivery, msg, mtype, mexten, utlTime.epoch().toString())
         val content = if (ChatMsgHelper.isImage(mtype)) "<base64>" else msg
-        LOG.D2(TAG, "MSG-SEND: Send: ${req.time}: mtype: ${mtype} msg: ${content} x,y: ${userCoords.lat},${userCoords.lon} deck: ${userCoords.level} ")
+        LOG.D2(TAG, "$tag: Send: ${req.time}: mtype: ${mtype} msg: ${content} x,y: ${userCoords.lat},${userCoords.lon} deck: ${userCoords.level} ")
         val response = repo.remote.messagesSend(req)
-        LOG.D2(TAG, "MSG-SEND: Resp: ${response.message()}")
+        LOG.D2(TAG, "$tag: Resp: ${response.message()}")
         resp.value = handleResponse(response)
-      } catch (ce: ConnectException) {
-        val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-        handleException(msg, ce)
       } catch (e: Exception) {
-        val msg = "$TAG: Not Found.\nURL: ${RH.retrofit.baseUrl()}"
-        handleException(msg, e)
+        val errMsg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        resp.value = NetworkResult.Error(errMsg)
       }
     } else {
       resp.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
@@ -100,18 +100,19 @@ class MsgSendNW(private val app: SmasApp,
           VM.isLoading = false
           VM.clearReply()
           VM.clearTheReplyToMessage()
-          val msg = "Sent to ${it.data?.deliveredTo} people (floor: $VM)."
-          app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+          var msg = "Sent to ${it.data?.deliveredTo} people"
+          if (it.data?.level != null) msg+=" (floor: ${it.data?.level})"
+          app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
         }
         is NetworkResult.Error -> {
-          LOG.D1(TAG, "MessageSend Error: ${it.message}")
+          LOG.D1(TAG, "$tag: Error: ${it.message}")
           VM.isLoading = false
           VM.errColor = WineRed
           app.showToast(VM.viewModelScope, "Message failed to send", Toast.LENGTH_SHORT)
         }
         else -> {
-          //db error
-          if (!err.handle(app, it.message, "msg-send")) {
+          // db error
+          if (!err.handle(app, it.message, "$tag")) {
             val msg = it.message ?: "unspecified error"
             app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
             LOG.E(TAG, msg)

@@ -10,7 +10,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvMapRM
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult

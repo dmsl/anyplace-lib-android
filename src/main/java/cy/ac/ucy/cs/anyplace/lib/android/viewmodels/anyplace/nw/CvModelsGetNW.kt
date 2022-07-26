@@ -34,7 +34,7 @@ class CvModelsGetNW(
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
-  private val tag = "CvModels"
+  private val tag = "nw-cv-models"
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
   /** Network Responses from API calls */

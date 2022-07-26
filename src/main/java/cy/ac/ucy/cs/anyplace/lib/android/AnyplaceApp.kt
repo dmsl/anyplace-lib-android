@@ -8,20 +8,15 @@ import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.anyplace.legacy.Anyplace
-import cy.ac.ucy.cs.anyplace.lib.android.legacy.cache.FileCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.Preferences
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-// import cy.ac.ucy.cs.anyplace.lib.android.utils.network.RetrofitHolder
-// import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 /**
@@ -41,7 +36,6 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
 
-
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
 
@@ -52,14 +46,6 @@ abstract class AnyplaceApp : Application() {
   // example:
   // @Inject lateinit var serverDS: ServerDataStore
 
-  /** Preferences for Cv Activities */
-  /** Preferences for the CvLogger Activity */
-
-  // CLR:PM are these not needed
-  @Deprecated("")  lateinit var prefs: Preferences
-  @Deprecated("")  lateinit var fileCache: FileCache
-  @Deprecated("")  lateinit var apiOld: Anyplace
-
   override fun onCreate() {
     super.onCreate()
     LOG.D2(TAG, "onCreate")
@@ -68,11 +54,6 @@ abstract class AnyplaceApp : Application() {
     cvUtils = CvUtils(this, repoSmas )
 
     observeServerPrefs()
-
-    // CLR:PM OBSOLETE CODE
-    prefs = Preferences(applicationContext)
-    fileCache = FileCache(prefs)
-    fileCache.initDirs()
   }
 
   /**

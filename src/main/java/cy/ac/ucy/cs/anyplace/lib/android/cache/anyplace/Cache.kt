@@ -46,7 +46,6 @@ open class Cache(val ctx: Context) {
 
   fun dirSpace(space: Space) : String {  return "$spacesDir/${space.id}"  }
   fun dirSpace(floor: Floor) : String {  return "$spacesDir/${floor.buid}" }
-  fun dirSpace(cvMapRM: CvMapRM) : String {  return "$spacesDir/${cvMapRM.buid}" }
   fun jsonSpace(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE" }
   //// Last Values cache
   fun jsonSpaceLastValues(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_LASTVAL" }
@@ -150,7 +149,6 @@ open class Cache(val ctx: Context) {
   //// FLOOR
   fun dirFloor(floor: Floor) : String { return "${dirSpace(floor)}/${floor.floorNumber}" }
   fun floorplan(floor: Floor) : String { return "${dirFloor(floor)}/$PNG_FLOORPLAN" }
-  fun dirFloor(cvMapRM: CvMapRM) : String { return "${dirSpace(cvMapRM)}/${cvMapRM.floorNumber}" }
 
   fun hasFloorplan(floor: Floor): Boolean { return File(floorplan(floor)).exists() }
   fun deleteFloorplan(floor: Floor) {  File(floorplan(floor)).delete()  }

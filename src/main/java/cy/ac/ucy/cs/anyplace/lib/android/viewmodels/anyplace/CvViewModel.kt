@@ -142,7 +142,6 @@ open class CvViewModel @Inject constructor(
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
-  /** Holds the functionality of a [CvMapRM] and can generate the [CvMapFast] */
 
   // FLOOR PLANS
   fun getFloorplanFromRemote(fw: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }

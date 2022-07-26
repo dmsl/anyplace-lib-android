@@ -42,7 +42,7 @@ class CvFingerprintSendNW(
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
-  val tag = "fp-send"
+  val tag = "nw-fp-send"
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<FingerprintSendResp>> = MutableStateFlow(NetworkResult.Unset())

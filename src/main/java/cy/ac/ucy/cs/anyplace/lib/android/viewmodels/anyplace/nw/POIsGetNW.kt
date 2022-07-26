@@ -29,7 +29,7 @@ class POIsGetNW(
   private val C by lazy { CONST(app.applicationContext) }
   private val cache by lazy { Cache(app.applicationContext) }
 
-  val tag = "ap-pois"
+  val tag = "nw-ap-pois"
 
   suspend fun safeCall(buid: String) {
     LOG.W(TAG, "$tag: safecall")

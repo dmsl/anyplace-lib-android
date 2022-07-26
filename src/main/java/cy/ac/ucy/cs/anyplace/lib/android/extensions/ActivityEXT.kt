@@ -32,8 +32,13 @@ val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
 
 const val TAG_ANYPLACE = "anyplace"
 
-// Extending Any (Java Object): name convention for loggin: ap_<className>
-// val Any.TAG : String get() = "ap_${this::class.java.simpleName}"
+/** Extending Any (Java Object): name convention for loggin: ap_<className>
+ * This does not always work (especially when wrapped in lambdas).
+ * It goes through the stack frame and finds the name of the class that it is being used
+ *
+ * Simpler version:
+ * val Any.TAG : String get() = "ap_${this::class.java.simpleName}"
+*/
 val Any.TAG: String get()  {
   var i=2
   while (true) {
@@ -65,8 +70,14 @@ val Any.TAG: String get()  {
   }
 }
 
+
 /**
- * NOTE: Might be better not to use it inside 'collect' (Kotlin's Flows)
+ * Extending Any (Java Object): name convention for logging: ap_<className>
+ * This does not always work (especially when wrapped in lambdas).
+ * It goes through the stack frame and finds the name of thelass method that it is being used.
+ * (something equivalent to the __func__ that the C++ compiler provides)
+ *
+ *
  * object{}.javaClass.enclosingMethod?.name.toString()
  * frame 0: getThreadStackTrace
  * frame 1: getStackTrace

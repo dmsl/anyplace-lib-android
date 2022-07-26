@@ -35,7 +35,7 @@ class CvMapGetNW(
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
-  val tag = "CvMap"
+  val tag = "nw-cv-map"
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 

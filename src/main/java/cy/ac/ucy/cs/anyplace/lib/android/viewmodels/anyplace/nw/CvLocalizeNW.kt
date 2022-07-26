@@ -37,7 +37,7 @@ class CvLocalizeNW(
   companion object {
     const val CV_LOG_ALGO_GLOBAL = 3
     const val CV_LOG_ALGO_NEW = 4
-    const val tag = "cv-loc"
+    const val tag = "nw-cv-loc"
   }
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }

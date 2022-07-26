@@ -158,7 +158,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected open fun setupUi() {
     LOG.E(TAG, "setupUi")
-    setMapOpacity()  // TODO:PMX NXT
     setupUiFloorSelector()
     setupUiGmap()
 
@@ -169,7 +168,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvMap.read.collect {
-        LOG.V4(TAG, "CvMapAct: reacting for BottomSheet")
+        LOG.V4(TAG, "$tag: reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
       }

@@ -6,7 +6,6 @@ import android.location.Geocoder
 import android.location.Location
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.CvLocationOLD
 import java.util.*
 
 // TODO:PM Request permissions then call from onStart and onConnected.
@@ -14,7 +13,6 @@ import java.util.*
 object utlLoc {
 
   fun toLatLng(coord: Coord) = LatLng(coord.lat, coord.lon)
-  fun toLatLng(cvLocOLD: CvLocationOLD) = LatLng(cvLocOLD.lat.toDouble(), cvLocOLD.lon.toDouble())
 
   /**
    * Returns an address (nullable) given a location

@@ -26,7 +26,7 @@ class ConnectionsGetNW(
 
   private val C by lazy { CONST(app.applicationContext) }
   private val cache by lazy { Cache(app.applicationContext) }
-  val tag = "ap-conn"
+  val tag = "nw-ap-conn"
 
   suspend fun safeCall(buid: String) {
     LOG.W(TAG, "$tag: safecall")

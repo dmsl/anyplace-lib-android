@@ -21,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.ChatPrefsDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.ImgDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MsgDeliveryDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
@@ -48,6 +49,8 @@ class SmasChatViewModel @Inject constructor(
   dsCvMap: CvMapDataStore,
   private val dsMisc: MiscDataStore,
 ) : AndroidViewModel(_application) {
+
+  val tag = "vm-smas-chat"
 
   private val app = _application as SmasApp
   private val C by lazy { SMAS(app.applicationContext) }
@@ -114,7 +117,7 @@ class SmasChatViewModel @Inject constructor(
   }
 
   private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
-    var userCoord : UserCoordinates? = null
+    val userCoord: UserCoordinates?
     if (VM.locationSmas.value.coord != null) {
       userCoord = UserCoordinates(VM.wSpace.obj.id,
               VM.wFloor?.obj!!.floorNumber.toInt(),
@@ -136,14 +139,13 @@ class SmasChatViewModel @Inject constructor(
 
   fun sendMessage(VM: SmasMainViewModel, newMsg: String?, mtype: Int) {
     viewModelScope.launch {
-
-      // var userCoordinates = getUserCoordinates(VM)
-      // if (userCoordinates==null) {
-      //   val msg = "Cannot attach location to msg"
-      //   LOG.E(TAG_METHOD, msg)
-      //   app.showToast(msg)
-      //   userCoordinates = getCenterOfFloor(VM)
-      // }
+      var userCoordinates = getUserCoordinates(VM)
+      if (userCoordinates==null) {
+        val msg = "Cannot attach location to msg.\nUsing selected floor's (${VM.floor.value?.floorNumber}) center."
+        LOG.E(TAG, "$tag: $METHOD: msg")
+        app.showToast(this, msg)
+        userCoordinates = getCenterOfFloor(VM)
+      }
 
       val chatPrefs = dsChat.read.first()
       val mdelivery = chatPrefs.mdelivery
@@ -152,9 +154,9 @@ class SmasChatViewModel @Inject constructor(
         mexten = utlImg.getMimeType(imageUri!!, app)
       }
 
-      // TODO:PMX real coordinates
-      val dummy = UserCoordinates("1234",1,5.0,5.0)
-      nwMsgSend.safeCall(dummy, mdelivery, mtype, newMsg, mexten)
+      nwMsgSend.safeCall(userCoordinates, mdelivery, mtype, newMsg, mexten)
+
+      // can be more strict: send msg only if location was available
       // if (userCoord != null)
       //   nwMsgsSend.safeCall(userCoord, mdelivery, mtype, newMsg, mexten)
       // else{
