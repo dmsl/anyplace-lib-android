@@ -83,6 +83,8 @@ open class CvViewModel @Inject constructor(
         val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
         val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
+  val app : AnyplaceApp = application as AnyplaceApp
+
   private val C by lazy { CONST(app) }
   /** Updated on changes */
   lateinit var prefsCvMap: CvMapPrefs
@@ -98,6 +100,7 @@ open class CvViewModel @Inject constructor(
   //// COMPONENTS
   lateinit var floorSelector: FloorSelector
   /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
+  var uiComponentLoaded = false
   lateinit var ui: CvUI
 
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
@@ -120,28 +123,15 @@ open class CvViewModel @Inject constructor(
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
 
-  /** Last remotely calculated location (SMAS) */
-  val locationSmas: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
-
-  /** Selected [Space] (model)*/
-  var space: Space? = null
-  /** All floors of the selected [space] (model) */
-  var floors: Floors? = null
-  /** Selected floor/deck ([Floor]) of [space] (model) */
-  var floor: MutableStateFlow<Floor?> = MutableStateFlow(null)
-
-  /** Selected [Space] ([SpaceWrapper]) */
-  lateinit var wSpace: SpaceWrapper
-  /** floorsH of selected [wSpace] */
-  lateinit var wFloors: FloorsWrapper
-  /** Selected floorH of [wFloors] */
-  var wFloor: FloorWrapper? = null
-
   /** LastVals: user last selections regarding a space.
    * Currently not much use (for a field var), but if we have multiple
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
+
+  fun uiLoaded(): Boolean {
+    return uiComponentLoaded && ui.map.gmapWrLoaded
+  }
 
   // FLOOR PLANS
   fun getFloorplanFromRemote(fw: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
@@ -265,7 +255,7 @@ open class CvViewModel @Inject constructor(
         // return@launch
       }
 
-      nwCvLocalize.safeCall(wSpace.obj.id, detectionsReq, model)
+      nwCvLocalize.safeCall(app.wSpace.obj.id, detectionsReq, model)
     }
   }
 
@@ -276,7 +266,7 @@ open class CvViewModel @Inject constructor(
     }
 
     val chatUser = app.dsUser.readUser.first()
-    repoSmas.local.localizeTemp(this, model.idSmas, space!!.id, detectionsReq, chatUser)
+    repoSmas.local.localizeTemp(this, model.idSmas, app.space!!.id, detectionsReq, chatUser)
   }
 
   /** TODO in new class
@@ -285,33 +275,33 @@ open class CvViewModel @Inject constructor(
    */
   fun selectInitialFloor(ctx: Context) {
     LOG.V2()
-    LOG.V2(TAG,"${wSpace.prettyFloors}: ${wFloors.size}")
+    LOG.V2(TAG,"${app.wSpace.prettyFloors}: ${app.wFloors.size}")
 
-    if (!wFloors.hasFloors()) {  // space has no floors
-      val msg = "Selected ${wSpace.prettyTypeCapitalize} has no ${wSpace.prettyFloors}."
+    if (!app.wFloors.hasFloors()) {  // space has no floors
+      val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
       LOG.W(TAG_METHOD, msg)
       Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
-      floor.update { null }
+      app.floor.update { null }
     }
 
     // var floor : Floor? = null
     // START OF: select floor: last selection or first available
     // VMb.floor.value = null
-    if (wSpace.hasLastValuesCached()) {
-      val lastVal = wSpace.loadLastValues()
+    if (app.wSpace.hasLastValuesCached()) {
+      val lastVal = app.wSpace.loadLastValues()
       if (lastVal.lastFloor!=null) {
-        LOG.V3(TAG_METHOD, "lastVal cache: ${wSpace.prettyFloor}${lastVal.lastFloor}.")
-        floor.update { wFloors.getFloor(lastVal.lastFloor!!) }
+        LOG.V3(TAG_METHOD, "lastVal cache: ${app.wSpace.prettyFloor}${lastVal.lastFloor}.")
+        app.floor.update { app.wFloors.getFloor(lastVal.lastFloor!!) }
       }
       lastValSpaces = lastVal
     }
 
-    if (floor.value == null)  {
-      LOG.V3(TAG_METHOD, "Loading first ${wSpace.prettyFloor}.")
-      floor.update { wFloors.getFirstFloor() }
+    if (app.floor.value == null)  {
+      LOG.V3(TAG_METHOD, "Loading first ${app.wSpace.prettyFloor}.")
+      app.floor.update { app.wFloors.getFirstFloor() }
     }
 
-    LOG.V2(TAG_METHOD, "Selected ${wSpace.prettyFloor}: ${floor.value!!.floorNumber}")
+    LOG.V2(TAG_METHOD, "Selected ${app.wSpace.prettyFloor}: ${app.floor.value!!.floorNumber}")
   }
 
   // TODO:PM network manager? ineternet connectiovity?

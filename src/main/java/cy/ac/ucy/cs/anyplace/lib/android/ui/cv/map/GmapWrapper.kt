@@ -9,6 +9,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -28,10 +29,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GmapWrapper(private val ctx: Context,
+class GmapWrapper(
+                  private val app: AnyplaceApp,
                   private val scope: CoroutineScope,
                   private val UI: CvUI) {
 
+  val tag = "wr-gmap"
+  private val ctx: Context = app.applicationContext
   lateinit var obj: GoogleMap
   lateinit var VM: CvViewModel
 
@@ -59,17 +63,18 @@ class GmapWrapper(private val ctx: Context,
 
   /** Initialized onMapReady */
   lateinit var markers : MapMarkers
-
   lateinit var lines : MapLines
 
+  var gmapWrLoaded = false
   fun setup(googleMap: GoogleMap) {
     LOG.D()
+    LOG.E(TAG, "$tag: setup")
 
     obj = googleMap
     // TODO:PMX FR10
     // obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
-    markers = MapMarkers(ctx, scope, VM, obj)
-    lines = MapLines(ctx, scope, VM, obj)
+    markers = MapMarkers(app, scope, VM, obj)
+    lines = MapLines(app, scope, VM, obj)
 
     // ON FLOOR LOADED....
     obj.uiSettings.apply {
@@ -88,6 +93,7 @@ class GmapWrapper(private val ctx: Context,
     // async continues by [onFloorLoaded]
 
     // onMapReadySpecialize()
+    gmapWrLoaded = true
   }
 
   /**
@@ -98,7 +104,7 @@ class GmapWrapper(private val ctx: Context,
   fun onFloorLoaded() {
     // TODO:PM this must be moved to earlier activity
     // along with Space/Floors loading (that also needs implementation).
-    scope.launch(Dispatchers.IO) { VM.wFloors.fetchAllFloorplans(VM) }
+    scope.launch(Dispatchers.IO) { app.wFloors.fetchAllFloorplans(VM) }
 
     val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
 
@@ -110,7 +116,7 @@ class GmapWrapper(private val ctx: Context,
     scope.launch {
       delay(500) // CHECK is ths a bugfix?
 
-      if (VM.wFloor == null) {
+      if (app.wFloor == null) {
         LOG.E(TAG_METHOD, "Floor is null. Cannot update google map location")
         return@launch
       }
@@ -120,7 +126,7 @@ class GmapWrapper(private val ctx: Context,
 
       // zooms to the center of the floorplan
       obj.moveCamera(CameraUpdateFactory.newCameraPosition(
-              CameraAndViewport.loggerCamera(VM.wFloor?.bounds()!!.center, maxZoomLevel-2)))
+              CameraAndViewport.loggerCamera(app.wFloor?.bounds()!!.center, maxZoomLevel-2)))
 
       val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
@@ -129,7 +135,7 @@ class GmapWrapper(private val ctx: Context,
       // invastigating..
       // QR CODES?! those NOT part of the model.
       LOG.W(TAG, "Setting camera bounds: users will be restricted to viewing just the particular space")
-      obj.setLatLngBoundsForCameraTarget(VM.wFloor?.bounds())
+      obj.setLatLngBoundsForCameraTarget(app.wFloor?.bounds())
     }
   }
 
@@ -154,24 +160,24 @@ class GmapWrapper(private val ctx: Context,
   }
 
   private fun loadSpaceAndFloorFromAssets() : Boolean {
-    LOG.W(TAG, "$METHOD: loading space from assets:")
-    VM.space = assetReader.getSpace()
-    VM.floors = assetReader.getFloors()
+    LOG.W(TAG, "$METHOD: loading space from assets")
+    app.space = assetReader.getSpace()
+    app.floors = assetReader.getFloors()
 
-    if (VM.space == null || VM.floors == null) {
-      showError(VM.space, VM.floors)
+    if (app.space == null || app.floors == null) {
+      showError(app.space, app.floors)
       return false
     }
 
-    VM.wSpace = SpaceWrapper(ctx, VM.repo, VM.space!!)
-    VM.wFloors = FloorsWrapper(VM.floors!!, VM.wSpace)
-    val prettySpace = VM.wSpace.prettyTypeCapitalize
-    val prettyFloors= VM.wSpace.prettyFloors
+    app.wSpace = SpaceWrapper(ctx, VM.repo, app.space!!)
+    app.wFloors = FloorsWrapper(app.floors!!, app.wSpace)
+    val prettySpace = app.wSpace.prettyTypeCapitalize
+    val prettyFloors= app.wSpace.prettyFloors
 
-    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${VM.space!!.name} " +
-            "(has ${VM.floors!!.floors.size} $prettyFloors)")
+    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${app.space!!.name} " +
+            "(has ${app.floors!!.floors.size} $prettyFloors)")
 
-    LOG.W(TAG, "$METHOD: pretty: ${VM.wSpace.prettyType} ${VM.wSpace.prettyFloor}")
+    LOG.W(TAG, "$METHOD: pretty: ${app.wSpace.prettyType} ${app.wSpace.prettyFloor}")
 
     return true
   }
@@ -180,8 +186,8 @@ class GmapWrapper(private val ctx: Context,
     var msg = ""
     when {
       space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${VM.wSpace.prettyFloors}."
-      floor == null -> msg = "Failed to get ${VM.wSpace.prettyFloor} $floorNum."
+      floors == null -> msg = "Failed to get ${app.wSpace.prettyFloors}."
+      floor == null -> msg = "Failed to get ${app.wSpace.prettyFloor} $floorNum."
     }
     LOG.E(msg)
     Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()

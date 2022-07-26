@@ -117,24 +117,21 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     if (handlingGmapLongClick) return
     handlingGmapLongClick=true
 
-      VM.ui.map.obj.setOnMapLongClickListener {
-        LOG.W(TAG, "$tag: long click")
-        forceUserLocation(it)
-      }
-
-    VM.ui.map.obj.setOnMapClickListener {
-      LOG.W(TAG, "ignoring short click.. (workaround?")
+    // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
+    VM.ui.map.obj.setOnMapLongClickListener {
+      LOG.W(TAG, "$tag: long click")
+      forceUserLocation(it)
     }
   }
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
 
-    app.showToast(lifecycleScope, "Location set manually")
+    app.showToast(lifecycleScope, "Location set manually (long-clicked)")
 
-    val floorNum = VM.wFloor!!.floorNumber()
+    val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
-    VM.locationSmas.update { LocalizationResult.Success(loc, LocalizationResult.MANUAL) }
+    app.locationSmas.update { LocalizationResult.Success(loc, LocalizationResult.MANUAL) }
   }
 
   /**
@@ -155,13 +152,15 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Runs only once, when any of the floors is loaded for the first time.
    */
   override fun onFirstFloorLoaded() {
-    LOG.E(TAG, "$tag: $METHOD: Floor: ${VM.floor.value}")
+    LOG.E(TAG, "$tag: $METHOD: Floor: ${app.floor.value}")
 
     super.onFirstFloorLoaded()
 
     updateLocationsLOOP()  // send own location & receive other users locations
-
-    VM.collectLocations(VMchat, VM.ui.map)
+    lifecycleScope.launch(Dispatchers.IO) {
+      while (!VM.uiLoaded()) delay(100) // workaround until ui component is loaded (not the best one..)
+      VM.collectLocations(VMchat, VM.ui.map)
+    }
     collectAlertingUser()
   }
 
@@ -188,12 +187,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
       while (true) {
         var msg = "pull"
-        val hasRegisteredLocation = VM.locationSmas.value.coord != null
+        val hasRegisteredLocation = app.locationSmas.value.coord != null
         if (isActive && hasRegisteredLocation) {
-          val lastCoordinates = UserCoordinates(VM.wSpace.obj.id,
-                  VM.wFloor?.obj!!.floorNumber.toInt(),
-                  VM.locationSmas.value.coord!!.lat,
-                  VM.locationSmas.value.coord!!.lon)
+          val lastCoordinates = UserCoordinates(app.wSpace.obj.id,
+                  app.wFloor?.obj!!.floorNumber.toInt(),
+                  app.locationSmas.value.coord!!.lat,
+                  app.locationSmas.value.coord!!.lon)
 
           VM.nwLocationSend.safeCall(lastCoordinates)
           msg+="&send"
@@ -330,7 +329,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     btnAlert.setOnLongClickListener {
 
-      if (VM.locationSmas.value is LocalizationResult.Unset) {
+      if (app.locationSmas.value is LocalizationResult.Unset) {
         app.showToast(lifecycleScope, "Localize first (or manually set location)")
         return@setOnLongClickListener true
       }
@@ -387,7 +386,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           mToggleOff(btn)
         }
 
-        VM.locationSmas.value.coord == null -> {
+        app.locationSmas.value.coord == null -> {
           app.showToast(lifecycleScope, "Cannot start (need an initial location)")
           mToggleOff(btn)
         }
@@ -452,6 +451,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     btnChat.setOnClickListener {
       lifecycleScope.launch {
+        if (!app.hasLastLocation()) {
+          var msg = "You haven't localized yet.\n"
+          msg+= "If needed, chat will use ${app.wFloor?.prettyFloorNumber()} (current selection)"
+          app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
+        }
         startForResult.launch(Intent(applicationContext, SmasChatActivity::class.java))
       }
     }

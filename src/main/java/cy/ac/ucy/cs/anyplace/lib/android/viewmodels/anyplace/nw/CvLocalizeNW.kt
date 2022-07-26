@@ -66,7 +66,7 @@ class CvLocalizeNW(
     if (app.hasInternet()) {
       try {
         var algo = CV_LOG_ALGO_NEW
-        val prevCoord  = VM.locationSmas.value.coord
+        val prevCoord  = app.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
 
         var strInfo = "OIDs:"
@@ -141,7 +141,7 @@ class CvLocalizeNW(
               val msg = "Failed to get location (from SMAS)\n(long-press to set manually)"
               LOG.E(TAG, "$msg")
               app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
-              VM.locationSmas.value = LocalizationResult.Unset()
+              app.locationSmas.value = LocalizationResult.Unset()
               LOG.E(TAG, "$tag: Failed to get location: ${it.message.toString()}")
             } else {
               val cvLoc = it.data!!.rows[0]
@@ -150,7 +150,7 @@ class CvLocalizeNW(
 
               // Propagating the result
               val coord = Coord(cvLoc.x, cvLoc.y, cvLoc.deck)
-              VM.locationSmas.value = LocalizationResult.Success(coord)
+              app.locationSmas.value = LocalizationResult.Success(coord)
             }
           }
           is NetworkResult.Error -> {

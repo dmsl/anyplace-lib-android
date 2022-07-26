@@ -17,11 +17,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_SAME_DECK
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.prettyMDelivery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import retrofit2.Response
 import java.lang.Exception
-import java.net.ConnectException
 
 class MsgSendNW(private val app: SmasApp,
                 private val VM: SmasChatViewModel,
@@ -72,7 +73,7 @@ class MsgSendNW(private val app: SmasApp,
             return NetworkResult.Error(r.descr)
           }
 
-          LOG.D2(TAG, "MSGS-SEND: Success. (pulling msgs)")
+          LOG.D2(TAG, "$tag: Success. (pulling msgs)")
           app.pullMessagesONCE()
 
           return NetworkResult.Success(r)
@@ -81,12 +82,6 @@ class MsgSendNW(private val app: SmasApp,
       }
     }
     return NetworkResult.Error("$TAG: ${response.message()}")
-  }
-
-  private fun handleException(msg: String, e: Exception) {
-    LOG.E(TAG_METHOD, msg)
-    LOG.E(TAG_METHOD, e)
-    resp.value = NetworkResult.Error(msg)
   }
 
   suspend fun collect() {
@@ -100,8 +95,17 @@ class MsgSendNW(private val app: SmasApp,
           VM.isLoading = false
           VM.clearReply()
           VM.clearTheReplyToMessage()
-          var msg = "Sent to ${it.data?.deliveredTo} people"
-          if (it.data?.level != null) msg+=" (floor: ${it.data?.level})"
+          val data = it.data!!
+          val recipients =  data.deliveredTo
+          var msg = when (recipients) {
+            0 -> "No people reached."
+            else -> "Sent to ${it.data?.deliveredTo} people."
+          }
+
+          if (data.level != null) msg+=" (${app.wSpace.prettyFloor}: ${data.level})"
+          else if (data.mdelivery != MDELIVERY_SAME_DECK) {
+            msg += "(${prettyMDelivery(data.mdelivery)}})"
+          }
           app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
         }
         is NetworkResult.Error -> {

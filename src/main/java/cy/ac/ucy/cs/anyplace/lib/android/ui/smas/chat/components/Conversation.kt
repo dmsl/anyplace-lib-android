@@ -50,6 +50,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 @Composable
 fun Conversation(
         app: SmasApp,
+        /** needed for saving new msgs */
         VM: SmasMainViewModel,
         VMchat: SmasChatViewModel,
         manager: FragmentManager,
@@ -78,7 +79,7 @@ fun Conversation(
       }
     }
     DeliveryCard(VMchat, manager)
-    ReplyCard(VM, VMchat)
+    ReplyCard(VMchat)
   }
 }
 

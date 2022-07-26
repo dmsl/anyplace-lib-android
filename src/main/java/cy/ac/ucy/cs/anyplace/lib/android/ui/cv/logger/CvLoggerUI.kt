@@ -115,13 +115,13 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
 
-    if (VM.wFloor==null) {
+    if (app.wFloor==null) {
       app.showToast(scope, "Cannot store detections. (null floor)", Toast.LENGTH_LONG)
       resetLogging()
       return
     }
 
-    val FW = VM.wFloor!!
+    val FW = app.wFloor!!
     val SW = FW.spaceH
 
     // find the floor

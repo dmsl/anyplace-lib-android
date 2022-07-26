@@ -18,9 +18,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_ALL
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_BBOX
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_KNN
+import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_SAME_DECK
 
 /**
  * A banner which shows information about where the messages are delivered to:
@@ -47,6 +52,8 @@ fun DeliveryCard(VMchat: SmasChatViewModel, manager: FragmentManager) {
           horizontalArrangement = Arrangement.Center
   ) {
 
+    val app = VMchat.app
+
     Card(modifier = Modifier
             .fillMaxWidth()
             .background(White, RoundedCornerShape(10.dp))
@@ -59,11 +66,11 @@ fun DeliveryCard(VMchat: SmasChatViewModel, manager: FragmentManager) {
                         .padding(start = 10.dp))
 
         Text(
-                text = when (mdelivery) {
-                  "1" -> "ALL USERS."
-                  "2" -> "SAME DECK USERS."
-                  "3" -> "NEAREST USERS."
-                  "4" -> "USERS IN 100M."
+                text = when (mdelivery.toInt()) {
+                  MDELIVERY_ALL -> "ALL USERS."
+                  MDELIVERY_SAME_DECK -> "SAME ${app.wSpace.prettyFloorAllCaps} USERS."
+                  MDELIVERY_KNN -> "NEAREST USERS."
+                  MDELIVERY_BBOX -> "USERS IN 100M."
                   else -> "error"
                 },
                 fontWeight = FontWeight.Bold,

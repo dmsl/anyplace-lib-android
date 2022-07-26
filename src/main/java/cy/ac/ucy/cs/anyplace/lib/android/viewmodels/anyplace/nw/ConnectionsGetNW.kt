@@ -31,7 +31,7 @@ class ConnectionsGetNW(
   suspend fun safeCall(buid: String) {
     LOG.W(TAG, "$tag: safecall")
 
-    if (VM.space!=null && cache.hasSpaceConnections(VM.space!!)) return
+    if (app.space!=null && cache.hasSpaceConnections(app.space!!)) return
 
     if (app.hasInternet()) {
       try {
@@ -40,7 +40,7 @@ class ConnectionsGetNW(
 
         when (val resp = handleResponse(response)) {
           is NetworkResult.Success -> {
-            val wSpace = VM.wSpace
+            val wSpace = app.wSpace
             wSpace.cacheConnections(resp.data!!)
           }
           else -> {

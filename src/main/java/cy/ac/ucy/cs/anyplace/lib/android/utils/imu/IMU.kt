@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.toCoord
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -25,6 +26,8 @@ class IMU(
         private val act: CvMapActivity,
         private val VM: CvViewModel,
         private val map: GmapWrapper) {
+
+  private val app : AnyplaceApp = act.application as AnyplaceApp
 
   companion object{
     private const val earthRadius = 6371000
@@ -53,7 +56,7 @@ class IMU(
       LOG.W(TAG, "Observing..: cnt: $stepCount")
 
       if (VM.miEnabled && DBG.uim) { // TODO:PMX: option in VM?
-        val lastCoord= VM.locationSmas.value.coord
+        val lastCoord= app.locationSmas.value.coord
         if (lastCoord == null) {
           LOG.W(TAG, "OBSERVE: ret: no last coord")
           return@Observer
@@ -62,7 +65,7 @@ class IMU(
         val lastPos =LatLng(lastCoord.lat, lastCoord.lon)
 
         val tmp = findNewPosition(lastPos, azimuth)
-        val floorNum = VM.wFloor?.floorNumber()!!
+        val floorNum = app.wFloor?.floorNumber()!!
         val polyOpts = map.lines.getPolyopts(floorNum)
         if (polyOpts == null) {
           LOG.W(TAG, "OBSERVE: ret: null polyopts")
@@ -72,7 +75,7 @@ class IMU(
         val latLong = findClosestPoint(tmp, polyOpts)
 
         LOG.E(TAG, "Found NEW MM point: $latLong")
-        VM.locationSmas.update { LocalizationResult.Success(latLong.toCoord(floorNum)) }
+        app.locationSmas.update { LocalizationResult.Success(latLong.toCoord(floorNum)) }
       }
     })
   }

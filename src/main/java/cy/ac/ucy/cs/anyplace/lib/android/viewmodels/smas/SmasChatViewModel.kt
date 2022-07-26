@@ -116,35 +116,35 @@ class SmasChatViewModel @Inject constructor(
     }
   }
 
-  private fun getUserCoordinates(VM: SmasMainViewModel): UserCoordinates? {
+  private fun getUserCoordinates(): UserCoordinates? {
     val userCoord: UserCoordinates?
-    if (VM.locationSmas.value.coord != null) {
-      userCoord = UserCoordinates(VM.wSpace.obj.id,
-              VM.wFloor?.obj!!.floorNumber.toInt(),
-              VM.locationSmas.value.coord!!.lat,
-              VM.locationSmas.value.coord!!.lon)
+    if (app.locationSmas.value.coord != null) {
+      val smasCoord =  app.locationSmas.value.coord!!
+      userCoord = UserCoordinates(app.wSpace.obj.id,
+              smasCoord.level,
+              smasCoord.lat,
+              smasCoord.lon)
       return userCoord
     }
 
     return null
   }
 
-  private fun getCenterOfFloor(VM: SmasMainViewModel): UserCoordinates {
-    val latLng = VM.wSpace.latLng()
-    return UserCoordinates(VM.wSpace.obj.id,
-            VM.wFloor?.obj!!.floorNumber.toInt(),
+  private fun getCenterOfFloor(): UserCoordinates {
+    val latLng = app.wSpace.latLng()
+    return UserCoordinates(app.wSpace.obj.id,
+            app.wFloor?.obj!!.floorNumber.toInt(),
             latLng.latitude,
             latLng.longitude)
   }
 
-  fun sendMessage(VM: SmasMainViewModel, newMsg: String?, mtype: Int) {
+  fun sendMessage(newMsg: String?, mtype: Int) {
     viewModelScope.launch {
-      var userCoordinates = getUserCoordinates(VM)
+      var userCoordinates = getUserCoordinates()
       if (userCoordinates==null) {
-        val msg = "Cannot attach location to msg.\nUsing selected floor's (${VM.floor.value?.floorNumber}) center."
+        val msg = "Cannot attach location to msg.\nUsing selected floor's (${app.floor.value?.floorNumber}) center."
         LOG.E(TAG, "$tag: $METHOD: msg")
-        app.showToast(this, msg)
-        userCoordinates = getCenterOfFloor(VM)
+        userCoordinates = getCenterOfFloor()
       }
 
       val chatPrefs = dsChat.read.first()

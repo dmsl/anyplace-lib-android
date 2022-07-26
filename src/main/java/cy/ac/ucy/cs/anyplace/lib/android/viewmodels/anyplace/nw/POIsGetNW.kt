@@ -34,7 +34,7 @@ class POIsGetNW(
   suspend fun safeCall(buid: String) {
     LOG.W(TAG, "$tag: safecall")
 
-    if (VM.space!=null && cache.hasSpacePOIs(VM.space!!)) return
+    if (app.space!=null && cache.hasSpacePOIs(app.space!!)) return
 
     if (app.hasInternet()) {
       try {
@@ -43,7 +43,7 @@ class POIsGetNW(
 
         when (val resp = handleResponse(response)) {
           is NetworkResult.Success -> {
-            val wSpace = VM.wSpace
+            val wSpace = app.wSpace
             wSpace.cachePois(resp.data!!)
           }
           else -> {

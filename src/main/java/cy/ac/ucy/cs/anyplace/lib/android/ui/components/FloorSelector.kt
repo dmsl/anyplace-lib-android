@@ -125,7 +125,8 @@ class FloorSelector(
    * Wait some time, and then change floor
    */
   fun lazilyChangeFloor(VM: CvViewModel, scope: CoroutineScope) {
-    if (VM.wFloor == null) {
+    val app  = VM.app
+    if (app.wFloor == null) {
       LOG.E(TAG_METHOD, "Null floor")
       return
     }
@@ -141,7 +142,7 @@ class FloorSelector(
 
     scope.launch(Dispatchers.IO) {
       if (!isLazilyChangingFloor) {
-        LOG.D4(TAG_METHOD, "Might change to floor: ${VM.wFloor!!.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Might change to floor: ${app.wFloor!!.prettyFloorName()}")
         isLazilyChangingFloor = true
         do {
           val curTime = System.currentTimeMillis()
@@ -150,14 +151,14 @@ class FloorSelector(
           delay(200)
         } while(diff < DELAY_CHANGE_FLOOR)
 
-        LOG.V2(TAG, "lazilyChangeFloor: to floor: ${VM.wFloor!!.prettyFloorName()} (after delay)")
+        LOG.V2(TAG, "lazilyChangeFloor: to floor: ${app.wFloor!!.prettyFloorName()} (after delay)")
 
         isLazilyChangingFloor = false
 
         // BUG: VM or FH has the wrong floor number?
         loadFloor(VM, scope)
       } else {
-        LOG.D4(TAG_METHOD, "Skipping floor: ${VM.wFloor!!.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Skipping floor: ${app.wFloor!!.prettyFloorName()}")
       }
     }
   }
@@ -173,12 +174,14 @@ class FloorSelector(
   private fun loadFloor(VM: CvViewModel, scope: CoroutineScope) {
     callback?.before()
 
-    if (VM.wFloor==null) {
+    val app = VM.app
+
+    if (app.wFloor==null) {
       LOG.E(TAG, "$METHOD: floor is null.")
       return
     }
 
-    val FW = VM.wFloor!!
+    val FW = app.wFloor!!
     LOG.D2(TAG, "loadFloor: ${FW.prettyFloorName()}")
     scope.launch(Dispatchers.IO) {
       if (FW.hasFloorplanCached()) {

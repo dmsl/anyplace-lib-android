@@ -28,6 +28,9 @@ open class FloorHandler(
 ) {
 
   private val fpLoader by lazy { FloorplanLoader() }
+  private val app = VM.app
+
+  val tag = "handler-floor"
 
   /**
    * Observes when a floorplan changes ([VMB.floorplanFlow]) and loads
@@ -40,21 +43,21 @@ open class FloorHandler(
       VM.floorplanFlow.collect { response ->
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W("Loading ${VM.wSpace.prettyFloorplan}..")
+            LOG.W("Loading ${app.wSpace.prettyFloorplan}..")
           }
           is NetworkResult.Error -> {
-            val msg = ": Failed to fetch ${VM.wSpace.prettyType}: ${VM.space?.name}: [${response.message}]"
+            val msg = ": Failed to fetch ${app.wSpace.prettyType}: ${app.space?.name}: [${response.message}]"
             LOG.E(TAG, "Error: observeFloorplanChanges: $msg")
             showToast(msg, Toast.LENGTH_SHORT)
           }
           is NetworkResult.Success -> {
-            if (VM.wFloor == null) {
+            if (app.wFloor == null) {
               val msg = "No floor/deck selected."
               LOG.W(msg)
               showToast(msg, Toast.LENGTH_SHORT)
             } else {
               LOG.D(TAG, "$METHOD: observeFloorplanChanges: success: loading floorplan")
-              fpLoader.render(overlays, gmap, response.data, VM.wFloor!!)
+              fpLoader.render(overlays, gmap, response.data, app.wFloor!!)
               loadHeatmap(gmap)
             }
           }
@@ -83,7 +86,7 @@ open class FloorHandler(
   fun observeFloorChanges(gmapH: GmapWrapper) {
     LOG.D3()
     scope.launch{
-      VM.floor.collect { selectedFloor ->
+      app.floor.collect { selectedFloor ->
 
         if (initialFloor) {
           gmapH.onFloorLoaded()
@@ -91,13 +94,13 @@ open class FloorHandler(
         }
 
         // update FloorHelper & FloorSelector
-        VM.wFloor = if (selectedFloor != null) FloorWrapper(selectedFloor, VM.wSpace) else null
-        UI.floorSelector.updateFloorSelector(selectedFloor, VM.wFloors)
+        app.wFloor = if (selectedFloor != null) FloorWrapper(selectedFloor, app.wSpace) else null
+        UI.floorSelector.updateFloorSelector(selectedFloor, app.wFloors)
         LOG.V3(TAG, "observeFloorChanges: -> floor: ${selectedFloor?.floorNumber}")
         if (selectedFloor != null) {
           LOG.V2(TAG,
-                  "observeFloorChanges: -> updating cache: floor: ${VM.floor.value?.floorNumber}")
-          updateAndCacheLastFloor(VM.floor.value)
+                  "observeFloorChanges: -> updating cache: floor: ${app.floor.value?.floorNumber}")
+          updateAndCacheLastFloor(app.floor.value)
           LOG.V2(TAG, "observeFloorChanges: -> loadFloor: ${selectedFloor.floorNumber}")
           UI.floorSelector.lazilyChangeFloor(VM, scope)
         }
@@ -112,7 +115,7 @@ open class FloorHandler(
     LOG.V2(TAG, "$METHOD: ${floor?.floorNumber.toString()}")
     if (floor != null) {
       VM.lastValSpaces.lastFloor=floor.floorNumber
-      VM.wSpace.cacheLastValues(VM.lastValSpaces)
+      app.wSpace.cacheLastValues(VM.lastValSpaces)
     }
   }
 
@@ -139,8 +142,8 @@ open class FloorHandler(
 
     // TODO: load fingerprint points..
     val model = VM.model
-    if (VM.wFloor==null) return
-    val FW = VM.wFloor!!
+    if (app.wFloor==null) return
+    val FW = app.wFloor!!
     UI.removeHeatmap()
     when {
       false -> { LOG.V3(TAG, "No local CvMap") } // case that has no fingerprints for floor..

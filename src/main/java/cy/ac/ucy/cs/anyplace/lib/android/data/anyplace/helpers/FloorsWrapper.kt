@@ -71,13 +71,14 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
   var showedMsgDone=true
   suspend fun fetchAllFloorplans(VM: CvViewModel) {
     var alreadyCached=""
+    val app = VM.app
     obj.forEach { floor ->
       val FW = FloorWrapper(floor, spaceH)
       if (!FW.hasFloorplanCached()) {
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          VM.app.showToast(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
+          app.showToast(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }
@@ -93,7 +94,7 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
 
     if (!showedMsgDone) {
       showedMsgDone=true
-      VM.app.showToast(VM.viewModelScope, "All ${VM.wFloors.size} ${VM.wSpace.prettyFloors} downloaded!")
+      app.showToast(VM.viewModelScope, "All ${app.wFloors.size} ${app.wSpace.prettyFloors} downloaded!")
     }
 
     if (alreadyCached.isNotEmpty()) {
@@ -105,7 +106,8 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
   /** Go one floor up */
   fun tryGoUp(VM: CvViewModel) {
     LOG.V3()
-    val floorNumStr = VM.floor.value?.floorNumber.toString()
+    val app = VM.app
+    val floorNumStr = app.floor.value?.floorNumber.toString()
     if (canGoUp(floorNumStr)) {
       val floorDest = getFloorAbove(floorNumStr)
       moveToFloor(VM, floorDest!!)
@@ -116,9 +118,10 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
 
   fun tryGoDown(VM: CvViewModel) {
     LOG.V3()
-    val floorNumStr = VM.floor.value?.floorNumber.toString()
-    if (VM.wFloors.canGoDown(floorNumStr)) {
-      val floorDest = VM.wFloors.getFloorBelow(floorNumStr)
+    val app = VM.app
+    val floorNumStr = app.floor.value?.floorNumber.toString()
+    if (app.wFloors.canGoDown(floorNumStr)) {
+      val floorDest = app.wFloors.getFloorBelow(floorNumStr)
       moveToFloor(VM, floorDest!!)
     } else {
       LOG.W(TAG_METHOD, "Cannot go further down.")
@@ -127,13 +130,15 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
 
   fun moveToFloor(VM: CvViewModel, floor: Floor) {
     LOG.D2(TAG, "$METHOD: ${floor.floorNumber}")
+    val app = VM.app
     // VM.floor.value = floor
-    VM.floor.update { floor }
+    app.floor.update { floor }
   }
 
   fun moveToFloor(VM: CvViewModel, floorNum: Int) {
     LOG.D2(TAG, "$METHOD: to: $floorNum")
-    val floor = VM.wFloors.getFloor(floorNum)!!
+    val app = VM.app
+    val floor = app.wFloors.getFloor(floorNum)!!
     moveToFloor(VM, floor)
   }
 

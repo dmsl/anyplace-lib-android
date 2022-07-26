@@ -38,7 +38,10 @@ open class CvUI(
 
   protected val ctx: Context = activity.applicationContext
   /** Google Maps Wrapper */
-  val map by lazy { GmapWrapper(activity, scope, this) }
+  val map by lazy { GmapWrapper(app, scope, this) }
+
+
+  val tag = "ui-cv"
 
   /** Localization Button Wrapper */
   val localization by lazy { UiLocalization(activity, app, VM, scope, map, R.id.btn_localization) }
@@ -58,8 +61,8 @@ open class CvUI(
   }
 
   fun setupOnFloorSelectionClick(){
-    floorSelector.onFloorDown { VM.wFloors.tryGoDown(VM) }
-    floorSelector.onFloorUp { VM.wFloors.tryGoUp(VM) }
+    floorSelector.onFloorDown { app.wFloors.tryGoDown(VM) }
+    floorSelector.onFloorUp { app.wFloors.tryGoUp(VM) }
   }
 
   fun removeHeatmap() {

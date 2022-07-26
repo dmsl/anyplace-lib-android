@@ -143,7 +143,7 @@ class LocationGetNW(
     LOG.D3(TAG_METHOD)
     if (locations == null) return
 
-    val FW = FloorWrapper(VM.floor.value!!, VM.wSpace)
+    val FW = FloorWrapper(app.floor.value!!, app.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
       userLocation.buid == FW.spaceH.obj.id &&  // same space
               userLocation.deck == FW.obj.floorNumber.toInt() && // same deck

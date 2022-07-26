@@ -45,8 +45,7 @@ data class RetrofitHolderSmas(
 
   fun set(prefs: SmasPrefs)  {
     path=prefs.path
-    LOG.E(TAG,"Setting path: $path")
-
+    LOG.D3(TAG,"Setting path: $path")
     set(getBaseUrl(prefs))
   }
   fun set(baseUrl: String) : RetrofitHolderSmas {

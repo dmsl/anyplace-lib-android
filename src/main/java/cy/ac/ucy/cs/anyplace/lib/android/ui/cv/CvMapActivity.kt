@@ -187,6 +187,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     initedGmap=true
     VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
             supportFragmentManager, VM.floorSelector)
+    LOG.W(TAG, "$METHOD: ui (component) is now loaded.")
+    VM.uiComponentLoaded=true
     VM.ui.map.attach(VM, this, R.id.mapView)
     VM.mu = IMU(this,VM, VM.ui.map)
   }
@@ -264,14 +266,16 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   var firstFloorLoaded = false
 
   open fun onFirstFloorLoaded() {
-    LOG.D2(TAG, "First floor loaded: ${VM.wFloor?.floorNumber()}")
+    LOG.D2(TAG, "First floor loaded: ${app.wFloor?.floorNumber()}")
   }
 
   open fun onFloorLoaded() {
-    LOG.D2(TAG, "Floor loaded: ${VM.wFloor?.floorNumber()}")
-    if (VM.wFloor != null) {
-      VM.ui.map.markers.updateLocationMarkerBasedOnFloor(VM.wFloor!!.floorNumber())
-      lifecycleScope.launch(Dispatchers.IO) {
+    LOG.D2(TAG, "Floor loaded: ${app.wFloor?.floorNumber()}")
+    lifecycleScope.launch(Dispatchers.IO) {
+      if (app.wFloor != null) {
+      while (!VM.uiLoaded()) delay(100) // workaround (not the best one..)
+
+      VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
         test()
       }
     }
@@ -280,12 +284,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   suspend fun test() {
       if (!DBG.uim) return
 
-      if (VM.space!=null && !VM.cache.hasSpaceConnectionsAndPois(VM.space!!)) {
+      if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         LOG.E(TAG, "will get pois conns")
-        VM.nwPOIs.safeCall(VM.space!!.id)
-        VM.nwConnections.safeCall(VM.space!!.id)
+        VM.nwPOIs.safeCall(app.space!!.id)
+        VM.nwConnections.safeCall(app.space!!.id)
       }
-      VM.ui.map.lines.loadPolylines(VM.wFloor!!.floorNumber())
+      VM.ui.map.lines.loadPolylines(app.wFloor!!.floorNumber())
   }
 
   var observingFloors = false
@@ -298,13 +302,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     val _method = METHOD
     lifecycleScope.launch(Dispatchers.IO) {
-      VM.floor.collect { floor ->
+      app.floor.collect { floor ->
         LOG.D1(TAG, "$_method: floor is: ${floor?.floorNumber}")
         if (floor == null) return@collect
 
-        // LOG.D4(TAG, "$_method: is spaceH filled? ${VM.spaceH.obj.name}")
+        // LOG.D4(TAG, "$_method: is spaceH filled? ${app.spaceH.obj.name}")
         // // Update FH
-        VM.wFloor = FloorWrapper(floor, VM.wSpace)
+        app.wFloor = FloorWrapper(floor, app.wSpace)
         // LOG.E(TAG, "$_method: floor now is: ${VM.floorH!!.floorNumber()}")
         // wMap.markers.updateLocationMarkerBasedOnFloor(VM.floorH!!.floorNumber())
 
@@ -324,7 +328,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     collectingLocationRemote=true
 
     lifecycleScope.launch (Dispatchers.IO){
-      VM.locationSmas.collect { result ->
+      app.locationSmas.collect { result ->
         when (result) {
           is LocalizationResult.Unset -> { }
           is LocalizationResult.Error -> {
@@ -343,12 +347,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
             LOG.D2(TAG, msg)
-            val curFloor = VM.wFloor?.floorNumber()
+            val curFloor = app.wFloor?.floorNumber()
             if (coord.level != curFloor) {
               app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
             }
 
-            VM.wFloors.moveToFloor(VM, coord.level)
+            app.wFloors.moveToFloor(VM, coord.level)
           }
         }
       }

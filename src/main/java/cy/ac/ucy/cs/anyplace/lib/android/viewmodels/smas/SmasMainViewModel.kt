@@ -84,7 +84,7 @@ class SmasMainViewModel @Inject constructor(
   fun collectLocations(VMchat: SmasChatViewModel,mapH: GmapWrapper) {
     if (collectingLocations) return
     collectingLocations=true
-    if (floor.value == null) {  // floor not ready yet
+    if (app.floor.value == null) {  // floor not ready yet
       LOG.W(TAG_METHOD, "Floor not loaded yet")
       return
     }

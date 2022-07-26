@@ -42,6 +42,9 @@ class SpaceWrapper(val ctx: Context,
   val prettyTypeCapitalize: String
     get() = prettyType.replaceFirstChar(Char::uppercase)
 
+  val prettyTypeAllCaps: String
+    get() = prettyType.uppercase()
+
   val prettyFloor : String
     get() {
       return when (obj.type) {
@@ -51,6 +54,8 @@ class SpaceWrapper(val ctx: Context,
       }
     }
 
+  val prettyFloorAllCaps: String
+    get() = prettyFloor.uppercase()
 
   /** Returns an icon according to the [Space] typ */
   fun getIcon(ctx: Context): Drawable? = getIcon(ctx, null, null)

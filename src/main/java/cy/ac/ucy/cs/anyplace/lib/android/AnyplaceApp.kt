@@ -9,13 +9,21 @@ import androidx.lifecycle.asLiveData
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,10 +49,35 @@ abstract class AnyplaceApp : Application() {
 
   lateinit var cvUtils: CvUtils
 
+  /** Last remotely calculated location (SMAS) */
+  val locationSmas: MutableStateFlow<LocalizationResult> = MutableStateFlow(LocalizationResult.Unset())
+
+  /** Selected [Space] (model)*/
+  var space: Space? = null
+  /** All floors of the selected [space] (model) */
+  var floors: Floors? = null
+  /** Selected floor/deck ([Floor]) of [space] (model) */
+  var floor: MutableStateFlow<Floor?> = MutableStateFlow(null)
+
+  /** Selected [Space] ([SpaceWrapper]) */
+  lateinit var wSpace: SpaceWrapper
+  /** floorsH of selected [wSpace] */
+  lateinit var wFloors: FloorsWrapper
+  /** Selected floorH of [wFloors] */
+  var wFloor: FloorWrapper? = null
+
+
   // TODO:PM: inject all those. otherwise we might have constructor issues.
   // they must be singleton, but after app ctx is created
   // example:
   // @Inject lateinit var serverDS: ServerDataStore
+
+  /**
+   * The user has localized at least once
+   */
+  fun hasLastLocation() : Boolean {
+    return locationSmas.value is LocalizationResult.Success
+  }
 
   override fun onCreate() {
     super.onCreate()

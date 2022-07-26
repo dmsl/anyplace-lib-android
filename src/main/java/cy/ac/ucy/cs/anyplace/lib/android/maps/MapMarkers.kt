@@ -5,6 +5,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -21,10 +22,12 @@ import kotlinx.coroutines.launch
  *
  * NOTE: any UI updating operations must be executed on the Main [CoroutineScope] (UI Thread)
  */
-class MapMarkers(private val ctx: Context,
+class MapMarkers(private val app: AnyplaceApp,
                  private val scope: CoroutineScope,
                  private val VM: CvViewModel,
                  private val map: GoogleMap) {
+  private val ctx = app.applicationContext
+
   companion object {
     private val TAG = MapMarkers::class.java.simpleName
   }
@@ -167,7 +170,7 @@ class MapMarkers(private val ctx: Context,
     if (lastCoord!= null) snippet = getSnippetOwnLocation(lastCoord!!)
     if (floorNum != lastCoord!!.level)  {  // on a different floor
       alpha=0.5f
-      snippet += "\n\nlast ${VM.wFloor?.prettyFloor}: ${lastCoord?.level}"
+      snippet += "\n\nlast ${app.wFloor?.prettyFloor}: ${lastCoord?.level}"
     } else {
       if (lastCoord!= null) snippet = getSnippetOwnLocation(lastCoord!!)
     }

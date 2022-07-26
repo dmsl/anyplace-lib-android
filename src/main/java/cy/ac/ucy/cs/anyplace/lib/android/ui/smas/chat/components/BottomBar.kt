@@ -52,7 +52,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 @ExperimentalPermissionsApi
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReplyCard(VM: SmasMainViewModel, VMchat: SmasChatViewModel) {
+fun ReplyCard(VMchat: SmasChatViewModel) {
   val imageUri = VMchat.imageUri
   val replyToMessage = VMchat.replyToMessage
 
@@ -65,7 +65,7 @@ fun ReplyCard(VM: SmasMainViewModel, VMchat: SmasChatViewModel) {
   ) {
 
     // dialog for confirming location share
-    ShareLocAlert(VM, VMchat)
+    ShareLocAlert(VMchat)
 
     if (replyToMessage != null) {
       ReplyToMessage(VMchat = VMchat)
@@ -76,7 +76,7 @@ fun ReplyCard(VM: SmasMainViewModel, VMchat: SmasChatViewModel) {
               horizontalArrangement = Arrangement.Center,
               verticalAlignment = Alignment.CenterVertically
       ) {
-        TextBox(VMmain = VM, VMchat = VMchat, Modifier.weight(2f))
+        TextBox(VMchat = VMchat, Modifier.weight(2f))
         Row(Modifier.weight(1f)) {
           ImgBtn(VMchat = VMchat, modifier = Modifier.weight(1f))
           ShareLocBtn(VMchat = VMchat, modifier = Modifier.weight(1f))
@@ -84,7 +84,7 @@ fun ReplyCard(VM: SmasMainViewModel, VMchat: SmasChatViewModel) {
       }
 
     } else { // when image is shown the UI changes
-      ShowSelectedImg(VM, VMchat)
+      ShowSelectedImg(VMchat)
     }
   }
 }
@@ -151,7 +151,7 @@ fun ReplyToMessage(VMchat: SmasChatViewModel) {
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TextBox(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel, modifier: Modifier) {
+fun TextBox(VMchat: SmasChatViewModel, modifier: Modifier) {
 
   val focusManager = LocalFocusManager.current
   var sendEnabled by remember { mutableStateOf(false) }
@@ -191,7 +191,7 @@ fun TextBox(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel, modifier: Modi
                         onClick = {
                           newMsg = reply
 
-                          VMchat.sendMessage(VMmain, newMsg, 1)
+                          VMchat.sendMessage(newMsg, 1)
                           //focusManager.clearFocus()
                         },
                         enabled = sendEnabled
@@ -220,7 +220,7 @@ fun TextBox(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel, modifier: Modi
                   onSend = {
                     newMsg = reply
 
-                    VMchat.sendMessage(VMmain, newMsg, 1)
+                    VMchat.sendMessage(newMsg, 1)
                     focusManager.clearFocus()
                   }
           ),
@@ -283,7 +283,7 @@ fun ShareLocBtn(VMchat: SmasChatViewModel, modifier: Modifier) {
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ShareLocAlert(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel) {
+fun ShareLocAlert(VMchat: SmasChatViewModel) {
 
   val alertDialog = VMchat.showDialog
 
@@ -297,7 +297,7 @@ fun ShareLocAlert(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel) {
             confirmButton = {
               TextButton(
                       onClick = {
-                        VMchat.sendMessage(VMmain, null, 3)
+                        VMchat.sendMessage(null, 3)
                         VMchat.showDialog = false
                       }) {
                 Text("Confirm", color = AnyplaceBlue)
@@ -324,7 +324,7 @@ fun ShareLocAlert(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel) {
  */
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ShowSelectedImg(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel) {
+fun ShowSelectedImg(VMchat: SmasChatViewModel) {
 
   val imageUri = VMchat.imageUri
   val ctx = LocalContext.current
@@ -358,7 +358,7 @@ fun ShowSelectedImg(VMmain: SmasMainViewModel, VMchat: SmasChatViewModel) {
       }
       IconButton(
               onClick = {
-                VMchat.sendMessage(VMmain, utlImg.encodeBase64(imageUri, ctx), 2)
+                VMchat.sendMessage(utlImg.encodeBase64(imageUri, ctx), 2)
                 VMchat.clearImgUri()
               }
       ) {

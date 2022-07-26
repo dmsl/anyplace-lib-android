@@ -43,11 +43,13 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
     // Setup peak height
     val vto = act.gestureLayout.viewTreeObserver
 
-    if(!act.gestureLayout.viewTreeObserver.isAlive) {
+    // workaround?
+    if(!act.gestureLayout.viewTreeObserver.isAlive || !vto.isAlive) {
       // CHECK: BUG?
       LOG.E(TAG, "FAILED TO SETUP BOTTOM SHEET: was not alive")
       return
     }
+
     // getViewTreeObserver
     vto.addOnGlobalLayoutListener(
             object : ViewTreeObserver.OnGlobalLayoutListener {

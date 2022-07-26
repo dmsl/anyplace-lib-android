@@ -6,6 +6,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -33,10 +34,12 @@ import kotlinx.coroutines.launch
  * (something like a binary search, for finding closest point in the grid)
  *
  */
-class MapLines (private val ctx: Context,
+class MapLines(private val app: AnyplaceApp,
                 private val scope: CoroutineScope,
                 private val VM: CvViewModel,
                 private val map: GoogleMap) {
+
+  private val ctx = app.applicationContext
 
   private val cache by lazy { Cache(ctx) }
   private val utlColor by lazy { UtilColor(ctx) }
@@ -63,13 +66,13 @@ class MapLines (private val ctx: Context,
    */
   suspend fun loadFromCache() {
     LOG.W(TAG, "$METHOD")
-    if(VM.space == null) {
+    if(app.space == null) {
       LOG.E(TAG, "$METHOD: empty space!")
       return
     }
     LOG.W(TAG, "$METHOD: space not null")
 
-    val space = VM.space!!
+    val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {
       LOG.E(TAG, "$METHOD: empty Connections or POIS!")
       return
@@ -105,7 +108,6 @@ class MapLines (private val ctx: Context,
       if (floorPolyopt[level]==null) floorPolyopt[level]= mutableListOf()
       floorPolyopt[level]?.add(polyopt)
     }
-
   }
 
   fun isInited() : Boolean {
@@ -123,7 +125,7 @@ class MapLines (private val ctx: Context,
 
     if (!DBG.uim) return
 
-    val space = VM.space!!
+    val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {
       LOG.E(TAG, "$METHOD: Must download POIs/Connections first. restart app..")
     }
