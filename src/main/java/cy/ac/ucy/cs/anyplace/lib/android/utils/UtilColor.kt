@@ -9,6 +9,8 @@ class UtilColor(private val ctx: Context) {
 
   fun ColorWhiteB0() = get(R.color.white_B0)
   fun ColorWhite() = get(R.color.white)
+  fun ColorGrayDarker() = get(R.color.darker)
+  fun ColorDevMode() = get(R.color.dev_mode)
   fun ColorWarning() = get(R.color.yellowDark)
   fun ColorInfo() = get(R.color.holo_light_blue)
   fun ColorNormal() = Black()
@@ -18,6 +20,7 @@ class UtilColor(private val ctx: Context) {
   fun ColorPrimaryDark50() = get(R.color.colorPrimaryDark50)
   fun ColorPrimary() = get(R.color.colorPrimary)
   fun ColorError() = get(R.color.redDark)
+  fun ColorActionBar() = get(R.color.action_bar)
   fun ColorYellowDark() = get(R.color.yellowDark)
   fun ColorBlueDark() = get(R.color.lash_blue_dark)
 }

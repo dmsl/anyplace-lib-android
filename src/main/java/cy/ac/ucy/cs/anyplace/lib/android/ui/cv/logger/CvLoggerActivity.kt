@@ -9,6 +9,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_LOGGER
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
@@ -18,6 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -38,7 +40,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
   override val id_gesture_layout: Int get() = R.id.gesture_layout
   override val id_gmap: Int get() = R.id.mapView
-  override val actName = "logger"
+  override val actName = ACT_NAME_LOGGER
 
   private val tag = "act-cvlog"
 
@@ -58,6 +60,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   override fun postResume() {
     super.postResume()
     VM = _vm as CvLoggerViewModel
+    app.setMainView(findViewById(R.id.layout_root), false)
 
     lifecycleScope.launch(Dispatchers.IO) {
       // CHECK: if this crashes (latinit not inited),
@@ -101,8 +104,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     LOG.D(TAG, "$tag $METHOD: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
+    // bsheet is always visible as we show the tutorial
     VM.uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity,
-            VM, id_bottomsheet, id_btn_logging)
+            VM, id_bottomsheet, id_btn_logging, true)
 
     // upcasting the CvLog BottomSheet to the regular BottomSheet
     uiBottom = VM.uiLog.bottom
@@ -162,9 +166,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
           finish()
           startActivity(Intent(this@CvLoggerActivity, SmasLoginActivity::class.java))
         } else {
-          lifecycleScope.launch(Dispatchers.Main) {
-            Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
-          }
+          // lifecycleScope.launch(Dispatchers.Main) {
+          //   Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
+          // }
         }
       }
     }

@@ -14,10 +14,12 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    // TODO: PMX
+    const val DVO = false
+    const val WAI = false
     const val GREs = false
-    const val CO5 = false
-    const val CTR = false
+
+    const val CO5 = true
+    const val CTR = true
 
     const val CVM = false
 
@@ -28,6 +30,21 @@ class DBG {
   }
 }
 
+/**
+ * Do any logging using this class.
+ * It's a wrapper on top of Android's [Log].
+ *
+ * Debug (D) and Verbose (V) logging may have a level, that is controlled through: [DBG.LEVEL]
+ *
+ * For example: LOG.D3(TAG, "hello") will only be printed for a [DBG.LEVEL] that is <=3.
+ *
+ * It helps when developing a new feature. Once a basic check is done, you can increase the LOG.Dx level
+ * to hide the message.
+ *
+ * NOTE: extension functions also provide a TAG and a METHOD, but the do not always work
+ * See [ActivityEXT.kt]
+ *
+ */
 class LOG {
   companion object {
     const val TAG = "anyplace"

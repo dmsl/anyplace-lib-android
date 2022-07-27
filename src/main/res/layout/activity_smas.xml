@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/AppTheme.Compat.ObjectDetection"
@@ -47,7 +48,8 @@
         app:iconPadding="0dp"
         app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
+        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
         app:layout_constraintVertical_bias="0.22"
         />
@@ -80,9 +82,8 @@
 
     <View
         android:id="@+id/viewAlertBg"
-        tools:visibility="invisible"
         android:layout_width="match_parent"
-        android:layout_height="130dp"
+        android:layout_height="190dp"
         app:layout_constraintBottom_toBottomOf="@+id/container"
         android:alpha="0.7"
         app:layout_constraintEnd_toEndOf="parent"
@@ -91,6 +92,10 @@
         android:background="@color/redDark"
         />
 
+
+    <!--  ONGOING ALERT -->
+    <!--  showed when a user is alerting. -->
+    <!--  on click it navigates to the user -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnAlertOngoing"
         android:layout_width="match_parent"
@@ -99,13 +104,14 @@
         android:textAllCaps="true"
         android:background="@drawable/button_alert"
         app:backgroundTint="@color/redDark"
+        app:strokeColor="@color/white"
+        app:strokeWidth="3dp"
         app:cornerRadius="0dp"
-        app:layout_constraintBottom_toTopOf="@id/viewAlertBg"
+        app:layout_constraintTop_toTopOf="@id/viewAlertBg"
         app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
         app:layout_constraintRight_toRightOf="@id/viewAlertBg"
-        android:layout_marginTop="4dp"
         tools:visibility="invisible"
-        app:icon="@drawable/ic_warning"
+        app:icon="@drawable/ic_location_found"
         app:iconSize="42dp"
         android:textSize="26dp"
         android:textColor="@color/white"
@@ -118,7 +124,7 @@
         android:id="@+id/tv_alertOrder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="needs help"
+        android:text="is alerting!"
         app:layout_constraintBottom_toTopOf="@id/button_flir"
         app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
         app:layout_constraintRight_toRightOf="@id/viewAlertBg"
@@ -128,6 +134,8 @@
         app:outlineColor="@color/redDark"
         app:outlineWidth="1dp"
         />
+
+
 
 
     <!-- ALERT -->
@@ -147,7 +155,6 @@
         android:textColor="@color/white"
         android:textSize="42sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/button_chat"
@@ -200,6 +207,33 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.appcompat.widget.Toolbar>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_whereami"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:elevation="50dp"
+        android:insetLeft="0dp"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:backgroundTint="@color/colorPrimary"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_whereami"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toTopOf="@id/button_floorUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
+        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
+        />
+
 
 
     <!-- TV TITLE -->

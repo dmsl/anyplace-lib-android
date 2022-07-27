@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-
-
-
   <!--parent="@style/Widget.AppCompat.Button.Borderless"-->
   <style name="SettingsButton" parent="@style/Widget.MaterialComponents.Button.TextButton">
     <item name="android:background">@drawable/button_settings_menu_item</item>
@@ -26,6 +23,11 @@
       <item name="android:textSize">12sp</item>
       <item name="android:textColor">@color/gray</item>
     </style>
+
+  <style name="CompatButton" parent="@style/Widget.MaterialComponents.Button.OutlinedButton">
+    <item name="android:textColor">@color/white</item>
+    <item name="iconTint">@color/white</item>
+  </style>
 
 
   <style name="SignInButtonAnyplace" parent="@style/Widget.MaterialComponents.Button.OutlinedButton">
@@ -100,6 +102,21 @@
     <item name="android:textColor">@color/colorPrimaryDark</item>
     <item name="android:textStyle">bold</item>
     <item name="android:textSize">15sp</item>
+  </style>
+
+
+  <style name="SnackBarStyleDev">
+    <item name="snackbarStyle">@style/SnackBarStyleDevInternal</item>
+  </style>
+  <style name="SnackBarStyleDevInternal" parent="Widget.MaterialComponents.Snackbar">
+    <item name="android:background">@color/action_bar</item>
+  </style>
+
+  <style name="SnackBarStyleDefault">
+    <item name="snackbarStyle">@style/SnackBarStyleDefaultInternal</item>
+  </style>
+
+  <style name="SnackBarStyleDefaultInternal" parent="Widget.MaterialComponents.Snackbar">
   </style>
 
 </resources>

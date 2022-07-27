@@ -17,6 +17,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_LOGGER
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -128,10 +130,10 @@ class MainSettingsDialog(
 
     val directive="Switch to"
     if (parentActivity is CvLoggerActivity) {
-      actName="SMAS"
+      actName=ACT_NAME_SMAS
       klass = SmasMainActivity::class.java as Class<Activity>
     } else if (parentActivity is SmasMainActivity) {
-      actName="Logger"
+      actName=ACT_NAME_LOGGER
       klass = CvLoggerActivity::class.java as Class<Activity>
     }
 

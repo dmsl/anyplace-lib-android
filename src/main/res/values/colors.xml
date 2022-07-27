@@ -45,6 +45,7 @@
   <color name="lightGray">#F9F9F9</color>
   <color name="mediumGray">#D1D1D1</color>
   <color name="lightMediumGray">#80D1D1D1</color>
+  <color name="grayLight1">#959595</color>
   <color name="darkGray_77">#774B4B4B</color>
   <color name="darkGray">#4B4B4B</color>
   <color name="dark">#313C44</color>
@@ -53,7 +54,7 @@
   <color name="green">#00C980</color>
 
   <color name="gmapsGrayColor">#F7F8F9</color>
-
+  <color name="dev_mode">#b32400</color>
 
   <!-- OLD COLORS -->
   <color name="action_bar">#273697</color>

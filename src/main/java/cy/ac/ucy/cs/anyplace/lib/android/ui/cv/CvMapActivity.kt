@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected abstract val id_gmap: Int
-  protected abstract val actName: String
+  abstract val actName: String
 
   // PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
@@ -136,7 +136,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
     if (cvEnginePrefs.reloadCvMaps) {
       LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
-      LOG.E(TAG, "CHECK: might need to reload headmap")
+      // might need to reload headmap
       // loadHeatmap() on the floor
       // dsCv.setReloadCvMaps(false)
     } else {
@@ -152,9 +152,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   /**
    * Initialize bottom sheet by reading the [VM.prefsNav]
    */
-  open fun setupUiAfterGmap() {
-    uiBottom = BottomSheetCvUI(this@CvMapActivity, VM.prefsCvMap.devMode)
-  }
+  abstract fun setupUiAfterGmap()
 
   protected open fun setupUi() {
     LOG.E(TAG, "setupUi")
@@ -276,7 +274,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       while (!VM.uiLoaded()) delay(100) // workaround (not the best one..)
 
         val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
-        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber(), usedMethod)
+        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
         test()
       }
     }
@@ -307,11 +305,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.D1(TAG, "$_method: floor is: ${floor?.floorNumber}")
         if (floor == null) return@collect
 
-        // LOG.D4(TAG, "$_method: is spaceH filled? ${app.spaceH.obj.name}")
-        // // Update FH
         app.wFloor = FloorWrapper(floor, app.wSpace)
-        // LOG.E(TAG, "$_method: floor now is: ${VM.floorH!!.floorNumber()}")
-        // wMap.markers.updateLocationMarkerBasedOnFloor(VM.floorH!!.floorNumber())
 
         if (!firstFloorLoaded) { // runs only when the first floor is loaded
           onFirstFloorLoaded()
@@ -346,10 +340,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
             val coord = result.coord!!
             val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
-            LOG.D2(TAG, msg)
+            LOG.E(TAG, msg)
             val curFloor = app.wFloor?.floorNumber()
             if (coord.level != curFloor) {
-              app.showToast(lifecycleScope, "Changing floor: ${coord.level} (from: ${curFloor})")
+              app.showToast(lifecycleScope, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
             }
 
             app.wFloors.moveToFloor(VM, coord.level)

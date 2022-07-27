@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -35,7 +36,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 
 /**
  *
@@ -51,8 +51,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 @Composable
 fun Conversation(
         app: SmasApp,
-        /** needed for saving new msgs */
-        VM: SmasMainViewModel,
         VMchat: SmasChatViewModel,
         manager: FragmentManager,
         repo: RepoSmas,
@@ -70,9 +68,11 @@ fun Conversation(
       LOG.W(TAG, "LazyColumn: msgsList size: ${app.msgList.size}")
 
       LOG.D2(TAG, "LazyColumn: resetting new msgs")
-      VM.saveNewMsgs(false)
+      app.setUnreadMsgsState(false)
+
 
       if (!app.msgList.isEmpty()) {
+        // val lastMsgs = app.msgList.take(5)
         itemsIndexed(app.msgList) { _, message ->
           MessageCard(message, VMchat, manager, repo, returnCoords)
         }
@@ -229,8 +229,15 @@ fun MessageCard(
                     Column {
                       Text(
                               text = when (message.mtype) {
-                                3 -> "View on map ($deckInfo)"
-                                else -> "ALERT - On $deckInfo"
+                                3 -> {
+                                  var txt = "View on map ($deckInfo)"
+                                  if (!message.msg.isNullOrEmpty()) {
+                                    txt="${message.msg}\n$txt"
+                                  }
+
+                                  txt
+                                }
+                                else -> "ALERT ($deckInfo)"
                               },
                               style = MaterialTheme.typography.subtitle1,
                               modifier = Modifier

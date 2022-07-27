@@ -26,16 +26,22 @@ class UtilUI(
   fun text(btn: Button, txt: String) = scope.launch(Dispatchers.Main) { btn.text=txt }
   fun text(tv: TextView, txt: String) = scope.launch(Dispatchers.Main) { tv.text=txt }
 
+  companion object {
+    /** unsafe as it is not using a scope (must run on UI/Main thread) */
+    fun _changeBackgroundMaterial(ctx: Context, btn: MaterialButton, colorId: Int) {
+        val compatColor = ContextCompat.getColor(ctx, colorId)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          btn.setBackgroundColor(compatColor)
+        }
+      }
+  }
 
   /**
    * Works for [MaterialButton]
    */
   fun changeBackgroundMaterial(btn: MaterialButton, colorId: Int) {
     scope.launch(Dispatchers.Main) {
-      val compatColor = ContextCompat.getColor(ctx, colorId)
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        btn.setBackgroundColor(compatColor)
-      }
+      _changeBackgroundMaterial(ctx, btn, colorId)
     }
   }
 

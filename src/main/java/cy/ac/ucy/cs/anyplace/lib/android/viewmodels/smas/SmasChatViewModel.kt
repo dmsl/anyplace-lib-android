@@ -179,7 +179,7 @@ class SmasChatViewModel @Inject constructor(
         ownUserCoords = getCenterOfFloor()
       }
 
-      var msgSent = false
+      var msgProcessed = false
       // text type might have a pasted [ClipboardLocation]
       if (mtype == MTYPE_TXT) {
         val pastedLocation = ClipboardLocation.fromString(newMsg)
@@ -198,21 +198,16 @@ class SmasChatViewModel @Inject constructor(
                   pastedLocation.deck,
                   pastedLocation.lat,
                   pastedLocation.lon)
-          sendMessageInternal(otherUserCoords, null, MTYPE_LOCATION)
 
-          if (pastedLocation.uid != ownUid) { // not our own location, share an additional fixed text
-            LOG.E(TAG, "$tag: sharing loc of another user")
-            sendMessageInternal(ownUserCoords, "(shared ${pastedLocation.uid}'s location)", MTYPE_TXT)
-            // delay(100)  // artificial delay to ensure order of msgs
-          } else {
-            LOG.W(TAG, "$tag: sharing our own user's location..")
-          }
+          val locationInfo = if (pastedLocation.uid != ownUid)
+            "location of: ${pastedLocation.uid}" else ""
+          sendMessageInternal(otherUserCoords, locationInfo, MTYPE_LOCATION)
 
-          msgSent=true
+          msgProcessed=true
         }
       }
 
-      if (!msgSent) {
+      if (!msgProcessed) {
         sendMessageInternal(ownUserCoords, newMsg, mtype)
       }
 

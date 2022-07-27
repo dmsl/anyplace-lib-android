@@ -11,7 +11,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates

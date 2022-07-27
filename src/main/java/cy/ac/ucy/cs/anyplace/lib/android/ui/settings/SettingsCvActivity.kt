@@ -148,6 +148,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
+        setBooleanInput(R.string.pref_cv_follow_selected_user, prefs.followSelectedUser)
 
         setupChangeCvModel()
         setupButtonServerSettings()

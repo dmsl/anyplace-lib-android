@@ -11,6 +11,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -22,21 +23,23 @@ import cy.ac.ucy.cs.anyplace.lib.android.maps.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.cookieToString
 
 class GmapWrapper(
-                  private val app: AnyplaceApp,
-                  private val scope: CoroutineScope,
-                  private val UI: CvUI) {
+        private val app: AnyplaceApp,
+        private val scope: CoroutineScope,
+        private val UI: CvUI) {
 
   val tag = "wr-gmap"
   private val ctx: Context = app.applicationContext
@@ -77,8 +80,8 @@ class GmapWrapper(
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))   // TODO:PMX FR10
-    markers = MapMarkers(app, scope, VM, obj)
-    lines = MapLines(app, scope, VM, obj)
+    markers = MapMarkers(app, scope, VM, this)
+    lines = MapLines(app, scope, VM, this)
 
     // ON FLOOR LOADED....
     obj.uiSettings.apply {
@@ -94,23 +97,25 @@ class GmapWrapper(
     // (maybe using Bundle is easier/better)
     loadSpaceAndFloor()
 
+    // SETUP SEVERAL MAP CLICK LISTENERS
     obj.setOnMapClickListener {
-      // clearing last opened user
-      markers.lastOpenedUser = null
+      markers.clearAllInfoWindow()
     }
+    // CHECK THIS?!
     obj.setOnMarkerClickListener {  // PotentialBehaviorOverride
-      // clearing last opened user
-      markers.lastOpenedUser = null
+      markers.clearAllInfoWindow()
       return@setOnMarkerClickListener false
     }
-    obj.setOnInfoWindowClickListener { // PotentialBehaviorOverride
 
+    obj.setOnInfoWindowClickListener { // PotentialBehaviorOverride
+      markers.clearAllInfoWindow() // clear any previous InfoWindows
       val metadata = it.tag as UserInfoMetadata?
       if (metadata != null) {
-       if(metadata.type == UserInfoType.SharedLocation) {
-         LOG.W(TAG, "Cannot share (again) a location share")
-         return@setOnInfoWindowClickListener
-       }
+        if(metadata.type == UserInfoType.SharedLocation) {
+          LOG.W(TAG, "clearing chat location marker")
+          markers.clearChatLocationMarker()
+          return@setOnInfoWindowClickListener
+        }
 
         LOG.E(TAG, "USER: ${metadata.uid}")
         LOG.E(TAG, "LOCATION: ${metadata.coord}")
@@ -125,9 +130,9 @@ class GmapWrapper(
         scope.launch(Dispatchers.IO) {
           val ownUid = app.dsSmasUser.read.first().uid
           if (ownUid == uid) {
-            app.showToast(scope, "Copied own location to clipboard")
+            app.showSnackbar(scope, "Copied own location to clipboard")
           } else {
-            app.showToast(scope, "Copied ${metadata.uid}'s location to clipboard")
+            app.showSnackbar(scope, "Copied ${metadata.uid}'s location to clipboard")
           }
         }
       }
@@ -136,7 +141,17 @@ class GmapWrapper(
     // async continues by [onFloorLoaded]
     // onMapReadySpecialize()
 
+    setupObserverUserBounds()
+
     gmapWrLoaded = true
+  }
+
+  /**
+   * Whether the [latLng] is out of the projected region of the map
+   */
+  fun outOfMapBounds(latLng: LatLng) : Boolean {
+    val bounds = obj.projection.visibleRegion.latLngBounds
+    return !bounds.contains(latLng)
   }
 
   /**
@@ -225,6 +240,53 @@ class GmapWrapper(
     return true
   }
 
+  var setUserPannedOutOfBounds = false
+  fun setupObserverUserBounds() {
+    if (setUserPannedOutOfBounds) return
+    setUserPannedOutOfBounds=true
+
+    obj.setOnCameraIdleListener {
+      var boundsState = MapBounds.notLocalizedYet
+      LOG.W(TAG, "Map idle (movement ended)") // CLR:PM D3
+      val lr = app.locationSmas.value
+      if (lr is LocalizationResult.Success) {  // there was a user location
+        // NOTE: on floor changing the [app.userOutOfBounds] might also get updated,
+        // because the user might change the floor, without any panning on the map
+
+        val latLng = lr.coord!!.toLatLng()
+        boundsState =
+                if (app.userOnOtherFloor() || outOfMapBounds(latLng)) MapBounds.outOfBounds
+                else MapBounds.inBounds
+      }
+
+      app.userOutOfBounds.update { boundsState }
+    }
+  }
+
+  /**
+   * Pan camera to new location
+   */
+  fun animateToLocation(latLng: LatLng) {
+    // nice animation but it causes issues..
+    // map.obj.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, map.obj.maxZoomLevel))
+
+    scope.launch(Dispatchers.Main) {
+      val cameraPosition = CameraPosition(
+              latLng, obj.cameraPosition.zoom,
+              // don't alter tilt/bearing
+              obj.cameraPosition.tilt,
+              obj.cameraPosition.bearing)
+
+      // val cancellableCallback= object : GoogleMap.CancelableCallback {
+      //   override fun onCancel() {}
+      //   override fun onFinish() {}
+      // }
+
+      val newCameraPosition = CameraUpdateFactory.newCameraPosition(cameraPosition)
+      obj.moveCamera(newCameraPosition)
+    }
+  }
+
   private fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
     var msg = ""
     when {
@@ -247,15 +309,6 @@ class GmapWrapper(
     addUserMarkers(userLocation, scope)
   }
 
-  //// GOOGLE MAPS
-  // fun addCvMarker(latLng: LatLng, msg: String) { // CLR:PM ?
-  //   markers.addCvMarker(latLng, msg)
-  // }
-
-  // fun hideCvMarkers() {
-  //   markers.hideCvObjMarkers()
-  // }
-
   fun addUserMarkers(userLocation: List<UserLocation>, scope: CoroutineScope) {
     userLocation.forEach {
       scope.launch(Dispatchers.Main) {
@@ -275,7 +328,7 @@ class GmapWrapper(
    */
   fun setUserLocation(coord: Coord, locMethod: LocalizationMethod) {
     LOG.D(TAG, "$METHOD")
-    markers.setLocationMarker(coord, locMethod)
+    markers.setOwnLocationMarker(coord, locMethod, app.alerting)
   }
 
   fun recenterCamera(location: LatLng) {

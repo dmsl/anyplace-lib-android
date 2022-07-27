@@ -1,8 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.maps
 
-import android.content.Context
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
@@ -10,6 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
@@ -19,7 +18,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.POI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -37,7 +35,7 @@ import kotlinx.coroutines.launch
 class MapLines(private val app: AnyplaceApp,
                 private val scope: CoroutineScope,
                 private val VM: CvViewModel,
-                private val map: GoogleMap) {
+                private val map: GmapWrapper) {
 
   private val ctx = app.applicationContext
 
@@ -147,7 +145,7 @@ class MapLines(private val app: AnyplaceApp,
 
     VM.viewModelScope.launch(Dispatchers.Main) {
       polyOpts.forEach { polyOpt ->
-        val polyline=VM.ui.map.obj.addPolyline(polyOpt)
+        val polyline=map.obj.addPolyline(polyOpt)
         polylines.add(polyline)
       }
     }

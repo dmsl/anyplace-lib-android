@@ -72,7 +72,7 @@ class LocationSendNW(
       try {
         LOG.V2(TAG, "LOC SEND")
         val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
-        LOG.D2(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
+        LOG.E(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.deck}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)
         LOG.D2(TAG, "LocationSend: Resp: ${response.message()}" )
         resp.value = handleResponse(response)

@@ -1,7 +1,7 @@
 # Logcat (LOG.kt)
 Study the relevant sources in:
 - [LOG.kt](lib-android/src/main/java/cy/ac/ucy/cs/anyplace/lib/android/utils/LOG.kt)
-- [ActivityExtensions.kt](lib-android/src/main/java/cy/ac/ucy/cs/anyplace/lib/android/extensions/ActivityExtensions.kt)
+- [ActivityEXT.kt](lib-android/src/main/java/cy/ac/ucy/cs/anyplace/lib/android/extensions/ActivityEXT.kt)
 
 It uses Java StackFrames to exclude classes/method names of:
 - helper classes, like `LOG` or methods in ActivityExtensions

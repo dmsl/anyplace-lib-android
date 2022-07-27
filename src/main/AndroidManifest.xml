@@ -31,19 +31,9 @@
         android:name=".android.ui.user.AnyplaceLoginActivity"
         android:exported="true"
         android:theme="@style/AppTheme.Compat"
+        android:screenOrientation="portrait"
         android:label="@string/title_activity_login" />
-    <activity
-        android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
-        android:exported="true"
-        android:screenOrientation="portrait"
-        android:label="Server Settings" />
     <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
-    <activity
-        android:name=".android.ui.settings.SettingsCvActivity"
-        android:screenOrientation="portrait"
-        android:exported="true"
-        android:label="Settings" />
-
     <!-- SMAS ACTIVITIES -->
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity"
@@ -70,12 +60,26 @@
         android:exported="true"
         android:windowSoftInputMode="adjustResize|stateVisible">
     </activity>
+    <!-- SETTINGS ACTIVITIES (3)-->
+    <!-- SMAS SERVER SETTINGS -->
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat"
         android:label="SMAS Settings" />
+    <activity
+        android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
+        android:exported="true"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme.Compat"
+        android:label="Server Settings" />
+    <activity
+        android:name=".android.ui.settings.SettingsCvActivity"
+        android:theme="@style/AppTheme.Compat"
+        android:screenOrientation="portrait"
+        android:exported="true"
+        android:label="Settings" />
 
     <meta-data
         android:name="com.google.android.geo.API_KEY"

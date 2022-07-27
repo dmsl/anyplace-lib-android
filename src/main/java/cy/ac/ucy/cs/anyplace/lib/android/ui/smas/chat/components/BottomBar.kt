@@ -298,7 +298,6 @@ fun ShareLocAlert(VMchat: SmasChatViewModel) {
             confirmButton = {
               TextButton(
                       onClick = {
-                        // TODO: make a method to share custom location..
                         VMchat.sendMessage(null, MTYPE_LOCATION)
                         VMchat.showDialog = false
                       }) {

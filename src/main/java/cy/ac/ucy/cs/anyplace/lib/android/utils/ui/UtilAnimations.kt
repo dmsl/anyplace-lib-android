@@ -39,6 +39,9 @@ open class UtilAnimations(
   fun flashView(v: View, delay: Long = 200)
           = scope.launch(Dispatchers.Main) { v.flashView(delay) }
 
+  fun attentionZoom(v: View)
+          = scope.launch(Dispatchers.Main) { v.attentionZoom() }
+
   fun gone(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
   fun visible(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
 
@@ -54,6 +57,13 @@ open class UtilAnimations(
 // Using them through [UtilView] (or it's child methods) ensures that they are on the main thread
 // TODO:PM CLR:PM cleanup comments in here
 /////////
+
+private fun View.attentionZoom() {
+    visibility = View.VISIBLE
+    isEnabled = true
+    val anim = AnimationUtils.loadAnimation(context, R.anim.zoom_attention)
+    startAnimation(anim)
+}
 
 /**
  * NEVER USE DIRECTLY.

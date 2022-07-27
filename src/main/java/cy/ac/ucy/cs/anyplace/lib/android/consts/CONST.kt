@@ -20,6 +20,9 @@ open class CONST(ctx: Context) {
     // START ACTIVITY OF THE APP (see [StartActivity])
     const val START_ACT_SMAS= "act.start.smas"
     const val START_ACT_LOGGER = "act.start.logger"
+    const val ACT_NAME_LOGGER = "logger"
+    const val ACT_NAME_SMAS = "SMAS"
+
   }
   val DB_NAME = "anyplace_db"
 
@@ -62,14 +65,17 @@ open class CONST(ctx: Context) {
   val PREF_CV_SCAN_DELAY = ctx.getString(R.string.pref_cv_scan_delay)
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   val PREF_CV_AUTOSET_INITIAL_LOCATION= ctx.getString(R.string.pref_cv_autoset_initial_location)
+  val PREF_CV_FOLLOW_SELECTED_USER = ctx.getString(R.string.pref_cv_follow_selected_user)
 
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
   // COMMON DEFAULTS
-  val DEFAULT_PREF_CV_DEV_MODE = false
+  // TODO:PMX LMIN (LAST MIN): change to false
+  val DEFAULT_PREF_CV_DEV_MODE = true
   val DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION= true
+  val DEFAULT_PREF_CV_FOLLOW_SELECTED_USER= true
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"

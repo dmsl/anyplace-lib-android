@@ -41,10 +41,17 @@
         />
 
     <SwitchPreferenceCompat
+        app:key="@string/pref_cv_follow_selected_user"
+        android:defaultValue="true"
+        app:title="Follow selected user on map"
+        app:summary="Follows as long as the user does not change floor"
+        />
+
+    <SwitchPreferenceCompat
         app:key="@string/pref_cv_autoset_initial_location"
         android:defaultValue="true"
-        app:title="Auto-set initial location"
-        app:summary="When app opens, only if last location was within 10 minutes"
+        app:title="Restore last location on app open"
+        app:summary="Happens only when location was set in the last 10 minutes"
         />
 
   </PreferenceCategory>
@@ -87,7 +94,7 @@
 
   <PreferenceCategory
       app:title="@string/developer_options"
-      app:icon="@drawable/ic_developer_options">
+      app:icon="@drawable/ic_dev_mode">
 
     <EditTextPreference
         app:key="@string/prev_cvmap_alpha"
@@ -99,7 +106,7 @@
         app:key="@string/pref_cv_dev_mode"
         android:defaultValue="true"
         app:title="Developer Mode"
-        app:summary="Show debug details throughout the app."
+        app:summary="Show additional messages in several points of the app"
         />
 
     <Preference

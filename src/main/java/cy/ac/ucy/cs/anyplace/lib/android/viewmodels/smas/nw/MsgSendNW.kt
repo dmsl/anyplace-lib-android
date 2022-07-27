@@ -106,7 +106,7 @@ class MsgSendNW(private val app: SmasApp,
           else if (data.mdelivery != MDELIVERY_SAME_DECK) {
             msg += " (${prettyMDelivery(data.mdelivery)})"
           }
-          app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+          app.showSnackbarDEV(VM.viewModelScope, msg)
         }
         is NetworkResult.Error -> {
           LOG.D1(TAG, "$tag: Error: ${it.message}")

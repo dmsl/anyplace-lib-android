@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
@@ -204,15 +205,20 @@ class LocationGetNW(
 
         if (utlTime.isWithinMinutes(ownLocation.time, 10)) {
           app.locationSmas.update {
+            val coord = ownLocation.toCoord()
+            LOG.E(TAG, "RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
-          app.showToast(VM.viewModelScope, "Automatically setting most recent location")
-        } else {
-          app.showToast(VM.viewModelScope, "Cannot auto-set location. (no recent enough last location)")
+          app.showSnackbar(VM.viewModelScope, "Restored last location.")
+          VM.ui.map.animateToLocation(ownLocation.toCoord().toLatLng())
+        // } else {
+        //   app.showSnackbarLong(VM.viewModelScope,
+        //           "Cannot restore last location.\n(not recent enough)")
         }
       }
     }
   }
+
 
   private fun checkForNewMsgs(VMchat: SmasChatViewModel, lastMsgTs: Long) {
     val localTs = repo.local.getLastMsgTimestamp()

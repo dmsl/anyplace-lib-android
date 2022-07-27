@@ -8,7 +8,9 @@ import android.widget.TextView
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +42,13 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
   }
 
   open fun setupSpecialize() {
+
+    if (act is CvMapActivity) {
+      val cvAct = act as CvMapActivity
+      // no bottom sheet on smas
+      if (cvAct.actName==ACT_NAME_SMAS) return
+    }
+
     // Setup peak height
     val vto = act.gestureLayout.viewTreeObserver
 

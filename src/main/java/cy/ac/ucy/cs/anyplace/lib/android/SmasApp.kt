@@ -43,7 +43,6 @@ class SmasApp : AnyplaceApp() {
   /** The VMchat set by [SmasMainActivity] */
   private var VMchat : SmasChatViewModel? = null
 
-
   override fun onCreate() {
     super.onCreate()
     LOG.D2()
@@ -72,6 +71,10 @@ class SmasApp : AnyplaceApp() {
 
   fun resumeMsgGet() {
     VMchat?.nwMsgGet?.skipCall = false
+  }
+
+  fun setUnreadMsgsState(value: Boolean) {
+    VM?.steUnreadMsgs(value)
   }
 
   fun pullMessagesONCE() {

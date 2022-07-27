@@ -1,6 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas
 
 import android.app.Application
+import android.view.View
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
@@ -38,6 +39,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SmasMainViewModel @Inject constructor(
         application: Application,
+        /** For [SnackBar] */
         repoAP: RepoAP,
         repoSmas: RepoSmas,
         val dsChat: SmasDataStore,
@@ -105,7 +107,7 @@ class SmasMainViewModel @Inject constructor(
     return newMode
   }
 
-  fun saveNewMsgs(value: Boolean) {
+  fun steUnreadMsgs(value: Boolean) {
     viewModelScope.launch(Dispatchers.IO) {
       dsChat.saveNewMsgs(value)
     }

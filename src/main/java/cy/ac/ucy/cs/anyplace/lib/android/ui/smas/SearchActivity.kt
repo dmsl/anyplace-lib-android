@@ -47,6 +47,9 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.D(TAG, "onResume")
   }
 
+  override fun setupUiAfterGmap() {
+  }
+
   override fun setupUi() {
     super.setupUi()
     LOG.D2()

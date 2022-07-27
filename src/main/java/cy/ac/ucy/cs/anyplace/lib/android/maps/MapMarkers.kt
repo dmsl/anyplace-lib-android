@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.maps
 
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -8,6 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc.toLatLng
@@ -17,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 class MapMarkers(private val app: AnyplaceApp,
                  private val scope: CoroutineScope,
                  private val VM: CvViewModel,
-                 private val map: GoogleMap) {
+                 private val map: GmapWrapper) {
   private val ctx = app.applicationContext
 
   companion object {
@@ -43,15 +44,15 @@ class MapMarkers(private val app: AnyplaceApp,
   var stored: MutableList<Marker> = mutableListOf()
 
   /** Marker of the last location calculated remotely using SMAS */
-  var lastLocation: Marker? = null
+  var lastOwnLocation: Marker? = null
   /** Marker of the last location that was selected from the chat
    * i.e., when a user clicks on a shared location in the chat,
    * it is redirected back in the main activity, and this marker is drawn
    */
-  var lastChatLocation: Marker? = null
+  var lastChatShareLocation: Marker? = null
 
   /** Active users on the map */
-  var users: MutableList<Marker> = mutableListOf()
+  var userLocations: MutableList<Marker> = mutableListOf()
 
   // private fun toString(ll: LatLng) : String {
   //   // ll.toString()
@@ -64,34 +65,29 @@ class MapMarkers(private val app: AnyplaceApp,
   //   return toString(toLatLng(coord))
   // }
 
-  private fun getLocationDrawable(setMethod: LocalizationMethod): Int {
-    return when (setMethod) {
-      LocalizationMethod.manualByUser -> R.drawable.marker_location_manually
-      LocalizationMethod.autoMostRecent -> R.drawable.marker_location_autorecent
+  private fun getLocationDrawable(setMethod: LocalizationMethod, alerting: Boolean): Int {
+    return when {
+      alerting -> R.drawable.marker_location_alert
+      setMethod == LocalizationMethod.manualByUser -> R.drawable.marker_location_manually
+      setMethod == LocalizationMethod.autoMostRecent -> R.drawable.marker_location_autorecent
       else -> R.drawable.marker_location_smas
     }
   }
 
-  private fun getSnippetOwnLocation (locMethod: LocalizationMethod) : String {
-    return when (locMethod) {
-      LocalizationMethod.manualByUser -> " (manually set)"
-      LocalizationMethod.autoMostRecent -> " (last recent location)"
-      else -> "(set through Vision)"
-    }
-  }
+
 
   /** Last Location marker */
-  private fun myLocationMarker(coord: Coord, locMethod: LocalizationMethod) : MarkerOptions  {
+  private fun myLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) : MarkerOptions  {
     val latLng = toLatLng(coord)
     val title = "My Location"
 
-    val snippet = getSnippetOwnLocation(locMethod)
+    // val snippet = getSnippetOwnLocation(locMethod)
 
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, getLocationDrawable(locMethod))
+            .userIcon(ctx, getLocationDrawable(locMethod, alerting))
             .zIndex(100f)
             .title(title)
-            .snippet(snippet)
+    // .snippet(snippet)
   }
 
   /** Computer Vision marker */
@@ -109,35 +105,36 @@ class MapMarkers(private val app: AnyplaceApp,
   fun cvMarkerStored(latLng: LatLng, msg: String) : MarkerOptions  {
     return MarkerOptions().position(latLng).title(msg)
             .zIndex(10f)
-        .userIcon(ctx, R.drawable.marker_objects_stored)
+            .userIcon(ctx, R.drawable.marker_objects_stored)
   }
 
   fun addCvMarker(latLng: LatLng, title: String, snippet: String) {
     scope.launch(Dispatchers.Main) {
-      map.addMarker(cvMarker(latLng, title, snippet))?.let {
+      map.obj.addMarker(cvMarker(latLng, title, snippet))?.let {
         cvObjects.add(it)
       }
     }
   }
 
-  /** User marker */
+  /** User marker in active mode */
   private fun userMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions {
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_user)
+            .userIcon(ctx, R.drawable.marker_user_active)
             .zIndex(10f)
             .title(title)
             .snippet(snippet)
   }
 
-  /** User marker in alert mode */
+  /** User marker in alerting mode */
   private fun userAlertMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions  {
     return MarkerOptions().position(latLng)
             .userIcon(ctx, R.drawable.marker_user_alert)
             .zIndex(101f)
             .title(title)
+            .snippet(snippet)
   }
 
-  /** User marker in alert mode */
+  /** User marker in inactive state */
   private fun userInactiveMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions {
     return MarkerOptions().position(latLng)
             .userIcon(ctx, R.drawable.marker_user_inactive)
@@ -149,15 +146,25 @@ class MapMarkers(private val app: AnyplaceApp,
   /** User marker in alert mode */
   private fun sharedChatLocationMarker(latLng: LatLng) : MarkerOptions  {
     return MarkerOptions().position(latLng)
+            .userIcon(ctx, R.drawable.marker_location_share)
             .title("shared location")
+            .snippet("(click to hide)")
+  }
+
+  /**
+   * return a pretty string of the last activity of the user
+   */
+  fun getActiveInfo(secondsElapsed: Long) : String {
+    // TODO:PMX: FR10
+    val prettySecs = utlTime.getSecondsPretty(secondsElapsed)
+    return "Active: $prettySecs ago"
   }
 
   fun addUserMarker(latLng: LatLng, uid: String, alert: Int, time: Long) {
     scope.launch(Dispatchers.IO) {
+
       val secondsElapsed = utlTime.secondsElapsed(time)
-      val prettySecs = utlTime.getSecondsPretty(secondsElapsed)
-      // TODO:PMX: FR10
-      val detailedMsg= "Active: $prettySecs ago"
+      val detailedMsg = getActiveInfo(secondsElapsed)
 
       val title = uid
       val marker = when {  // TODO:FR10
@@ -165,26 +172,46 @@ class MapMarkers(private val app: AnyplaceApp,
         isUserConsideredInactive(secondsElapsed) -> userInactiveMarker(latLng, title, detailedMsg)
         else -> userMarker(latLng, title, detailedMsg)
       }
+
       // add a marker and then store it
       // val marker = userMarker(latLng, title, detailedMsg) // TODO:PMX: FR10
       scope.launch(Dispatchers.Main) {
-        map.addMarker(marker)?.let {
-          users.add(it)
+        map.obj.addMarker(marker)?.let {
+          userLocations.add(it)
 
           val currentFloor = app.wFloor?.floorNumber()!!
           val otherUserCoords = Coord(latLng.latitude, latLng.longitude, currentFloor)
-          val userType = if (alert == 1) UserInfoType.OtherUserAlerting else UserInfoType.OtherUser
-          it.tag = UserInfoMetadata(userType, uid, otherUserCoords, secondsElapsed)
+          it.tag = UserInfoMetadata(UserInfoType.OtherUser,
+                  LocalizationMethod.NA,
+                  uid,
+                  otherUserCoords,
+                  secondsElapsed,
+                  (alert==1))
 
-          // reopen the last opened user
-          if (isLastOpenedUser(uid)) { it.showInfoWindow() }
+          // reopen the last selected user
+          if (userWasLastSelected(uid)) {
+            LOG.E(TAG,"FOUND LAST USER: $uid (opening)")
+            it.showInfoWindow()
+            // also follow the user on map
+            if (app.dsCvMap.read.first().followSelectedUser) {
+              LOG.D3(TAG, "following user on map..")
+              animateOnOutOfBounds(latLng)
+            }
+          }
         }
       }
     }
   }
 
-  fun isLastOpenedUser(uid: String): Boolean {
-    return lastOpenedUser != null && lastOpenedUser == uid
+  /**
+   * This other user was previously selected in the UI by the current user.
+   * Because we re-draw users at some intervals (update their locations),
+   * we remove all previous user location markers and then add their updated locations.
+   *
+   * By storing the last selection, we can re-open the info window of the last selected user
+   */
+  fun userWasLastSelected(uid: String): Boolean {
+    return lastSelectedUser != null && lastSelectedUser == uid
   }
 
   // TODO:PM hide LoggerMarkers?
@@ -195,22 +222,48 @@ class MapMarkers(private val app: AnyplaceApp,
   }
 
 
-  /** reopen last opened user on refresh */
-  var lastOpenedUser : String?=null
-  fun storeLastOpenedUser(marker: Marker) {
+  /** Re-open last selected user on refresh
+   *
+   * Current user (own user) is excluded from this.
+   */
+  var lastSelectedUser : String?=null
+  fun storeLastSelectedUser(marker: Marker) {
     if (marker.isInfoWindowShown) {
       val metadata = marker.tag as UserInfoMetadata?
-      if (metadata?.type != UserInfoType.OwnUser) {
-        lastOpenedUser = metadata?.uid
+      if (metadata!=null) {
+        lastSelectedUser = metadata.uid
+        LOG.E(TAG, "STORE LAST: ${metadata.uid}")
       }
     }
   }
 
+  /**
+   * IMPORTANT: it must run on the Main thread
+   */
+  fun clearAllInfoWindow() {
+    LOG.E(TAG, "CLEAR ALL")
+    // clear last selected user
+    userLocations.forEach {
+      it.hideInfoWindow()
+      val metadata = it.tag as UserInfoMetadata?
+      if (metadata != null) {
+        if (!lastSelectedUser.isNullOrEmpty() && lastSelectedUser == metadata.uid) {
+          lastSelectedUser=null
+        }
+      }
+    }
+
+    if (lastOwnLocation != null) {
+      lastOwnLocation?.hideInfoWindow()
+    }
+  }
+
+
   fun hideUserMarkers() {
-    users.forEach {
+    userLocations.forEach {
       scope.launch(Dispatchers.Main) {
-        storeLastOpenedUser(it) // before removing
-        it.remove() 
+        storeLastSelectedUser(it) // store selected user before removing
+        it.remove()
       }
     }
   }
@@ -221,102 +274,150 @@ class MapMarkers(private val app: AnyplaceApp,
    * If the location marker is on a different floor it will become transparent,
    * and show relevant info in the snippet
    */
-  fun updateLocationMarkerBasedOnFloor(floorNum: Int, locMethod: LocalizationMethod) {
-    if (lastLocation == null || lastCoord == null) return
+  fun updateLocationMarkerBasedOnFloor(floorNum: Int) {
+    if (lastOwnLocation == null || lastCoord == null) return
 
     LOG.D(TAG, "$METHOD: floor: $floorNum. last one: ${lastCoord!!.level}")
 
     var alpha = 1f
     var snippet = ""
-    if (lastCoord!= null) snippet = getSnippetOwnLocation(locMethod)
     if (floorNum != lastCoord!!.level)  {  // on a different floor
-      alpha=0.8f
-      snippet += "\n\n${app.wFloor?.prettyFloorCapitalize}: ${lastCoord?.level}"
-    } else {
-      if (lastCoord!= null) snippet = getSnippetOwnLocation(locMethod)
+      alpha=0.7f
+      snippet += "On ${app.wFloor?.prettyFloor}: ${lastCoord?.level}"
     }
 
     scope.launch(Dispatchers.Main) {
-      lastLocation?.alpha=alpha
-      lastLocation?.snippet=snippet
-      if (lastLocation?.isInfoWindowShown == true) {
-        lastLocation?.hideInfoWindow()
-        lastLocation?.showInfoWindow()
+      lastOwnLocation?.alpha=alpha
+      lastOwnLocation?.snippet=snippet
+      if (lastOwnLocation?.isInfoWindowShown == true) {
+        lastOwnLocation?.hideInfoWindow()
+        lastOwnLocation?.showInfoWindow()
       }
+    }
+  }
+
+
+  private fun removeLastOwnLocation() {
+    if (lastOwnLocation != null) { // hide previous location
+      lastOwnLocation!!.remove()
+      lastOwnLocation=null
     }
   }
 
   var lastCoord : Coord?=null
-  fun setLocationMarker(coord: Coord, locMethod: LocalizationMethod) {
+  fun setOwnLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) {
     val latLng = coord.toLatLng()
     LOG.D2()
 
     lastCoord=coord
-    animateToLocation(latLng)
+    map.animateToLocation(latLng)
 
     scope.launch(Dispatchers.Main) {
-      if (lastLocation != null) { // hide previous location
-        lastLocation!!.remove()
-        lastLocation=null
-      }
+      removeLastOwnLocation()
 
       val uid = app.dsSmasUser.read.first().uid
       // app.dsUser.readUser.first().id
-      lastLocation = map.addMarker(myLocationMarker(coord, locMethod))
-      lastLocation!!.tag = UserInfoMetadata(UserInfoType.OwnUser, uid, coord, utlTime.epoch())
+      lastOwnLocation = map.obj.addMarker(myLocationMarker(coord, locMethod, alerting))
+      lastOwnLocation!!.tag = UserInfoMetadata(
+              UserInfoType.OwnUser,
+              locMethod,
+              uid,
+              coord,
+              utlTime.epoch(),
+              alerting)
     }
 
-    updateLocationMarkerBasedOnFloor(coord.level, locMethod)
+    updateLocationMarkerBasedOnFloor(coord.level)
   }
 
 
-  /**
-   * Pan camera to new location
-   */
-  fun animateToLocation(latLng: LatLng) {
-    // nice animation but it causes issues..
-    // map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, map.maxZoomLevel))
-
-    scope.launch(Dispatchers.Main) {
-      val cameraPosition = CameraPosition(
-              latLng, map.cameraPosition.zoom,
-              // don't alter tilt/bearing
-              map.cameraPosition.tilt,
-              map.cameraPosition.bearing)
-
-      // val cancellableCallback= object : GoogleMap.CancelableCallback {
-      //   override fun onCancel() {}
-      //   override fun onFinish() {}
-      // }
-
-      val newCameraPosition = CameraUpdateFactory.newCameraPosition(cameraPosition)
-      map.moveCamera(newCameraPosition)
+  fun animateOnOutOfBounds(latLng: LatLng) {
+    if (map.outOfMapBounds(latLng)) {
+      map.animateToLocation(latLng)
     }
   }
 
   fun clearChatLocationMarker() {
+    LOG.D2()
     scope.launch(Dispatchers.Main) {
-      LOG.E(TAG,"clearChatLocationMarker")
-      if (lastChatLocation != null) { // hide previous location
-        lastChatLocation!!.remove()
-        lastChatLocation = null
+      if (lastChatShareLocation != null) { // hide previous location
+        lastChatShareLocation!!.remove()
+        lastChatShareLocation = null
       }
     }
+  }
+
+  /**
+   * Opens the Info Window of an existing marker, if their [latLng] overlaps exactly.
+   * It might be our own user location, or any other user location.
+   *
+   * If not match is found: returns false
+   */
+  @Deprecated("Does not work as expected..")
+  private fun tryToOpenExistingMarker(coord: Coord) : Boolean {
+    val latLng = coord.toLatLng()
+    // pointing to our current location
+    if (lastOwnLocation != null &&
+            latLng == lastOwnLocation!!.position
+            && coord.level == lastCoord!!.level) {
+      lastOwnLocation!!.showInfoWindow()
+
+      LOG.E(TAG, "found own user")
+      return true
+    }
+
+    userLocations.forEach {  // these users are on the current floor anyway (so no need to check the floor)
+      if (latLng == it.position) {
+        LOG.E(TAG, "found existing other user")
+        // extract uid from tag
+        val metadata = it.tag as UserInfoMetadata?
+        if (metadata != null) {
+          lastSelectedUser = metadata.uid
+          LOG.E(TAG, "USER FOUND: $metadata.uid")
+        }
+
+        // very ugly workaround: open InfoWindow in a few moments
+        // (so the method will return, and afterwards we'll open it)
+        scope.launch(Dispatchers.IO) {
+          delay(250)
+          scope.launch(Dispatchers.Main) { // switch to main thread
+
+            LOG.E(TAG, "SHOWING INFO WIN")
+            it.showInfoWindow()
+          }
+        }
+        return true
+      }
+    }
+    return false  // an additional marker will have to be drawn
   }
 
   /**
    * Draw a location marker that was returned from the [SmasChatActivity].
    */
-  fun addChatLocationMarker(coord: Coord) {
+  fun addSharedLocationMarker(coord: Coord) {
     LOG.E(TAG, "addChatLocationMarker")
 
     scope.launch(Dispatchers.Main) {
-      // clearChatLocationMarker()
       val latLng = coord.toLatLng()
-      animateToLocation(latLng)
+      map.animateToLocation(latLng)
 
-      lastChatLocation = map.addMarker(sharedChatLocationMarker(latLng).zIndex(9f))
-      lastChatLocation!!.tag = UserInfoMetadata(UserInfoType.SharedLocation, SHARED_CHAT_LOC, coord, utlTime.epoch())
+      // DONT DO THIS...
+      // there was an existing marker already (either own user marker, or other user marker)
+      // In that case, avoid drawing another ovelapping marker on top of that.
+      // if (tryToOpenExistingMarker(coord)) return@launch
+
+      // otherwise, if there is no perfect overlap: draw a [sharedChatLocationMarker]
+      lastChatShareLocation = map.obj.addMarker(sharedChatLocationMarker(latLng)
+              .zIndex(102f))
+      lastChatShareLocation!!.tag = UserInfoMetadata(
+              UserInfoType.SharedLocation,
+              LocalizationMethod.NA,
+              SHARED_CHAT_LOC,
+              coord,
+              utlTime.epoch(),
+              false)
+      lastChatShareLocation!!.showInfoWindow()
     }
 
   }

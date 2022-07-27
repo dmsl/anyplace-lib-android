@@ -22,8 +22,10 @@ class BottomSheetCvLoggerUI(
   private val act: CvLoggerActivity,
   val VMlog: CvLoggerViewModel,
   val id_bottomsheet: Int,
-  val id_btn_logging: Int)
-  : BottomSheetCvUI(act as DetectorActivityBase, true) {
+  val id_btn_logging: Int,
+  val visible: Boolean
+  )
+  : BottomSheetCvUI(act as DetectorActivityBase, visible) {
 
   // val llBottomSheet: ConstraintLayout by lazy {act.findViewById(id_bottomsheet) }
 

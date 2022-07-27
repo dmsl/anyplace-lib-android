@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Toast msgs are no longer customizable -->
+<!-- CLR this code (and anything else related to custom Toasts -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_toast"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:background="@drawable/toast_msg_shape"
+    android:padding="10dp">
+
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:id="@+id/tv_toastMsg"
+      android:layout_gravity="center_vertical"
+      android:text="This is a toast"
+      tools:text="Toast Msg text"
+      android:textColor="@color/white"
+      android:textStyle="bold"
+      android:textSize="20dp"
+    />
+  <ImageView
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:id="@+id/tv_toastIcon"
+      android:src="@drawable/ic_developer_options"
+      android:layout_marginLeft="10dp"
+    />
+
+</LinearLayout>
