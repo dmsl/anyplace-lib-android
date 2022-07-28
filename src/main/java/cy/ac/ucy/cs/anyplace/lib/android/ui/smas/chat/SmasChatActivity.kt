@@ -24,6 +24,35 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * This activity is using []Jetpack Compose](https://developer.android.com/jetpack/compose)
+ *
+ * IMPORTANT REGARDING Data Access ([ViewModel]):
+ *
+ * ALL MESSAGES ARE PREPARED BY THE PARENT ACTIVITY ([SmasMainActivity])
+ *
+ * + Receiving messages:
+ *   - this activity is launched by [SmasMainActivity] (parent).
+ *   - parent stays open (in background), and is pulling/handling the msgs
+ *     - this activity just renders whatever [SmasApp.msgList] has
+ *   - e.g. [SmasMainActivity.collectMessages] does exactly that
+ *
+ * + this activity never instantiates [SmasMainViewModel] (it is done only from parent)
+ *
+ * + SmasChatViewModel:
+ *   - it is instanciated and used in here ([VMchat]) for sending messages
+ *   - however, when a msg is sent we want to immediately pull msgs back, to include it
+ *     - like a verification that it was sent
+ *     - alternatively we would have to wait for the parent loop to run
+ *   - how we fetch it earlier?
+ *     - this app never pulls "directly" any new msgs. it is parent's responsibility
+ *     - to accomplish that, we:
+ *     - use [AppSmas.pullMessagesONCE], which uses parent's VM ([SmasChatViewModel])
+ *       - that VM was registered by parent using [setMainActivityVMs]
+ *       - so AppSmas uses that (parent) VM to call [nwPullMessagesONCE]
+ *       - so this way, we are making our parent (indirectly) to pull new messages a bit earlier
+ *         instead of waiting of the parent's loop to run
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @ExperimentalMaterialApi
 @ExperimentalPermissionsApi
@@ -50,7 +79,7 @@ class SmasChatActivity : AppCompatActivity() {
     app.setMainView(rootView, true)
   }
 
-  //Called when the back btn on the top bar is clicked
+  // Called when the back btn on the top bar is clicked
   private fun onBackClick() {
     intent.data = null
     finish()

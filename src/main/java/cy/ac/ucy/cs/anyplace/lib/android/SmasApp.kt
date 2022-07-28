@@ -17,6 +17,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 // import androidx.compose.runtime.mutableStateListOf
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -34,6 +37,7 @@ class SmasApp : AnyplaceApp() {
    */
 
   @Inject lateinit var rfhSmas: RetrofitHolderSmas
+  @Inject lateinit var dsChat: SmasDataStore
 
   /** list of messages shown on screen by [LazyColumn] */
   var msgList = mutableStateListOf<ChatMsg>()
@@ -61,6 +65,10 @@ class SmasApp : AnyplaceApp() {
 
   /**
    * Stops the receival of messages and waits if there is an ongoing receival
+   *
+   * NOTE: this runs from a different activity ([SettingsChatActivity])
+   *       and affects a ViewModel of [SmasMainActivity]
+   *
    */
   fun stopMsgGetBLOCKING() {
     VMchat?.nwMsgGet?.skipCall=true
@@ -69,17 +77,29 @@ class SmasApp : AnyplaceApp() {
     }
   }
 
+  /**
+   * NOTE: this runs from a different activity ([SettingsChatActivity])
+   *       and affects a ViewModel of [SmasMainActivity]
+   *
+   */
   fun resumeMsgGet() {
     VMchat?.nwMsgGet?.skipCall = false
   }
 
-  fun setUnreadMsgsState(value: Boolean) {
-    VM?.steUnreadMsgs(value)
-  }
-
+  /**
+   * NOTE: this runs from a different activity ([SettingsChatActivity])
+   *       and affects a ViewModel of [SmasMainActivity]
+   *
+   */
   fun pullMessagesONCE() {
     LOG.V2(TAG, "$METHOD: using VMchat of Main Activity?")
-    VMchat?.netPullMessagesONCE(false)
+    VMchat?.nwPullMessages(false)
+  }
+
+  fun setUnreadMsgsState(scope: CoroutineScope, value: Boolean) {
+    scope.launch(Dispatchers.IO) {
+      dsChat.saveNewMsgs(value)
+    }
   }
 
   /** Manually create a new instance of the RetrofitHolder on pref changes */

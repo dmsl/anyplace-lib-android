@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.viewModelScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -68,8 +69,7 @@ fun Conversation(
       LOG.W(TAG, "LazyColumn: msgsList size: ${app.msgList.size}")
 
       LOG.D2(TAG, "LazyColumn: resetting new msgs")
-      app.setUnreadMsgsState(false)
-
+      app.setUnreadMsgsState(VMchat.viewModelScope, false)
 
       if (!app.msgList.isEmpty()) {
         // val lastMsgs = app.msgList.take(5)

@@ -39,7 +39,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SmasMainViewModel @Inject constructor(
         application: Application,
-        /** For [SnackBar] */
         repoAP: RepoAP,
         repoSmas: RepoSmas,
         val dsChat: SmasDataStore,
@@ -105,12 +104,6 @@ class SmasMainViewModel @Inject constructor(
 
     nwLocationSend.mode.value = newMode
     return newMode
-  }
-
-  fun steUnreadMsgs(value: Boolean) {
-    viewModelScope.launch(Dispatchers.IO) {
-      dsChat.saveNewMsgs(value)
-    }
   }
 
   fun hasNewMsgs(localTs: Long?, remoteTs: Long?) : Boolean {

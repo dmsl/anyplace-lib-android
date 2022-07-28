@@ -31,12 +31,8 @@ class MsgGetNW(
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
-  /** Network Responses from API calls
-   *
-   * TODO: this is the last batch of messages.
-   *  - how distinguish new from already received messages?
-   *  - might need a separate flow
-   * they have to be filtered & persisted (TODO:PM SQLite)
+  /**
+   * Network Responses from API calls
    */
   val resp: MutableStateFlow<NetworkResult<ChatMsgsResp>> = MutableStateFlow(NetworkResult.Unset())
 
@@ -50,8 +46,6 @@ class MsgGetNW(
 
   /**
    * Get [ChatMsg] SafeCall
-   *
-   * TODO: get alert? or just get all messages? (I think the latter..)
    */
   suspend fun safeCall(showToast: Boolean = false) {
     LOG.D2(TAG_METHOD)

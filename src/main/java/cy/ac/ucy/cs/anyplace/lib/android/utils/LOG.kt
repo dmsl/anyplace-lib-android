@@ -18,8 +18,8 @@ class DBG {
     const val WAI = false
     const val GREs = false
 
-    const val CO5 = true
-    const val CTR = true
+    const val CO5 = false
+    const val CTR = false
 
     const val CVM = false
 

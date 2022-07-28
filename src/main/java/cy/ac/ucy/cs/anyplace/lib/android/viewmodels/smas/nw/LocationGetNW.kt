@@ -67,10 +67,6 @@ class LocationGetNW(
         val response = repo.remote.locationGet(ChatUserAuth(smasUser))
         LOG.D4(TAG, "LocationGet: ${response.message()}" )
         resp.value = handleResponse(response)
-
-        // TODO: Persist: put in cache & list (main mem) ?
-        // val userLocations = resp.value.data
-        // if (userLocations != null) { cache(useLocations, UserOwnership.PUBLIC) }
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
@@ -163,6 +159,7 @@ class LocationGetNW(
     val ownLocations = locations.rows.filter { it.uid == smasUser.uid }
     if (ownLocations.isNotEmpty()) {
       val ownLocation = ownLocations[0]
+
       // when the current user has not (ever) reported its own location,
       // then it might not be included in the locations DB
       checkForNewMsgs(VMchat, ownLocation.lastMsgTime)
@@ -220,13 +217,17 @@ class LocationGetNW(
   }
 
 
+  /**
+   * Getting the locations includes [lastMsgsTs].
+   * If it's newer than the previos one (ion [repo.local]), then we fetch the messages again
+   */
   private fun checkForNewMsgs(VMchat: SmasChatViewModel, lastMsgTs: Long) {
     val localTs = repo.local.getLastMsgTimestamp()
     LOG.V2(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}")
 
     if (VM.hasNewMsgs(localTs, lastMsgTs)) {
       LOG.W(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}: pulling msgs..")
-      VMchat.netPullMessagesONCE()
+      VMchat.nwPullMessages()
     }
   }
 }

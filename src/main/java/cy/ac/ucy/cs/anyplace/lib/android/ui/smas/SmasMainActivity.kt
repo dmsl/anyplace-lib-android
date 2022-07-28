@@ -50,6 +50,26 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 /**
+ * This activity takes care of pulling user locations and messages.
+ * When the [SmasChatActivity] runs, this activity is still in the background,
+ * providing this functionality:
+ *
+ *
+ *  + How locations are pulled:
+ *    - [updateLocationsLOOP] every [locationRefreshMs] ms (settting) it:
+ *      - sends own user location (only if it has one)
+ *        - it sends the last localization position of the user
+ *        - so the user must have localized at least once
+ *        - it will keep sending that one until it gets updated
+ *      - it also receives other user's location
+ *
+ *  - How messages are pulled:
+ *    - [collectLocations] of the [SmasMainViewModel] reacts when new locations are pulled
+ *      - the ones we pull using [updateLocationsLOOP]
+ *      - then (in [LocationGetNW]), it processes those locations ([processUserLocations])
+ *      - the response also includes a timestamp of the last msg of the user
+ *      - so [checkForNewMsgs] checks it, and if there are newer msgs it pulls them
+ *
  */
 @AndroidEntryPoint
 class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
@@ -230,9 +250,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * In a loop:
    * - conditionally send own location
    * - get other users locations
-   *
-   *  - TODO:PM get from anyplace location
-   *  - TODO:PM get a list of those locations: how? parse json?
    */
   var updatingLocationsLoop = false
   private fun updateLocationsLOOP()  {

@@ -112,7 +112,7 @@ class SmasChatViewModel @Inject constructor(
     replyToMessage = null
   }
 
-  fun netPullMessagesONCE(showToast: Boolean = false) {
+  fun nwPullMessages(showToast: Boolean = false) {
     LOG.D2(TAG, "PULL-MSGS")
     viewModelScope.launch(Dispatchers.IO) {
       nwMsgGet.safeCall(showToast)
@@ -171,7 +171,6 @@ class SmasChatViewModel @Inject constructor(
 
   fun sendMessage(newMsg: String?, mtype: Int) {
     viewModelScope.launch(Dispatchers.IO) {
-
       var ownUserCoords = getUserCoordinates()
       if (ownUserCoords==null) {
         val msg = "Cannot attach location to msg.\nUsing selected floor's (${app.floor.value?.floorNumber}) center."
