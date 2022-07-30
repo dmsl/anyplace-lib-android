@@ -133,12 +133,6 @@ class UserInfoWindowAdapter(
         val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_aperture, null)
         btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
       } else {
-        // condensed address
-        // val latStart = "${metadata.coord.lat}".take(6)
-        // val lonStart = "${metadata.coord.lon}".take(6)
-        // val latEnd= "${metadata.coord.lat}".takeLast(2)
-        // val lonEnd= "${metadata.coord.lon}".takeLast(2)
-        // prettyLatLng = "${latStart}..${latEnd}, ${lonStart}..${lonEnd}"
         val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_clipboard, null)
         btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null,null,null)
       }
