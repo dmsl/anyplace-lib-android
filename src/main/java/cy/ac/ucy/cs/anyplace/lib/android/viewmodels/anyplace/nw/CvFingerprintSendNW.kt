@@ -96,7 +96,7 @@ class CvFingerprintSendNW(
     uiLog.checkForUploadCache(true)
 
     delay(1000)
-    var reportMsg = "Report:\nSuccessfully uploaded $totalObjects recognitions in $totalLocations locations"
+    var reportMsg = "Upload Report:\nUploaded: $totalObjects recognitions. In $totalLocations locations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
     app.showSnackbarInf(VM.viewModelScope, reportMsg)

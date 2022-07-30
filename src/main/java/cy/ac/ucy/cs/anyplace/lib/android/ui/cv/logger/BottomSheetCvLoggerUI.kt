@@ -69,6 +69,7 @@ class BottomSheetCvLoggerUI(
     // super.hideBottomSheet() CLR ?
     utlUi.gone(ivArrowImg)
     utlUi.invisible(layoutInternal)
+    act.sheetBehavior.isDraggable=false
   }
 
   override fun showBottomSheet() {
@@ -77,36 +78,9 @@ class BottomSheetCvLoggerUI(
     if (bottomSheetEnabled) {
       utlUi.visible(ivArrowImg)
       utlUi.visible(layoutInternal)
-      // groupDevSettings.visibility = View.VISIBLE
+      act.sheetBehavior.isDraggable=true
     }
   }
-
-  // CHECK:PM ? I think this was replaced with setupSpecialize?
-  //  (to be compatible with the BottomSheet of the new project..)
-  // fun setup() {
-  //   super.setup()
-  //     LOG.E(TAG, "setup: BottomSheetCV")
-  //     LOG.E(TAG, METHOD)
-  //
-  //     // might hit?
-  //     // val sheetBehavior = BottomSheetBehavior.from(buBottomSheet as View)
-  //     // val sheetBehavior = BottomSheetBehavior.from(buBottomSheet.parent as View)
-  //     // val sheetBehavior = BottomSheetBehavior.from(binding.bottomUi.root)
-  //
-  //     // sheetBehavior.isHideable = false
-  //     // if (!forceShow && !viewModel.prefs.devMode) { // OLD
-  //     //   hideBottomSheet()
-  //     //   return
-  //     // }
-  //
-  //     // showBottomSheet()
-  //
-  //     // val callback = BottomSheetCallback(ivBottomSheetArrow)
-  //     // sheetBehavior.addBottomSheetCallback(callback)
-  //
-  //     // val gestureLayout = binding.bottomUi.gestureLayout
-  //
-  // }
 
   override fun setupSpecialize() {
 

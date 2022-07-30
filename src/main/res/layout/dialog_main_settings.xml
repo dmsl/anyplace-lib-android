@@ -182,7 +182,7 @@
 
     <Button
         android:id="@+id/button_computerVision"
-        app:icon="@drawable/ic_computer_vision"
+        app:icon="@drawable/ic_aperture"
         android:layout_marginTop="0dp"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="0dp"

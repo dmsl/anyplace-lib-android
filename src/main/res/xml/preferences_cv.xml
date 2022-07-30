@@ -4,7 +4,7 @@
 
   <PreferenceCategory
       app:title="@string/prefs_header_computer_vision"
-      app:icon="@drawable/ic_computer_vision">
+      app:icon="@drawable/ic_aperture">
 
     <EditTextPreference
         app:key="@string/pref_cv_localization_ms"
@@ -32,7 +32,7 @@
   </PreferenceCategory>
 
   <PreferenceCategory app:title="@string/prefs_header_user_locations"
-      app:icon="@drawable/ic_folder">
+      app:icon="@drawable/ic_location_found">
 
     <EditTextPreference
         app:key="@string/pref_smas_location_refresh"

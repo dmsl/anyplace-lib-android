@@ -404,7 +404,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       while (!VM.detectorLoaded) delay(100)
 
-      val modelInfo = "$actName (model: ${VM.model.modelName})"
+      val modelInfo = "$actName | ${VM.model.modelName}"
       LOG.W(TAG, "$method: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
     }

@@ -161,17 +161,16 @@
         app:layout_constraintVertical_bias="0.7"
         />
 
-
-    <ImageView
-        android:id="@+id/iv_logoLashfire"
-        android:layout_width="78dp"
-        android:layout_height="78dp"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="@id/toolbar"
-        app:layout_constraintEnd_toEndOf="@id/toolbar"
-        android:alpha="0.1"
-        app:srcCompat="@drawable/ic_lashfire_logo"
-        android:contentDescription="@string/lashfire" />
+<!--    <ImageView-->
+<!--        android:id="@+id/iv_logoLashfire"-->
+<!--        android:layout_width="78dp"-->
+<!--        android:layout_height="78dp"-->
+<!--        app:layout_constraintTop_toTopOf="@id/toolbar"-->
+<!--        app:layout_constraintStart_toStartOf="@id/toolbar"-->
+<!--        app:layout_constraintEnd_toEndOf="@id/toolbar"-->
+<!--        android:alpha="0.1"-->
+<!--        app:srcCompat="@drawable/ic_lashfire_logo"-->
+<!--        android:contentDescription="@string/lashfire" />-->
 
 
     <androidx.appcompat.widget.Toolbar
@@ -234,8 +233,6 @@
         app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
         />
 
-
-
     <!-- TV TITLE -->
     <TextView
         android:id="@+id/tvTitle"
@@ -243,8 +240,12 @@
         android:layout_height="wrap_content"
         android:text="@string/smas"
         android:textColor="@color/black"
-        android:alpha="0.3"
-        android:textSize="20sp"
+        android:alpha="0.4"
+        android:textSize="18sp"
+        android:layout_marginTop="5dp"
+        android:drawableLeft="@drawable/ic_lashfire_bwicon"
+        android:drawableRight="@drawable/ic_aperture"
+        android:textAlignment="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

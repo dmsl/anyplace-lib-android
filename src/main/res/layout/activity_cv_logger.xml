@@ -23,20 +23,6 @@ NOTE:
       android:background="@android:color/black"
       android:orientation="vertical">
 
-
-    <!-- 0. TITLE -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:alpha="0.3"
-        android:text="logger"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <!-- 1. CAMERA + OBJECTS OVERLAY
       - CAMERA VIEW: [CameraActivity]
       - OVERLAY: Showing Detected Objects
@@ -56,21 +42,6 @@ NOTE:
         tools:context="org.tensorflow.demo.CameraActivity"
         >
     </FrameLayout>
-
-
-<!--    CLR PM -->
-<!--    &lt;!&ndash; 2. STATUS BACKGROUND:-->
-
-<!--     &ndash;&gt;-->
-<!--    <View-->
-<!--        android:id="@+id/view_statusBg"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:alpha="1"-->
-<!--        android:background="@color/yellowDark"-->
-<!--        app:layout_anchor="@+id/relativeLayout"-->
-<!--        app:layout_anchorGravity="center"-->
-<!--        />-->
 
 
     <!-- 2. GOOGLE MAPS:
@@ -101,9 +72,7 @@ NOTE:
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="top|center">
 
-
-
-      <!-- Settings Button -->
+      <!-- 3.1 Settings Button -->
       <com.google.android.material.button.MaterialButton
           android:id="@+id/button_settings"
           android:layout_width="58dp"
@@ -124,12 +93,26 @@ NOTE:
           app:layout_constraintTop_toTopOf="parent" />
     </androidx.appcompat.widget.Toolbar>
 
+    <!-- 4. TITLE: showing selected CV-Model -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.4"
+        android:layout_marginTop="5dp"
+        android:text="logger | model"
+        android:textSize="18sp"
+        android:drawableLeft="@drawable/ic_anyplace"
+        android:drawableRight="@drawable/ic_aperture"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-
-    <!--  0. OFFLINE LOGGING: UPLOAD  -->
+    <!--  5. OFFLINE LOGGING: UPLOAD  -->
     <!-- Use android:background with MaterialButton -->
     <!-- https://stackoverflow.com/a/69212608/776345-->
-
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_uploadOffline"
         android:layout_width="wrap_content"
@@ -138,6 +121,7 @@ NOTE:
         tools:visibility="visible"
         app:constraint_referenced_ids="btn_upload,btn_uploadDiscard"
         />
+    <!--  5.1. OFFLINE LOGGING: UPLOAD BUTTON -->
     <com.google.android.material.button.MaterialButton
         app:backgroundTint="@null"
         app:backgroundTintMode="add"
@@ -161,10 +145,10 @@ NOTE:
         app:layout_constraintEnd_toStartOf="@id/btn_uploadDiscard"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
+        app:layout_constraintTop_toTopOf="parent"
         />
 
-    <!-- 0. OFFLINE LOGGING: DISCARD -->
+    <!--  5.1. OFFLINE LOGGING: UPLOAD DISCARD BUTTON -->
     <com.google.android.material.button.MaterialButton
         app:backgroundTint="@null"
         app:backgroundTintMode="add"
@@ -188,7 +172,6 @@ NOTE:
         />
 
 
-
     <!-- 6. FLOOR SELECTOR -->
     <!-- FLOORSELECTOR: GROUP -->
     <androidx.constraintlayout.widget.Group
@@ -198,7 +181,6 @@ NOTE:
         android:visibility="invisible"
         app:constraint_referenced_ids="button_floorUp,button_floorDown,button_selectedFloor,textView_titleFloor"
         tools:visibility="visible" />
-    <!--    android:visibility="invisible"-->
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_whereami"
