@@ -23,6 +23,7 @@
     <LinearLayout
         android:id="@+id/bottom_sheet_internal"
         android:layout_width="match_parent"
+        tools:visibility="visible"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/cv_bottom_sheet_logging_bg"

@@ -247,7 +247,7 @@
   <string name="username">Username:</string>
   <string name="url_anyplace_about">https://anyplace.cs.ucy.ac.cy/#about</string>
   <string name="pref_anyplace_server">pref_anyplace_server</string>
-  <string name="summary_cv_scan_delay">Scanning every %1$sms to save battery.</string>
+  <string name="summary_cv_scan_delay">Consecutive scans are at least %1$sms apart.</string>
   <string name="model_title_desc">The selected model is specialized at:</string>
 
   <string name="btn_cancel_descr">cancel</string>

@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.view.isVisible
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -11,6 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI.Companion.ANIMATION_DELAY
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
@@ -33,8 +35,7 @@ class UiLoggingBtn(
         val scope: CoroutineScope,
         private val ui: CvUI,
         private val uiLog: CvLoggerUI,
-        private val button_id: Int
-        ) {
+        private val button_id: Int) {
 
   val btn: AppCompatButton by lazy { act.findViewById(button_id) }
 
@@ -138,10 +139,12 @@ class UiLoggingBtn(
   fun startLogging() {
     LOG.W(TAG, "$METHOD")
 
-    uploadWasVisible = uiLog.btnUpload.isVisible
-    if (uploadWasVisible) utlUi.fadeOut(uiLog.btnUpload)
+    uploadWasVisible = uiLog.groupUpload.isVisible
+    if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
 
     ui.floorSelector.disable()
+    utlUi.disable(act.btnSettings)
+    uiLog.bottom.hide()
 
     VM.enableCvDetection()
 
@@ -162,6 +165,8 @@ class UiLoggingBtn(
   fun stopLogging() {
     if (uploadWasVisible) showUploadBtn()
     ui.floorSelector.enable()
+    utlUi.enable(act.btnSettings)
+    uiLog.bottom.show()
 
     LOG.W(TAG, "$METHOD: logging")
     VM.disableCvDetection()
@@ -180,8 +185,8 @@ class UiLoggingBtn(
 
   fun startRecognitionDemo() {
     LOG.W(TAG, "$METHOD: Not logging. Only obj-rec.")
-    uploadWasVisible = uiLog.btnUpload.isVisible
-    if (uploadWasVisible) utlUi.fadeOut(uiLog.btnUpload)
+    uploadWasVisible = uiLog.groupUpload.isVisible
+    if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
 
     VM.objWindowLOG.postValue(emptyList())
     VM.statObjWindowUNQ=0
@@ -193,7 +198,7 @@ class UiLoggingBtn(
 
     utlUi.text(btn, "stop demo")
     utlUi.changeBackgroundCompat(uiLog.bottom.logging.btn, R.color.darkGray)
-    app.showToast(scope, "Object Recognition Demo")
+    app.showSnackbar(scope, "Object Recognition Demo")
 
     utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
   }
@@ -212,17 +217,17 @@ class UiLoggingBtn(
     btn.visibility = View.GONE
   }
 
-  // TODO:PMX UPL
+  // TODO:PMX UPL OK?
   // implement something like the below
   fun showUploadBtn() {
-    // ui.localization.hide(view)
-    // ui.localization.visibilitygone()
-    //
-    // utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_uploaded)
-    // utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scan))
-    // utlUi.enable(uiLog.btnUploaded)
-    //
-    // utlUi.fadeInAnyway(uiLog.btnUploaded)
+    if (!DBG.UPL) return
+
+    ui.localization.hide()
+    ui.localization.visibilityGone()
+    utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
+    utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
+    utlUi.enable(uiLog.groupUpload)
+    utlUi.fadeInAnyway(uiLog.groupUpload)
   }
 
 }

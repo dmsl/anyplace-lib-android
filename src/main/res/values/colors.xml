@@ -31,11 +31,21 @@
   <color name="yellow2">#E6BB06</color>
   <color name="yellowDark">#C4A008</color>
   <color name="yellowDark2">#805500</color>
+  <color name="yellowDark3">#452E00</color>
 
   <color name="colorPrimary">@color/blue</color>
   <color name="colorPrimaryDark">@color/darkBlue</color>
   <color name="colorPrimaryDark50">@color/darkBlue50</color>
   <color name="colorAccent">@color/lightBlue</color>
+
+
+  <color name="locationRecent">@color/dark</color>
+  <color name="locationAlert">@color/redDark</color>
+  <color name="locationSmas">@color/colorPrimary</color>
+  <color name="locationManual">@color/yellowDark</color>
+  <color name="locationManualDark">@color/yellowDark2</color>
+  <color name="locationOtherInactive">@color/gray</color>
+  <color name="locationOtherInactiveDark">@color/dark</color>
 
   <color name="white">#FFFFFF</color>
   <color name="white_70">#70FFFFFF</color>
@@ -45,16 +55,20 @@
   <color name="lightGray">#F9F9F9</color>
   <color name="mediumGray">#D1D1D1</color>
   <color name="lightMediumGray">#80D1D1D1</color>
+  <color name="grayLight2">#808080</color>
   <color name="grayLight1">#959595</color>
   <color name="darkGray_77">#774B4B4B</color>
   <color name="darkGray">#4B4B4B</color>
   <color name="dark">#313C44</color>
   <color name="darker">#151B20</color>
   <color name="black">#000000</color>
-  <color name="green">#00C980</color>
+  <color name="green">#1ABC9C</color>
+  <color name="greenDarker">#025A49</color>
 
   <color name="gmapsGrayColor">#F7F8F9</color>
   <color name="dev_mode">#b32400</color>
+
+  <color name="velvet">#273697</color>
 
   <!-- OLD COLORS -->
   <color name="action_bar">#273697</color>
@@ -88,7 +102,7 @@
   <color name="side_navigation_item_text_color">#f3f3f3</color>
   <color name="fuchsia">#FF00FF</color>
   <color name="silver">#C0C0C0</color>
-  <color name="gray">#808080</color>
+  <color name="gray">#4f4f4f</color>
   <color name="olive">#808000</color>
   <color name="purple">#800080</color>
   <color name="maroon">#800000</color>

@@ -2,29 +2,29 @@ package cy.ac.ucy.cs.anyplace.lib.android.maps
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.widget.TextViewCompat
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
-import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
-import kotlinx.coroutines.CoroutineScope
 
 enum class UserInfoType {
-  OwnUser,
-  OtherUser,
-  SharedLocation,
+  OwnUser,  /** Location of current user */
+  OtherUser, /** Location of another user */
+  SharedLocation, /** A chat location share */
+  LoggerScan,  /** A scanned fingerprint, that was generated using the Logger */
 }
 data class UserInfoMetadata(
         val type: UserInfoType,
@@ -71,11 +71,15 @@ class UserInfoWindowAdapter(
       val drawable = clayout.background as GradientDrawable
       drawable.mutate() // only change this instance of the xml, not all components using this xml
 
+      // must set initial state to whatever we might modify below
+      // (maybe these compoents are reused)
       tvTitle.visibility=View.VISIBLE
+      tvTitle.setCompoundDrawablesWithIntrinsicBounds(null, null,null,null)
+      tvSubtitle.visibility=View.VISIBLE
       tvSubtitle.setTextColor(utlColor.get(R.color.darkGray))
 
       if (metadata.alerting) {
-        tvSubtitle.setTextColor(utlColor.get(R.color.redDark))
+        tvSubtitle.setTextColor(utlColor.get(R.color.locationAlert))
         val origText = tvSubtitle.text
         if (origText.isNullOrEmpty()) {
           tvSubtitle.text="(alerting)"
@@ -86,15 +90,20 @@ class UserInfoWindowAdapter(
 
       val colorId =  when(metadata.type) {
         UserInfoType.OwnUser -> {
+
+          val tvUserDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_whereami, null)!!
+          DrawableCompat.setTint(tvUserDrawable, utlColor.ColorLocationSmas())
+          tvTitle.setCompoundDrawablesWithIntrinsicBounds(tvUserDrawable, null,null,null)
+
           drawable.setColor(utlColor.GrayLighter())
-          R.color.colorPrimary
+          R.color.locationSmas
         }
 
          UserInfoType.OtherUser -> { // OTHER USER THAT IS:
           when { // either: inactive, alerting, or has normal status (active)
-            metadata.alerting -> R.color.redDark
-            MapMarkers.isUserConsideredInactive(metadata.secondsElapsed) -> R.color.gray
-            else ->  R.color.yellowDark
+            metadata.alerting -> R.color.locationAlert
+            MapMarkers.isUserConsideredInactive(metadata.secondsElapsed) -> R.color.locationOtherInactiveDark
+            else ->  R.color.greenDarker
           }
         }
 
@@ -102,6 +111,9 @@ class UserInfoWindowAdapter(
         UserInfoType.SharedLocation-> {
           // tvTitle.visibility=View.GONE
           R.color.black
+        }
+        UserInfoType.LoggerScan ->  {
+          R.color.yellowDark2
         }
       }
 
@@ -111,15 +123,17 @@ class UserInfoWindowAdapter(
       tvTitle.setTextColor(col)
 
       val btnLocation = view.findViewById<AppCompatButton>(R.id.btn_coordinates)
-
       btnLocation.backgroundTintList= AppCompatResources.getColorStateList(ctx, colorId)
 
-      // var prettyLatLng: String
       val prettyLatLng = "   X: ${metadata.coord.lat}\n   Y: ${metadata.coord.lon}"
       if (metadata.type == UserInfoType.SharedLocation) {
         val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_close, null)
-        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null,null,null)
+        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+      } else if (metadata.type == UserInfoType.LoggerScan) { // computer vision scan
+        val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_aperture, null)
+        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
       } else {
+        // condensed address
         // val latStart = "${metadata.coord.lat}".take(6)
         // val lonStart = "${metadata.coord.lon}".take(6)
         // val latEnd= "${metadata.coord.lat}".takeLast(2)
@@ -130,8 +144,13 @@ class UserInfoWindowAdapter(
       }
       btnLocation.text = prettyLatLng
 
+      // set location info (how location was acquired)
       val tvOwnInfoLocation = view.findViewById<TextView>(R.id.tv_ownInfoLocation)
-      val ownLocationMethodInfo = getInfoOwnLocation(metadata.ownLocationMethod)
+      val ownLocationMethodInfo = getLocationInfo(metadata.ownLocationMethod)
+      val colorLocationMethod = getLocationInfoColor(metadata.ownLocationMethod)
+      tvOwnInfoLocation.setTextColor(colorLocationMethod)
+      val colorList = ColorStateList.valueOf(colorLocationMethod)
+      TextViewCompat.setCompoundDrawableTintList(tvOwnInfoLocation, colorList)
       if (ownLocationMethodInfo.isNotEmpty()) {
         tvOwnInfoLocation.visibility = View.VISIBLE
         tvOwnInfoLocation.text = ownLocationMethodInfo
@@ -142,16 +161,29 @@ class UserInfoWindowAdapter(
         tvOwnInfoLocation.visibility = View.GONE
       }
 
+      // hide empty subtitles
+      if (tvSubtitle.text.isNullOrEmpty()) {
+        tvSubtitle.visibility = View.GONE
+      }
     }
   }
 
-  private fun getInfoOwnLocation(locMethod: LocalizationMethod) : String {
+  private fun getLocationInfo(locMethod: LocalizationMethod) : String {
     return when (locMethod) {
-      LocalizationMethod.manualByUser -> ": set manually"
-      LocalizationMethod.autoMostRecent -> ": most recent"
-      LocalizationMethod.cvEngine -> ": Computer Vision"
+      LocalizationMethod.manualByUser -> " : set manually"
+      LocalizationMethod.autoMostRecent -> " : most recent"
+      LocalizationMethod.cvEngine -> " : Computer Vision"
       else -> ""
     }
+  }
+
+  private fun getLocationInfoColor(locMethod: LocalizationMethod) : Int {
+    return utlColor.get(when (locMethod) {
+      LocalizationMethod.manualByUser -> R.color.locationManualDark
+      LocalizationMethod.autoMostRecent -> R.color.locationRecent
+      LocalizationMethod.cvEngine -> R.color.locationSmas
+      else -> R.color.gray
+    })
   }
 
   override fun getInfoContents(marker: Marker): View {

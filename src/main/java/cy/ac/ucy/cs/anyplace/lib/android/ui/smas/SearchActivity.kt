@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -19,13 +20,25 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class SearchActivity : CvMapActivity(), OnMapReadyCallback {
-  // PROVIDE TO BASE CLASS [CameraActivity]:
-  // PROVIDE TO BASE CLASS [CameraActivity]:
+
+  //// PROVIDE TO BASE CLASS ([CvMapActivity]), which will provide to its base class
   override val layout_activity: Int get() = R.layout.activity_search
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   override val id_gesture_layout: Int get() = R.id.gesture_layout
+  //// PROVIDE TO IMMEDIATE PARENT CLASS [CvMapActivity]:
   override val id_gmap: Int get() = R.id.mapView
   override val actName: String = "act-cv-search"
+  override val id_btn_settings: Int get() = R.id.button_settings
+  ////// FLOOR SELECTOR
+  override val id_group_floorSelector : Int get() = R.id.group_floorSelector
+  override val id_tvTitleFloor: Int get() = R.id.textView_titleFloor
+  override val id_btnSelectedFloor: Int get() = R.id.button_selectedFloor
+  override val id_btnFloorUp: Int get() = R.id.button_floorUp
+  override val id_btnFloorDown: Int get() = R.id.button_floorDown
+  ////// UI-LOCALIZATION
+  override val id_btn_localization: Int get() = R.id.btn_localization
+  override val id_btn_whereami: Int get() = R.id.btn_whereami
+
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =

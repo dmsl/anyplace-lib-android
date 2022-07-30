@@ -139,7 +139,7 @@ class MainSettingsDialog(
 
     btnSwitch.text = "$directive $actName"
     btnSwitch.setOnClickListener {
-      app.showToast(lifecycleScope, "Opening $actName")
+      app.showSnackbar(lifecycleScope, "Opening $actName")
       startActivity(Intent(requireActivity(), klass))
       parentActivity.finish()
     }

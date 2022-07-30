@@ -42,8 +42,9 @@ open class UtilAnimations(
   fun attentionZoom(v: View)
           = scope.launch(Dispatchers.Main) { v.attentionZoom() }
 
-  fun gone(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
-  fun visible(v: View)  =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
+  fun gone(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
+  fun invisible(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.INVISIBLE }
+  fun visible(v: View) =scope.launch(Dispatchers.Main) { v.visibility = View.VISIBLE}
 
   fun alpha(v: View, a: Float) = scope.launch(Dispatchers.Main) { v.alpha=a }
   fun clearAnimation(v: View) = scope.launch(Dispatchers.Main) { v.clearAnimation() }

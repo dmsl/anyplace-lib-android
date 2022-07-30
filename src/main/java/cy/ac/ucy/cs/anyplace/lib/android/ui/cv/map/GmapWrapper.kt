@@ -142,7 +142,6 @@ class GmapWrapper(
     // onMapReadySpecialize()
 
     setupObserverUserBounds()
-
     gmapWrLoaded = true
   }
 

@@ -45,13 +45,13 @@ class IMU(
     LOG.W(TAG, "Starting..")
 
     var azimuth = 330.0
-    act.VMs.azimuthRotationVector.observe(act) {
+    act.VMsensor.azimuthRotationVector.observe(act) {
       azimuth = it
     }
 
     //every time the value of stepsDetected changes the new position of the object is calculated
 
-    act.VMs.stepsDetected.observe(act, Observer{ stepCount->
+    act.VMsensor.stepsDetected.observe(act, Observer{ stepCount->
       // MODE 1
       LOG.W(TAG, "Observing..: cnt: $stepCount")
 

@@ -34,17 +34,21 @@ open class CvUI(
         protected val VM: CvViewModel,
         protected val scope: CoroutineScope,
         protected val fragmentManager: FragmentManager,
-        val floorSelector: FloorSelector) {
+        val floorSelector: FloorSelector,
+        val btn_id_localization: Int,
+        val btn_id_whereami: Int
+) {
 
   protected val ctx: Context = activity.applicationContext
   /** Google Maps Wrapper */
   val map by lazy { GmapWrapper(app, scope, this) }
-
-
   val tag = "ui-cv"
 
   /** Localization Button Wrapper */
-  val localization by lazy { UiLocalization(activity, app, VM, scope, map, R.id.btn_localization) }
+  val localization by lazy { UiLocalization(activity, app, VM, scope,
+          map,
+          btn_id_localization,
+          btn_id_whereami) }
 
   /**
    * MERGE:PM once image is analyzed

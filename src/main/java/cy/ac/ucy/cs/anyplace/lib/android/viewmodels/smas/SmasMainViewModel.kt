@@ -27,8 +27,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.VersionNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -127,6 +129,15 @@ class SmasMainViewModel @Inject constructor(
 
       // both timestamps exist
       else -> false
+    }
+  }
+
+  fun readBackendVersion() {
+    viewModelScope.launch(Dispatchers.IO) {
+      val prefsChat = appSmas.dsSmas.read.first()
+      if (prefsChat.version == null) {
+        nwVersion.getVersion()
+      }
     }
   }
 

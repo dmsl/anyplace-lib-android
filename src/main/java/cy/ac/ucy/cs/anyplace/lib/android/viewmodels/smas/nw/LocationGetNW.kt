@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.toCoord
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -207,10 +208,8 @@ class LocationGetNW(
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
           app.showSnackbar(VM.viewModelScope, "Restored last location.")
+          delay(500)
           VM.ui.map.animateToLocation(ownLocation.toCoord().toLatLng())
-        // } else {
-        //   app.showSnackbarLong(VM.viewModelScope,
-        //           "Cannot restore last location.\n(not recent enough)")
         }
       }
     }

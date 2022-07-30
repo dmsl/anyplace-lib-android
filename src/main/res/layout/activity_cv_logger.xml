@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+NOTE:
+- Modifying the order of the elements in this file might cause crashes.
+- EVEN with IDE auto-refactoring.
+- There is a numbering for this order.
+-->
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,14 +16,6 @@
     android:background="#00000000"
     tools:context="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity">
 
-  <!-- NOTE: Modifying the order of the elements in this file might cause crashes.
-      EVEN with IDE auto-refactoring.
-      There is a numbering for this order.
-  -->
-
-  <!-- 4. TOOLBAR:
-    - Settings Button
-    -->
   <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/relativeLayout"
       android:layout_width="match_parent"
@@ -25,80 +24,159 @@
       android:orientation="vertical">
 
 
-  <!-- YELLOW BG (theme of logging) -->
-    <View
-        android:id="@+id/view_Bg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="1"
-        android:background="@color/yellowDark"
-        app:layout_anchor="@+id/relativeLayout"
-        app:layout_anchorGravity="center"
-        />
+    <!-- 0. TITLE -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.3"
+        android:text="logger"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-
-    <!-- 1 and 2:
-    - CAMERA VIEW: CameraActivity
-    - OVERLAY: DETECTED OBJECTS
+    <!-- 1. CAMERA + OBJECTS OVERLAY
+        - CAMERA VIEW: [CameraActivity]
+      - OVERLAY: Showing Detected Objects
     -->
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_anchor="@+id/relativeLayout"
         android:background="@android:color/black"
+        app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="center"
         tools:context="org.tensorflow.demo.CameraActivity">
     </FrameLayout>
 
-    <!-- 3. GOOGLE MAPS
-        It is hidden when Camera View and Detections Overlay are visible.
-    -->
+    <!-- 2. GOOGLE MAPS:
+    - Hidden when:
+      - Camera View + Detections Overlay are visible (1)
+      -->
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:alpha="0.5"
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="center"
+        tools:alpha="0.5"
         tools:context=".android.ui.cv.CvMapActivity" />
 
 
-    <!-- 4. TOOLBAR:
-    - Settings Button
+    <!-- 3. TOOLBAR: Settings Button
     -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="top|center">
 
-    <!-- Settings Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_settings"
-        android:layout_width="58dp"
-        android:layout_height="58dp"
-        android:layout_alignParentEnd="true"
-        android:layout_gravity="end"
-        android:layout_margin="8dp"
 
-        app:cornerRadius="50dp"
-        app:icon="@drawable/ic_settings_dark"
-        app:iconGravity="textStart"
-        android:insetLeft="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        app:iconPadding="0dp"
-        app:iconSize="42dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
+      <!-- Settings Button -->
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/button_settings"
+          android:layout_width="58dp"
+          android:layout_height="58dp"
+          android:layout_alignParentEnd="true"
+          android:layout_gravity="end"
+          android:layout_margin="8dp"
+          android:insetLeft="0dp"
+          android:insetTop="0dp"
+          android:insetRight="0dp"
+          android:insetBottom="0dp"
+          app:cornerRadius="50dp"
+          app:icon="@drawable/ic_settings_dark"
+          app:iconGravity="textStart"
+          app:iconPadding="0dp"
+          app:iconSize="42dp"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
     </androidx.appcompat.widget.Toolbar>
+
+
+
+    <!--  0. OFFLINE LOGGING: UPLOAD  -->
+    <!-- Use android:background with MaterialButton -->
+    <!-- https://stackoverflow.com/a/69212608/776345-->
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_uploadOffline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        app:constraint_referenced_ids="btn_upload,btn_uploadDiscard"
+        />
+    <com.google.android.material.button.MaterialButton
+        app:backgroundTint="@null"
+        app:backgroundTintMode="add"
+
+        android:id="@+id/btn_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="58dp"
+        android:background="@drawable/bg_btn_upload"
+
+        app:drawableTint="@color/white"
+        android:drawableEnd="@drawable/ic_upload"
+        android:paddingStart="15dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:text="@string/upload_scans"
+        android:textSize="15sp"
+        android:textStyle="bold"
+
+        app:layout_constraintBottom_toBottomOf="@id/toolbar"
+        app:layout_constraintEnd_toStartOf="@id/btn_uploadDiscard"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/toolbar"
+        />
+
+    <!-- 0. OFFLINE LOGGING: DISCARD -->
+    <com.google.android.material.button.MaterialButton
+        app:backgroundTint="@null"
+        app:backgroundTintMode="add"
+
+        android:id="@+id/btn_uploadDiscard"
+
+        android:translationX="-5px"
+        android:layout_width="52dp"
+        android:layout_height="58dp"
+        android:background="@drawable/bg_btn_discard_local"
+        android:drawableEnd="@drawable/ic_delete"
+        app:drawableTint="@color/white"
+
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+
+        app:layout_constraintBottom_toBottomOf="@id/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_upload"
+        app:layout_constraintTop_toTopOf="@id/toolbar"
+        />
+
+
+
+    <!-- 6. FLOOR SELECTOR -->
+    <!-- FLOORSELECTOR: GROUP -->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_floorSelector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:constraint_referenced_ids="button_floorUp,button_floorDown,button_selectedFloor,textView_titleFloor"
+        tools:visibility="visible" />
+    <!--    android:visibility="invisible"-->
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_whereami"
@@ -107,14 +185,13 @@
         android:layout_alignParentEnd="true"
         android:layout_gravity="end"
         android:layout_margin="8dp"
+        android:backgroundTint="@color/colorPrimary"
         android:elevation="50dp"
         android:insetLeft="0dp"
-        tools:visibility="visible"
-        android:visibility="invisible"
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        android:backgroundTint="@color/colorPrimary"
+        android:visibility="invisible"
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_whereami"
         app:iconGravity="textStart"
@@ -123,147 +200,74 @@
         app:layout_constraintBottom_toTopOf="@id/button_floorUp"
         app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
         app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
-        />
+        tools:visibility="visible" />
 
-    <!-- TV TITLE -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="logger"
-        android:textColor="@color/black"
-        android:alpha="0.3"
-        android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-
-    <!-- TODO:PMX UPL-->
-    <Button
-        android:id="@+id/btn_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="@color/yellowDark"
-        android:paddingLeft="30dp"
-        android:drawableEnd="@drawable/ic_upload"
-        tools:visibility="visible"
-        android:visibility="invisible"
-        app:drawableTint="@color/white"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:paddingTop="15dp"
-        android:paddingRight="30dp"
-        android:paddingBottom="15dp"
-        android:text="@string/upload_scans"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toStartOf="@id/btn_deleteLocal"
-        app:layout_constraintStart_toStartOf="parent"
-        />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_deleteLocal"
-        android:layout_width="58dp"
-        android:layout_height="wrap_content"
-
-        android:backgroundTint="@color/redDark"
-        android:drawableEnd="@drawable/ic_delete"
-        tools:visibility="visible"
-
-
-
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
-        app:drawableTint="@color/white"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btn_upload"
-        />
-
-
-<!--    android:visibility="invisible"-->
-
-
-
-    <!-- 6. FLOOR SELECTOR -->
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/group_floorSelector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        app:constraint_referenced_ids="button_floorUp,button_floorDown,button_selectedFloor,textView_titleFloor" />
-
+    <!--  FLOORSELECTOR: UP -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_floorUp"
-        android:background="@drawable/button_round_top"
-        app:icon="@drawable/ic_arrow_up_disabled"
-        app:layout_constraintBottom_toTopOf="@+id/button_selectedFloor"
-        app:layout_constraintEnd_toEndOf="parent"
         style="@style/MaterialButtonIcon"
+        android:background="@drawable/button_round_top"
+        android:text=""
         android:translationY="20dp"
-        android:text=""
         app:cornerRadius="50dp"
+        app:icon="@drawable/ic_arrow_up_disabled"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="38dp"
-        />
+        app:layout_constraintBottom_toTopOf="@+id/button_selectedFloor"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_floorDown"
-        style="@style/MaterialButtonIcon"
-        android:text=""
-        android:rotation="180"
-        app:icon="@drawable/arrow_up"
-        android:background="@drawable/button_round_top"
-        app:cornerRadius="50dp"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="38dp"
-        android:layout_marginTop="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
-
+    <!--  FLOORSELECTOR: SELECTED LEVEL -->
     <Button
         android:id="@+id/button_selectedFloor"
         style="@style/MaterialButtonIcon"
         android:layout_width="48dp"
         android:layout_height="22dp"
-        android:translationY="10dp"
         android:fontFamily="sans-serif-black"
-        tools:text="5"
         android:textColor="@color/white"
         android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:translationY="10dp"
         app:layout_constraintBottom_toTopOf="@id/button_floorDown"
-        />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="5" />
 
+    <!--  FLOORSELECTOR: DOWN -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_floorDown"
+        style="@style/MaterialButtonIcon"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/button_round_top"
+        android:rotation="180"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:icon="@drawable/arrow_up"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--  FLOORSELECTOR: LEVEL TYPE (floor/deck) -->
     <TextView
-        android:background="@drawable/bg_round_white_50"
-        android:layout_marginTop="10dp"
-        android:paddingLeft="3dp"
-        android:paddingRight="3dp"
         android:id="@+id/textView_titleFloor"
-        app:layout_constraintStart_toStartOf="@id/button_floorDown"
-        app:layout_constraintEnd_toEndOf="@id/button_floorDown"
-        app:layout_constraintTop_toBottomOf="@id/button_floorDown"
-        android:fontFamily="sans-serif-black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:translationY="-5dp"
-        android:textSize="18sp"
-        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_round_white_50"
+        android:fontFamily="sans-serif-black"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
         android:text="@string/floor"
-        />
-    <!-- end: floor selector (6) -->
+        android:textColor="@color/colorPrimary"
+        android:textSize="18sp"
+        android:translationY="-5dp"
+        app:layout_constraintEnd_toEndOf="@id/button_floorDown"
+        app:layout_constraintStart_toStartOf="@id/button_floorDown"
+        app:layout_constraintTop_toBottomOf="@id/button_floorDown" />
+    <!-- END: FLOOR SELECTOR (6) -->
 
     <!-- 7. DEMO NAVIGATION BTN -->
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_localization"
         style="@style/MaterialButtonIcon"
@@ -279,17 +283,20 @@
         app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
         app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
-        app:layout_constraintVertical_bias="0.22"
-        />
+        app:layout_constraintVertical_bias="0.22" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+  <!--  BOTTOM SHEET -->
   <include
       android:id="@+id/bottom_sheet_layout"
       layout="@layout/bottom_sheet_cv_logging"
       app:behavior_peekHeight="2dp"
       tools:visibility="gone"
       />
+
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

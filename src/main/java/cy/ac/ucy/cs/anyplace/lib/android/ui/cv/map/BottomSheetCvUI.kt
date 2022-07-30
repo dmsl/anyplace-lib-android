@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
@@ -13,20 +15,24 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 open class BottomSheetCvUI(private val act: DetectorActivityBase,
-                           private val visible: Boolean = false) {
+                           private val showBottomSheet: Boolean = false) {
 
   val tvFrameInfo : TextView by lazy { act.findViewById(R.id.frame_info) }
   val tvCropInfo: TextView by lazy { act.findViewById(R.id.crop_info) }
   val tvTimeInfo: TextView by lazy { act.findViewById(R.id.time_info) }
+  val layoutInternal: LinearLayout by lazy {act.findViewById(R.id.bottom_sheet_internal) }
   val ivArrowImg: ImageView by lazy {act.findViewById(R.id.bottom_sheet_arrow) }
+
+  val utlUi by lazy { UtilUI(act.applicationContext, act.lifecycleScope) }
 
   fun setup() {
     LOG.W(TAG, " BSheet CV setup")
-    if (!visible) hideBottomSheet()
+    if (!showBottomSheet) hideBottomSheet()
 
     // CLR if ok
     // defaultSetup()
@@ -78,34 +84,10 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
     act.showBottomSheet()
   }
 
-  // open fun setupSpecific() {
-  //   // defaultSetup()
-  //   // act.sheetBehavior.isHideable = false
-  // }
-
-  // CLR:PM if ok
-  // /**
-  //  * Opening/Closing UI changes by the bottomsheet
-  //  */
-  // fun setupStatechanges(iv: ImageView, @DrawableRes icDown: Int, @DrawableRes icUp: Int) {
-  //   act.sheetBehavior.setBottomSheetCallback(
-  //           object : BottomSheetBehavior.BottomSheetCallback() {
-  //             override fun onStateChanged(bottomSheet: View, newState: Int) {
-  //               when (newState) {
-  //                 BottomSheetBehavior.STATE_EXPANDED -> { iv.setImageResource(icDown) }
-  //                 BottomSheetBehavior.STATE_COLLAPSED -> { iv.setImageResource(icUp) }
-  //                 BottomSheetBehavior.STATE_SETTLING -> iv.setImageResource(icUp)
-  //                 else -> {}
-  //               }
-  //             }
-  //             override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-  //           })
-  // }
-
 
   @SuppressLint("SetTextI18n")
   fun refreshUi(scope: LifecycleCoroutineScope) {
-    if (!visible) return
+    if (!showBottomSheet) return
 
     scope.launch(Dispatchers.Main) {
       tvFrameInfo.text = "${act.previewWidth}x${act.previewHeight}"
@@ -113,6 +95,18 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
       val h = act.cropCopyBitmap.height
       tvCropInfo.text = "${w}x${h}"
       tvTimeInfo.text =  "${act.lastProcessingTimeMs}ms"
+    }
+  }
+
+  fun hide() {
+    utlUi.gone(ivArrowImg)
+    utlUi.invisible(layoutInternal)
+  }
+
+  fun show() {
+    if (showBottomSheet) {
+      utlUi.visible(ivArrowImg)
+      utlUi.visible(layoutInternal)
     }
   }
 

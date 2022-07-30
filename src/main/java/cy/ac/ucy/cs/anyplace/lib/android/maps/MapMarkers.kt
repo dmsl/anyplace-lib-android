@@ -38,8 +38,9 @@ class MapMarkers(private val app: AnyplaceApp,
     fun isUserConsideredInactive(seconds: Long) = seconds > MAX_SECONDS_INACTIVE
   }
 
-  /** GMap markers used in detections */
-  var cvObjects: MutableList<Marker> = mutableListOf()
+  /** Markers of scanned objects (from logger) */
+  var scannedMarkers: MutableList<Marker> = mutableListOf()
+
   // TODO:PM show storedMarkers with green color
   var stored: MutableList<Marker> = mutableListOf()
 
@@ -65,33 +66,33 @@ class MapMarkers(private val app: AnyplaceApp,
   //   return toString(toLatLng(coord))
   // }
 
-  private fun getLocationDrawable(setMethod: LocalizationMethod, alerting: Boolean): Int {
+  private fun ownLocationDrawable(setMethod: LocalizationMethod, alerting: Boolean): Int {
     return when {
-      alerting -> R.drawable.marker_location_alert
-      setMethod == LocalizationMethod.manualByUser -> R.drawable.marker_location_manually
-      setMethod == LocalizationMethod.autoMostRecent -> R.drawable.marker_location_autorecent
-      else -> R.drawable.marker_location_smas
+      alerting -> R.drawable.marker_location_own_alert
+      setMethod == LocalizationMethod.manualByUser -> R.drawable.marker_location_own_manual
+      setMethod == LocalizationMethod.autoMostRecent -> R.drawable.marker_location_own_recent
+      else -> R.drawable.marker_location_own_smas
     }
   }
 
 
 
   /** Last Location marker */
-  private fun myLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) : MarkerOptions  {
+  private fun ownLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) : MarkerOptions  {
     val latLng = toLatLng(coord)
-    val title = "My Location"
+    val title = "Own Location"
 
     // val snippet = getSnippetOwnLocation(locMethod)
 
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, getLocationDrawable(locMethod, alerting))
+            .userIcon(ctx, ownLocationDrawable(locMethod, alerting))
             .zIndex(100f)
             .title(title)
     // .snippet(snippet)
   }
 
   /** Computer Vision marker */
-  private fun cvMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions  {
+  private fun scanMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions  {
     return MarkerOptions()
             .position(latLng)
             .title(title)
@@ -108,10 +109,17 @@ class MapMarkers(private val app: AnyplaceApp,
             .userIcon(ctx, R.drawable.marker_objects_stored)
   }
 
-  fun addCvMarker(latLng: LatLng, title: String, snippet: String) {
+  fun addScanMarker(coord: Coord, title: String, snippet: String) {
     scope.launch(Dispatchers.Main) {
-      map.obj.addMarker(cvMarker(latLng, title, snippet))?.let {
-        cvObjects.add(it)
+      map.obj.addMarker(scanMarker(coord.toLatLng(), title, snippet))?.let {
+        scannedMarkers.add(it)
+
+        it.tag = UserInfoMetadata(UserInfoType.LoggerScan,
+                LocalizationMethod.NA,
+                "",
+                coord,
+                0,
+                false)
       }
     }
   }
@@ -119,7 +127,7 @@ class MapMarkers(private val app: AnyplaceApp,
   /** User marker in active mode */
   private fun userMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions {
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_user_active)
+            .userIcon(ctx, R.drawable.marker_location_other_user_active)
             .zIndex(10f)
             .title(title)
             .snippet(snippet)
@@ -128,7 +136,7 @@ class MapMarkers(private val app: AnyplaceApp,
   /** User marker in alerting mode */
   private fun userAlertMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions  {
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_user_alert)
+            .userIcon(ctx, R.drawable.marker_location_other_user_alert)
             .zIndex(101f)
             .title(title)
             .snippet(snippet)
@@ -137,7 +145,7 @@ class MapMarkers(private val app: AnyplaceApp,
   /** User marker in inactive state */
   private fun userInactiveMarker(latLng: LatLng, title: String, snippet: String) : MarkerOptions {
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_user_inactive)
+            .userIcon(ctx, R.drawable.marker_location_other_user_inactive)
             .zIndex(8f)
             .title(title)
             .snippet(snippet)
@@ -146,7 +154,7 @@ class MapMarkers(private val app: AnyplaceApp,
   /** User marker in alert mode */
   private fun sharedChatLocationMarker(latLng: LatLng) : MarkerOptions  {
     return MarkerOptions().position(latLng)
-            .userIcon(ctx, R.drawable.marker_location_share)
+            .userIcon(ctx, R.drawable.marker_location_share_from_chat)
             .title("shared location")
             .snippet("(click to hide)")
   }
@@ -214,10 +222,9 @@ class MapMarkers(private val app: AnyplaceApp,
     return lastSelectedUser != null && lastSelectedUser == uid
   }
 
-  // TODO:PM hide LoggerMarkers?
-  fun hideCvObjMarkers() {
-    cvObjects.forEach {
-      scope.launch(Dispatchers.Main) { it.remove() }
+  fun hideScanMarkers() {
+    scope.launch(Dispatchers.Main) {
+      scannedMarkers.forEach { it.remove() }
     }
   }
 
@@ -317,7 +324,7 @@ class MapMarkers(private val app: AnyplaceApp,
 
       val uid = app.dsSmasUser.read.first().uid
       // app.dsUser.readUser.first().id
-      lastOwnLocation = map.obj.addMarker(myLocationMarker(coord, locMethod, alerting))
+      lastOwnLocation = map.obj.addMarker(ownLocationMarker(coord, locMethod, alerting))
       lastOwnLocation!!.tag = UserInfoMetadata(
               UserInfoType.OwnUser,
               locMethod,

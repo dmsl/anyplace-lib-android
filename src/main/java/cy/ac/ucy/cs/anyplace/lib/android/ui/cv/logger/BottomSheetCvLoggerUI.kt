@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggerTimer
@@ -23,8 +24,7 @@ class BottomSheetCvLoggerUI(
   val VMlog: CvLoggerViewModel,
   val id_bottomsheet: Int,
   val id_btn_logging: Int,
-  val visible: Boolean
-  )
+  val visible: Boolean)
   : BottomSheetCvUI(act as DetectorActivityBase, visible) {
 
   // val llBottomSheet: ConstraintLayout by lazy {act.findViewById(id_bottomsheet) }
@@ -36,7 +36,10 @@ class BottomSheetCvLoggerUI(
   private val id_btn_timer = R.id.button_cameraTimer
   private val id_progressBar_timer = R.id.progressBar_timer
   private val id_btn_clearObjs = R.id.button_clearObjects
-  val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope, VMlog.ui, VMlog.uiLog, id_btn_logging) }
+  val logging by lazy { UiLoggingBtn(act, VMlog, act.lifecycleScope,
+          VMlog.ui,
+          VMlog.uiLog,
+          id_btn_logging) }
   val timer by lazy { UiLoggerTimer(act, VMlog, act.lifecycleScope, VMlog.ui, VMlog.uiLog,
           id_btn_timer, id_progressBar_timer, id_btn_clearObjs) }
 

@@ -45,7 +45,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_ALERT
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
@@ -74,17 +73,28 @@ import kotlinx.coroutines.flow.update
 @AndroidEntryPoint
 class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
-  // PROVIDE TO BASE CLASS [CvMapActivity]:
+  //// PROVIDE TO BASE CLASS ([CvMapActivity]), which will provide to its base class
   override val layout_activity: Int get() = R.layout.activity_smas
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_cvmap
   override val id_gesture_layout: Int get() = R.id.gesture_layout
+  //// PROVIDE TO IMMEDIATE PARENT CLASS [CvMapActivity]:
   override val id_gmap: Int get() = R.id.mapView
+  override val actName = ACT_NAME_SMAS
+  override val id_btn_settings: Int get() = R.id.button_settings
+  ////// FLOOR SELECTOR
+  override val id_group_floorSelector : Int get() = R.id.group_floorSelector
+  override val id_tvTitleFloor: Int get() = R.id.textView_titleFloor
+  override val id_btnSelectedFloor: Int get() = R.id.button_selectedFloor
+  override val id_btnFloorUp: Int get() = R.id.button_floorUp
+  override val id_btnFloorDown: Int get() = R.id.button_floorDown
+  ////// UI-LOCALIZATION
+  override val id_btn_localization: Int get() = R.id.btn_localization
+  override val id_btn_whereami: Int get() = R.id.btn_whereami
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
           SmasMainViewModel::class.java as Class<DetectorViewModel>
 
-  override val actName = ACT_NAME_SMAS
 
   // VIEW MODELS
   /** extends [CvViewModel] */
@@ -96,10 +106,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   // UI COMPONENTS
   private lateinit var btnChat: Button
   private lateinit var btnFlir: Button
-  private lateinit var btnSettings: Button
   private lateinit var btnAlert: MaterialButton
-  var btnWhereAmISetup = false
-  private lateinit var btnWhereAmI: MaterialButton
 
   private val utlNotify by lazy { UtilNotify(applicationContext) }
 
@@ -126,15 +133,16 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     setupButtonChat()
     setupButtonFlir()
     setupButtonAlert()
-    setupButtonWhereAmI()
+
     setupClickm()
   }
-
 
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
 
+    // LMN1
+    // val googleMap : GoogleMap = null!!; googleMap.projection
     setupMapLongClick()
   }
 
@@ -153,7 +161,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
 
-    app.showSnackbar(lifecycleScope, "Location set (manually)")
+    app.showSnackbar(lifecycleScope, "Location set manually")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -167,11 +175,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     super.postResume()
     LOG.D2(TAG, "$tag: $METHOD")
     VM = _vm as SmasMainViewModel
-    VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
-    appSmas.setMainActivityVMs(VM, VMchat)
     app.setMainView(findViewById(R.id.layout_root), false)
 
-    readBackendVersion()
+    VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
+    appSmas.setMainActivityVMs(VM, VMchat)
+
+    VM.readBackendVersion()
     setupCollectors()
   }
 
@@ -185,11 +194,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     updateLocationsLOOP()  // send own location & receive other users locations
     lifecycleScope.launch(Dispatchers.IO) {
-      while (!VM.uiLoaded()) delay(100) // workaround until ui component is loaded (not the best one..)
+      if (DBG.BG5) while (!VM.uiLoaded()) delay(100) // workaround until ui component is loaded (not the best one..)
       VM.collectLocations(VMchat, VM.ui.map)
     }
     collectAlertingUser()
-    collectUserOutOfBounds()
+    VM.collectUserOutOfBounds()
   }
 
 
@@ -197,54 +206,15 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override fun onFloorLoaded() {
     super.onFloorLoaded()
 
-    VM.ui.map.markers.clearChatLocationMarker()
-    app.userOutOfBounds.update {
-      val boundState = when {
-        !app.userHasLocation() -> MapBounds.notLocalizedYet
-        app.userOnOtherFloor() -> MapBounds.outOfBounds
-        else -> MapBounds.inBounds
-      }
-
-      boundState
-    }
-  }
-
-  var collectingOOB=false
-  fun collectUserOutOfBounds() {
-    if (collectingOOB) return
-    collectingOOB=true
-
     lifecycleScope.launch(Dispatchers.IO) {
-      app.userOutOfBounds.collectLatest { state ->
-        if (!DBG.WAI) return@collectLatest
+      // workaround: wait for UI to be ready (not the best one)
+      if (DBG.BG5) while (!VM.uiLoaded()) delay(100)
 
-        LOG.E(TAG, "USER OOB: $state")
-        if (!btnWhereAmISetup) return@collectLatest  // UI not ready yet
-
-        when (state) {
-          MapBounds.inBounds -> {
-           utlUi.fadeIn(btnWhereAmI)
-            utlUi.changeBackgroundMaterial(btnWhereAmI, R.color.colorPrimary)
-          }
-          MapBounds.outOfBounds -> {
-            utlUi.fadeIn(btnWhereAmI)
-            utlUi.changeBackgroundMaterial(btnWhereAmI, R.color.darkGray)
-            utlUi.attentionZoom(btnWhereAmI)
-          }
-          MapBounds.notLocalizedYet -> {
-            // give it a sec, as auto-restore might kick-in on boot
-            delay(1000)
-            // on success, then return (no need to show red icon first)
-            if (app.hasLastLocation()) return@collectLatest
-
-            utlUi.fadeIn(btnWhereAmI)
-            utlUi.changeBackgroundMaterial(btnWhereAmI, R.color.redDark)
-            utlUi.attentionZoom(btnWhereAmI)
-          }
-        }
-      }
+      VM.ui.map.markers.clearChatLocationMarker()
     }
   }
+
+
 
   /**
    * In a loop:
@@ -286,7 +256,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     super.onResume()
     LOG.W(TAG, "$tag: $METHOD")
     isActive = true
-    if (DBG.uim) VMs.registerListeners()
+    if (DBG.uim) VMsensor.registerListeners()
   }
 
   override fun setupUiAfterGmap() {
@@ -299,7 +269,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TAG, "$tag: $METHOD")
     isActive = false
 
-    if (DBG.uim) VMs.unregisterListener()
+    if (DBG.uim) VMsensor.unregisterListener()
   }
 
   /**
@@ -410,32 +380,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  private fun setupButtonWhereAmI() {
-    btnWhereAmI= findViewById(R.id.btn_whereami)
-    btnWhereAmI.setOnClickListener {
-      if (!DBG.WAI) return@setOnClickListener
-
-      val lr = app.locationSmas.value
-      if (lr is LocalizationResult.Success) {
-        val coord = lr.coord!!
-        val curFloor = app.wFloor?.floorNumber()
-
-        if (coord.level != curFloor) {
-          app.wFloors.moveToFloor(VM, coord.level)
-        }
-
-        LOG.E(TAG, "whereami click")
-        VM.ui.map.markers.clearAllInfoWindow()
-        VM.ui.map.animateToLocation(coord.toLatLng())
-      } else {
-        val msg = "Please localize or set location manually,\nwith map long-press."
-        app.showSnackbarLong(lifecycleScope, msg)
-        utlUi.attentionZoom(VM.ui.localization.btn)
-      }
-    }
-    btnWhereAmISetup=true
-  }
-
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
@@ -488,7 +432,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   }
 
   private fun setupButtonSettings() {
-    btnSettings = findViewById(R.id.button_settings)
     btnSettings.setOnClickListener {
       val versionStr = BuildConfig.VERSION_CODE
       MainSettingsDialog.SHOW(supportFragmentManager,
@@ -610,7 +553,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     btnChat.setOnClickListener {
       lifecycleScope.launch {
         if (!app.hasLastLocation()) {
-          val msg = "To open the chat, you must localize\n" +
+          val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
           app.showSnackbarIndefinite(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
@@ -638,14 +581,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  private fun readBackendVersion() {
-    CoroutineScope(Dispatchers.IO).launch {
-      val prefsChat = appSmas.dsSmas.read.first()
-      if (prefsChat.version == null) {
-        VM.nwVersion.getVersion()
-      }
-    }
-  }
 
   // TODO:PMX FR ?
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {

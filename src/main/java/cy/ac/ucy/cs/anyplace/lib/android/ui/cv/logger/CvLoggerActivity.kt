@@ -27,27 +27,33 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
-  // PROVIDE TO BASE CLASS [CameraActivity]:
+
+  //// PROVIDE TO BASE CLASS ([CvMapActivity]), which will provide to its base class
   override val layout_activity: Int get() = R.layout.activity_cv_logger
+  override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
+  override val id_gesture_layout: Int get() = R.id.gesture_layout
+  //// PROVIDE TO IMMEDIATE PARENT CLASS [CvMapActivity]:
+  override val id_gmap: Int get() = R.id.mapView
+  override val actName = ACT_NAME_LOGGER
+  override val id_btn_settings: Int get() = R.id.button_settings
+  ////// FLOOR SELECTOR
+  override val id_group_floorSelector : Int get() = R.id.group_floorSelector
+  override val id_tvTitleFloor: Int get() = R.id.textView_titleFloor
+  override val id_btnSelectedFloor: Int get() = R.id.button_selectedFloor
+  override val id_btnFloorUp: Int get() = R.id.button_floorUp
+  override val id_btnFloorDown: Int get() = R.id.button_floorDown
+  ////// UI-LOCALIZATION
+  override val id_btn_localization: Int get() = R.id.btn_localization
+  override val id_btn_whereami: Int get() = R.id.btn_whereami
+
+
+  val id_btn_logging: Int get() = R.id.button_logging
+  private val tag = "act-cvlog"
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     app.dsCvMap.setMainActivity(CONST.START_ACT_LOGGER)
   }
-
-  override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
-  val id_btn_logging: Int get() = R.id.button_logging
-
-  override val id_gesture_layout: Int get() = R.id.gesture_layout
-  override val id_gmap: Int get() = R.id.mapView
-  override val actName = ACT_NAME_LOGGER
-
-  private val tag = "act-cvlog"
-
-  // private lateinit var binding: ActivityCvLoggerBinding
-  // private lateinit var VM: CvLoggerViewModel
-  // MERGE: all UI elements to abstract CVMapActivity
-  // private lateinit var UI: UiActivityCvLogger
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
@@ -72,9 +78,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     setupCollectors()
   }
 
-  override fun onResume() {
-    super.onResume()
-  }
+  override fun onResume() { super.onResume() }
 
 
   /**
@@ -93,7 +97,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   }
 
   /**
-   * Setup UI that requires Gmap initialization
+   * Setup UI that requires GMap initialization
    *
    * Sets up:
    * - uiLog for the logger
@@ -142,7 +146,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   }
 
   /**
-   * CHECK:PM
    */
   var collectorsSet=false
   private fun setupCollectors() {

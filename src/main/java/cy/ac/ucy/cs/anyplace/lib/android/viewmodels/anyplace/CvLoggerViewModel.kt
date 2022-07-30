@@ -171,8 +171,11 @@ class CvLoggerViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
       app.cvUtils.initConversionTables(model.idSmas)
       val detectionsReq = app.cvUtils.toCvDetections(this, recognitions, model)
-      // cache.storeFingerprints(userCoords, detectionsReq, model) // TODO:PMX UPL
-      nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
+      if (DBG.UPL) {
+        cache.storeFingerprints(userCoords, detectionsReq, model) // TODO:PMX UPL OK?
+      } else { // on the spot upload
+        nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
+      }
     }
   }
 
@@ -214,8 +217,8 @@ class CvLoggerViewModel @Inject constructor(
     LOG.E(TAG, "LOCALIZE: RUNNING")
     // hide all logging UI when localizing
 
-    uiLog.bottom.logging.uploadWasVisible = uiLog.btnUpload.isVisible
-    utlUi.fadeOut(uiLog.btnUpload)
+    uiLog.bottom.logging.uploadWasVisible = uiLog.groupUpload.isVisible
+    utlUi.fadeOut(uiLog.groupUpload)
     ui.floorSelector.hide()
     uiLog.bottom.logging.hide()
   }
@@ -225,7 +228,7 @@ class CvLoggerViewModel @Inject constructor(
 
     if (!DBG.LCLG) return // PMX: LCLG
 
-    if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.btnUpload)
+    if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.groupUpload)
       ui.floorSelector.show()
       uiLog.bottom.logging.show()
   }

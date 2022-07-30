@@ -2,17 +2,21 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.content.Context
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,9 +49,11 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
   val ctx : Context = act
 
   // UI COMPONENTS:
-  // CHECK: this was in bottom sheet?
   val btnSettings: MaterialButton by lazy { act.findViewById(R.id.button_settings) }
-  val btnUpload: MaterialButton by lazy { act.findViewById(R.id.button_upload) }
+
+  val groupUpload: Group by lazy { act.findViewById(R.id.group_uploadOffline) }
+  val btnUpload: MaterialButton by lazy { act.findViewById(R.id.btn_upload) }
+  val btnUploadDiscard: MaterialButton by lazy { act.findViewById(R.id.btn_uploadDiscard) }
 
   /**
    * Stores some detections (if not empty) to local cache.
@@ -58,7 +64,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     LOG.E(tag, "$method: setup: (long-click)")
 
     scope.launch(Dispatchers.IO) {
-      delay(200)
+      delay(200) // why is this? workaround for getting last objects filled in?
       scope.launch(Dispatchers.Main) {
         ui.map.obj.setOnMapLongClickListener { location ->
           LOG.W(tag, "$method: storing detections (long-click)")
@@ -88,10 +94,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     }
   }
 
-  // CHECK: TODO: PMX: UPL: in future: shouldn't be invisible?
+  // CHECK: PMX: UPL: in future: shouldn't be invisible?
   fun canPerformLocalization() =
           VM.statusLogging.value == LoggingStatus.stopped
-          // btnUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
+          // groupUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
 
   fun setupButtonSettings() {
     LOG.D2()
@@ -129,16 +135,17 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             location.latitude, location.longitude)
 
     VM.cacheDetectionsLocally(userCoord, location)
-    checkForUploadCache(true) // TODO:PMX UPL: CLR this one?
-    // bottom.logging.showUploadBtn() / /TODO:PMX UPL
+    checkForUploadCache(true) // TODO:PMX UPL: OK? CLR this one?
+
+    if (DBG.UPL) bottom.logging.showUploadBtn()
 
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
-    val msg = "Point: $curPoint"
+    val msg = "Scan: $curPoint"
     // val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
     val snippet="Objects: $windowDetections\n${FW.prettyFloor}: ${FW.obj.floorNumber}" // TODO:PMX FR10
-
-    ui.map.markers.addCvMarker(location, msg, snippet)
+    val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
+    ui.map.markers.addScanMarker(coord, msg, snippet)
     ui.map.recenterCamera(location)
 
     resetLogging()
@@ -171,10 +178,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         // val msg = "Please upload local fingerprints to the cloud."
         // app.showToast(scope, msg, Toast.LENGTH_LONG)
       } else {
-        utlUi.fadeOut(btnUpload)
+        utlUi.fadeOut(groupUpload)
+
         // only when required (as markers are lazily initialized)
-        // TODO:PMX CVM
-        // if(clearMarkers) ui.map.markers.hideCvObjMarkers()
+        if(clearMarkers) ui.map.markers.hideScanMarkers()
 
         LOG.E(TAG, "call: showLocalizationButton checkForUploadCache..")
         showLocalizationButton()  // show again localization button
@@ -186,15 +193,27 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
   fun setupUploadBtn() {
     uploadButtonInit = true
 
+    if (!DBG.UPL) return
+
     LOG.E(TAG, "$METHOD: setup upload button")
-    // btnUpload.setOnClickListener {
-    //   LOG.E(TAG, "$METHOD: clicked upload")
-    //   scope.launch(Dispatchers.IO) { // TODO:PMX UPL
-    //     utlUi.disable(btnUpload)
-    //     utlUi.text(btnUpload, ctx.getString(R.string.uploading))
-    //     utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
-    //     VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
-    //   }
-    // }
+    btnUpload.setOnClickListener {
+      LOG.E(TAG, "$METHOD: clicked upload")
+      scope.launch(Dispatchers.IO) { // TODO:PMX UPL OK?
+        utlUi.disable(groupUpload)
+        utlUi.text(btnUpload, ctx.getString(R.string.uploading))
+        utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
+        VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
+      }
+    }
+
+    btnUploadDiscard.setOnClickListener {
+      val mgr = act.supportFragmentManager
+      val title = "Discard local scans"
+      val msg = "Will delete any scans that have not been uploaded yet to the backend."
+      ConfirmActionDialog.SHOW(mgr, title, msg, cancellable = true, isImportant = true) { // on confirmed
+        VM.cache.deleteFingerprintsCache()
+        checkForUploadCache(true)
+      }
+    }
   }
 }

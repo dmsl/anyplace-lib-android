@@ -68,6 +68,31 @@
 
     </androidx.appcompat.widget.Toolbar>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_whereami"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:elevation="50dp"
+        android:insetLeft="0dp"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:backgroundTint="@color/colorPrimary"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_whereami"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toTopOf="@id/button_floorUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
+        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
+        />
+
     <!--    START OF FLOOR SELECTOR-->
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_floorSelector"

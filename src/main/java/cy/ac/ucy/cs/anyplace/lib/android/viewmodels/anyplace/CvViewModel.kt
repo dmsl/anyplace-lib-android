@@ -5,12 +5,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
@@ -19,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
@@ -26,6 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
@@ -35,6 +41,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Success
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -79,9 +86,12 @@ open class CvViewModel @Inject constructor(
         val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
         val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
+  /** Make sure to initialize this one */
+  private lateinit var attachedActivityId: String
   val app : AnyplaceApp = application as AnyplaceApp
 
   private val C by lazy { CONST(app) }
+  private val utlUi by lazy { UtilUI(app.applicationContext, viewModelScope) }
   /** Updated on changes */
   lateinit var prefsCvMap: CvMapPrefs
   /** Updated on changes */
@@ -331,5 +341,67 @@ open class CvViewModel @Inject constructor(
   }
 
   open fun onLocalizationEnded() {
+  }
+
+  var collectingOOB=false
+
+  /**
+   * Observes whether the user is in bounds and
+   * updates the whereAmI functionality
+   */
+  fun collectUserOutOfBounds() {
+    if (collectingOOB) return
+    collectingOOB=true
+
+    viewModelScope.launch(Dispatchers.IO) {
+
+      // wait for UI components to become ready
+      if (DBG.BG5) while (!uiLoaded()|| !ui.localization.btnWhereAmISetup) delay(100)
+
+      app.userOutOfBounds.collectLatest { state ->
+        if (!DBG.WAI) return@collectLatest
+
+        when (state) {
+          MapBounds.inBounds -> {
+            utlUi.fadeIn(ui.localization.btnWhereAmI)
+            utlUi.changeBackgroundMaterial(ui.localization.btnWhereAmI, R.color.colorPrimary)
+          }
+          MapBounds.outOfBounds -> {
+            utlUi.fadeIn(ui.localization.btnWhereAmI)
+            utlUi.changeBackgroundMaterial(ui.localization.btnWhereAmI, R.color.darkGray)
+            utlUi.attentionZoom(ui.localization.btnWhereAmI)
+          }
+          MapBounds.notLocalizedYet -> {
+            // give it a sec, as auto-restore might kick-in on boot
+            // delaying a bit more so the user is not overwhelmed
+            delay(1500)
+
+            LOG.E(TAG,"WAI: aft delay")
+            // on success, then return (no need to show red icon first)
+            if (app.hasLastLocation()) return@collectLatest
+
+            LOG.E(TAG,"WAI: does NOT have last loc. SHOWING BTN")
+
+            utlUi.fadeIn(ui.localization.btnWhereAmI)
+            utlUi.changeBackgroundMaterial(ui.localization.btnWhereAmI, R.color.redDark)
+            utlUi.attentionZoom(ui.localization.btnWhereAmI)
+
+            // show notification on smas
+            if (attachedActivityId==ACT_NAME_SMAS) {
+              var msg = "Please localize or set location manually."
+              if (dsCvMap.read.first().autoSetInitialLocation) {
+                msg="Previous location expired.\nPlease localize or set it manually"
+              }
+
+              app.showSnackbarLong(viewModelScope, msg)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  fun setAttachedActivityId(actName: String) {
+    attachedActivityId = actName
   }
 }

@@ -17,6 +17,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogConfirmActionBinding
 import java.lang.IllegalStateException
 
+/**
+ * Handy class that shows a dialog and accepts a [callback] to perform any necessary actions
+ * See it's usages for examples.
+ *
+ * The [callback] can be passed in as a lambda.
+ */
 open class ConfirmActionDialog(
         val title: String,
         val callback: () -> Unit,
@@ -42,6 +48,7 @@ open class ConfirmActionDialog(
              subtitle: String?=null,
              /** cancel the dialog when clicking outside of it */
              cancellable: Boolean = true,
+             /** show red colors if important  */
              isImportant: Boolean = false,
              /** method to run when confirmed */
              callback: () -> Unit) {

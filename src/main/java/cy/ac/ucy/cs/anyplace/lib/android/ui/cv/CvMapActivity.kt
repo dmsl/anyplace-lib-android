@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
@@ -32,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -45,13 +48,26 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
-  protected abstract val id_gmap: Int
-  abstract val actName: String
-
-  // PROVIDE TO BASE CLASS [CameraActivity]:
+  // ALL THESE COMPONENTS MUST BE PROVIDED TO ANY CLASS THAT INHERITS [CvMapActivity]
+  //// PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
   override val id_bottomsheet: Int get() = R.id.bottom_sheet_layout
   override val id_gesture_layout: Int get() = R.id.gesture_layout
+
+  //// PROVIDE TO THIS CLASS [CvMapActivity]:
+  abstract val actName: String
+  protected abstract val id_gmap: Int
+  protected abstract val id_btn_settings: Int
+  ////// FLOOR SELECTOR
+  protected abstract val id_group_floorSelector: Int
+  protected abstract val id_tvTitleFloor: Int
+  protected abstract val id_btnSelectedFloor: Int
+  protected abstract val id_btnFloorUp: Int
+  protected abstract val id_btnFloorDown: Int
+  ////// UI-LOCALIZATION
+  protected abstract val id_btn_localization: Int
+  protected abstract val id_btn_whereami: Int
+
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
@@ -62,6 +78,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private lateinit var VM: CvViewModel
 
   private val tvTitle by lazy { findViewById<TextView>(R.id.tvTitle) }
+  val btnSettings: MaterialButton by lazy { findViewById(id_btn_settings) }
 
   // UTILITY OBJECTS
   protected val utlColor by lazy { UtilColor(applicationContext) }
@@ -71,17 +88,18 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   private val tag = "act-cvcomm"
 
-  lateinit var VMs: SensorsViewModel
+  lateinit var VMsensor: SensorsViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    VMs = ViewModelProvider(this)[SensorsViewModel::class.java]
+    VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
   }
 
   override fun postResume() {
     super.postResume()
 
     VM = _vm as CvViewModel
+    VM.setAttachedActivityId(actName)
     LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
     LOG.D(TAG, "$tag: $METHOD")
@@ -176,21 +194,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     VM.ui.setupOnFloorSelectionClick()
   }
 
-  var initedGmap = false
-  private fun setupUiGmap() {
-    LOG.D2(TAG, "Setup CommonUI & GMap")
-    if (initedGmap) return
-
-    LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
-    initedGmap=true
-    VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
-            supportFragmentManager, VM.floorSelector)
-    LOG.W(TAG, "$METHOD: ui (component) is now loaded.")
-    VM.uiComponentLoaded=true
-    VM.ui.map.attach(VM, this, R.id.mapView)
-    VM.mu = IMU(this,VM, VM.ui.map)
-  }
-
   var floorSelectorInited = false
   private fun setupUiFloorSelector() {
     if (floorSelectorInited) return
@@ -198,11 +201,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     VM.floorSelector = FloorSelector(applicationContext,
             lifecycleScope,
-            findViewById(R.id.group_floorSelector),
-            findViewById(R.id.textView_titleFloor),
-            findViewById(R.id.button_selectedFloor),
-            findViewById(R.id.button_floorUp),
-            findViewById(R.id.button_floorDown))
+            findViewById(id_group_floorSelector),
+            findViewById(id_tvTitleFloor),
+            findViewById(id_btnSelectedFloor),
+            findViewById(id_btnFloorUp),
+            findViewById(id_btnFloorDown))
 
     /** Updates on the wMap after a floor has changed */
     val fsCallback = object: FloorSelector.Callback() {
@@ -221,6 +224,29 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     VM.floorSelector.callback = fsCallback
   }
 
+  var initedGmap = false
+  private fun setupUiGmap() {
+    LOG.D2(TAG, "Setup CommonUI & GMap")
+    if (initedGmap) return
+
+    LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
+    initedGmap=true
+
+    VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
+            supportFragmentManager,
+            VM.floorSelector,
+            id_btn_localization,
+            id_btn_whereami,
+    )
+
+    LOG.W(TAG, "$METHOD: ui (component) is now loaded.")
+    VM.uiComponentLoaded=true
+    VM.ui.map.attach(VM, this, R.id.mapView)
+    VM.mu = IMU(this,VM, VM.ui.map)
+  }
+
+
+
   private fun setMapOpacity() {
     val view = findViewById<View>(id_gmap)
     val value =VM.prefsCvMap.mapAlpha.toInt()
@@ -234,7 +260,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.E(TAG, "onMapReadyCallback: [CvMap]")
     VM.ui.map.setup(googleMap)
-    VM.ui.localization.setupClick()
+    VM.ui.localization.setup()
 
     collectLocationREMOTE()
   }
@@ -276,6 +302,16 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
         VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
         test()
+      }
+
+      app.userOutOfBounds.update {
+        val boundState = when {
+          !app.userHasLocation() -> MapBounds.notLocalizedYet
+          app.userOnOtherFloor() -> MapBounds.outOfBounds
+          else -> MapBounds.inBounds
+        }
+
+        boundState
       }
     }
   }

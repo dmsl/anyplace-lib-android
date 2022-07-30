@@ -14,19 +14,22 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val DVO = false
-    const val WAI = false
-    const val GREs = false
+    const val DVO = true
+    const val WAI = true
+    const val GREs = true
 
-    const val CO5 = false
-    const val CTR = false
+    const val BG5 = true
 
-    const val CVM = false
+    const val CO5 = true
+    const val CTR = true
 
-    const val uim= false
+    const val CVM = true
+    const val UPL = true
 
-    const val FLD = false
-    const val LCLG = false
+    const val FLD = true
+    const val LCLG = true
+
+    const val uim= true
   }
 }
 

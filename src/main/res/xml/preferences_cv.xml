@@ -4,7 +4,7 @@
 
   <PreferenceCategory
       app:title="@string/prefs_header_computer_vision"
-      app:icon="@drawable/ic_settings_cv">
+      app:icon="@drawable/ic_computer_vision">
 
     <EditTextPreference
         app:key="@string/pref_cv_localization_ms"
@@ -44,14 +44,14 @@
         app:key="@string/pref_cv_follow_selected_user"
         android:defaultValue="true"
         app:title="Follow selected user on map"
-        app:summary="Follows as long as the user does not change floor"
+        app:summary="As long as the user does not change floor"
         />
 
     <SwitchPreferenceCompat
         app:key="@string/pref_cv_autoset_initial_location"
         android:defaultValue="true"
-        app:title="Restore last location on app open"
-        app:summary="Happens only when location was set in the last 10 minutes"
+        app:title="Restore last location on start"
+        app:summary="Only when location was set in the last 10 minutes"
         />
 
   </PreferenceCategory>
