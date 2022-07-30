@@ -3,16 +3,12 @@ package cy.ac.ucy.cs.anyplace.lib.android
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.graphics.Typeface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.view.Gravity
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
-import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
@@ -26,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
@@ -71,9 +68,9 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
 
+  val utlSnackBar by lazy { UtilSnackBar(this) }
+
   /** Root [View] of an activity ([SmasMainActivity], or [CvLoggerActivity]). Used for [SnackBar] */
-  lateinit var rootView: View
-  var forChat = false
   lateinit var cvUtils: CvUtils
 
   /** Last remotely calculated location (SMAS) */
@@ -96,7 +93,7 @@ abstract class AnyplaceApp : Application() {
    */
   var wFloor: FloorWrapper? = null
 
-  private val utlColor by lazy { UtilColor(applicationContext) }
+  val utlColor by lazy { UtilColor(applicationContext) }
 
   /** true when a user is issuing an alert */
   var alerting = false
@@ -118,12 +115,13 @@ abstract class AnyplaceApp : Application() {
     return locationSmas.value is LocalizationResult.Success
   }
 
+
   /**
    * Set the main view (root view) of the current [Activity], so we can use more easily [Snackbar]
    */
   fun setMainView(root_view: View, snackbarOnTop: Boolean) {
-    this.rootView=root_view
-    this.forChat = snackbarOnTop
+    utlSnackBar.rootView=root_view
+    utlSnackBar.snackbarForChat=snackbarOnTop
   }
 
   override fun onCreate() {
@@ -180,14 +178,14 @@ abstract class AnyplaceApp : Application() {
     if (devMode) { showToast(scope, msg, len) }
   }
 
-  fun showSnackbarLong(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_LONG)
-  fun showSnackbarShort(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_SHORT)
+  fun snackBarShort(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_SHORT)
+  fun snackBarLong(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_LONG)
   /** Stays on until user acts on it */
-  fun showSnackbarInf(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  fun snackBarInf(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
-  fun showSnackbarShortDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
-  fun showSnackbarLongDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
-  fun showSnackbarInfDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  fun snackBarShortDev(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
+  fun snackbarLongDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
+  fun snackbarInfDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
   suspend fun hasDevMode() = dsCvMap.read.first().devMode
 
@@ -200,60 +198,12 @@ abstract class AnyplaceApp : Application() {
 
     scope.launch(Dispatchers.IO) {
       if(hasDevMode()) {
-        showSnackbar(scope, msg, duration, true)
+        utlSnackBar.show(scope, msg, duration, true)
       }
     }
   }
 
-  fun showSnackbar(scope: CoroutineScope, msg: String,
-                   duration: Int, devMode : Boolean = false) {
 
-    if (!DBG.DVO) {
-      showToast(scope, msg, Toast.LENGTH_SHORT)
-      return
-    }
-
-    scope.launch(Dispatchers.Main) {
-      val sb = Snackbar.make(rootView, msg, duration)
-      sb.setActionTextColor(utlColor.White())
-
-      if (duration != Snackbar.LENGTH_SHORT || devMode) {
-        sb.setAction("OK") { } // dismissible
-      }
-
-      // center text
-      val tv = sb.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
-      tv.gravity = Gravity.CENTER
-      tv.setTypeface(tv.typeface, Typeface.BOLD)
-      if (forChat) {
-        sb.setMarginChat()
-      } else {
-        sb.setMarginCvMap()
-      }
-
-      tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
-      tv.maxLines=3
-
-      if (devMode) {
-        sb.setDrawableLeft(R.drawable.ic_dev_mode)
-        sb.setBackground(R.drawable.bg_snackbar_devmode)
-        sb.setActionTextColor(utlColor.GrayLighter())
-      } else {
-        sb.setBackground(R.drawable.bg_snackbar_normal)
-        sb.setActionTextColor(utlColor.Info())
-
-        if (duration == Snackbar.LENGTH_INDEFINITE) {
-          sb.setDrawableLeft(R.drawable.ic_info)
-        } else {
-          sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
-        }
-      }
-
-      sb.setIconTint(utlColor.White())
-
-      sb.show()
-    }
-  }
 
   //// MISC
   fun hasInternet(): Boolean {

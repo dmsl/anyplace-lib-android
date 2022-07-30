@@ -58,7 +58,7 @@ class CvFingerprintSendNW(
     val msg = C.ERR_MSG_NO_INTERNET
 
     if (!app.hasInternet()) {
-      app.showSnackbarLong(VM.viewModelScope, msg)
+      app.snackBarLong(VM.viewModelScope, msg)
       uiLog.bottom.logging.showUploadBtn()
       return
     }
@@ -72,7 +72,7 @@ class CvFingerprintSendNW(
       val entry = VM.cache.topFingerprintsEntry()
 
       if (!app.hasInternet()) {
-        app.showSnackbarLong(VM.viewModelScope, "$msg (dropped)")
+        app.snackBarLong(VM.viewModelScope, "$msg (dropped)")
         uiLog.bottom.logging.showUploadBtn()
         break
       }
@@ -85,7 +85,7 @@ class CvFingerprintSendNW(
           uploadOK++
           totalObjects+=entry.cvDetections.size
         } else {
-          app.showSnackbarLong(VM.viewModelScope, "Something went error during upload!")
+          app.snackBarLong(VM.viewModelScope, "Something went error during upload!")
           break
         }
       }
@@ -100,7 +100,7 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
-    app.showSnackbarLong(VM.viewModelScope, reportMsg)
+    app.snackBarLong(VM.viewModelScope, reportMsg)
   }
 
   /**
@@ -194,7 +194,7 @@ class CvFingerprintSendNW(
           is NetworkResult.Error -> {
             if (!err.handle(app, it.message, "loc-send")) {
               val msg = it.message ?: "unspecified error"
-              app.showSnackbarInf(VM.viewModelScope, msg)
+              app.snackBarInf(VM.viewModelScope, msg)
             }
           }
           else -> {}

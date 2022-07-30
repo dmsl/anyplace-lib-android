@@ -134,7 +134,7 @@ class CvLoggerViewModel @Inject constructor(
         LOG.D2(TAG, "WINDOW FINISHED")
 
         if (appendedDetections.isEmpty()) {
-          app.showSnackbarShort(viewModelScope, "No detections.")
+          app.snackBarShort(viewModelScope, "No detections.")
           statusLogging.update { LoggingStatus.stopped }
         } else {
           LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")

@@ -17,7 +17,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -53,9 +52,9 @@ class UiLocalization(
 
       if (isDisabled()) {
         if (disabledUserAction) {
-          app.showSnackbarInf(scope, disabledCause)
+          app.snackBarInf(scope, disabledCause)
         } else {
-          app.showSnackbarShort(scope, disabledCause)
+          app.snackBarShort(scope, disabledCause)
         }
 
         if (disabledAttentionViews.isNotEmpty()) {
@@ -88,7 +87,7 @@ class UiLocalization(
         VM.ui.map.animateToLocation(coord.toLatLng())
       } else {
         val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
-        app.showSnackbarInf(VM.viewModelScope, msg)
+        app.snackBarInf(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
       }
     }

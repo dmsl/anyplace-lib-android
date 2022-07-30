@@ -22,6 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_anchor="@+id/relativeLayout"
+        android:paddingTop="64dp"
         app:layout_anchorGravity="center"
         tools:context="org.tensorflow.demo.CameraActivity">
 
@@ -239,12 +240,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/smas"
-        android:textColor="@color/black"
-        android:alpha="0.4"
+        android:alpha="0.3"
         android:textSize="18sp"
         android:layout_marginTop="5dp"
         android:drawableLeft="@drawable/ic_lashfire_bwicon"
         android:drawableRight="@drawable/ic_aperture"
+        android:textColor="@color/white"
+        android:drawableTint="@color/white"
         android:textAlignment="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

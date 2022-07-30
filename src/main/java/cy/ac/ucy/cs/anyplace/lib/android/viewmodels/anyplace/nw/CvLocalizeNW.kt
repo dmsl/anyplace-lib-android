@@ -81,7 +81,7 @@ class CvLocalizeNW(
 
         val strInfo = "Recognitions: ${detections.size}. Algo: Online: $algo"
         // detections.forEach { strInfo+= "${it.oid} " }
-        app.showSnackbarShortDEV(VM.viewModelScope, strInfo)
+        app.snackBarShortDev(VM.viewModelScope, strInfo)
 
         LOG.V2(TAG, "$tag: ${req.time}: #: ${detections.size}")
         LOG.W(TAG, "$tag: calling remote endpoint..")

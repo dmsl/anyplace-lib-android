@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
-import android.view.View
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.view.isVisible
 import cy.ac.ucy.cs.anyplace.lib.R
@@ -63,12 +62,12 @@ class UiLoggingBtn(
         LoggingStatus.running -> { resetLogging() }
 
         LoggingStatus.mustStore -> {
-          app.showSnackbarLong(scope, "Long-click on map to store detections")
+          app.snackBarLong(scope, "Long-click on map to store detections")
         }
 
         LoggingStatus.stopped -> {
           if (!VM.canRecognizeObjects()) {
-            app.showSnackbarInf(scope, C.ERR_NO_CV_CLASSES)
+            app.snackBarInf(scope, C.ERR_NO_CV_CLASSES)
             return@setOnClickListener
           }
 

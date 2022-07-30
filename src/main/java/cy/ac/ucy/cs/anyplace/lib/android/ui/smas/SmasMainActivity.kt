@@ -159,7 +159,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
-    app.showSnackbarShort(lifecycleScope, "Location set manually (long-clicked)")
+    app.snackBarShort(lifecycleScope, "Location set manually (long-clicked)")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -386,12 +386,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
-      app.showSnackbarShort(lifecycleScope, "Long-press to toggle alert")
+      app.snackBarShort(lifecycleScope, "Long-press to toggle alert")
     }
 
     btnAlert.setOnLongClickListener {
       if (app.locationSmas.value is LocalizationResult.Unset) {
-        app.showSnackbarLong(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
+        app.snackBarLong(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
         return@setOnLongClickListener true
       }
 
@@ -558,7 +558,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!app.hasLastLocation()) {
           val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
-          app.showSnackbarInf(lifecycleScope, msg)
+          app.snackBarInf(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
           return@launch
         }

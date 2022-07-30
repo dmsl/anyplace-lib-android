@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
-import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -136,7 +135,7 @@ class LocationSendNW(
             if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
                       || !errNoInternetShown ) {
 
-              app.showSnackbarShort(VM.viewModelScope, msg)
+              app.snackBarShort(VM.viewModelScope, msg)
               LOG.W(TAG, "$tag: $msg")
             } else {
               LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")

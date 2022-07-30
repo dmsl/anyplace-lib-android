@@ -109,9 +109,9 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
 
     if (VM.app.hasDevMode()) {
       val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
-      VM.app.showSnackbarLongDEV(VM.viewModelScope, devMsg)
+      VM.app.snackbarLongDEV(VM.viewModelScope, devMsg)
     } else if (msg.isNotEmpty()) {
-      VM.app.showSnackbarLong(VM.viewModelScope, msg)
+      VM.app.snackBarLong(VM.viewModelScope, msg)
     }
   }
 }

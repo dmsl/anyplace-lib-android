@@ -97,7 +97,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.onCreate(savedInstanceState)
     VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
 
-
     // CLR:PM
     // app.showSnackbarInf(lifecycleScope, "Testing msg here")
     // app.showSnackbarInf(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
@@ -285,7 +284,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
-      app.showSnackbarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
+      app.snackBarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
     }
   }
 
