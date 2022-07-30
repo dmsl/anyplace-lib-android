@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
-import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -48,6 +47,8 @@ class LocationGetNW(
 
   /** Another user in alert mode */
   val alertingUser: MutableStateFlow<UserLocation?> = MutableStateFlow(null)
+
+  val tag = "nw-location-get"
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
@@ -108,6 +109,8 @@ class LocationGetNW(
     LOG.E(TAG, e)
   }
 
+  var errCnt = 0
+  var errNoInternetShown = false
   suspend fun collect(VMchat: SmasChatViewModel, gmap: GmapWrapper) {
     LOG.D3()
 
@@ -122,7 +125,19 @@ class LocationGetNW(
           LOG.D3(TAG, "Error: msg: ${it.message}")
           if (!err.handle(app, it.message, "loc-get")) {
             val msg = it.message ?: "unspecified error"
-            app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+            // dont flood user with messages
+
+            // show just one internet related msg
+            if (msg != C.MSG_ERR_ILLEGAL_STATE) errNoInternetShown=true
+            errCnt+=1
+            if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
+                    || !errNoInternetShown ) {
+              app.showSnackbarShort(VM.viewModelScope, msg)
+              LOG.W(TAG, "$tag: $msg")
+            } else {
+              LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")
+              LOG.E(TAG, "$tag: $msg")
+            }
           }
         }
         else -> {}

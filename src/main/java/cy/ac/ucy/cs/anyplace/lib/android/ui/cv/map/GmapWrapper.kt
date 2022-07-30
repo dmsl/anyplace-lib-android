@@ -124,15 +124,21 @@ class GmapWrapper(
         val deck = metadata.coord.level
         val lat = metadata.coord.lat
         val lon = metadata.coord.lon
-        val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
-        clipboardLocation.toString().copyToClipboard(ctx)
 
-        scope.launch(Dispatchers.IO) {
-          val ownUid = app.dsSmasUser.read.first().uid
-          if (ownUid == uid) {
-            app.showSnackbar(scope, "Copied own location to clipboard")
-          } else {
-            app.showSnackbar(scope, "Copied ${metadata.uid}'s location to clipboard")
+        if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
+
+          val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
+          clipboardLocation.toString().copyToClipboard(ctx)
+
+          scope.launch(Dispatchers.IO) {
+            val ownUid = app.dsSmasUser.read.first().uid
+            if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
+              if (ownUid == uid) {
+                app.showSnackbar(scope, "Copied own location to clipboard")
+              } else {
+                app.showSnackbar(scope, "Copied ${metadata.uid}'s location to clipboard")
+              }
+            }
           }
         }
       }

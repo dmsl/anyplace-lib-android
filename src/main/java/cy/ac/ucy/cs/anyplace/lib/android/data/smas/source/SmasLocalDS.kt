@@ -1,10 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
+import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.SmasDAO
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.ChatMsgEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.chatMsgtoEntity
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.convertToGeneric
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvMapRowToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvModelClassToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToCvModelClasses
@@ -85,26 +87,31 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     DAO.dropCvMap()
   }
 
-  suspend fun localizeTemp(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUser: User) {
+  suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUser: User) {
     // Preparation: fill tmp array with scans
     DAO.dropLocalizeFpTemp()
     detectionsReq.forEach {
       DAO.insertLocalizeTemp(localizationFingerprintTempToEntity(chatUser.id, it))
     }
 
-    // run localization
-    // val flow = DAO.localizeAlgo1(modelid, buid, chatUser.id).first()
-    // val result =
-    //         if (flow.isNotEmpty()) localizationResultToGeneric(flow[0])
-    //         else null
-    //
-    // LOG.E(TAG, "ALGO1: $result.")
-    // // VM.nwCvLocalize.postResult(result)  // TODO:PMX
+    val strInfo = "Recognitions: ${detectionsReq.size}. Algo: Offline"
+    // detections.forEach { strInfo+= "${it.oid} " }
 
     val res3 = DAO.localizeAlgo3(DAO.getQueryAlgo3(modelid, buid))
+    var msg =""
     if (res3.isNotEmpty()) {
-     val loc3 = res3[0]
+      val loc3 = res3[0]
       LOG.W(TAG, "${CvLocalizeNW.tag}: ALGO3: $loc3")
+      VM.nwCvLocalize.postOfflineResult(convertToGeneric(loc3))
+    } else {
+      msg+="Offline algorithm returned no results"
+    }
+
+    if (VM.app.hasDevMode()) {
+      val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
+      VM.app.showSnackbarLongDEV(VM.viewModelScope, devMsg)
+    } else if (msg.isNotEmpty()) {
+      VM.app.showSnackbarLong(VM.viewModelScope, msg)
     }
   }
 }

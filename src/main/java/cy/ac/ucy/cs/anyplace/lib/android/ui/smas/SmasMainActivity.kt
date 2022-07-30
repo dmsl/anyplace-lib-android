@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
@@ -160,8 +159,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
-
-    app.showSnackbar(lifecycleScope, "Location set manually")
+    app.showSnackbar(lifecycleScope, "Location set manually (long-clicked)")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -242,9 +240,14 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!isActive) msg+=" [inactive]"
         if (!app.hasLastLocation()) msg+=" [no-location-yet]"
 
+        if (!app.hasInternet()) {
+          msg+="[SKIP: NO-INTERNET]"
+        } else {
+          VM.nwLocationGet.safeCall()
+        }
+
         LOG.V2(TAG, "loop-location: main: $msg")
 
-        VM.nwLocationGet.safeCall()
         delay(VM.prefsCvMap.locationRefreshMs.toLong())
       }
     }
@@ -555,7 +558,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!app.hasLastLocation()) {
           val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
-          app.showSnackbarIndefinite(lifecycleScope, msg)
+          app.showSnackbarInf(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
           return@launch
         }

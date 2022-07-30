@@ -101,7 +101,7 @@ class MapLines(private val app: AnyplaceApp,
       val to = poiCoords[connection.poisB]
 
       val polyopt=PolylineOptions().add(from).add(to)
-                      .color(utlColor.ColorPrimaryDark50())
+                      .color(utlColor.PrimaryDark50())
 
       if (floorPolyopt[level]==null) floorPolyopt[level]= mutableListOf()
       floorPolyopt[level]?.add(polyopt)

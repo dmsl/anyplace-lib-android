@@ -72,13 +72,11 @@
         android:summary="Deletes and downloads again the model classes."
         />
 
-    <!-- TODO:PMX CVM -->
-    <!--    Updates the CV map.-->
+    <!-- Updates the CV map.-->
     <Preference
-        android:title="CvMap"
-        tools:visibility="gone"
+        android:title="Download CvMap"
         android:key="@string/pref_localization_cv_map"
-        android:summary=""
+        android:summary="Fetch the latest CV fingerprints from the backend"
         />
 
     <Preference

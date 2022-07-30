@@ -203,6 +203,20 @@ open class Cache(val ctx: Context) {
     File(fingerprintsFilename).delete()
   }
 
+  fun countFingerprintsCacheLines(): Int {
+    return try {
+      var lines = 0
+      for (line in Files.readAllLines(Paths.get(fingerprintsFilename))) {
+        if (line != null && line.trim { it <= ' ' }.isNotEmpty()) {
+          lines ++
+        }
+      }
+      lines
+    } catch (e: IOException) {
+      0
+    }
+  }
+
   fun popFingerprintsEntry() {
     removeFirstLine(fingerprintsFilename)
 

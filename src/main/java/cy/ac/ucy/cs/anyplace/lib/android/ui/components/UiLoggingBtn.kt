@@ -1,10 +1,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.view.isVisible
-import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -65,12 +63,12 @@ class UiLoggingBtn(
         LoggingStatus.running -> { resetLogging() }
 
         LoggingStatus.mustStore -> {
-          app.showToast(scope, "Long-click on map to store detections", Toast.LENGTH_LONG)
+          app.showSnackbarLong(scope, "Long-click on map to store detections")
         }
 
         LoggingStatus.stopped -> {
           if (!VM.canRecognizeObjects()) {
-            app.showToast(scope, C.ERR_NO_CV_CLASSES)
+            app.showSnackbarInf(scope, C.ERR_NO_CV_CLASSES)
             return@setOnClickListener
           }
 
@@ -144,7 +142,7 @@ class UiLoggingBtn(
 
     ui.floorSelector.disable()
     utlUi.disable(act.btnSettings)
-    uiLog.bottom.hide()
+    uiLog.bottom.hideBottomSheet()
 
     VM.enableCvDetection()
 
@@ -166,7 +164,7 @@ class UiLoggingBtn(
     if (uploadWasVisible) showUploadBtn()
     ui.floorSelector.enable()
     utlUi.enable(act.btnSettings)
-    uiLog.bottom.show()
+    uiLog.bottom.showBottomSheet()
 
     LOG.W(TAG, "$METHOD: logging")
     VM.disableCvDetection()
@@ -192,15 +190,18 @@ class UiLoggingBtn(
     VM.statObjWindowUNQ=0
 
     VM.enableCvDetection()
+    ui.floorSelector.hide()
 
     ui.localization.hide()
     ui.map.mapView.alpha = alphaMin
+    uiLog.bottom.hideBottomSheet()
+    utlUi.disable(uiLog.btnSettings)
 
     utlUi.text(btn, "stop demo")
     utlUi.changeBackgroundCompat(uiLog.bottom.logging.btn, R.color.darkGray)
-    app.showSnackbar(scope, "Object Recognition Demo")
-
     utlUi.animateAlpha(ui.map.mapView, CvLoggerUI.OPACITY_MAP_LOGGING, ANIMATION_DELAY)
+
+    act.layoutCamera.setBackgroundColor(VM.utlColor.DevMode())
   }
 
 
@@ -208,6 +209,10 @@ class UiLoggingBtn(
     LOG.D3(TAG, "$METHOD: stopping demo")
     VM.statusLogging.update { LoggingStatus.stopped }
     uiLog.showLocalizationButton(VM.cache.hasFingerprints())
+    uiLog.bottom.showBottomSheet()
+    utlUi.enable(uiLog.btnSettings)
+    ui.floorSelector.show()
+    act.layoutCamera.setBackgroundColor(VM.utlColor.Black())
   }
 
   fun hide() = utlUi.fadeOut(btn)
@@ -227,6 +232,9 @@ class UiLoggingBtn(
     utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
     utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
     utlUi.enable(uiLog.groupUpload)
+    utlUi.enable(uiLog.btnUpload)
+    utlUi.enable(uiLog.btnUploadDiscard)
+
     utlUi.fadeInAnyway(uiLog.groupUpload)
   }
 

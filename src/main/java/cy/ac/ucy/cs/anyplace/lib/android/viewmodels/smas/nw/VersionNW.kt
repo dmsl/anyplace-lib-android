@@ -87,7 +87,7 @@ class VersionNW(
         resp.value = NetworkResult.Error(exception?.message)
       }
     } else {
-      exception = Exception("No internet connection.")
+      exception = Exception(C.ERR_MSG_NO_INTERNET)
     }
     exception?.let { it ->
       msg = it.message.toString()

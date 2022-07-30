@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult.Companion.ENGINE_IMU
 import kotlinx.coroutines.flow.update
 import java.util.ArrayList
 import kotlin.math.asin
@@ -75,7 +76,7 @@ class IMU(
         val latLong = findClosestPoint(tmp, polyOpts)
 
         LOG.E(TAG, "Found NEW MM point: $latLong")
-        app.locationSmas.update { LocalizationResult.Success(latLong.toCoord(floorNum)) }
+        app.locationSmas.update { LocalizationResult.Success(latLong.toCoord(floorNum), ENGINE_IMU) }
       }
     })
   }

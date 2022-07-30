@@ -1,20 +1,17 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.Group
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggerTimer
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLoggingBtn
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
@@ -66,25 +63,22 @@ class BottomSheetCvLoggerUI(
     tvObjTotal.text=VMlog.statObjTotal.toString()
   }
 
+
   // TODO: in parent BottomSheetCvUI? override?!
   override fun hideBottomSheet() {
-    super.hideBottomSheet()
-
-    llBottomSheetInternal.visibility = View.GONE // CHECK: binding.bottomUi.bottomSheetInternal
-    ivBottomSheetArrow.visibility = View.GONE // CHECK: binding.bottomUi.bottomSheetArrow
+    // super.hideBottomSheet() CLR ?
+    utlUi.gone(ivArrowImg)
+    utlUi.invisible(layoutInternal)
   }
 
   override fun showBottomSheet() {
     super.showBottomSheet()
 
-    llBottomSheetInternal.visibility = View.VISIBLE
-    ivBottomSheetArrow.visibility = View.VISIBLE
-
-    // OLD comments (except CLR)
-    // hide developer options: TODO:PM once options are in place
-    // if (viewModel.prefs.devMode) {
-    groupDevSettings.visibility = View.VISIBLE  //  CLR:PM binding.bottomUi.groupDevSettings
-    // }
+    if (bottomSheetEnabled) {
+      utlUi.visible(ivArrowImg)
+      utlUi.visible(layoutInternal)
+      // groupDevSettings.visibility = View.VISIBLE
+    }
   }
 
   // CHECK:PM ? I think this was replaced with setupSpecialize?

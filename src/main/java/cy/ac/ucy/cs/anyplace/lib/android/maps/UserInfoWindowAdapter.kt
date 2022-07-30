@@ -46,6 +46,12 @@ data class UserInfoMetadata(
 class UserInfoWindowAdapter(
         private val ctx: Context) : GoogleMap.InfoWindowAdapter {
 
+  companion object {
+    fun isUserLocation(type : UserInfoType): Boolean {
+      return type == UserInfoType.OwnUser || type == UserInfoType.OtherUser
+    }
+  }
+
   /** This is the vertical [LinearLayout] */
   private val view: View = LayoutInflater.from(ctx).inflate(R.layout.marker_user_window, null)
   private val utlColor by lazy { UtilColor(ctx) }
@@ -92,7 +98,7 @@ class UserInfoWindowAdapter(
         UserInfoType.OwnUser -> {
 
           val tvUserDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_whereami, null)!!
-          DrawableCompat.setTint(tvUserDrawable, utlColor.ColorLocationSmas())
+          DrawableCompat.setTint(tvUserDrawable, utlColor.LocationSmas())
           tvTitle.setCompoundDrawablesWithIntrinsicBounds(tvUserDrawable, null,null,null)
 
           drawable.setColor(utlColor.GrayLighter())
@@ -132,6 +138,7 @@ class UserInfoWindowAdapter(
       } else if (metadata.type == UserInfoType.LoggerScan) { // computer vision scan
         val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_aperture, null)
         btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+        tvSubtitle.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
       } else {
         val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_clipboard, null)
         btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null,null,null)
@@ -166,7 +173,10 @@ class UserInfoWindowAdapter(
     return when (locMethod) {
       LocalizationMethod.manualByUser -> " : set manually"
       LocalizationMethod.autoMostRecent -> " : most recent"
-      LocalizationMethod.cvEngine -> " : Computer Vision"
+      LocalizationMethod.anyplaceIMU -> " : IMU Sensors"
+      LocalizationMethod.anyplaceCvQueryOnline -> " : Vision (Online)"
+      LocalizationMethod.anyplaceCvQueryOffline-> " : Vision (Offline)"
+      LocalizationMethod.unknownMethod -> " : [something wrong]"
       else -> ""
     }
   }
@@ -175,7 +185,10 @@ class UserInfoWindowAdapter(
     return utlColor.get(when (locMethod) {
       LocalizationMethod.manualByUser -> R.color.locationManualDark
       LocalizationMethod.autoMostRecent -> R.color.locationRecent
-      LocalizationMethod.cvEngine -> R.color.locationSmas
+      LocalizationMethod.anyplaceIMU,
+      LocalizationMethod.anyplaceCvQueryOnline,
+      LocalizationMethod.anyplaceCvQueryOffline,
+        -> R.color.locationSmas
       else -> R.color.gray
     })
   }

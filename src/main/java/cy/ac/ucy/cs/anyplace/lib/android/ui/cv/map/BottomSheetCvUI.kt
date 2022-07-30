@@ -20,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 open class BottomSheetCvUI(private val act: DetectorActivityBase,
-                           private val showBottomSheet: Boolean = false) {
+                           val bottomSheetEnabled: Boolean = false) {
 
   val tvFrameInfo : TextView by lazy { act.findViewById(R.id.frame_info) }
   val tvCropInfo: TextView by lazy { act.findViewById(R.id.crop_info) }
@@ -32,7 +32,7 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
 
   fun setup() {
     LOG.W(TAG, " BSheet CV setup")
-    if (!showBottomSheet) hideBottomSheet()
+    if (!bottomSheetEnabled) hideBottomSheet()
 
     // CLR if ok
     // defaultSetup()
@@ -87,7 +87,7 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
 
   @SuppressLint("SetTextI18n")
   fun refreshUi(scope: LifecycleCoroutineScope) {
-    if (!showBottomSheet) return
+    if (!bottomSheetEnabled) return
 
     scope.launch(Dispatchers.Main) {
       tvFrameInfo.text = "${act.previewWidth}x${act.previewHeight}"
@@ -95,18 +95,6 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
       val h = act.cropCopyBitmap.height
       tvCropInfo.text = "${w}x${h}"
       tvTimeInfo.text =  "${act.lastProcessingTimeMs}ms"
-    }
-  }
-
-  fun hide() {
-    utlUi.gone(ivArrowImg)
-    utlUi.invisible(layoutInternal)
-  }
-
-  fun show() {
-    if (showBottomSheet) {
-      utlUi.visible(ivArrowImg)
-      utlUi.visible(layoutInternal)
     }
   }
 

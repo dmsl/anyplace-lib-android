@@ -12,6 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ import kotlinx.coroutines.launch
  */
 open class CvUI(
         protected val app: AnyplaceApp,
-        protected val activity: Activity,
+        protected val activity: CvMapActivity,
         protected val VM: CvViewModel,
         protected val scope: CoroutineScope,
         protected val fragmentManager: FragmentManager,

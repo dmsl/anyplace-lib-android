@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
 import androidx.lifecycle.*
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
@@ -30,6 +31,8 @@ class SpacesViewModel @Inject constructor(
         private val retrofitHolderAP: RetrofitHolderAP) : AndroidViewModel(app) {
 
   val searchViewData: MutableLiveData<String> = MutableLiveData()
+
+  private val C by lazy { CONST(app.applicationContext) }
 
   var loadedSpaces = false // TODO move in SpaceVM
   private var querySelectSpace = QuerySelectSpace()
@@ -104,7 +107,7 @@ class SpacesViewModel @Inject constructor(
         handleSafecallError(msg, e)
       }
     } else {
-      spacesResponse.value = NetworkResult.Error("No Internet Connection.")
+      spacesResponse.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
     }
   }
 

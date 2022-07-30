@@ -10,12 +10,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.LocationOfl
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.OfflineLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult.Companion.ENGINE_QUERY_OFFLINE
+import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult.Companion.ENGINE_QUERY_ONLINE
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.Dispatchers
@@ -65,14 +67,9 @@ class CvLocalizeNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        var algo = CV_LOG_ALGO_NEW
+        var algo = CV_LOG_ALGO_NEW // TODO this can become an option
         val prevCoord  = app.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
-
-        var strInfo = "OIDs:"
-        detections.forEach {
-          strInfo+= "${it.oid} "
-        }
 
 
         val req =  if (prevCoord!=null) {
@@ -82,14 +79,13 @@ class CvLocalizeNW(
           CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo)
         }
 
-        strInfo+="\nAlgo: $algo"
-        app.showToastDEV(VM.viewModelScope, strInfo, Toast.LENGTH_LONG)
-
+        val strInfo = "Recognitions: ${detections.size}. Algo: Online: $algo"
+        // detections.forEach { strInfo+= "${it.oid} " }
+        app.showSnackbarShortDEV(VM.viewModelScope, strInfo)
 
         LOG.V2(TAG, "$tag: ${req.time}: #: ${detections.size}")
         LOG.W(TAG, "$tag: calling remote endpoint..")
         val response = repo.remote.cvLocalization(req)
-
         LOG.W(TAG, "$tag: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(e: Exception) {
@@ -101,13 +97,15 @@ class CvLocalizeNW(
     }
   }
 
-  // TODO:PMX CVM
-  fun postResult(l: LocationOfl?) {
+  /**
+   * Post offline localization result
+   */
+  fun postOfflineResult(l: OfflineLocalization?) {
     if (l==null) {
       resp.value=NetworkResult.Error("Failed to get location")
     } else {
       val r=CvLocalizeResp(uid="",
-              listOf(CvLocation(l.deck, l.dissimilarity, l.flid, l.x, l.y)), status="")
+              listOf(CvLocation(l.deck, l.dissimilarity, l.flid, l.x, l.y)), status=ENGINE_QUERY_OFFLINE)
       resp.value=NetworkResult.Success(r)
     }
   }
@@ -120,10 +118,9 @@ class CvLocalizeNW(
         resp.isSuccessful -> {
           // SMAS special handling (errors should not be 200/OK)
           val r = resp.body()!!
-          if (r.status == "err")  {
-            return NetworkResult.Error(r.descr)
-          }
+          if (r.status == "err")  { return NetworkResult.Error(r.descr) }
 
+          r.status= ENGINE_QUERY_ONLINE
           return NetworkResult.Success(r)
         } // can be nullable
         else -> return NetworkResult.Error(resp.message())
@@ -150,7 +147,7 @@ class CvLocalizeNW(
 
               // Propagating the result
               val coord = Coord(cvLoc.x, cvLoc.y, cvLoc.deck)
-              app.locationSmas.value = LocalizationResult.Success(coord)
+              app.locationSmas.value = LocalizationResult.Success(coord, it.data!!.status)
             }
           }
           is NetworkResult.Error -> {

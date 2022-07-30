@@ -11,6 +11,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
@@ -68,6 +69,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected abstract val id_btn_localization: Int
   protected abstract val id_btn_whereami: Int
 
+  private val C by lazy { CONST(applicationContext) }
+
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
@@ -83,7 +86,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   // UTILITY OBJECTS
   protected val utlColor by lazy { UtilColor(applicationContext) }
   protected val assetReader by lazy { AssetReader(applicationContext) }
-  protected open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
+  open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
   private val tag = "act-cvcomm"
@@ -272,7 +275,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
-      app.showToast(lifecycleScope, "No internet!")
+      app.showSnackbarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
     }
   }
 
@@ -379,7 +382,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             LOG.E(TAG, msg)
             val curFloor = app.wFloor?.floorNumber()
             if (coord.level != curFloor) {
-              app.showToast(lifecycleScope, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
+              LOG.W(TAG, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
+              // app.showToast(lifecycleScope, )
             }
 
             app.wFloors.moveToFloor(VM, coord.level)

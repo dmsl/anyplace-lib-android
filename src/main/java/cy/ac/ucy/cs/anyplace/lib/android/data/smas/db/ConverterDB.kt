@@ -99,12 +99,12 @@ class ConverterDB {
       return FINGERPRINT_LOCALIZE_TEMP(uid, c.oid, c.height, c.width, c.ocr)
     }
 
-    fun localizationResultToGeneric(lr: LocationOfl1) : LocationOfl {
-      return LocationOfl(lr.deck, 0f, lr.flid, lr.x, lr.y, lr.buid)
+    fun convertToGeneric(lr: OfflineLocalizationAlgo1) : OfflineLocalization {
+      return OfflineLocalization(lr.deck, 0f, lr.flid, lr.x, lr.y, lr.buid)
     }
 
-    fun localizationResultToGeneric(lr: LocationOfl2) : LocationOfl {
-      return LocationOfl(lr.deck, lr.dissimilarity, lr.flid, lr.x, lr.y)
+    fun convertToGeneric(lr: OfflineLocalizationAlgo3) : OfflineLocalization {
+      return OfflineLocalization(lr.deck, lr.dissimilarity, lr.flid, lr.x, lr.y)
     }
 
     /**

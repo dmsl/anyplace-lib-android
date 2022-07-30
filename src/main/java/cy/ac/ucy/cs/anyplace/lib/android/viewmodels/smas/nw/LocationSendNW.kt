@@ -40,6 +40,8 @@ class LocationSendNW(
     alert,
   }
 
+  val tag = "nw-location-send"
+
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
   /** Network Responses from API calls */
@@ -116,6 +118,8 @@ class LocationSendNW(
     LOG.E(TAG, e)
   }
 
+  var errCnt = 0
+  var errNoInternetShown = false
   suspend fun collect() {
     resp.collect {
       when (it)  {
@@ -125,7 +129,20 @@ class LocationSendNW(
         is NetworkResult.Error -> {
           if (!err.handle(app, it.message, "loc-send")) {
             val msg = it.message ?: "unspecified error"
-            app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+
+            // show just one internet related msg
+            if (msg != C.MSG_ERR_ILLEGAL_STATE) errNoInternetShown=true
+            errCnt+=1
+            if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
+                      || !errNoInternetShown ) {
+
+              app.showSnackbarShort(VM.viewModelScope, msg)
+              LOG.W(TAG, "$tag: $msg")
+            } else {
+              LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")
+              LOG.E(TAG, "$tag: $msg")
+            }
+
           }
         }
         else -> {}

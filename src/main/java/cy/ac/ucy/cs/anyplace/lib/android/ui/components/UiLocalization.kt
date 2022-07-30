@@ -1,12 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
-import android.app.Activity
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
  * UI Localization Button
  */
 class UiLocalization(
-        private val act: Activity,
+        private val act: CvMapActivity,
         private val app: AnyplaceApp,
         private val VM: CvViewModel,
         val scope: CoroutineScope,
@@ -114,8 +115,20 @@ class UiLocalization(
     btn.isEnabled = true
     wMap.mapView.alpha = 1f
     VM.statusLocalization.tryEmit(LocalizationStatus.stopped)
+
+
+    if (whereAmIWasVisible) {
+      utlUi.fadeIn(btnWhereAmI)
+      whereAmIWasVisible=false
+    }
+    if (act.uiBottom.bottomSheetEnabled) {
+      act.uiBottom.showBottomSheet()
+    }
+
+    utlUi.enable(act.btnSettings)
   }
 
+  var whereAmIWasVisible=false
   fun startLocalization() {
     VM.enableCvDetection()
     LOG.D2(TAG, "$METHOD")
@@ -126,6 +139,15 @@ class UiLocalization(
     btn.visibility = View.VISIBLE
     val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
     wMap.mapView.alpha = mapAlpha
+
+
+    // TODO: PMX: CHECK IN LOGGER
+    if (btnWhereAmI.isVisible) {
+      whereAmIWasVisible=true
+      utlUi.fadeOut(btnWhereAmI)
+    }
+    utlUi.disable(act.btnSettings)
+    act.uiBottom.hideBottomSheet()
   }
 
 

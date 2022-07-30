@@ -1,5 +1,4 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.db
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
@@ -72,7 +71,7 @@ interface SmasDAO {
                   "    LIMIT 1; -- sort by newest match to oldest MATCH\n" +
                   "    -- SELECT * FROM NN;\n"
   )
-  fun localizeAlgo1(modelid: Int, buid: String, uid: String): Flow<List<LocationOfl1>>
+  fun localizeAlgo1(modelid: Int, buid: String, uid: String): Flow<List<OfflineLocalizationAlgo1>>
 
   fun getQueryAlgo3(modelid: Int, buid: String) : SimpleSQLiteQuery {
     return SimpleSQLiteQuery(
@@ -94,7 +93,7 @@ interface SmasDAO {
   }
 
   @RawQuery
-  fun localizeAlgo3(query: SupportSQLiteQuery): List<LocationOfl2>
+  fun localizeAlgo3(query: SupportSQLiteQuery): List<OfflineLocalizationAlgo3>
 }
 
 

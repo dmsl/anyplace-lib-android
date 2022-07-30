@@ -18,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,6 +57,7 @@ class CvLoggerViewModel @Inject constructor(
   private val C by lazy { SMAS(app.applicationContext) }
 
   val utlUi by lazy { UtilUI(application, viewModelScope) }
+  val utlColor by lazy { UtilColor(app.applicationContext) }
   lateinit var uiLog: CvLoggerUI
 
   // TODO: move in new class..
@@ -65,13 +67,13 @@ class CvLoggerViewModel @Inject constructor(
 
   val statusLogging = MutableStateFlow(LoggingStatus.stopped)
 
-  /** Detections of the current logger scan-window (MERGE: detectionsLogging) */
+  /** Detections of the current logger scan-window */
   val objWindowLOG: MutableLiveData<List<Classifier.Recognition>> = MutableLiveData()
-  /** Detections assigned to map locations (MERGE:  with storedDetections) */
+  /** Detections assigned to map locations */
   var objOnMAP: MutableMap<LatLng, List<Classifier.Recognition>> = mutableMapOf()
   /** Counter over all detections? (CHECK) */
   val statObjWindowAll: MutableLiveData<Int> = MutableLiveData(0)
-  /** for stats, and for enabling scanned objects clear (on current window) (MERGE: objectsWindowUnique) */
+  /** for stats, and for enabling scanned objects clear (on current window) */
   var statObjWindowUNQ = 0
   var statObjTotal = 0
 
@@ -89,12 +91,11 @@ class CvLoggerViewModel @Inject constructor(
   }
 
   /**
-   * CHECK:PM this was part of a VM that had the detections
-   * (deep in the CV engine).
+   * It processes the detections once the inference has run,
+   * only if logging mode is running.
    *
-   * Now this is at a higher level
-   *
-   * TODO:PM convert to a post call?
+   * Otherwise, if localization mode was running, the call to [super] would
+   * have done this
    */
   override fun processDetections(recognitions: List<Classifier.Recognition>,
                                  activity: DetectorActivityBase) {
@@ -133,7 +134,7 @@ class CvLoggerViewModel @Inject constructor(
         LOG.D2(TAG, "WINDOW FINISHED")
 
         if (appendedDetections.isEmpty()) {
-          app.showToast(viewModelScope, "No detections.")
+          app.showSnackbar(viewModelScope, "No detections.")
           statusLogging.update { LoggingStatus.stopped }
         } else {
           LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")
@@ -214,7 +215,7 @@ class CvLoggerViewModel @Inject constructor(
     super.onLocalizationStarted()
     if (!DBG.LCLG) return // PMX: LCLG
 
-    LOG.E(TAG, "LOCALIZE: RUNNING")
+    LOG.W(TAG, "LOCALIZE: RUNNING")
     // hide all logging UI when localizing
 
     uiLog.bottom.logging.uploadWasVisible = uiLog.groupUpload.isVisible

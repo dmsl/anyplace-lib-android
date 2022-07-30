@@ -24,11 +24,13 @@ open class CONST(ctx: Context) {
     const val ACT_NAME_SMAS = "SMAS"
 
   }
+
+  val MAX_ERR_MSGS: Int = 5
   val DB_NAME = "anyplace_db"
 
   val STATUS_OK = 200
   // EXCEPTIONS (messages set by 3rd party libs)
-  val ERR_MSG_NO_INTERNET= "No Internet Connection."
+  val ERR_MSG_NO_INTERNET= "No Internet."
   val ERR_NO_CV_CLASSES= "Cannot recognize objects.\n(CvModel not initialized)"
 
   val ERR_MSG_HTTP_FORBIDEN = "not permitted by network security policy"

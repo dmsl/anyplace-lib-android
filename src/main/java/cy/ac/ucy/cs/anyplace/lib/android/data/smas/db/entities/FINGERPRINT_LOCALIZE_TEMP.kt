@@ -18,7 +18,7 @@ data class FINGERPRINT_LOCALIZE_TEMP(
         val ocr: String?,
 )
 
-data class LocationOfl1(
+data class OfflineLocalizationAlgo1(
         /** Message ID */
         val flid: Int,
         val time: Long,
@@ -29,7 +29,7 @@ data class LocationOfl1(
         val modelid: Int,
 )
 
-data class LocationOfl2(
+data class OfflineLocalizationAlgo3(
         /** Message ID */
         val flid: Int,
         val x: Double,
@@ -39,7 +39,7 @@ data class LocationOfl2(
 )
 
 // Generic
-data class LocationOfl(
+data class OfflineLocalization(
         /** Message ID */
         val deck: Int,
         val dissimilarity: Float,

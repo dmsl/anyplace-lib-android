@@ -33,10 +33,12 @@ import android.media.ImageReader
 import android.os.*
 import android.util.Size
 import android.view.Surface
+import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
@@ -113,6 +115,8 @@ abstract class CameraActivity : AppCompatActivity(),
   protected lateinit var _vm: ViewModel
   // end of OVERRIDES
   ///////////////////
+
+  val layoutCamera: FrameLayout by lazy { findViewById(R.id.container) }
 
   lateinit var VMD: DetectorViewModel
 

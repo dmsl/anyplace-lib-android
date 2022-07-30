@@ -3,10 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.view.Gravity
@@ -183,15 +180,21 @@ abstract class AnyplaceApp : Application() {
     if (devMode) { showToast(scope, msg, len) }
   }
 
-  fun showSnackbarLong(scope: CoroutineScope, msg: String) {
-    showSnackbar(scope, msg, Snackbar.LENGTH_LONG)
+  fun showSnackbarLong(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_LONG)
+  fun showSnackbarShort(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_SHORT)
+  /** Stays on until user acts on it */
+  fun showSnackbarInf(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_INDEFINITE)
+
+  fun showSnackbarShortDEV(scope: CoroutineScope, msg: String) {
+    showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
   }
 
-  fun showSnackbarIndefinite(scope: CoroutineScope, msg: String) {
-    showSnackbar(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  fun showSnackbarLongDEV(scope: CoroutineScope, msg: String) {
+    showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
   }
 
-  // TODO:PMX: NXT
+  suspend fun hasDevMode() = dsCvMap.read.first().devMode
+
   fun showSnackbarDEV(scope: CoroutineScope, msg: String,
                       duration: Int = Snackbar.LENGTH_SHORT) {
     if (!DBG.DVO) {
@@ -200,7 +203,7 @@ abstract class AnyplaceApp : Application() {
     }
 
     scope.launch(Dispatchers.IO) {
-      if(dsCvMap.read.first().devMode) {
+      if(hasDevMode()) {
         showSnackbar(scope, msg, duration, true)
       }
     }
@@ -216,7 +219,7 @@ abstract class AnyplaceApp : Application() {
 
     scope.launch(Dispatchers.Main) {
       val sb = Snackbar.make(rootView, msg, duration)
-      sb.setActionTextColor(utlColor.ColorWhite())
+      sb.setActionTextColor(utlColor.White())
 
       if (duration != Snackbar.LENGTH_SHORT || devMode) {
         sb.setAction("OK") { } // dismissible
@@ -232,7 +235,7 @@ abstract class AnyplaceApp : Application() {
 
       if (devMode) {
         sb.setDrawableLeft(R.drawable.ic_dev_mode)
-        sb.setIconTint(utlColor.ColorWhite())
+        sb.setIconTint(utlColor.White())
         sb.setBackground(R.drawable.bg_snackbar_devmode)
       } else {
         sb.setBackground(R.drawable.bg_snackbar_normal)

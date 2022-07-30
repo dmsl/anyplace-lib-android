@@ -220,7 +220,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         LOG.W(TAG, "$METHOD: setting up")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Download CvMap",
-                "Any previous downloads will be overridden.\n",
+                "The previous CvMap will be overridden.\nAn application restart is required.",
                 cancellable = true, isImportant = false) { // on confirmed
 
           lifecycleScope.launch(Dispatchers.IO) {  // artificial delay

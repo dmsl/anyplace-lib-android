@@ -104,7 +104,7 @@ class MainViewModel @Inject constructor(
         versionResp.value = NetworkResult.Error(exception?.message)
       }
     } else {
-      exception = Exception("No internet connection.")
+      exception = Exception(C.ERR_MSG_NO_INTERNET)
     }
     exception?.let { it ->
       msg = it.message.toString()
@@ -132,7 +132,7 @@ class MainViewModel @Inject constructor(
 
   fun showNetworkStatus() {
     if (!networkStatus) {
-      Toast.makeText(getApplication(), "No internet connection!", Toast.LENGTH_SHORT).show()
+      Toast.makeText(getApplication(), C.ERR_MSG_NO_INTERNET, Toast.LENGTH_SHORT).show()
       saveBackOnline(true)
     } else if(networkStatus && backOnline)  {
       Toast.makeText(getApplication(), "Back online!", Toast.LENGTH_SHORT).show()

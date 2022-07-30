@@ -77,7 +77,7 @@ class LoginViewModel @Inject constructor(
         LOG.E(TAG, "Exception: ${exception!!.message}")
       }
       } else {
-        exception = Exception("No Internet Connection.")
+        exception = Exception(C.ERR_MSG_NO_INTERNET)
       }
 
     exception?.let { it ->
@@ -115,7 +115,7 @@ class LoginViewModel @Inject constructor(
         LOG.E(TAG, "Exception: ${exception!!.message}")
       }
     } else {
-      exception = Exception("No Internet Connection.")
+      exception = Exception(C.ERR_MSG_NO_INTERNET)
     }
 
     exception?.let { it ->

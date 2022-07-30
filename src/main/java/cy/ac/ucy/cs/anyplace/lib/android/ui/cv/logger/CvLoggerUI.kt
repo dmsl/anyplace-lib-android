@@ -72,7 +72,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             LOG.V3(tag, "clicked at: $location")
             handleStoreDetections(location)
           } else {
-            app.showToast(scope, "Scan some objects first!")
+            app.showSnackbarLong(scope, "Scan some objects first!")
+            utlUi.attentionZoom(bottom.logging.btn)
           }
         }
       }
@@ -143,7 +144,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Scan: $curPoint"
     // val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
-    val snippet="Objects: $windowDetections\n${FW.prettyFloor}: ${FW.obj.floorNumber}" // TODO:PMX FR10
+    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.floorNumber}" // TODO:PMX FR10
     val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
     ui.map.markers.addScanMarker(coord, msg, snippet)
     ui.map.recenterCamera(location)
@@ -200,6 +201,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       LOG.E(TAG, "$METHOD: clicked upload")
       scope.launch(Dispatchers.IO) { // TODO:PMX UPL OK?
         utlUi.disable(groupUpload)
+        utlUi.disable(btnUpload)
+        utlUi.disable(btnUploadDiscard)
         utlUi.text(btnUpload, ctx.getString(R.string.uploading))
         utlUi.changeMaterialIcon(btnUpload, R.drawable.ic_cloud_sync)
         VM.nwCvFingerprintSend.uploadFromCache(this@CvLoggerUI)
@@ -209,7 +212,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     btnUploadDiscard.setOnClickListener {
       val mgr = act.supportFragmentManager
       val title = "Discard local scans"
-      val msg = "Will delete any scans that have not been uploaded yet to the backend."
+      val num = VM.cache.countFingerprintsCacheLines()
+      val msg = "Will delete $num scans that have not been uploaded yet to the backend.\n"
+
       ConfirmActionDialog.SHOW(mgr, title, msg, cancellable = true, isImportant = true) { // on confirmed
         VM.cache.deleteFingerprintsCache()
         checkForUploadCache(true)

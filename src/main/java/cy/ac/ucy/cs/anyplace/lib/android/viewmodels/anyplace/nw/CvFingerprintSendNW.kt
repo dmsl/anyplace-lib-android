@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
-import android.widget.Toast
 import android.widget.Toast.*
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -56,15 +55,16 @@ class CvFingerprintSendNW(
     smasUser = app.dsSmasUser.read.first()
 
     LOG.E(TAG, "$METHOD: upload from cache")
-    val msg = "No internet!"
+    val msg = C.ERR_MSG_NO_INTERNET
 
     if (!app.hasInternet()) {
-      app.showToast(VM.viewModelScope, msg)
+      app.showSnackbarLong(VM.viewModelScope, msg)
       uiLog.bottom.logging.showUploadBtn()
       return
     }
 
-    var total=0
+    var totalLocations=0
+    var totalObjects=0
     var nullEntries=0
     var uploadOK=0
 
@@ -72,7 +72,7 @@ class CvFingerprintSendNW(
       val entry = VM.cache.topFingerprintsEntry()
 
       if (!app.hasInternet()) {
-        app.showToast(VM.viewModelScope, "$msg (dropped)")
+        app.showSnackbarLong(VM.viewModelScope, "$msg (dropped)")
         uiLog.bottom.logging.showUploadBtn()
         break
       }
@@ -83,22 +83,23 @@ class CvFingerprintSendNW(
       } else {
         if (uploadEntry(smasUser, entry)) {
           uploadOK++
+          totalObjects+=entry.cvDetections.size
         } else {
-          app.showToast(VM.viewModelScope, "Something went error during upload!")
+          app.showSnackbarLong(VM.viewModelScope, "Something went error during upload!")
           break
         }
       }
 
       VM.cache.popFingerprintsEntry()
-      total++
+      totalLocations++
     }
     uiLog.checkForUploadCache(true)
 
     delay(1000)
-    var reportMsg = "Uploaded objects in $total locations"
+    var reportMsg = "Report:\nSuccessfully uploaded $totalObjects recognitions in $totalLocations locations"
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
-    app.showToast(VM.viewModelScope, reportMsg, Toast.LENGTH_LONG)
+    app.showSnackbarInf(VM.viewModelScope, reportMsg)
   }
 
   /**
@@ -119,21 +120,14 @@ class CvFingerprintSendNW(
         is NetworkResult.Success -> {
           val msg = "Uploaded objects: ${resp.data?.rows}"
           LOG.W(TAG, msg)
-          app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+          // app.showSnackbarShortDEV(VM.viewModelScope, msg)
           true
         }
         else -> {
           false
         }
       }
-    // } catch(ce: ConnectException) {
-    //   val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-    //   handleException(msg, ce)
-    //   LOG.E(TAG, METHOD, ce)
     } catch(e: Exception) {
-      // val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-      // LOG.E(TAG, METHOD, e)
-      // handleException(msg, e)
       val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
       resp.value = NetworkResult.Error(msg)
     }
@@ -159,13 +153,7 @@ class CvFingerprintSendNW(
         val response = repo.remote.cvFingerprintSend(req)
         LOG.W(TAG, "$tag: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
-      // CLR:PM
-      // } catch(ce: ConnectException) {
-      //   val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-      //   handleException(msg, ce)
       } catch(e: Exception) {
-        // val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-        // handleException(msg, e)
         val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
         resp.value = NetworkResult.Error(msg)
       }
@@ -193,13 +181,6 @@ class CvFingerprintSendNW(
     return NetworkResult.Error("$tag: ${resp.message()}")
   }
 
-  // private fun handleException(msg: String, e: Exception) {
-  //   LOG.W(TAG, "handling exception")
-  //   resp.value = NetworkResult.Error(msg)
-  //   LOG.E(TAG, msg)
-  //   LOG.E(TAG, e)
-  // }
-
   fun collect() {
     VM.viewModelScope.launch(Dispatchers.IO) {
       resp.collect {
@@ -212,7 +193,7 @@ class CvFingerprintSendNW(
           is NetworkResult.Error -> {
             if (!err.handle(app, it.message, "loc-send")) {
               val msg = it.message ?: "unspecified error"
-              app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+              app.showSnackbarInf(VM.viewModelScope, msg)
             }
           }
           else -> {}

@@ -38,18 +38,40 @@ NOTE:
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 1. CAMERA + OBJECTS OVERLAY
-        - CAMERA VIEW: [CameraActivity]
+      - CAMERA VIEW: [CameraActivity]
       - OVERLAY: Showing Detected Objects
+
+     Background:
+     - when logging it is Yellow
+     - when in Demo CV mode it is in purple
+       - demo mode just recognizes objects. nothing else. w/o a timer
     -->
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/black"
+        android:background="@color/black"
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="center"
-        tools:context="org.tensorflow.demo.CameraActivity">
+        tools:context="org.tensorflow.demo.CameraActivity"
+        >
     </FrameLayout>
+
+
+<!--    CLR PM -->
+<!--    &lt;!&ndash; 2. STATUS BACKGROUND:-->
+
+<!--     &ndash;&gt;-->
+<!--    <View-->
+<!--        android:id="@+id/view_statusBg"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:alpha="1"-->
+<!--        android:background="@color/yellowDark"-->
+<!--        app:layout_anchor="@+id/relativeLayout"-->
+<!--        app:layout_anchorGravity="center"-->
+<!--        />-->
+
 
     <!-- 2. GOOGLE MAPS:
     - Hidden when:

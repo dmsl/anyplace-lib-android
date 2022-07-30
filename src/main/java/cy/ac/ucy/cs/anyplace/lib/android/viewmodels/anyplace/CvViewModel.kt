@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
@@ -23,7 +22,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
@@ -171,7 +169,7 @@ open class CvViewModel @Inject constructor(
         floorplanFlow.value = Error(msg)
       }
     } else {
-      floorplanFlow.value = Error("No Internet Connection.")
+      floorplanFlow.value = Error(C.ERR_MSG_NO_INTERNET)
     }
   }
 
@@ -256,23 +254,28 @@ open class CvViewModel @Inject constructor(
         nwCvLocalize.collect()
       }
 
-      if (DBG.CVM) {
-        lcz(detectionsReq)
+      // TODO: ALR: pick an option for localization
+      // automode: has internet or not..
+      if (DBG.CVM && !app.hasInternet()) {
+        localizeOffline(detectionsReq)
         // return@launch
+      } else {
+        // REMOTE: ALGO
+        nwCvLocalize.safeCall(app.wSpace.obj.id, detectionsReq, model)
       }
 
-      nwCvLocalize.safeCall(app.wSpace.obj.id, detectionsReq, model)
     }
   }
 
-  suspend fun lcz(detectionsReq: List<CvObjectReq>) {
+  suspend fun localizeOffline(detectionsReq: List<CvObjectReq>) {
     if (!repoSmas.local.hasCvMap()) {
-      app.showToast(viewModelScope, "Cannot localize. (No CvMap)")
+      val msg = "Cannot localize offline: No CvMap.\nUse settings to download the latest one."
+      app.showSnackbarInf(viewModelScope, msg)
       return
     }
 
     val chatUser = app.dsApUser.readUser.first()
-    repoSmas.local.localizeTemp(this, model.idSmas, app.space!!.id, detectionsReq, chatUser)
+    repoSmas.local.localize(this, model.idSmas, app.space!!.id, detectionsReq, chatUser)
   }
 
   /** TODO in new class
@@ -319,9 +322,10 @@ open class CvViewModel @Inject constructor(
   var readBackOnline = dsMisc.readBackOnline.asLiveData()
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()
+
   fun showNetworkStatus() {
     if (!networkStatus) {
-      app.showToast(viewModelScope, "No internet connection!", Toast.LENGTH_LONG)
+      app.showToast(viewModelScope, C.ERR_MSG_NO_INTERNET, Toast.LENGTH_LONG)
       saveBackOnline(true)
     } else if(networkStatus && backOnline)  {
       app.showToast(viewModelScope, "Back online!", Toast.LENGTH_LONG)
