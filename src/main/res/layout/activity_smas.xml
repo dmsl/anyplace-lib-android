@@ -75,7 +75,7 @@
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_userAlert"
         android:visibility="invisible"
-        tools:visibility="visible"
+        tools:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:constraint_referenced_ids="viewAlertBg,btnAlertOngoing,tv_alertOrder" />
@@ -125,7 +125,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="is alerting!"
-        app:layout_constraintBottom_toTopOf="@id/button_flir"
+        app:layout_constraintBottom_toTopOf="@id/btnFlir"
         app:layout_constraintLeft_toLeftOf="@id/viewAlertBg"
         app:layout_constraintRight_toRightOf="@id/viewAlertBg"
         android:textSize="32dp"
@@ -145,19 +145,19 @@
         android:layout_height="100dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:backgroundTint="@color/gray"
-        tools:visibility="invisible"
+        android:backgroundTint="@color/lightRed"
+        tools:visibility="visible"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         app:strokeColor="@color/redDark"
         app:strokeWidth="7dp"
         app:cornerRadius="5dp"
         android:text="@string/send_alert"
         android:textColor="@color/white"
-        android:textSize="42sp"
+        android:textSize="48sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/button_chat"
+        app:layout_constraintBottom_toTopOf="@id/btnChat"
         app:layout_constraintVertical_bias="0.7"
         />
 
@@ -186,8 +186,10 @@
     <!-- SETTINGS -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_settings"
-        android:layout_width="58dp"
-        android:layout_height="58dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:iconSize="40dp"
+        android:backgroundTint="@color/colorPrimary"
         android:layout_alignParentEnd="true"
         android:layout_gravity="end"
         android:layout_margin="8dp"
@@ -196,12 +198,10 @@
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        android:backgroundTint="@color/colorPrimaryDark"
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_settings_dark"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:iconSize="42dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -337,61 +337,45 @@
     <!--        android:background="@color/white" />-->
 
 
-
-<!--    <com.google.android.material.button.MaterialButton-->
-<!--        android:id="@+id/button_find"-->
-<!--        android:layout_height="88dp"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_gravity="end"-->
-<!--        android:layout_margin="8dp"-->
-<!--        android:elevation="50dp"-->
-<!--        android:text="@string/find"-->
-<!--        android:backgroundTint="@color/colorPrimaryDark"-->
-<!--        app:cornerRadius="30dp"-->
-<!--        app:icon="@drawable/ic_search"-->
-<!--        app:iconGravity="textStart"-->
-<!--        app:iconPadding="0dp"-->
-<!--        app:iconSize="52dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        />-->
-
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_flir"
-        android:layout_height="78dp"
+        android:id="@+id/btnFlir"
+        android:layout_height="72dp"
         android:layout_width="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginBottom="6dp"
+        android:padding="20dp"
+        android:layout_margin="8dp"
         android:elevation="50dp"
-        android:backgroundTint="@color/colorPrimaryDark"
+        android:backgroundTint="@color/colorPrimary"
         android:text="Flir"
+        app:strokeWidth="3dp"
+        app:strokeColor="@color/white"
         app:cornerRadius="10dp"
         app:icon="@drawable/ic_camera_flir"
         app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="42dp"
-        app:layout_constraintEnd_toStartOf="@id/button_chat"
+        app:iconPadding="10dp"
+        app:iconSize="38dp"
+        app:layout_constraintEnd_toStartOf="@id/btnChat"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_chat"
-        android:layout_height="78dp"
+        android:id="@+id/btnChat"
+        android:layout_height="72dp"
         android:layout_width="wrap_content"
-        android:layout_gravity="end"
+        android:padding="20dp"
         android:layout_margin="8dp"
         android:elevation="50dp"
-        android:backgroundTint="@color/colorPrimaryDark"
+        android:backgroundTint="@color/colorPrimary"
         android:text="Chat"
+        app:strokeWidth="3dp"
+        app:strokeColor="@color/white"
         app:cornerRadius="10dp"
         app:icon="@drawable/ic_chat"
-        android:layout_marginBottom="6dp"
         app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:iconSize="42dp"
+        app:iconPadding="10dp"
+        app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/button_flir"
+        app:layout_constraintStart_toEndOf="@id/btnFlir"
         app:layout_constraintEnd_toEndOf="parent"
         />
 

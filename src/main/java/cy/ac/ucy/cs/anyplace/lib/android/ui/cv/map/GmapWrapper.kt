@@ -134,9 +134,9 @@ class GmapWrapper(
             val ownUid = app.dsSmasUser.read.first().uid
             if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
               if (ownUid == uid) {
-                app.showSnackbar(scope, "Copied own location to clipboard")
+                app.showSnackbarShort(scope, "Copied own location to clipboard")
               } else {
-                app.showSnackbar(scope, "Copied ${metadata.uid}'s location to clipboard")
+                app.showSnackbarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
               }
             }
           }

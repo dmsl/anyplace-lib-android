@@ -159,7 +159,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
-    app.showSnackbar(lifecycleScope, "Location set manually (long-clicked)")
+    app.showSnackbarShort(lifecycleScope, "Location set manually (long-clicked)")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -300,7 +300,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           utlUi.changeMaterialIcon(btn, R.drawable.ic_chat_unread)
           utlNotify.msgReceived()
         } else {
-          utlUi.changeBackgroundMaterial(btn, R.color.colorPrimaryDark)
+          utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
           utlUi.changeMaterialIcon(btn, R.drawable.ic_chat)
         }
       }
@@ -386,7 +386,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
-      app.showSnackbar(lifecycleScope, "Long-press to toggle alert")
+      app.showSnackbarShort(lifecycleScope, "Long-press to toggle alert")
     }
 
     btnAlert.setOnLongClickListener {
@@ -487,7 +487,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   }
 
   private fun setupButtonFlir() {
-    btnFlir = findViewById(R.id.button_flir)
+    btnFlir = findViewById(R.id.btnFlir)
     val FLIR_PKG = "com.flir.myflir.s62"
 
     btnFlir.setOnClickListener {
@@ -548,7 +548,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   @OptIn(ExperimentalMaterialApi::class, ExperimentalPermissionsApi::class) // compose
   private fun setupButtonChat() {
     LOG.D()
-    btnChat = findViewById(R.id.button_chat)
+    btnChat = findViewById(R.id.btnChat)
 
     collectMessages()
     reactToNewMessages()

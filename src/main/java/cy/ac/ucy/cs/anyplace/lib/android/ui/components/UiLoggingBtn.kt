@@ -126,7 +126,8 @@ class UiLoggingBtn(
     LOG.D(TAG, "$METHOD: stopped must store: visible")
     uiLog.bottom.timer.resetBtnClearObjects()
     utlUi.animateAlpha(ui.map.mapView, alphaMax, ANIMATION_DELAY)
-    ui.localization.visibilityGone() // dont show this yet..
+    // CHECK THIS.....
+    // ui.localization.visibilityGone() // dont show this yet..
     utlUi.changeBackgroundCompat(btn, R.color.yellowDark)
     utlUi.text(btn, "long-click on map")
     uiLog.bottom.timer.setToStoreMode()
@@ -176,7 +177,7 @@ class UiLoggingBtn(
 
     utlUi.changeBackgroundCompat(btn, R.color.colorPrimary)
 
-    // LOG.D2(TAG, "call: showLocalizationButton (from notRunning)") // PMX: V22
+    ui.localization.show() // show it anyway
     // uiLog.showLocalizationButton(VM.cache.hasFingerprints())
     utlUi.text(btn, "scan")
   }
@@ -208,27 +209,32 @@ class UiLoggingBtn(
   fun endRecognitionDemo() {
     LOG.D3(TAG, "$METHOD: stopping demo")
     VM.statusLogging.update { LoggingStatus.stopped }
-    uiLog.showLocalizationButton(VM.cache.hasFingerprints())
     uiLog.bottom.showBottomSheet()
     utlUi.enable(uiLog.btnSettings)
     ui.floorSelector.show()
     act.layoutCamera.setBackgroundColor(VM.utlColor.Black())
+
+    ui.localization.show() // show it anyway
+    uiLog.showLocalizationButton(VM.cache.hasFingerprints())
   }
 
   fun hide() = utlUi.fadeOut(btn)
   fun show() = utlUi.fadeIn(btn)
 
-  fun visibilityGone() {
-    btn.visibility = View.GONE
-  }
+  // fun visibilityGone() {
+  //   btn.visibility = View.GONE
+  // }
 
-  // TODO:PMX UPL OK?
-  // implement something like the below
+  /**
+   * Showing a button for uploading to the backend,
+   * or discarding the locally stored scanned objects.
+   */
   fun showUploadBtn() {
     if (!DBG.UPL) return
 
-    ui.localization.hide()
-    ui.localization.visibilityGone()
+    // val cause = "Please upload or discard your scans\n" +
+    //         "before you can Demo-Localize in Logger"
+    // ui.localization.disable(cause, true, listOf<View>(uiLog.btnUpload, uiLog.btnUploadDiscard))
     utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
     utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
     utlUi.enable(uiLog.groupUpload)

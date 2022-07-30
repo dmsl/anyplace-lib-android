@@ -119,7 +119,7 @@ class UserInfoWindowAdapter(
           R.color.black
         }
         UserInfoType.LoggerScan ->  {
-          R.color.yellowDark2
+          R.color.yellowDark
         }
       }
 

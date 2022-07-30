@@ -17,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -49,7 +50,22 @@ class UiLocalization(
     if (btnLocalizationBtnSetup) return
     btnLocalizationBtnSetup = true
     btn.setOnClickListener {
-      VM.statusLocalization.update { LocalizationStatus.running }
+
+      if (isDisabled()) {
+        if (disabledUserAction) {
+          app.showSnackbarInf(scope, disabledCause)
+        } else {
+          app.showSnackbarShort(scope, disabledCause)
+        }
+
+        if (disabledAttentionViews.isNotEmpty()) {
+          disabledAttentionViews.forEach { utlUi.attentionZoom(it) }
+        }
+
+
+      } else {
+        VM.statusLocalization.update { LocalizationStatus.running }
+      }
     }
   }
 
@@ -71,8 +87,8 @@ class UiLocalization(
         VM.ui.map.markers.clearAllInfoWindow()
         VM.ui.map.animateToLocation(coord.toLatLng())
       } else {
-        val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)."
-        app.showSnackbarLong(VM.viewModelScope, msg)
+        val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
+        app.showSnackbarInf(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
       }
     }
@@ -111,17 +127,16 @@ class UiLocalization(
   fun endLocalization() {
     VM.disableCvDetection()
     LOG.D2(TAG, "$METHOD")
-    // utlButton.changeBackgroundDONT_USE(btn, R.color.darkGray)
     btn.isEnabled = true
     wMap.mapView.alpha = 1f
     VM.statusLocalization.tryEmit(LocalizationStatus.stopped)
-
 
     if (whereAmIWasVisible) {
       utlUi.fadeIn(btnWhereAmI)
       whereAmIWasVisible=false
     }
-    if (act.uiBottom.bottomSheetEnabled) {
+
+    if (VM.uiLoaded() && act.uiBottom.bottomSheetEnabled) {
       act.uiBottom.showBottomSheet()
     }
 
@@ -152,6 +167,33 @@ class UiLocalization(
 
 
   fun hide() = utlUi.fadeOut(btn)
-  fun show() = utlUi.fadeIn(btn)
-  fun visibilityGone() = utlUi.gone(btn)
+  fun show() {
+    if (isDisabled()) {
+      enable()
+    } else {
+      utlUi.fadeIn(btn)
+    }
+  }
+  // fun visibilityGone() = utlUi.gone(btn)
+
+  var disabledCause = ""
+  var disabledUserAction: Boolean = false
+  var disabledAttentionViews = mutableListOf<View>()
+  fun disable(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
+    disabledCause=cause
+    disabledUserAction=requireUserAction
+    disabledAttentionViews.clear()
+    disabledAttentionViews.addAll(attentionViews)
+    utlUi.animateAlpha(btn, 0.5f)
+  }
+
+  private fun enable() {
+    disabledCause=""
+    disabledUserAction=false
+    disabledAttentionViews.clear()
+    utlUi.animateAlpha(btn, 1f)
+  }
+
+  fun isDisabled() = disabledCause.isNotEmpty()
+
 }

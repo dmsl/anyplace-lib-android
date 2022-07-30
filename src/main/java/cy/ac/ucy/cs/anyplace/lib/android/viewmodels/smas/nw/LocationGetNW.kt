@@ -222,7 +222,7 @@ class LocationGetNW(
             LOG.E(TAG, "RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
-          app.showSnackbar(VM.viewModelScope, "Restored last location.")
+          app.showSnackbarShort(VM.viewModelScope, "Restored last location.")
           delay(500)
           VM.ui.map.animateToLocation(ownLocation.toCoord().toLatLng())
         }

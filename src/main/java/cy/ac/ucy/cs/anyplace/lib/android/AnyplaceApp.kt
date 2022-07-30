@@ -73,7 +73,7 @@ abstract class AnyplaceApp : Application() {
 
   /** Root [View] of an activity ([SmasMainActivity], or [CvLoggerActivity]). Used for [SnackBar] */
   lateinit var rootView: View
-  var snackbarOnTop = false
+  var forChat = false
   lateinit var cvUtils: CvUtils
 
   /** Last remotely calculated location (SMAS) */
@@ -123,7 +123,7 @@ abstract class AnyplaceApp : Application() {
    */
   fun setMainView(root_view: View, snackbarOnTop: Boolean) {
     this.rootView=root_view
-    this.snackbarOnTop = snackbarOnTop
+    this.forChat = snackbarOnTop
   }
 
   override fun onCreate() {
@@ -185,13 +185,9 @@ abstract class AnyplaceApp : Application() {
   /** Stays on until user acts on it */
   fun showSnackbarInf(scope: CoroutineScope, msg: String) = showSnackbar(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
-  fun showSnackbarShortDEV(scope: CoroutineScope, msg: String) {
-    showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
-  }
-
-  fun showSnackbarLongDEV(scope: CoroutineScope, msg: String) {
-    showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
-  }
+  fun showSnackbarShortDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
+  fun showSnackbarLongDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
+  fun showSnackbarInfDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
   suspend fun hasDevMode() = dsCvMap.read.first().devMode
 
@@ -210,7 +206,7 @@ abstract class AnyplaceApp : Application() {
   }
 
   fun showSnackbar(scope: CoroutineScope, msg: String,
-                   duration: Int = Snackbar.LENGTH_SHORT, devMode : Boolean = false) {
+                   duration: Int, devMode : Boolean = false) {
 
     if (!DBG.DVO) {
       showToast(scope, msg, Toast.LENGTH_SHORT)
@@ -229,17 +225,31 @@ abstract class AnyplaceApp : Application() {
       val tv = sb.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
       tv.gravity = Gravity.CENTER
       tv.setTypeface(tv.typeface, Typeface.BOLD)
-      if (snackbarOnTop) sb.gravityTop()
+      if (forChat) {
+        sb.setMarginChat()
+      } else {
+        sb.setMarginCvMap()
+      }
+
       tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
       tv.maxLines=3
 
       if (devMode) {
         sb.setDrawableLeft(R.drawable.ic_dev_mode)
-        sb.setIconTint(utlColor.White())
         sb.setBackground(R.drawable.bg_snackbar_devmode)
+        sb.setActionTextColor(utlColor.GrayLighter())
       } else {
         sb.setBackground(R.drawable.bg_snackbar_normal)
+        sb.setActionTextColor(utlColor.Info())
+
+        if (duration == Snackbar.LENGTH_INDEFINITE) {
+          sb.setDrawableLeft(R.drawable.ic_info)
+        } else {
+          sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+        }
       }
+
+      sb.setIconTint(utlColor.White())
 
       sb.show()
     }

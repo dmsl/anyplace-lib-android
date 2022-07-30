@@ -96,6 +96,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
+
+
+    // CLR:PM
+    // app.showSnackbarInf(lifecycleScope, "Testing msg here")
+    // app.showSnackbarInf(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
+    // app.showSnackbarInfDEV(lifecycleScope, "Testing msg here")
+    // app.showSnackbarInfDEV(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
   }
 
   override fun postResume() {
@@ -112,10 +119,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
       LOG.E(TAG, "FUTURE: get fingerprints too here?")
-      // TODO: DZ: endpoint: accept timestamp (like chat) of LAST UPDATE
-      // (we may delete a fingerprint. update.. etc..)
-      // must be a different table: per spaceId
-      // return either: empty
+      // FUTURE: with a new backend endpoint, we could try to auto-update the local fingerprints given connectivity
+      // - the backend must provide timestamp TS on Fingerprint download
+      // - that TS should also be materialized (SQLite or DataStore)
+      // - then compare that one w/ the latest modification (another endpoint maybe)
+      // - if local CvMap/Fingerprint outdated: fetch it again..
+
       VM.nwCvModelsGet.safeCall()
       VM.nwCvModelsGet.collect()
     }
@@ -190,6 +199,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.V4(TAG, "$tag: reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
+        VM.uiBottomInited=true
       }
     }
 
@@ -243,9 +253,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     )
 
     LOG.W(TAG, "$METHOD: ui (component) is now loaded.")
-    VM.uiComponentLoaded=true
     VM.ui.map.attach(VM, this, R.id.mapView)
     VM.mu = IMU(this,VM, VM.ui.map)
+    VM.uiComponentInited=true
   }
 
 

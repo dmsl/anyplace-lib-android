@@ -104,7 +104,8 @@ open class CvViewModel @Inject constructor(
   //// COMPONENTS
   lateinit var floorSelector: FloorSelector
   /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
-  var uiComponentLoaded = false
+  var uiComponentInited = false
+  var uiBottomInited = false
   lateinit var ui: CvUI
 
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
@@ -134,7 +135,7 @@ open class CvViewModel @Inject constructor(
   val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
 
   fun uiLoaded(): Boolean {
-    return uiComponentLoaded && ui.map.gmapWrLoaded
+    return uiComponentInited && ui.map.gmapWrLoaded && uiBottomInited
   }
 
   // FLOOR PLANS
