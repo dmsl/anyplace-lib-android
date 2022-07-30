@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--<shape android:shape="rectangle" xmlns:android="http://schemas.android.com/apk/res/android">-->
+<!--<solid android:color="@color/colorPrimary"/>-->
+<!--<corners android:radius="50dp"/>-->
+<!--  <stroke android:color="@color/yellow" android:width="3dp"/>-->
+<!--</shape>-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <!--<item>-->
+  <!--  <shape android:shape="oval">-->
+  <!--    <solid android:color="@color/yellowDark2"/>-->
+  <!--  </shape>-->
+  <!--</item>-->
+  <item
+      android:top="1dp"
+      android:bottom="1dp"
+      android:left="1dp"
+      android:right="1dp"
+      >
+    <shape android:shape="oval">
+      <solid android:color="@color/white"/>
+    </shape>
+  </item>
+
+  <item
+      android:left="0dp"
+      android:right="0dp"
+      android:top="0dp"
+      android:drawable="@drawable/ic_user_location_alert"
+      android:bottom="0dp">
+  </item>
+</layer-list>

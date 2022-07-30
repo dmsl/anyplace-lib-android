@@ -100,6 +100,31 @@
 
     </androidx.appcompat.widget.Toolbar>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_whereami"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:elevation="50dp"
+        android:insetLeft="0dp"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:backgroundTint="@color/colorPrimary"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_whereami"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toTopOf="@id/button_floorUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
+        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
+        />
+
     <!-- TV TITLE -->
     <TextView
         android:id="@+id/tvTitle"
@@ -117,14 +142,13 @@
 
     <!-- TODO:PMX UPL-->
     <Button
-        android:id="@+id/button_upload"
+        android:id="@+id/btn_upload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/yellowDark"
         android:paddingLeft="30dp"
         android:drawableEnd="@drawable/ic_upload"
         tools:visibility="visible"
-        android:alpha="0"
         android:visibility="invisible"
         app:drawableTint="@color/white"
         android:textSize="15sp"
@@ -133,10 +157,34 @@
         android:paddingRight="30dp"
         android:paddingBottom="15dp"
         android:text="@string/upload_scans"
+        app:layout_constraintTop_toTopOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="@id/toolbar"
+        app:layout_constraintEnd_toStartOf="@id/btn_deleteLocal"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_deleteLocal"
+        android:layout_width="58dp"
+        android:layout_height="wrap_content"
+
+        android:backgroundTint="@color/redDark"
+        android:drawableEnd="@drawable/ic_delete"
+        tools:visibility="visible"
+
+
+
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        app:drawableTint="@color/white"
+        app:layout_constraintTop_toTopOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="@id/toolbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbar" />
+        app:layout_constraintStart_toEndOf="@id/btn_upload"
+        />
+
+
+<!--    android:visibility="invisible"-->
 
 
 
@@ -215,6 +263,7 @@
     <!-- end: floor selector (6) -->
 
     <!-- 7. DEMO NAVIGATION BTN -->
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_localization"
         style="@style/MaterialButtonIcon"
@@ -227,9 +276,11 @@
         app:iconPadding="0dp"
         app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
+        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
         app:layout_constraintTop_toBottomOf="@id/button_floorDown"
-        app:layout_constraintVertical_bias="0.42000002" />
+        app:layout_constraintVertical_bias="0.22"
+        />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
