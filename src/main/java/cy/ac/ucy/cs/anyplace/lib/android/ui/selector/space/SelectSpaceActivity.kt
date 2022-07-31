@@ -20,8 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
-  private lateinit var VMap: AnyplaceViewModel
-  private lateinit var VMspaces: SpacesViewModel
+  lateinit var VMap: AnyplaceViewModel
+  lateinit var VMspaces: SpacesViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

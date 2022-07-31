@@ -26,11 +26,12 @@ open class Cache(val ctx: Context) {
   companion object {
     // FILES
     //// Space
-    const val JS_SPACE="s.json"
+    const val JS_SPACE="space.json"
+    const val JS_FLOORS = "floors.json"
+    // const val JS_FLOORS="floors.json"
     const val JS_SPACE_LASTVAL="s.lastval.json" // Cached settings, like last floor
     const val JS_SPACE_CONNECTIONS="s.connections.json"
     const val JS_SPACE_POIS="s.pois.json"
-    const val JS_FLOORS = "f.json"
     //// Space/Floor
     const val PNG_FLOORPLAN = "f.png"
   }
@@ -44,9 +45,43 @@ open class Cache(val ctx: Context) {
 
   // SPACES
 
+  fun dirSpace(buid: String) : String {  return "$spacesDir/$buid"  }
   fun dirSpace(space: Space) : String {  return "$spacesDir/${space.id}"  }
   fun dirSpace(floor: Floor) : String {  return "$spacesDir/${floor.buid}" }
+  fun dirSpace(floors: Floors) : String {  return "$spacesDir/${floors.floors[0].buid}" }
   fun jsonSpace(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE" }
+  fun jsonSpace(buid: String) : String {  return "${dirSpace(buid)}/$JS_SPACE" }
+  fun hasJsonSpace(buid: String) : Boolean {  return File(jsonSpace(buid)).exists() }
+  fun deleteJsonSpace(space: Space) : Boolean {  return File(jsonSpace(space)).delete() }
+
+  fun readJsonSpace(buid: String): Space? {
+    val filename = jsonSpace(buid)
+    LOG.V4(TAG, "$METHOD: file: $filename")
+    try {
+      val json = File(filename).readText()
+      return Gson().fromJson(json, Space::class.java)
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+    }
+    return null
+  }
+
+  fun storeJsonSpace(space: Space): Boolean {
+    val filename = jsonSpace(space)
+    return try {
+      File(dirSpace(space)).mkdirs()
+      val fw = FileWriter(File(filename))
+      Gson().toJson(space, fw)
+      fw.close()
+      LOG.V3(TAG, "$METHOD: $filename")
+      true
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      false
+    }
+  }
+
+
   //// Last Values cache
   fun jsonSpaceLastValues(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_LASTVAL" }
   fun hasSpaceLastValues(space: Space): Boolean { return File(jsonSpaceLastValues(space)).exists() }
@@ -144,8 +179,38 @@ open class Cache(val ctx: Context) {
     return hasSpacePOIs(space) && hasSpaceConnections(space)
   }
 
-  // FLOORS TODO:PM download and cache it here!
-  fun jsonFloors(space: Space) : String {  return "${dirSpace(space)}/$JS_FLOORS"  }
+  fun jsonFloors(buid: String) : String {  return "${dirSpace(buid)}/$JS_FLOORS"  }
+  fun jsonFloors(floors: Floors) : String {  return "${dirSpace(floors)}/$JS_FLOORS"  }
+  fun hasJsonFloors(buid: String) : Boolean {  return File(jsonFloors(buid)).exists() }
+  fun deleteJsonFloors(floors: Floors) : Boolean {  return File(jsonFloors(floors)).delete() }
+
+  fun readJsonFloors(buid: String): Floors? {
+    val filename = jsonFloors(buid)
+    LOG.V4(TAG, "$METHOD: file: $filename")
+    try {
+      val json = File(filename).readText()
+      return Gson().fromJson(json, Floors::class.java)
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+    }
+    return null
+  }
+
+  fun storeJsonFloors(floors: Floors): Boolean {
+    val filename = jsonFloors(floors)
+    return try {
+      File(dirSpace(floors)).mkdirs()
+      val fw = FileWriter(File(filename))
+      Gson().toJson(floors, fw)
+      fw.close()
+      LOG.V3(TAG, "$METHOD: $filename")
+      true
+    } catch (e: Exception) {
+      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      false
+    }
+  }
+
   //// FLOOR
   fun dirFloor(floor: Floor) : String { return "${dirSpace(floor)}/${floor.floorNumber}" }
   fun floorplan(floor: Floor) : String { return "${dirFloor(floor)}/$PNG_FLOORPLAN" }
@@ -258,6 +323,10 @@ open class Cache(val ctx: Context) {
     }
     raf.setLength(writePosition)
     raf.close()
+  }
+
+  fun hasSpaceAndFloor(buid: String): Boolean {
+    return hasJsonSpace(buid) && hasJsonFloors(buid)
   }
 
 }

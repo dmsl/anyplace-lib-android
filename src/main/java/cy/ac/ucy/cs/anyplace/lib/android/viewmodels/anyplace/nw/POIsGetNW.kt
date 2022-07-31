@@ -31,10 +31,10 @@ class POIsGetNW(
 
   val tag = "nw-ap-pois"
 
-  suspend fun safeCall(buid: String) {
+  suspend fun callBlocking(buid: String) : Boolean {
     LOG.W(TAG, "$tag: safecall")
 
-    if (app.space!=null && cache.hasSpacePOIs(app.space!!)) return
+    if (app.space!=null && cache.hasSpacePOIs(app.space!!)) return true
 
     if (app.hasInternet()) {
       try {
@@ -45,25 +45,23 @@ class POIsGetNW(
           is NetworkResult.Success -> {
             val wSpace = app.wSpace
             wSpace.cachePois(resp.data!!)
+
+            return true
           }
           else -> {
             handleError("$tag: something went wrong: ${resp.message}")
           }
         }
 
-      // CLR:PM
-      // } catch(ce: ConnectException) {
-      //   val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
-      //   handleError(msg, ce)
       } catch(e: Exception) {
-        // val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-        // handleError(msg, e)
-        // ignoring the response (not updating any resp..)
         val errMsg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        LOG.E(TAG, "$tag: $errMsg")
       }
     } else {
       handleError(C.ERR_MSG_NO_INTERNET)
     }
+
+    return false
   }
 
   private fun handleResponse(resp: Response<POIsResp>): NetworkResult<POIsResp> {

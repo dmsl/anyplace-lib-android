@@ -28,10 +28,10 @@ class ConnectionsGetNW(
   private val cache by lazy { Cache(app.applicationContext) }
   val tag = "nw-ap-conn"
 
-  suspend fun safeCall(buid: String) {
+  suspend fun callBlocking(buid: String) : Boolean {
     LOG.W(TAG, "$tag: safecall")
 
-    if (app.space!=null && cache.hasSpaceConnections(app.space!!)) return
+    if (app.space!=null && cache.hasSpaceConnections(app.space!!)) return true
 
     if (app.hasInternet()) {
       try {
@@ -42,6 +42,7 @@ class ConnectionsGetNW(
           is NetworkResult.Success -> {
             val wSpace = app.wSpace
             wSpace.cacheConnections(resp.data!!)
+            return true
           }
           else -> {
             handleError("$tag: something went wrong: ${resp.message}")
@@ -54,6 +55,7 @@ class ConnectionsGetNW(
     } else {
       handleError(C.ERR_MSG_NO_INTERNET)
     }
+    return false
   }
 
   private fun handleResponse(resp: Response<ConnectionsResp>): NetworkResult<ConnectionsResp> {

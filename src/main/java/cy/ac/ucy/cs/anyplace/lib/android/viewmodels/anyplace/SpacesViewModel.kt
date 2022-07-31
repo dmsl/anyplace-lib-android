@@ -1,6 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.*
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -19,6 +20,8 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.Response
@@ -37,8 +40,8 @@ class SpacesViewModel @Inject constructor(
         private val dsMisc: MiscDataStore,
         private val RFHap: RetrofitHolderAP) : AndroidViewModel(app) {
 
+  /** This is outdated.. */
   val searchViewData: MutableLiveData<String> = MutableLiveData()
-
   private val C by lazy { CONST(app.applicationContext) }
 
   var loadedSpaces = false // TODO move in SpaceVM
@@ -69,15 +72,14 @@ class SpacesViewModel @Inject constructor(
 
   private fun saveQuerySpaceName(newText: String) {
     querySelectSpace.spaceName = newText
-    readSpacesQuery = repoAP.local.querySpaces(querySelectSpace).asLiveData()
+    readSpacesQuery = repoAP.local.querySpaces(querySelectSpace)
     loadedSpaces=false
   }
 
   fun applyQuery(newText: String) = saveQuerySpaceName(newText)
 
   //// ROOM
-  // var readSpacesQuery: LiveData<List<SpaceEntity>> = apply { emptyList<SpaceEntity>() }
-  var readSpacesQuery: LiveData<List<SpaceEntity>> = MutableLiveData()
+  var readSpacesQuery: Flow<List<SpaceEntity>> = MutableStateFlow(emptyList())
 
   // will be collected when applying a space query
   var storedSpaceQuery = dsMisc.readQuerySpace
@@ -131,21 +133,17 @@ class SpacesViewModel @Inject constructor(
         val listAccessible= handleSpacesResponse(respAccessible).data
         val listPublic= handleSpacesResponse(respPublic).data
 
-        val ucySpaces = listPublic?.spaces?.filter { it.name.contains("ucy", true) }
-
         // keep 3-4 buildings, including the UCY CS building
+        val ucySpaces = listPublic?.spaces?.filter { it.name.contains("ucy", true) }?.take(2)
         // hardcoded: ucy building
-        val ucyCsBuilding = ucySpaces?.filter { it.id=="username_1373876832005" }
-        val chosenUcyBuildings= ucySpaces?.take(3) // ?.filter { it.id!="username_1373876832005" }
-        LOG.E(TAG, "SIZE: ${chosenUcyBuildings?.size}")
+        val ucyCsBuilding = listPublic?.spaces?.filter { it.id=="username_1373876832005" }
+        LOG.E(TAG, "SIZE: ${ucySpaces?.size}")
 
         // add [ucySpaces] to the accessible spaces
         // nwAccessible.data.spaces.add
         val demoSpaces = mutableListOf<Space>()
-        if (ucyCsBuilding?.isNotEmpty() == true) {
-          demoSpaces.add(ucyCsBuilding[0])
-        }
-        chosenUcyBuildings?.forEach { demoSpaces.add(it) }
+        ucyCsBuilding?.forEach { demoSpaces.add(it) }
+        ucySpaces?.forEach { demoSpaces.add(it) }
         listAccessible?.spaces?.forEach { demoSpaces.add(it) }
 
         spacesResponse.value = NetworkResult.Success(Spaces(demoSpaces))
@@ -191,14 +189,14 @@ class SpacesViewModel @Inject constructor(
     LOG.E(TAG, e)
   }
 
-  private var firstQuery = false
+  private var runnedFirstedQuery = false
 
   fun runFirstQuery() {
-    if (!firstQuery) {
+    if (!runnedFirstedQuery) {
       LOG.D(TAG, "runFirstQuery: ${querySelectSpace.spaceType}")
-      readSpacesQuery = repoAP.local.querySpaces(querySelectSpace).asLiveData()
+      readSpacesQuery = repoAP.local.readSpaces()
     }
-    firstQuery = true
+    runnedFirstedQuery = true
   }
 
 }

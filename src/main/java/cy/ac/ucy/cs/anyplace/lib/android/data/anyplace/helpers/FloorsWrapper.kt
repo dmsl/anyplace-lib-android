@@ -77,7 +77,7 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          app.showToast(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
+          app.snackbarInf(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }
@@ -93,7 +93,7 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
 
     if (!showedMsgDone) {
       showedMsgDone=true
-      app.showToast(VM.viewModelScope, "All ${app.wFloors.size} ${app.wSpace.prettyFloors} downloaded!")
+      app.snackbarShort(VM.viewModelScope, "All ${app.wFloors.size} ${app.wSpace.prettyFloors} downloaded!")
     }
 
     if (alreadyCached.isNotEmpty()) {

@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
@@ -18,6 +20,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.FloorsGetNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.SpaceGetNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Version
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +49,9 @@ class AnyplaceViewModel @Inject constructor(
   ): AndroidViewModel(app) {
 
   private val C by lazy { CONST(app.applicationContext) }
+  val cache by lazy { Cache(app.applicationContext) }
+  val nwSpaceGet by lazy { SpaceGetNW(app as AnyplaceApp, this, RH, repo) }
+  val nwFloorsGet by lazy { FloorsGetNW(app as AnyplaceApp, this, RH, repo) }
 
   // PREFERENCES
   val prefsServer = serverDS.read

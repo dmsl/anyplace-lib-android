@@ -90,6 +90,7 @@ class MapLines(private val app: AnyplaceApp,
     }
 
     LOG.W(TAG, "$METHOD: reading connections..")
+    LOG.E(TAG, "BGG: is space null? ${space==null}")
     val connections = cache.readSpaceConnections(space)!!
     connections.objs.forEach { connection ->
       val level = connection.floorA.toInt()

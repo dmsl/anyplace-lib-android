@@ -21,13 +21,13 @@ class DataSourceLocal @Inject constructor(
   }
 
   fun querySpaces(query: QuerySelectSpace): Flow<List<SpaceEntity>> {
-    LOG.D3(TAG, "querySpaces: name'${query.spaceName}'")
+    LOG.W(TAG, "querySpaces: name'${query.spaceName}'")
 
     // val name = query.spaceName.isNotEmpty()
     val ownership = query.ownership != UserOwnership.PUBLIC
     val type = query.spaceType != SpaceType.ALL
 
-    var ownershipStr = query.ownership.toString().uppercase()
+    val ownershipStr = query.ownership.toString().uppercase()
     val typeStr = query.spaceType.toString().uppercase()
     if (ownership && type) {
       return DAO.querySpacesOwnerType(

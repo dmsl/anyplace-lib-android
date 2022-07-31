@@ -20,21 +20,31 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsUserAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
+/**
+ * This file should be discarded..
+ * Too complex. Some things are obsolete. (Observers..)
+ * Some things are crashing (and are disabled)
+ */
 @AndroidEntryPoint
 class SpaceListFragment : Fragment() {
   private val TAG = SpaceListFragment::class.java.simpleName
-  /** Adapter reponsible for rendering the spaces */
-  private val mAdapter by lazy { SpacesAdapter(requireActivity().app, requireActivity(), lifecycleScope) }
+  /** Adapter responsible for rendering the spaces */
+  private val mAdapter by lazy {
+    SpacesAdapter(requireActivity().app,
+            requireActivity() as SelectSpaceActivity, lifecycleScope) }
 
   private var _binding: FragmentSpacesListBinding? = null
   private val binding get() = _binding!!
@@ -150,19 +160,22 @@ class SpaceListFragment : Fragment() {
     }
   }
 
+  var collectingQueries=false
   private fun observeSearchViewChanges() {
-    lifecycleScope.launch {
+    if (collectingQueries) return
+    collectingQueries=true
       VMspaces.searchViewData.observe(viewLifecycleOwner) { spaceName ->
         LOG.D(TAG, "searchview: $spaceName")
 
-        VMspaces.readSpacesQuery.removeObservers(viewLifecycleOwner)
+        // VMspaces.readSpacesQuery.removeObservers(viewLifecycleOwner)
         VMspaces.applyQuery(spaceName)
-        VMspaces.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->
-          LOG.D(TAG, "Query: ${query.size}")
-          loadDatabaseResults(query)
+        lifecycleScope.launch(Dispatchers.IO) {
+          VMspaces.readSpacesQuery.collect { query ->
+            LOG.D(TAG, "Query: ${query.size}")
+            loadDatabaseResults(query)
+          }
         }
       }
-    }
   }
 
   private fun readDatabase() {
@@ -184,7 +197,7 @@ class SpaceListFragment : Fragment() {
             LOG.D(TAG, "readDatabase -> loadSpacesQuery")
             loadSpacesQuery()
           } else {
-            VMspaces.readSpacesQuery.observeOnce(viewLifecycleOwner) { spaces ->
+            VMspaces.readSpacesQuery.collect { spaces ->
               if (spaces.isNotEmpty()) {
                 LOG.D2(TAG, "forced query")
                 loadSpacesQuery()
@@ -208,9 +221,11 @@ class SpaceListFragment : Fragment() {
    * TODO make this callable from both allSpaces and spacesQuery
    */
   private fun loadSpacesQuery() {
-    VMspaces.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->
-      LOG.D(TAG, "Query: ${query.size}")
-      loadDatabaseResults(query)
+    lifecycleScope.launch(Dispatchers.IO) {
+      VMspaces.readSpacesQuery.collect { query ->
+        LOG.D(TAG, "Query: ${query.size}")
+        loadDatabaseResults(query)
+      }
     }
   }
 
@@ -244,14 +259,18 @@ class SpaceListFragment : Fragment() {
   }
 
   private fun hideErrorMsg() {
-    binding.errorImageView.visibility = View.INVISIBLE
-    binding.errorTextView.visibility = View.INVISIBLE
+    lifecycleScope.launch(Dispatchers.Main) {
+      binding.errorImageView.visibility = View.INVISIBLE
+      binding.errorTextView.visibility = View.INVISIBLE
+    }
   }
 
   private fun showErrorMsg(msg: String) {
-    binding.errorImageView.visibility = View.VISIBLE
-    binding.errorTextView.visibility = View.VISIBLE
-    binding.errorTextView.text = msg
+    lifecycleScope.launch(Dispatchers.Main) {
+      binding.errorImageView.visibility = View.VISIBLE
+      binding.errorTextView.visibility = View.VISIBLE
+      binding.errorTextView.text = msg
+    }
   }
 
   private fun observeRemoteSpacesResponse() {
@@ -282,15 +301,20 @@ class SpaceListFragment : Fragment() {
 
   private fun showShimmerEffect() {
     LOG.W(TAG, "showShimmerEffect")
-    binding.shimmerLayout.startShimmer()
-    binding.shimmerLayout.visibility = View.VISIBLE
-    binding.recyclerView.visibility = View.GONE
+
+    lifecycleScope.launch(Dispatchers.Main) {
+      binding.shimmerLayout.startShimmer()
+      binding.shimmerLayout.visibility = View.VISIBLE
+      binding.recyclerView.visibility = View.GONE
+    }
   }
 
   private fun hideShimmerEffect() {
     LOG.V5(TAG, "hideShimmerEffect")
-    binding.shimmerLayout.stopShimmer()
-    binding.shimmerLayout.visibility = View.GONE
-    binding.recyclerView.visibility = View.VISIBLE
+    lifecycleScope.launch(Dispatchers.Main) {
+      binding.shimmerLayout.stopShimmer()
+      binding.shimmerLayout.visibility = View.GONE
+      binding.recyclerView.visibility = View.VISIBLE
+    }
   }
 }

@@ -280,6 +280,7 @@ class SettingsCvActivity: SettingsActivity() {
 
           lifecycleScope.launch(Dispatchers.IO) {
             ds.clearSelectedSpace()
+            app.showToast(lifecycleScope, "Cleared. You'll have to select another space.")
           }
         }
         true

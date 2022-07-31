@@ -1,14 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.adapters
 
-import android.app.Activity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
 import cy.ac.ucy.cs.anyplace.lib.databinding.SpaceRowLayoutBinding
@@ -24,7 +23,7 @@ import kotlinx.coroutines.launch
  * - the dynamic list
  */
 class SpacesAdapter(private val app: AnyplaceApp,
-                    private val act: Activity,
+                    private val act: SelectSpaceActivity,
                     private val scope: CoroutineScope,
                     ):
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
@@ -33,18 +32,18 @@ class SpacesAdapter(private val app: AnyplaceApp,
   class MyViewHolder(
           private val binding: SpaceRowLayoutBinding,
           private val app: AnyplaceApp,
-          private val act: Activity,
+          val act: SelectSpaceActivity,
           private val scope: CoroutineScope,
   ):
     RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(space: Space) {
+    fun bind(space: Space, act: SelectSpaceActivity) {
       binding.space = space
       binding.executePendingBindings()  // update layout on data changes
-      setupBtnSelectSpace(space)
+      setupBtnSelectSpace(space, act)
     }
 
-    private fun setupBtnSelectSpace(space: Space) {
+    private fun setupBtnSelectSpace(space: Space, act: SelectSpaceActivity) {
       binding.btnSelectSpace.setOnClickListener {
         // TODO: store spaceId and spaceName..
         LOG.W(TAG, "Selecting Space: ${space.name} ${space.id}")
@@ -53,16 +52,23 @@ class SpacesAdapter(private val app: AnyplaceApp,
           app.dsCvMap.setSelectedSpace(space.id)
           val prefsCv = app.dsCvMap.read.first()
 
-          scope.launch(Dispatchers.Main) {
-            StartActivity.openActivity(prefsCv, act)
+          val gotSpace = act.VMap.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
+          val gotFloors = act.VMap.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
+
+          if (!gotSpace || !gotFloors) {
+           app.showToast(scope, "Failed to download space! (restart app)")
+          } else {
+            scope.launch(Dispatchers.Main) {
+              StartActivity.openActivity(prefsCv, act)
+            }
+            act.finish()
           }
-          act.finish()
         }
       }
     }
 
     companion object {
-      fun from(parent: ViewGroup, app: AnyplaceApp, act: Activity,
+      fun from(parent: ViewGroup, app: AnyplaceApp, act: SelectSpaceActivity,
       scope: CoroutineScope): MyViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         val binding = SpaceRowLayoutBinding.inflate(layoutInflater, parent, false)
@@ -77,7 +83,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
     val currentSpace = spaces[position]
-    holder.bind(currentSpace)
+    holder.bind(currentSpace, holder.act)
   }
 
   override fun getItemCount(): Int {
@@ -93,11 +99,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
    */
   fun setData(newSpaces: Spaces) {
     val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
+
     val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
-
     spaces = newSpaces.spaces.toList()
-    diffUtilResult.dispatchUpdatesTo(this)
-
+    scope.launch {
+      diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
+    }
   }
 
   fun clearData() {

@@ -5,7 +5,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import retrofit2.Response
 import javax.inject.Inject
 import okhttp3.ResponseBody
-import retrofit2.http.Header
 
 /**
  * Anyplace DataSource
@@ -22,8 +21,12 @@ class DataSourceRemote @Inject constructor(private val RH: RetrofitHolderAP) {
   // MISC
   suspend fun getVersion(): Response<Version>  = RH.api.getVersion()
 
+  suspend fun getSpace(buid: String) : Response<Space> = RH.api.space(ReqSpaceId(buid))
+
+  suspend fun getFloors(buid: String) : Response<Floors> = RH.api.floors(ReqSpaceId(buid))
+
   suspend fun getSpaceConnectionsAll(buid: String) : Response<ConnectionsResp>
-          = RH.api.connectionsSpaceAll(ReqSpaceConnections(buid))
+          = RH.api.connectionsSpaceAll(ReqSpaceId(buid))
 
   suspend fun getSpacePOIsAll(buid: String) : Response<POIsResp>
           = RH.api.poisSpaceAll(ReqSpacePOIs(buid))

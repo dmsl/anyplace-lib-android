@@ -22,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.copyToClipboard
 import cy.ac.ucy.cs.anyplace.lib.android.maps.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -218,18 +219,50 @@ class GmapWrapper(
    */
   fun loadSpaceAndLevel() {
     LOG.V2()
-    if(!loadSpaceAndFloorFromAssets()) return
 
-    VM.selectInitialFloor(ctx)
+    scope.launch(Dispatchers.IO) {
+      if (!DBG.SLR) {
+        if(!loadSpaceAndFloorFromAssets()) return@launch
+      } else {
+        LOG.E(TAG, "LOAD DYNAMICALLY")
+        LOG.E(TAG, "LOAD SPACE FROM CACHE!!!!!!!!")
+        val prefs = VM.dsCvMap.read.first()
 
-    fHandler.observeFloorChanges(this@GmapWrapper)
-    fHandler.observeFloorplanChanges(obj)
+        loadSpaceAndFloorFromCache(prefs.selectedSpace)
+      }
+
+      VM.selectInitialFloor(ctx)
+      fHandler.observeFloorChanges(this@GmapWrapper)
+      fHandler.observeFloorplanChanges(obj)
+    }
   }
 
+  /**
+   * Cache is prepared by [SpaceSelector]
+   * TODO put other act here
+   */
+  private fun loadSpaceAndFloorFromCache(selectedSpace: String): Boolean {
+    LOG.E(TAG, "$METHOD: LOADING SPACE FROM ASSETS")
+
+    return createSpaceAndFloorWrappers(
+            VM.cache.readJsonSpace(selectedSpace),
+            VM.cache.readJsonFloors(selectedSpace))
+  }
+
+
+  @Deprecated("for testing")
   private fun loadSpaceAndFloorFromAssets() : Boolean {
     LOG.E(TAG, "$METHOD: LOADING SPACE FROM ASSETS")
-    app.space = assetReader.getSpace()
-    app.floors = assetReader.getFloors()
+    return createSpaceAndFloorWrappers(
+            assetReader.getSpace(),
+            assetReader.getFloors())
+  }
+
+  private fun createSpaceAndFloorWrappers(space: Space?, floors: Floors?) : Boolean {
+    LOG.E(TAG, "$METHOD")
+
+    app.space = space
+    app.floors = floors
 
     if (app.space == null || app.floors == null) {
       showError(app.space, app.floors)
@@ -248,6 +281,7 @@ class GmapWrapper(
 
     return true
   }
+
 
   var setUserPannedOutOfBounds = false
   fun setupObserverUserBounds() {
@@ -304,7 +338,7 @@ class GmapWrapper(
       floor == null -> msg = "Failed to get ${app.wSpace.prettyFloor} $floorNum."
     }
     LOG.E(msg)
-    Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
+    app.snackbarShort(scope, msg)
   }
 
   fun removeUserLocations() {

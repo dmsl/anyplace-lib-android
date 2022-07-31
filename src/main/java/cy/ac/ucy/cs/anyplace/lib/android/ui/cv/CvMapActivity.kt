@@ -164,11 +164,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
 
-        if (prefs.selectedSpace.isEmpty()) {
+        if (DBG.SLR && prefs.selectedSpace.isEmpty()) {
           app.showToast(lifecycleScope, "Please select space", Toast.LENGTH_LONG)
           startActivity(Intent(this@CvMapActivity, SelectSpaceActivity::class.java))
           finish()
         }
+
+        LOG.E(TAG, "SELECTED SPACE: ${prefs.selectedSpace}")
 
         onLoadedPrefsCvMap()
         true
@@ -335,7 +337,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
         val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
         VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
-        test()
+        loadPOIsAndConnections()
       }
 
       app.userOutOfBounds.update {
@@ -350,13 +352,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-  suspend fun test() {
+  suspend fun loadPOIsAndConnections() {
       if (!DBG.uim) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         LOG.E(TAG, "will get pois conns")
-        VM.nwPOIs.safeCall(app.space!!.id)
-        VM.nwConnections.safeCall(app.space!!.id)
+        VM.nwPOIs.callBlocking(app.space!!.id)
+        VM.nwConnections.callBlocking(app.space!!.id)
       }
       VM.ui.map.lines.loadPolylines(app.wFloor!!.floorNumber())
   }
@@ -372,7 +374,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     val _method = METHOD
     lifecycleScope.launch(Dispatchers.IO) {
       app.floor.collect { floor ->
-        LOG.D1(TAG, "$_method: floor is: ${floor?.floorNumber}")
+        LOG.W(TAG, "$_method: floor is: ${floor?.floorNumber}")
         if (floor == null) return@collect
 
         app.wFloor = FloorWrapper(floor, app.wSpace)

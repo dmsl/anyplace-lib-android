@@ -29,9 +29,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialogAnyplace
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityLoginBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
@@ -282,7 +282,7 @@ class AnyplaceLoginActivity : BaseActivity() {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      MainSettingsDialogAnyplace().show(supportFragmentManager, MainSettingsDialogAnyplace.FROM_LOGIN)
+      startActivity(Intent(this, SettingsCvActivity::class.java))
     }
     return super.onOptionsItemSelected(item)
   }
