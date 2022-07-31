@@ -186,7 +186,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Runs only once, when any of the floors is loaded for the first time.
    */
   override fun onFirstFloorLoaded() {
-    LOG.E(TAG, "$tag: $METHOD: Floor: ${app.floor.value}")
+    LOG.I(TAG, "$tag: $METHOD: Floor: ${app.floor.value?.floorNumber}")
 
     super.onFirstFloorLoaded()
 
@@ -349,7 +349,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           utlUi.fadeOut(group)
           delay(100)
           utlUi.fadeIn(btnAlert)
-          btnAlertOngoing.clearAnimation()
+          utlUi.clearAnimation(btnAlertOngoing)
           notifiedForAlert=false
         } else { // user alerting
           utlUi.text(btnAlertOngoing, "${it.name} ${it.surname}")

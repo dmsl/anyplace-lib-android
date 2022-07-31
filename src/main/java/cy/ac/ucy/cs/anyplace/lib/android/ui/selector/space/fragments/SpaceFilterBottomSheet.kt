@@ -72,7 +72,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
     lifecycleScope.launch {
       if (VM.dbqSpaces.runnedInitialQuery && VM.dbqSpaces.readSpacesQuery.first().isEmpty()) {
-        app.snackbarWarning(VM.viewModelScope, "Previous query had no results!")
+        app.snackbarShort(VM.viewModelScope, "Reset filters: previous query was empty!")
       }
     }
 

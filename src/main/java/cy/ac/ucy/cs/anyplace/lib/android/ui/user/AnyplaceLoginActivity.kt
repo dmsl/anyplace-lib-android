@@ -64,7 +64,7 @@ class AnyplaceLoginActivity : BaseActivity() {
     setContentView(binding.root)
 
     app.setMainView(binding.root)
-    app.snackbarLong(lifecycleScope, "Please login to Anyplace!")
+    app.snackbarLong(lifecycleScope, "Please login to Anyplace also!")
 
     val username = binding.username
     val password = binding.password

@@ -105,26 +105,31 @@ class FloorsWrapper(val unsortedObj: Floors, val spaceH: SpaceWrapper) {
   /** Go one floor up */
   fun tryGoUp(VM: CvViewModel) {
     LOG.V3()
-    val app = VM.app
-    val floorNumStr = app.floor.value?.floorNumber.toString()
-    if (canGoUp(floorNumStr)) {
-      val floorDest = getFloorAbove(floorNumStr)
-      moveToFloor(VM, floorDest!!)
-    } else {
-      LOG.W(TAG_METHOD, "Cannot go further up.")
+
+    try {
+      val app = VM.app
+      val floorNumStr = app.floor.value?.floorNumber.toString()
+      if (canGoUp(floorNumStr)) {
+        val floorDest = getFloorAbove(floorNumStr)
+        moveToFloor(VM, floorDest!!)
+      }
+    } catch (e: Exception) {
     }
+    LOG.W(TAG_METHOD, "Cannot go further up.")
   }
 
   fun tryGoDown(VM: CvViewModel) {
     LOG.V3()
-    val app = VM.app
-    val floorNumStr = app.floor.value?.floorNumber.toString()
-    if (app.wFloors.canGoDown(floorNumStr)) {
-      val floorDest = app.wFloors.getFloorBelow(floorNumStr)
-      moveToFloor(VM, floorDest!!)
-    } else {
-      LOG.W(TAG_METHOD, "Cannot go further down.")
+    try {
+      val app = VM.app
+      val floorNumStr = app.floor.value?.floorNumber.toString()
+      if (app.wFloors.canGoDown(floorNumStr)) {
+        val floorDest = app.wFloors.getFloorBelow(floorNumStr)
+        moveToFloor(VM, floorDest!!)
+      }
+    } catch(e: Exception) {
     }
+    LOG.W(TAG_METHOD, "Cannot go further down.")
   }
 
   fun moveToFloor(VM: CvViewModel, floor: Floor) {

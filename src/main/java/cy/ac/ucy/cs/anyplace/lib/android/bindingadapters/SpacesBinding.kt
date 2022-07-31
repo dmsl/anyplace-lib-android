@@ -80,12 +80,8 @@ object SpacesBinding {
   @JvmStatic
   fun readSpaceDrawable(iv:ImageView, space: Space?) {
     space?.let {
-      LOG.E(TAG, "$METHOD: space type: ${space.name} ${space.type}")
+      LOG.V5(TAG, "$METHOD: space type: ${space.name} ${space.type}")
       // default one is building so no need to do this
-      // if (space.type.lowercase() == TP_BUILDING) {
-      //   val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_building)
-      //   iv.setImageDrawable(drawableCompat)
-      // } else
       if (space.type.lowercase() == TP_VESSEL) {
         val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_vessel)
         iv.setImageDrawable(drawableCompat)

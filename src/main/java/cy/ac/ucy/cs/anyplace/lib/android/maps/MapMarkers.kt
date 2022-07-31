@@ -248,7 +248,7 @@ class MapMarkers(private val app: AnyplaceApp,
    * IMPORTANT: it must run on the Main thread
    */
   fun clearAllInfoWindow() {
-    LOG.E(TAG, "CLEAR ALL")
+    LOG.I(TAG, "$METHOD: clearing all markers")
     // clear last selected user
     userLocations.forEach {
       it.hideInfoWindow()

@@ -48,18 +48,14 @@ class StartActivity : BaseActivity() {
 
   companion object {
     fun openActivity(prefsCv: CvMapPrefs, act: Activity) {
+      LOG.W()
 
-      // val selectedSpace=
-      // val startAct
-      LOG.E(TAG," OPEN ACT: COBJ")
       if (!DBG.SLR || prefsCv.selectedSpace.isEmpty()) {
-        LOG.E(TAG, "OPENING: ACT: IS EMPTY... starting space")
         LOG.W(TAG, "$METHOD: must select space first")
           act.startActivity(Intent(act, SelectSpaceActivity::class.java))
       } else {
         val actCode = prefsCv.startActivity
-        LOG.E(TAG, "OPENING: ACT: starting ACTIVITY.. $actCode")
-
+        LOG.E(TAG, "$METHOD: will open $actCode with ${prefsCv.selectedSpace}")
 
         val cls = when (actCode) {
           CONST.START_ACT_LOGGER -> CvLoggerActivity::class.java

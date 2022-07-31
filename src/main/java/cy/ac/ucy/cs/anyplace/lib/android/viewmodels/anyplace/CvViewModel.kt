@@ -381,11 +381,8 @@ open class CvViewModel @Inject constructor(
             // delaying a bit more so the user is not overwhelmed
             delay(1500)
 
-            LOG.E(TAG,"WAI: aft delay")
             // on success, then return (no need to show red icon first)
             if (app.hasLastLocation()) return@collectLatest
-
-            LOG.E(TAG,"WAI: does NOT have last loc. SHOWING BTN")
 
             utlUi.fadeIn(ui.localization.btnWhereAmI)
             utlUi.changeBackgroundMaterial(ui.localization.btnWhereAmI, R.color.redDark)

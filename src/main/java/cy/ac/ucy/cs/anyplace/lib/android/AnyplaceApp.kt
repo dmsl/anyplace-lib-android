@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
@@ -51,6 +52,7 @@ enum class MapBounds {
  */
 abstract class AnyplaceApp : Application() {
 
+  var spaceSelectionInProgress: Boolean = false
   @Inject lateinit var RH: RetrofitHolderAP
 
   // DATASTORES (Preferences/Settings)
@@ -67,6 +69,10 @@ abstract class AnyplaceApp : Application() {
 
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
+
+  // TODO: might be nice to use THIS once everywhere in app
+  // or even better, pass it to methods through extension functoins..
+  val cache by lazy { Cache(applicationContext) }
 
   val utlSnackbar by lazy { UtilSnackBar(this) }
 
@@ -115,22 +121,23 @@ abstract class AnyplaceApp : Application() {
     return locationSmas.value is LocalizationResult.Success
   }
 
+  var mustSelectSpaceForCvMap = false
 
   /**
-   * Set the main view (root view) of the current [Activity], so we can use more easily [Snackbar]
+   * Set the main view (root view) of the current [Activity],
+   * so we can use app [Snackbar] accross different activities
    */
-  fun setMainView(root_view: View, forChat: Boolean=false) {
+  fun setMainView(root_view: View, placeOnActionbar: Boolean=false) {
     utlSnackbar.rootView=root_view
-    utlSnackbar.snackbarForChat=forChat
+    utlSnackbar.snackbarForChat=placeOnActionbar
   }
 
   override fun onCreate() {
     super.onCreate()
-    LOG.D2(TAG, "onCreate")
+    LOG.D2()
     DaggerAppComponent.builder().application(this).build()
 
     cvUtils = CvUtils(this, repoSmas )
-
     observeServerPrefs()
   }
 
@@ -181,6 +188,7 @@ abstract class AnyplaceApp : Application() {
   fun snackbarShort(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_SHORT)
   fun snackbarLong(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG)
   fun snackbarWarning(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.WARNING)
+  fun snackbarWarningInf(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.WARNING)
   fun snackbarInfo(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.INFO)
 
   /** Stays on until user acts on it */
@@ -206,4 +214,33 @@ abstract class AnyplaceApp : Application() {
       else -> false
     }
   }
+
+  /**
+   * Initialize the wrappers for the space and the floors
+   */
+  fun initSpaceAndFloors(scope: CoroutineScope, newSpace: Space?, newFloors: Floors?): Boolean {
+      LOG.W()
+
+      this.space = newSpace
+      this.floors = newFloors
+
+      if (newSpace == null || newFloors == null) {
+        snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")
+        return false
+      }
+
+      wSpace = SpaceWrapper(applicationContext, repoAP, this.space!!)
+      wFloors = FloorsWrapper(this.floors!!, this.wSpace)
+      val prettySpace = wSpace.prettyTypeCapitalize
+      val prettyFloors= wSpace.prettyFloors
+
+      LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${space!!.name} " +
+              "(has ${floors!!.floors.size} $prettyFloors)")
+
+      LOG.W(TAG, "$METHOD: pretty: ${wSpace.prettyType} ${wSpace.prettyFloor}")
+
+      return true
+  }
+
+
 }

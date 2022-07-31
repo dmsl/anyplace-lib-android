@@ -23,9 +23,6 @@ class FloorsGetNW(
 
   val tag = "nw-floors-get"
 
-  /** Network Responses from API calls */
-  // private val resp: MutableStateFlow<NetworkResult<UserLocations>> = MutableStateFlow(NetworkResult.Unset())
-
   private val C by lazy { CONST(app.applicationContext) }
 
   /** Get [Floors]*/

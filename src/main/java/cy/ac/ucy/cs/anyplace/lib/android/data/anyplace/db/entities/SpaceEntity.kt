@@ -29,7 +29,7 @@ data class SpaceEntity(
   val name: String,
   val description: String?="",
   val address: String?="",
-  val coordinatesLat: String, // TODO convert to LtnLng?
+  val coordinatesLat: String,
   val coordinatesLon: String,
   val url: String?="",
   val ownerShip: SpaceOwnership  // additional entry

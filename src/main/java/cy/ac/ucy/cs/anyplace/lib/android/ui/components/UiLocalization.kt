@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
@@ -93,6 +94,10 @@ class UiLocalization(
         val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
         app.snackbarInf(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
+
+        val latLng = LatLng(app.wSpace.obj.coordinatesLat.toDouble(),
+                app.wSpace.obj.coordinatesLon.toDouble())
+        VM.ui.map.animateToLocation(latLng)
       }
     }
     btnWhereAmISetup=true

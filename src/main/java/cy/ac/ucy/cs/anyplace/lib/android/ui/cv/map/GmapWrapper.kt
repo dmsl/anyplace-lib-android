@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -12,8 +11,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -77,7 +74,7 @@ class GmapWrapper(
   @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap, act: CvMapActivity) {
     LOG.D()
-    LOG.E(TAG, "$tag: setup")
+    LOG.E(TAG, "$tag: setup OF GMAP-WRAPPER")
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))   // TODO:PMX FR10
@@ -101,60 +98,75 @@ class GmapWrapper(
       while(!act.cvMapPrefsLoaded) delay(100)
 
       loadSpaceAndLevel()
+
+      setupOnMapAndMarkerClick()
+      setupInfoWindowClick()
+
+      // async continues by [onFloorLoaded] CLR?
+      // onMapReadySpecialize()
+      setupObserverUserBounds()
+      gmapWrLoaded = true
     }
+  }
 
-    // SETUP SEVERAL MAP CLICK LISTENERS
-    obj.setOnMapClickListener {
-      markers.clearAllInfoWindow()
+  @SuppressLint("PotentialBehaviorOverride")
+  private fun setupOnMapAndMarkerClick() {
+    scope.launch(Dispatchers.Main) {
+      obj.setOnMapClickListener {
+        markers.clearAllInfoWindow()
+      }
+
+      obj.setOnMarkerClickListener {  // PotentialBehaviorOverride
+        markers.clearAllInfoWindow()
+        return@setOnMarkerClickListener false
+      }
     }
-    // CHECK THIS?!
-    obj.setOnMarkerClickListener {  // PotentialBehaviorOverride
-      markers.clearAllInfoWindow()
-      return@setOnMarkerClickListener false
-    }
+  }
 
-    obj.setOnInfoWindowClickListener { // PotentialBehaviorOverride
-      markers.clearAllInfoWindow() // clear any previous InfoWindows
-      val metadata = it.tag as UserInfoMetadata?
-      if (metadata != null) {
-        if(metadata.type == UserInfoType.SharedLocation) {
-          LOG.W(TAG, "clearing chat location marker")
-          markers.clearChatLocationMarker()
-          return@setOnInfoWindowClickListener
-        }
+  var infoWindowClickSetup=false
+  @SuppressLint("PotentialBehaviorOverride")
+  private fun setupInfoWindowClick() {
+    if (infoWindowClickSetup) return
+    infoWindowClickSetup=true
 
-        LOG.E(TAG, "USER: ${metadata.uid}")
-        LOG.E(TAG, "LOCATION: ${metadata.coord}")
+    scope.launch(Dispatchers.Main) {
+      obj.setOnInfoWindowClickListener { // PotentialBehaviorOverride
+        markers.clearAllInfoWindow() // clear any previous InfoWindows
+        val metadata = it.tag as UserInfoMetadata?
+        if (metadata != null) {
+          if(metadata.type == UserInfoType.SharedLocation) {
+            LOG.W(TAG, "clearing chat location marker")
+            markers.clearChatLocationMarker()
+            return@setOnInfoWindowClickListener
+          }
 
-        val uid = metadata.uid
-        val deck = metadata.coord.level
-        val lat = metadata.coord.lat
-        val lon = metadata.coord.lon
+          LOG.E(TAG, "USER: ${metadata.uid}")
+          LOG.E(TAG, "LOCATION: ${metadata.coord}")
 
-        if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
+          val uid = metadata.uid
+          val deck = metadata.coord.level
+          val lat = metadata.coord.lat
+          val lon = metadata.coord.lon
 
-          val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
-          clipboardLocation.toString().copyToClipboard(ctx)
+          if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
 
-          scope.launch(Dispatchers.IO) {
-            val ownUid = app.dsSmasUser.read.first().uid
-            if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
-              if (ownUid == uid) {
-                app.snackbarShort(scope, "Copied own location to clipboard")
-              } else {
-                app.snackbarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
+            val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
+            clipboardLocation.toString().copyToClipboard(ctx)
+
+            scope.launch(Dispatchers.IO) {
+              val ownUid = app.dsSmasUser.read.first().uid
+              if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
+                if (ownUid == uid) {
+                  app.snackbarShort(scope, "Copied own location to clipboard")
+                } else {
+                  app.snackbarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
+                }
               }
             }
           }
         }
       }
     }
-
-    // async continues by [onFloorLoaded]
-    // onMapReadySpecialize()
-
-    setupObserverUserBounds()
-    gmapWrLoaded = true
   }
 
   /**
@@ -190,21 +202,15 @@ class GmapWrapper(
         return@launch
       }
 
-      // zoom ins to include the floorplan
-      // gmap.moveCamera(CameraUpdateFactory.newLatLngBounds(VM.floorH?.bounds()!!, 0))
+      LOG.W(TAG, "Setting camera bounds: users will be restricted to viewing just the particular space")
+      LOG.E(TAG, "SP: ${app.wSpace.obj.name}")
+      LOG.E(TAG, "FLOOR: ${app.wFloor?.prettyFloorNumber()}")
 
-      // zooms to the center of the floorplan
-      obj.moveCamera(CameraUpdateFactory.newCameraPosition(
-              CameraAndViewport.loggerCamera(app.wFloor?.bounds()!!.center, maxZoomLevel-2)))
+      obj.setLatLngBoundsForCameraTarget(app.wFloor?.bounds())
+      animateToLocation(app.wFloor?.bounds()!!.center)
 
       val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
       LOG.D2("bounds: ${floorOnScreenBounds.center}")
-      // LEFTHERE: we get OUT OF BOUNDS RESULTS!
-      // some crashes, and some weird results.
-      // invastigating..
-      // QR CODES?! those NOT part of the model.
-      LOG.W(TAG, "Setting camera bounds: users will be restricted to viewing just the particular space")
-      obj.setLatLngBoundsForCameraTarget(app.wFloor?.bounds())
     }
   }
 
@@ -224,10 +230,8 @@ class GmapWrapper(
       if (!DBG.SLR) {
         if(!loadSpaceAndFloorFromAssets()) return@launch
       } else {
-        LOG.E(TAG, "LOAD DYNAMICALLY")
-        LOG.E(TAG, "LOAD SPACE FROM CACHE!!!!!!!!")
         val prefs = VM.dsCvMap.read.first()
-
+        LOG.W(TAG, "$METHOD: loading dynamically: ${prefs.selectedSpace}")
         loadSpaceAndFloorFromCache(prefs.selectedSpace)
       }
 
@@ -242,9 +246,8 @@ class GmapWrapper(
    * TODO put other act here
    */
   private fun loadSpaceAndFloorFromCache(selectedSpace: String): Boolean {
-    LOG.E(TAG, "$METHOD: LOADING SPACE FROM ASSETS")
-
-    return createSpaceAndFloorWrappers(
+    LOG.E(TAG, "$METHOD: space: $selectedSpace (DYNAMICALLY)")
+    return app.initSpaceAndFloors(scope,
             VM.cache.readJsonSpace(selectedSpace),
             VM.cache.readJsonFloors(selectedSpace))
   }
@@ -252,57 +255,37 @@ class GmapWrapper(
 
   @Deprecated("for testing")
   private fun loadSpaceAndFloorFromAssets() : Boolean {
-    LOG.E(TAG, "$METHOD: LOADING SPACE FROM ASSETS")
-    return createSpaceAndFloorWrappers(
+    LOG.W()
+    return app.initSpaceAndFloors(scope,
             assetReader.getSpace(),
             assetReader.getFloors())
   }
 
-  private fun createSpaceAndFloorWrappers(space: Space?, floors: Floors?) : Boolean {
-    LOG.E(TAG, "$METHOD")
-
-    app.space = space
-    app.floors = floors
-
-    if (app.space == null || app.floors == null) {
-      showError(app.space, app.floors)
-      return false
-    }
-
-    app.wSpace = SpaceWrapper(ctx, VM.repo, app.space!!)
-    app.wFloors = FloorsWrapper(app.floors!!, app.wSpace)
-    val prettySpace = app.wSpace.prettyTypeCapitalize
-    val prettyFloors= app.wSpace.prettyFloors
-
-    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${app.space!!.name} " +
-            "(has ${app.floors!!.floors.size} $prettyFloors)")
-
-    LOG.W(TAG, "$METHOD: pretty: ${app.wSpace.prettyType} ${app.wSpace.prettyFloor}")
-
-    return true
-  }
-
 
   var setUserPannedOutOfBounds = false
+  /**
+   * Observe user bounds to update WAI functionality
+   */
   fun setupObserverUserBounds() {
     if (setUserPannedOutOfBounds) return
     setUserPannedOutOfBounds=true
 
-    obj.setOnCameraIdleListener {
-      var boundsState = MapBounds.notLocalizedYet
-      LOG.W(TAG, "Map idle (movement ended)") // CLR:PM D3
-      val lr = app.locationSmas.value
-      if (lr is LocalizationResult.Success) {  // there was a user location
-        // NOTE: on floor changing the [app.userOutOfBounds] might also get updated,
-        // because the user might change the floor, without any panning on the map
+    scope.launch(Dispatchers.Main) {
+      obj.setOnCameraIdleListener {
+        var boundsState = MapBounds.notLocalizedYet
+        LOG.W(TAG, "Map idle (movement ended)") // CLR:PM D3
+        val lr = app.locationSmas.value
+        if (lr is LocalizationResult.Success) {  // there was a user location
+          // NOTE: on floor changing the [app.userOutOfBounds] might also get updated,
+          // because the user might change the floor, without any panning on the map
 
-        val latLng = lr.coord!!.toLatLng()
-        boundsState =
-                if (app.userOnOtherFloor() || outOfMapBounds(latLng)) MapBounds.outOfBounds
-                else MapBounds.inBounds
+          val latLng = lr.coord!!.toLatLng()
+          boundsState =
+                  if (app.userOnOtherFloor() || outOfMapBounds(latLng)) MapBounds.outOfBounds
+                  else MapBounds.inBounds
+        }
+        app.userOutOfBounds.update { boundsState }
       }
-
-      app.userOutOfBounds.update { boundsState }
     }
   }
 

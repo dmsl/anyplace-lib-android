@@ -32,6 +32,9 @@ class SpaceWrapper(val ctx: Context,
     const val TP_VESSEL = "vessel"
 
     const val BUID_UCY_CS_BUILDING = "username_1373876832005"
+    const val BUID_STENA_FLAVIA= "vessel_2a2cf77c-91e0-41e2-971b-e80f5570d616_1635154314048"
+
+    const val BUID_HARDCODED = BUID_STENA_FLAVIA
 
     fun parse(str: String): Space  = Gson().fromJson(str, Space::class.java)
   }

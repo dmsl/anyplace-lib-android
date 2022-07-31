@@ -38,6 +38,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -45,6 +46,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.ImageUtils
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.Exception
 
 /**
@@ -145,8 +148,16 @@ abstract class CameraActivity : AppCompatActivity(),
   }
 
 
-  fun hideBottomSheet() { bottomSheetLayout.isVisible = false }
-  fun showBottomSheet() { bottomSheetLayout.isVisible = true }
+  fun hideBottomSheet() {
+    lifecycleScope.launch(Dispatchers.IO) {
+      bottomSheetLayout.isVisible = false
+    }
+  }
+  fun showBottomSheet() {
+    lifecycleScope.launch(Dispatchers.IO) {
+      bottomSheetLayout.isVisible = true
+    }
+  }
 
   /**
    * Base UI includes at least:

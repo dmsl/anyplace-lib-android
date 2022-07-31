@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
@@ -16,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -58,26 +61,59 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
     private fun setupBtnSelectSpace(space: Space, act: SelectSpaceActivity) {
       binding.btnSelectSpace.setOnClickListener {
-        // TODO: store spaceId and spaceName..
+        val btn = binding.btnSelectSpace
+
+       if (app.spaceSelectionInProgress)  {
+         act.utlUi.attentionInvalidOption(btn)
+         return@setOnClickListener
+       }
+        app.spaceSelectionInProgress=true
+
         LOG.W(TAG, "Selecting Space: ${space.name} ${space.id}")
 
-        // TODO: PMX DOWNLOAD ALL RESOURCES.. THEN OPEN NEXT ACTIVITY...
+        val msg = "Downloading resources of ${space.name}.."
+        app.snackbarInf(scope, msg)
+
+        act.utlUi.disable(btn)
+        act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
+        act.utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
+        act.utlUi.flashingLoop(btn)
 
         scope.launch(Dispatchers.IO) {
-          app.dsCvMap.setSelectedSpace(space.id)
+          app.dsCvMap.setSelectedSpace(space.id) // store the sapce
           val prefsCv = app.dsCvMap.read.first()
 
+          // 1. Download JSON objects for the Space and all the Floors
           val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
           val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
 
           if (!gotSpace || !gotFloors) {
-           app.showToast(scope, "Failed to download space! (restart app)")
-          } else {
-            scope.launch(Dispatchers.Main) {
-              StartActivity.openActivity(prefsCv, act)
-            }
-            act.finish()
+            app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
+            app.spaceSelectionInProgress=false
+            act.finishAndRemoveTask()
           }
+
+          // 2. Load the downloaded objects
+          app.initSpaceAndFloors(scope,
+                  app.cache.readJsonSpace(prefsCv.selectedSpace),
+                  app.cache.readJsonFloors(prefsCv.selectedSpace))
+
+          // 3. Download floorplans
+          app.wFloors.showedMsgDownloading=true
+          app.wFloors.fetchAllFloorplans(act.VMcv)
+
+          scope.launch(Dispatchers.Main) {
+            act.utlUi.clearAnimation(btn)
+            act.utlUi.enable(btn)
+            act.utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_forward)
+            act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+
+            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+
+            StartActivity.openActivity(prefsCv, act)
+            app.spaceSelectionInProgress=false
+          }
+          act.finish()
         }
       }
     }

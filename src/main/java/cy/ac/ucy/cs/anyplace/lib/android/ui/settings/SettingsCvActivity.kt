@@ -1,13 +1,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -281,13 +276,14 @@ class SettingsCvActivity: SettingsActivity() {
         LOG.W(TAG, "$METHOD: setting up")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Clear selected space",
-                "Space Selector will open again,"+
-                        "so you can select a different space.\n",
-                cancellable = true, isImportant = false) { // on confirmed
+                "The application will close,\n"+
+                        "and you can load it again to select a different space.",
+                cancellable = true, isImportant = true) { // on confirmed
 
           lifecycleScope.launch(Dispatchers.IO) {
             ds.clearSelectedSpace()
             app.showToast(lifecycleScope, "Please select another space.")
+            app.mustSelectSpaceForCvMap=true
             requireActivity().finishAndRemoveTask()
           }
         }
@@ -305,7 +301,8 @@ class SettingsCvActivity: SettingsActivity() {
         LOG.W(TAG, "$METHOD: setting up")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Clear available spaces",
-                "Space Selector will fetch them again from remote.\n"+
+                "Space Selector will fetch them again from remote,\n"+
+                        "the next time you clear the selected space\n"+
                         "Use this if the remote spaces had changes.\n",
                 cancellable = true, isImportant = true) { // on confirmed
 
@@ -317,8 +314,6 @@ class SettingsCvActivity: SettingsActivity() {
 
             repoAP.local.dropSpaces()
             VMap.setBackFromSettings()
-            app.showToast(VM.viewModelScope, "Please select a space.")
-            requireActivity().finishAndRemoveTask()
           }
         }
         true

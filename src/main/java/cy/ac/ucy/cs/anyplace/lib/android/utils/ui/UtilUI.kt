@@ -5,6 +5,7 @@ import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
 import android.os.Build
 import android.util.TypedValue
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -86,6 +88,14 @@ class UtilUI(
   fun setTextSizeSp(b: Button, v: Float) {
     scope.launch(Dispatchers.Main) {
       b.setTextSize(TypedValue.COMPLEX_UNIT_SP, v)
+    }
+  }
+
+  fun attentionInvalidOption(v: View) {
+    scope.launch(Dispatchers.IO) {
+      animateAlpha(v, 0.3f,250)
+      delay(500)
+      animateAlpha(v, 1f,250)
     }
   }
 

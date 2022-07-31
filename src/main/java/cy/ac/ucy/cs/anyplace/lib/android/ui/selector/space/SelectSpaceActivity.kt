@@ -6,17 +6,21 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -28,24 +32,21 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
   lateinit var VM: AnyplaceViewModel
+  lateinit var VMcv: CvViewModel
+
+  val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // setTheme(R.style.AppTheme) // INFO alternative way to present a splash screen
-
-    // this may be opened with parameters:
-    // 1: get spaces of user
-    // 2: get spaces that the user can access
-    // 3: get all spaces
-    // 4: get spaces by type
-    // 5: get spaces nearby
 
     binding = ActivitySelectSpaceBinding.inflate(layoutInflater)
     setContentView(binding.root)
+    app.setMainView(binding.root, true)
+
     VM = ViewModelProvider(this)[AnyplaceViewModel::class.java]
+    VMcv = ViewModelProvider(this)[CvViewModel::class.java]
 
     binding.lifecycleOwner = this
-    // binding.bindingVM  ??
 
     VM.readBackOnline.observe(this) { VM.backOnline = it }
     VM.readBackFromSettings.observe(this) { VM.backFromSettings = it }
@@ -60,13 +61,6 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
 
     binding.bottomNavigationView.setupWithNavController(navController)
     setupActionBarWithNavController(navController, appBarConfiguration)
-
-    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
-    // navController = findNavController(R.id.navHostFragment)
-    // val appBarConfiguration=AppBarConfiguration(setOf( R.id.spacesListFragment))
-    // val appBarConfiguration=AppBarConfiguration(setOf( R.id.spacesListFragment, R.id.spacesMapFragment))
-    // binding.bottomNavigationView.setupWithNavController(navController)
-    // setupActionBarWithNavController(navController, appBarConfiguration)
   }
 
   /**
@@ -96,7 +90,6 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     val search = menu.findItem(R.id.item_search_spaces)
     val searchView = search.actionView as? SearchView
     searchView?.queryHint = getString(R.string.search_space)
-    // searchView?.isSubmitButtonEnabled = true
     searchView?.setOnQueryTextListener(this)
 
     return super.onCreateOptionsMenu(menu)

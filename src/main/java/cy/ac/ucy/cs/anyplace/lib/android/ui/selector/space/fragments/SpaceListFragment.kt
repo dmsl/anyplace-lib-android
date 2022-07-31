@@ -22,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsUserAP
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -127,6 +128,13 @@ class SpaceListFragment : Fragment() {
    */
   private fun setupFabQuery() {
     binding.fabFilterSpaces.setOnClickListener {
+      if (app.spaceSelectionInProgress) {
+        val utlUi = UtilUI(requireContext(), lifecycleScope)
+        utlUi.attentionInvalidOption(binding.fabFilterSpaces)
+        return@setOnClickListener
+      }
+
+
       if(VM.dbqSpaces.loaded) {
         findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
       } else {
@@ -186,7 +194,6 @@ class SpaceListFragment : Fragment() {
     LOG.E()
     lifecycleScope.launch {
       VM.dbqSpaces.storedQuery.firstOrNull { query ->
-        LOG.E(TAG, "$METHOD: will run first query")
         VM.dbqSpaces.saveQueryTypeTemp(query)
         VM.dbqSpaces.runInitialQuery()
 
@@ -207,7 +214,7 @@ class SpaceListFragment : Fragment() {
               } else {
                 LOG.D2(TAG, "  -> requestRemoteSpaceData")
                 requestRemoteSpacesData()
-                collectRemoveSpaces()
+                collectSpaces()
               }
             }
           }
@@ -277,7 +284,7 @@ class SpaceListFragment : Fragment() {
   }
 
   var collectingRemoteSpaces=false
-  private fun collectRemoveSpaces() {
+  private fun collectSpaces() {
     if (collectingRemoteSpaces) return
     collectingRemoteSpaces=true
 
@@ -298,7 +305,11 @@ class SpaceListFragment : Fragment() {
             hideShimmerEffect()
             // if(!showedApiData) { showShimmerEffect() }
             // loadDataFromCache() TODO: DB ?
-            app.showToast(lifecycleScope, response.message.toString())
+            val errMsg = response.message.toString()
+            if (activity != null) {
+              app.showToast(lifecycleScope, errMsg)
+            }
+            LOG.E(TAG, errMsg)
           }
           is NetworkResult.Loading -> {
             showShimmerEffect()

@@ -98,7 +98,7 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_filter"
-        app:backgroundTint="@color/colorAccent"
+        app:backgroundTint="@color/dev_mode"
         app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

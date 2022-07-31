@@ -14,19 +14,21 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
-import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.SensorsViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
+import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
+import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.SensorsViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
@@ -39,6 +41,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.app.Activity
+
+
+
 
 /**
  * It uses:
@@ -127,7 +133,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
-      LOG.E(TAG, "FUTURE: get fingerprints too here?")
+      LOG.I(TAG, "FUTURE: get fingerprints too here?")
       // FUTURE: with a new backend endpoint, we could try to auto-update the local fingerprints given connectivity
       // - the backend must provide timestamp TS on Fingerprint download
       // - that TS should also be materialized (SQLite or DataStore)
@@ -141,7 +147,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.E(TAG, "onResume")
+    LOG.D2()
 
     readPrefsAndContinue()
   }
@@ -161,17 +167,25 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         true
       }
 
+      if (!DBG.SLR) {
+        LOG.E(TAG, "$METHOD: Forcing space: $BUID_HARDCODED")
+        dsCvMap.setSelectedSpace(BUID_HARDCODED)
+      }
+
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
-
-        if (DBG.SLR && prefs.selectedSpace.isEmpty()) {
-          app.showToast(lifecycleScope, "Please select space", Toast.LENGTH_LONG)
-          startActivity(Intent(this@CvMapActivity, SelectSpaceActivity::class.java))
-          finish()
+        if (DBG.SLR) {
+          if (prefs.selectedSpace.isEmpty() || app.mustSelectSpaceForCvMap) {
+            app.mustSelectSpaceForCvMap=false // handled below
+            app.showToast(lifecycleScope, "Please re-run app.")
+            // val intent = Intent(app.applicationContext, SelectSpaceActivity::class.java)
+            // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            // startActivity(intent)
+            finishAndRemoveTask()
+          }
         }
 
-        LOG.E(TAG, "SELECTED SPACE: ${prefs.selectedSpace}")
-
+        LOG.E(TAG, "SELECTED SPACE: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
       }
@@ -259,13 +273,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   var initedGmap = false
   private fun setupUiGmap() {
-    LOG.D2(TAG, "Setup CommonUI & GMap")
+    LOG.E(TAG, "Setup CommonUI & GMap")
     if (initedGmap) return
 
     LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
 
-    VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
+    VM.ui = CvUI(
+            app, this@CvMapActivity, VM, lifecycleScope,
             supportFragmentManager,
             VM.floorSelector,
             id_btn_localization,
@@ -291,7 +306,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    LOG.E(TAG, "onMapReadyCallback: [CvMap]")
+    LOG.I(TAG, "onMapReadyCallback: [CvMap]")
 
     VM.ui.map.setup(googleMap, this)
     lifecycleScope.launch(Dispatchers.Main) {
@@ -356,7 +371,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       if (!DBG.uim) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
-        LOG.E(TAG, "will get pois conns")
+        LOG.D2(TAG, "Fetching POIs and Connections..")
         VM.nwPOIs.callBlocking(app.space!!.id)
         VM.nwConnections.callBlocking(app.space!!.id)
       }
