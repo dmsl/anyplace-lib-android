@@ -50,7 +50,7 @@ class SettingsServerActivity: SettingsActivity() {
         versionPreferences.summary = "refreshing.."
         lifecycleScope.launch {  // artificial delay
           delay(250)
-          VMap.displayBackendVersion(versionPreferences)
+          VMap.nwVersion.displayVersion(versionPreferences)
         }
         true // click is handled
       }
@@ -82,10 +82,11 @@ class SettingsServerActivity: SettingsActivity() {
     }
 
     private fun reactToSettingsUpdates(versionPreferences: Preference?) {
+      val method = METHOD
       VMap.prefsServer.asLiveData().observe(this) { prefs ->
         RFHap.set(prefs)
-        LOG.D3(TAG, "reactToSettingsUpdates: ${RFHap.retrofit.baseUrl()}")
-        VMap.displayBackendVersion(versionPreferences)
+        LOG.D3(TAG, "$method: ${RFHap.retrofit.baseUrl()}")
+        VMap.nwVersion.displayVersion(versionPreferences)
       }
     }
 

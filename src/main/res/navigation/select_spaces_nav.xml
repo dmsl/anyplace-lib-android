@@ -30,6 +30,11 @@
     tools:layout="@layout/bottom_sheet_space_filter" >
     <action
       android:id="@+id/action_spaceFilterBottomSheet_to_spacesListFragment"
-      app:destination="@id/spacesListFragment" />
+      app:destination="@id/spacesListFragment"
+        app:popUpTo="@id/spacesListFragment"
+        app:popUpToInclusive="true"
+        />
   </dialog>
+
+
 </navigation>

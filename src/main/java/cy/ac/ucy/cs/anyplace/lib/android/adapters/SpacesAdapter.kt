@@ -10,9 +10,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
-import cy.ac.ucy.cs.anyplace.lib.databinding.SpaceRowLayoutBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
+import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -30,7 +30,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
   private var spaces = emptyList<Space>()
 
   class MyViewHolder(
-          private val binding: SpaceRowLayoutBinding,
+          private val binding: RowSpaceBinding,
           private val app: AnyplaceApp,
           val act: SelectSpaceActivity,
           private val scope: CoroutineScope,
@@ -52,8 +52,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
           app.dsCvMap.setSelectedSpace(space.id)
           val prefsCv = app.dsCvMap.read.first()
 
-          val gotSpace = act.VMap.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
-          val gotFloors = act.VMap.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
+          val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
+          val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
 
           if (!gotSpace || !gotFloors) {
            app.showToast(scope, "Failed to download space! (restart app)")
@@ -71,7 +71,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
       fun from(parent: ViewGroup, app: AnyplaceApp, act: SelectSpaceActivity,
       scope: CoroutineScope): MyViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val binding = SpaceRowLayoutBinding.inflate(layoutInflater, parent, false)
+        val binding = RowSpaceBinding.inflate(layoutInflater, parent, false)
         return MyViewHolder(binding, app, act, scope)
       }
     }

@@ -1,7 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas
 
 import android.app.Application
-import android.view.View
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
@@ -24,10 +23,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.VersionNW
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.VersionSmasNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -62,7 +60,7 @@ class SmasMainViewModel @Inject constructor(
   }
 
   //// RETROFIT UTILS:
-  val nwVersion by lazy { VersionNW(app as SmasApp, RHsmas, repoSmas) }
+  val nwVersion by lazy { VersionSmasNW(app as SmasApp, RHsmas, repoSmas) }
   val nwLocationGet by lazy { LocationGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwLocationSend by lazy { LocationSendNW(app as SmasApp, this, RHsmas, repoSmas) }
 
@@ -88,13 +86,8 @@ class SmasMainViewModel @Inject constructor(
       return
     }
 
-    viewModelScope.launch(Dispatchers.IO) {
-      nwLocationSend.collect()
-    }
-
-    viewModelScope.launch(Dispatchers.IO) {
-      nwLocationGet.collect(VMchat, mapH)
-    }
+    viewModelScope.launch(Dispatchers.IO) { nwLocationSend.collect() }
+    viewModelScope.launch(Dispatchers.IO) { nwLocationGet.collect(VMchat, mapH) }
   }
 
   fun toggleAlert() : LocationSendNW.Mode {

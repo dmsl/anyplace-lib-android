@@ -16,52 +16,62 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
+/**
+ * Filtering the [Spaces] of the [SpaceListFragment].
+ * This crashes. dont use.
+ */
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
-  private val C by lazy { CONST(requireActivity()) }
 
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
   private lateinit var VM: AnyplaceViewModel
-  private lateinit var VMspaces: SpacesViewModel
 
-  private var queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
+  // private val C by lazy { CONST(requireActivity()) }
+  private lateinit var C : CONST
+  private lateinit var queryOwnershipStr : String
+  private lateinit var querySpaceTypeStr : String
   private var queryOwnershipId = 0
-
-  private var querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
   private var querySpaceTypeId= 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val activity = requireActivity()
-    VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
-    VMspaces = ViewModelProvider(activity)[SpacesViewModel::class.java]
+    LOG.E(TAG, "ON CREATE!!")
   }
+
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
+
+    LOG.E(TAG, "ON CREATE!! VIEWWWWWW")
+
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
 
-    VMspaces.storedSpaceQuery.asLiveData().observe(viewLifecycleOwner) { value ->
+    val activity = requireActivity()
+    VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
+    C=CONST(activity)
+    queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
+    querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
+
+    VM.dbqSpaces.storedQuery.asLiveData().observe(viewLifecycleOwner) { value ->
       queryOwnershipStr = value.ownership.toString()
       querySpaceTypeStr = value.spaceType.toString()
       val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
       // initialize the query
-      VMspaces.saveQueryTypeTemp(
+      VM.dbqSpaces.saveQueryTypeTemp(
               queryOwnership, queryOwnershipId,
               querySpaceType, querySpaceTypeId)
 
       updateChip(value.ownershipId, binding.chipGroupOwnership)
       updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
 
-      LOG.D2("Spaces Query: Ownership: $queryOwnershipStr Type: $querySpaceTypeStr")
+      LOG.D2(TAG, "Spaces Query: Ownership: $queryOwnershipStr Type: $querySpaceTypeStr")
     }
 
     binding.chipGroupOwnership.setOnCheckedChangeListener { group, chipId ->
@@ -82,13 +92,13 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
       // CHECK storing temp, and below permanent (datastore).
       // must do: if query is null, then don't store it.
-      VMspaces.saveQueryTypeTemp(
+      VM.dbqSpaces.saveQueryTypeTemp(
         queryOwnership, queryOwnershipId,
         querySpaceType, querySpaceTypeId)
 
       // TODO: if query does not return empty results, then store it.. (after it's performed)
       // or: keep the previous query and swap it
-      VMspaces.saveQueryTypeDataStore()
+      VM.dbqSpaces.saveQueryTypeDataStore()
 
       // LOG.E(TAG, "BUG: SpaceFilterBottomSheetDirections might be using obsolete code")
       val action = SpaceFilterBottomSheetDirections

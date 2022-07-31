@@ -33,11 +33,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel
-import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityLoginBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityAnyplaceLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -54,13 +54,13 @@ class AnyplaceLoginActivity : BaseActivity() {
 
   private lateinit var VMlogin: LoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
-  private var _binding: ActivityLoginBinding ?= null
+  private var _binding: ActivityAnyplaceLoginBinding ?= null
   private val binding get() = _binding!!
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    _binding = ActivityLoginBinding.inflate(layoutInflater)
+    _binding = ActivityAnyplaceLoginBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
     val username = binding.username
@@ -100,7 +100,7 @@ class AnyplaceLoginActivity : BaseActivity() {
 
         if (account.idToken != null && account.displayName != null) {
           account.displayName?.let { name ->
-            LOG.D("DIS NAME: " + account.displayName)
+            LOG.E(TAG, "DIS NAME: " + account.displayName)
             val googleData = UserLoginGoogleData("google", name, account.idToken)
             VMlogin.loginUserGoogle(googleData, account.photoUrl)
           } ?: run {
@@ -109,7 +109,7 @@ class AnyplaceLoginActivity : BaseActivity() {
         } else {
           val msg = "Failed to get Google OAuth Token."
           LOG.E(msg)
-          Toast.makeText(applicationContext, msg , Toast.LENGTH_LONG).show()
+          app.showToast(lifecycleScope, msg)
         }
       }.onFailure { e ->
         val msg = "Google login failed"

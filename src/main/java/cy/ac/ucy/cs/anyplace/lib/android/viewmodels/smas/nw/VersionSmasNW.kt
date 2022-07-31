@@ -24,7 +24,7 @@ import java.net.UnknownServiceException
  * Utility method to encapsulate:
  * - the SafeCall of the version endpoint and it's handling:
  */
-class VersionNW(
+class VersionSmasNW(
         private val app: SmasApp,
         private val RH: RetrofitHolderSmas,
         private val repoSmas: RepoSmas) {
@@ -50,7 +50,7 @@ class VersionNW(
 
   suspend fun safeCallAndUpdateUi(versionPref: Preference?) {
     LOG.D4(TAG_METHOD, "base url: ${RH.baseURL}")
-    versionPref?.summary = "reaching server .."
+    versionPref?.summary = "reaching SMAS .."
 
     var msg = ""
     var exception : Exception? = null

@@ -7,21 +7,27 @@ import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Sample activity for fetching [Spaces] and selecting one ([Space]) from the Anyplace backend.
+ * The space is then stored to [CvMapActivity], and it is used in its child activities.
+ */
 @AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
-  lateinit var VMap: AnyplaceViewModel
-  lateinit var VMspaces: SpacesViewModel
+  lateinit var VM: AnyplaceViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -36,19 +42,28 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
 
     binding = ActivitySelectSpaceBinding.inflate(layoutInflater)
     setContentView(binding.root)
-    VMap = ViewModelProvider(this)[AnyplaceViewModel::class.java]
-    VMspaces = ViewModelProvider(this)[SpacesViewModel::class.java]
+    VM = ViewModelProvider(this)[AnyplaceViewModel::class.java]
 
     binding.lifecycleOwner = this
+    // binding.bindingVM  ??
 
-    VMap.readBackOnline.observe(this) { VMap.backOnline = it }
-    VMap.readBackFromSettings.observe(this) { VMap.backFromSettings = it }
+    VM.readBackOnline.observe(this) { VM.backOnline = it }
+    VM.readBackFromSettings.observe(this) { VM.backFromSettings = it }
 
     requireAnyplaceLogin()
 
-    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
+    navController = findNavController(R.id.navHostFragment)
+    // map not being used..
     // The idea was to have a list, or a map view for a Space Selector. but it's incomplete.
+    val appBarConfiguration = AppBarConfiguration(setOf(
+            R.id.spacesListFragment,  R.id.spacesMapFragment))
+
+    binding.bottomNavigationView.setupWithNavController(navController)
+    setupActionBarWithNavController(navController, appBarConfiguration)
+
+    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
     // navController = findNavController(R.id.navHostFragment)
+    // val appBarConfiguration=AppBarConfiguration(setOf( R.id.spacesListFragment))
     // val appBarConfiguration=AppBarConfiguration(setOf( R.id.spacesListFragment, R.id.spacesMapFragment))
     // binding.bottomNavigationView.setupWithNavController(navController)
     // setupActionBarWithNavController(navController, appBarConfiguration)
@@ -58,7 +73,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
    * This makes sures the user does not proceed unless there is Anyplace authentication
    */
   private fun requireAnyplaceLogin() {
-    VMap.readUserLoggedIn.observe(this) {
+    VM.readUserLoggedIn.observe(this) {
       // INFO: this will force an anyplace login
       if (it.accessToken.isBlank()) {
         // terminate activity if user not logged in
@@ -100,7 +115,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   }
 
   override fun onQueryTextChange(newText: String?): Boolean {
-    newText?.let { VMspaces.searchViewData.value = it }
+    newText?.let { VM.dbqSpaces.searchViewData.value = it }
     return true
   }
 }

@@ -15,6 +15,9 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Anyplace User  DataStore
+ */
 @Singleton
 class ApUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
