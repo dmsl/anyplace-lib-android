@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.TP_BUILDING
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.TP_VESSEL
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -54,32 +55,16 @@ object SpacesBinding {
     setText(view, space?.name, "No name")
   }
 
-  @BindingAdapter("readSpaceTown", requireAll = true)
+  @BindingAdapter("readSpaceOwnership", requireAll = true)
   @JvmStatic
-  fun readSpaceTown(view:TextView, space: Space?) {
-    try {
-      val latLng = LatLng(space!!.coordinatesLat.toDouble(), space.coordinatesLon.toDouble())
-      val town = utlLoc.getTown(latLng, view.context)
-      setText(view, town, "")
-    } catch (e: Exception) {
-    }
-  }
-
-  @BindingAdapter("readSpaceCountry", requireAll = true)
-  @JvmStatic
-  fun readSpaceCountry(view:TextView, space: Space?) {
-    try {
-      val latLng = LatLng(space!!.coordinatesLat.toDouble(), space.coordinatesLon.toDouble())
-      val country = utlLoc.getCountry(latLng, view.context)
-      setText(view, country, "")
-    } catch (e: Exception) {
-    }
+  fun readSpaceOwnership(view:TextView, space: Space?) {
+    setText(view, space?.ownerShip, "Public")
   }
 
   @BindingAdapter("readSpaceDescription", requireAll = true)
   @JvmStatic
   fun readSpaceDescription(view:TextView, space: Space?) {
-    setText(view, space?.description, "")
+    setText(view, space?.description, "No description.")
   }
 
   private fun setText(tv: TextView, value: String?, default: String) {
@@ -90,15 +75,18 @@ object SpacesBinding {
     }
   }
 
+
   @BindingAdapter("readSpaceDrawable", requireAll = true)
   @JvmStatic
   fun readSpaceDrawable(iv:ImageView, space: Space?) {
     space?.let {
       LOG.E(TAG, "$METHOD: space type: ${space.name} ${space.type}")
-      if (space.type.lowercase() == TP_BUILDING) {
-        val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_building)
-        iv.setImageDrawable(drawableCompat)
-      } else if (space.type.lowercase() == TP_VESSEL) {
+      // default one is building so no need to do this
+      // if (space.type.lowercase() == TP_BUILDING) {
+      //   val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_building)
+      //   iv.setImageDrawable(drawableCompat)
+      // } else
+      if (space.type.lowercase() == TP_VESSEL) {
         val drawableCompat = ContextCompat.getDrawable(iv.context, R.drawable.ic_vessel)
         iv.setImageDrawable(drawableCompat)
       }

@@ -130,7 +130,7 @@ class SpaceListFragment : Fragment() {
       if(VM.dbqSpaces.loaded) {
         findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
       } else {
-        app.showToast(lifecycleScope, "No spaces loaded")
+        app.snackbarWarning(lifecycleScope, "No spaces loaded")
       }
     }
   }

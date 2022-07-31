@@ -139,9 +139,10 @@ class SpacesGetNW(
     //   - UCY CS building
     //   - 2 more spaces
     if (listPublic != null) {
+      // val ucyPublicSpaces = listPublic.spaces
       val ucyPublicSpaces = listPublic.spaces.filter {
         it.name.contains("ucy", true) }.take(2)
-      val ucyCsBuilding = listPublic.spaces.filter { it.id== BUID_UCY_CS_BUILDING}
+      val ucyCsBuilding = listPublic.spaces.filter { it.id==BUID_UCY_CS_BUILDING}
 
       val ucySelectSpaces = mutableListOf<Space>()
       ucySelectSpaces.addAll(ucyCsBuilding)
@@ -150,13 +151,11 @@ class SpacesGetNW(
 
       demoSpaces.addAll(ucySelectSpaces)
     }
-
     resp.value = NetworkResult.Success(Spaces(demoSpaces))
   }
 
-
   private fun handleSpacesResponse(response: Response<Spaces>): NetworkResult<Spaces> {
-    LOG.D2(TAG, "handleSpacesResponse")
+    LOG.D2()
     if(response.isSuccessful) {
       return when {
         response.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")

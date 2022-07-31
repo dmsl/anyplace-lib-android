@@ -76,29 +76,18 @@
             android:maxLines="2"
             tools:text="Space description this can be long\nand even multiline, taking 2 lines max"
             readSpaceDescription="@{space}"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/imageView_spaceType"
             app:layout_constraintTop_toTopOf="@+id/imageView_spaceType" />
 
         <TextView
-            android:id="@+id/tv_lblTown"
+            android:id="@+id/tv_lblOwner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/town_"
-            app:layout_constraintEnd_toEndOf="@id/guideline2"
+            android:text="@string/ownership_"
+            app:layout_constraintStart_toStartOf="@id/description_textView"
             app:layout_constraintTop_toBottomOf="@+id/description_textView" />
-
-        <TextView
-            android:id="@+id/tv_lblCountry"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/country_"
-            app:layout_constraintEnd_toEndOf="@id/guideline2"
-            app:layout_constraintTop_toBottomOf="@+id/tv_lblTown" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline2"
@@ -111,19 +100,11 @@
             android:id="@+id/tv_town"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Nicosia"
-            readSpaceTown="@{space}"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
-            app:layout_constraintTop_toTopOf="@+id/tv_lblTown" />
-
-        <TextView
-            android:id="@+id/tv_country"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="Cyprus"
-            readSpaceCountry="@{space}"
-            app:layout_constraintStart_toStartOf="@+id/guideline2"
-            app:layout_constraintTop_toTopOf="@+id/tv_lblCountry" />
+            tools:text="Public"
+            android:layout_marginLeft="10dp"
+            readSpaceOwnership="@{space}"
+            app:layout_constraintStart_toEndOf="@+id/guideline2"
+            app:layout_constraintTop_toTopOf="@+id/tv_lblOwner" />
 
         <TextView
             android:id="@+id/tv_type"

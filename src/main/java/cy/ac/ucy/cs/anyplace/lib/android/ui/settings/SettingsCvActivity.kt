@@ -287,7 +287,8 @@ class SettingsCvActivity: SettingsActivity() {
 
           lifecycleScope.launch(Dispatchers.IO) {
             ds.clearSelectedSpace()
-            app.showToast(lifecycleScope, "Cleared. You'll have to select another space.")
+            app.showToast(lifecycleScope, "Please select another space.")
+            requireActivity().finishAndRemoveTask()
           }
         }
         true
@@ -306,7 +307,7 @@ class SettingsCvActivity: SettingsActivity() {
         ConfirmActionDialog.SHOW(mgr, "Clear available spaces",
                 "Space Selector will fetch them again from remote.\n"+
                         "Use this if the remote spaces had changes.\n",
-                cancellable = true, isImportant = false) { // on confirmed
+                cancellable = true, isImportant = true) { // on confirmed
 
           lifecycleScope.launch(Dispatchers.IO) {
             if (!app.hasInternet()) {
@@ -316,7 +317,8 @@ class SettingsCvActivity: SettingsActivity() {
 
             repoAP.local.dropSpaces()
             VMap.setBackFromSettings()
-            app.showToast(VM.viewModelScope, "Please close & re-open app.")
+            app.showToast(VM.viewModelScope, "Please select a space.")
+            requireActivity().finishAndRemoveTask()
           }
         }
         true

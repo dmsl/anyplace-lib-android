@@ -106,61 +106,26 @@ class SpacesAdapter(private val app: AnyplaceApp,
    *    - updates the whole RV.
    */
   fun setData(newSpaces: Spaces) {
-    LOG.E(TAG, "setData: ${newSpaces.spaces.size}")
-    // LEFTHERE
-    // LEFTHERE
-    // LEFTHERE
-    // LEFTHERE
-    // crash because of this one:?
-
-    // if (!yourList.isEmpty())
-    //   yourList.clear(); //The list for update recycle view
-
-    LOG.E(TAG, "setData: 1")
+    LOG.W(TAG, "setData: ${newSpaces.spaces.size}")
 
     try {
-      
-    val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
-    LOG.E(TAG, "setData: 2")
-    val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
-    LOG.E(TAG, "setData: 3")
-
-    spaces = newSpaces.spaces.toList()
-    scope.launch (Dispatchers.Main){
-      diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
-    }
+      val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
+      val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
+      spaces = newSpaces.spaces.toList()
+      scope.launch (Dispatchers.Main){
+        diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
+      }
     } catch (e: Exception) {
       LOG.E(TAG, "setData: EXCEPTION: ${e.message}")
     }
   }
 
-  /*
-
-
-  LEFTHERE:
-
-
-eadSpaceDrawable: space type: Stena Flavia vessel
-2022-07-31 13:44:45.565 7575-7575/cy.ac.ucy.cs.anyplace.smas E/AndroidRuntime: FATAL EXCEPTION: main
-    Process: cy.ac.ucy.cs.anyplace.smas, PID: 7575
-    java.lang.IndexOutOfBoundsException: Inconsistency detected.
-    Invalid view holder adapter positionMyViewHolder
-    {a1ffc49 position=4 id=-1, oldPos=0, pLpos:0 scrap [attachedScrap] tmpDetached no parent}
-    androidx.recyclerview.widget.RecyclerView{9eacc66 VFED..... ......I. 23,0-1057,1876 #7f0a01e0 app:id/recyclerView},
-    adapter:cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter@244ba7,
-    layout:androidx.recyclerview.widget.LinearLayoutManager@8ab4854,
-    context:dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper@f1f5abc
-        at androidx.recyclerview.widget.RecyclerView$Recycler.validateViewHolderForOffsetPosition(RecyclerView.java:6156)
-
-        validateViewHolderForOffsetPosition is this one?!
-
-   */
-  // TODO: if filter NO elements: run query to clear it..
   fun clearData() {
-    LOG.E(TAG, "Clearing data")
+    LOG.D2()
     val size = spaces.size
-    LOG.E(TAG, "Clearing data: $size")
-    spaces = emptyList()
-    notifyItemRangeRemoved(0, size)
+    scope.launch(Dispatchers.IO) {
+      spaces = emptyList()
+      notifyItemRangeRemoved(0, size)
+    }
   }
 }

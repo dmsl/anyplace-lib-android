@@ -27,18 +27,18 @@ class SpaceTypeConverter {
     }
 
     private fun entityToSpace(tuple: SpaceEntity): Space {
-      val entity = Space(
-        tuple.id,
-        tuple.type.lowercase(),
-        tuple.bucode?:"",
-        tuple.name,
-        tuple.description?:"",
-        tuple.address?:"",
-        tuple.coordinatesLat,
-        tuple.coordinatesLon,
-        tuple.url?:"",
+      return Space(
+              tuple.id,
+              tuple.type.lowercase(),
+              tuple.bucode ?: "",
+              tuple.name,
+              tuple.description ?: "",
+              tuple.address ?: "",
+              tuple.coordinatesLat,
+              tuple.coordinatesLon,
+              tuple.url ?: "",
+              tuple.ownerShip.toString().lowercase().replaceFirstChar(Char::uppercase)
       )
-      return entity
     }
 
     /**
