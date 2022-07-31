@@ -63,6 +63,9 @@ class AnyplaceLoginActivity : BaseActivity() {
     _binding = ActivityAnyplaceLoginBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
+    app.setMainView(binding.root)
+    app.snackbarLong(lifecycleScope, "Please login to Anyplace!")
+
     val username = binding.username
     val password = binding.password
     val localLogin = binding.buttonLoginLocal
@@ -227,7 +230,7 @@ class AnyplaceLoginActivity : BaseActivity() {
           lifecycleScope.launch {
             val user = response.data?.user
             user?.let {
-              Toast.makeText(this@AnyplaceLoginActivity, "Welcome: " + user.name, Toast.LENGTH_SHORT).show()
+              LOG.W(TAG, "Logged in successfully: user.name. [storing user]")
               app.dsApUser.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()

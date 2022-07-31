@@ -7,7 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
@@ -17,6 +17,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SpacesQueryDB(
@@ -52,10 +53,10 @@ class SpacesQueryDB(
   /**
    * Saves the query in the ViewModel (not persistent).
    */
-  fun saveQueryTypeTemp(userOwnership: UserOwnership, ownershipId: Int,
+  fun saveQueryTypeTemp(spaceOwnership: SpaceOwnership, ownershipId: Int,
                         spaceType: SpaceType, spaceTypeId: Int) {
-    LOG.D(TAG, "Saving query type: $userOwnership $spaceType")
-    querySelectSpace= QuerySelectSpace(userOwnership, ownershipId, spaceType, spaceTypeId)
+    LOG.D(TAG, "Saving query type: $spaceOwnership $spaceType")
+    querySelectSpace= QuerySelectSpace(spaceOwnership, ownershipId, spaceType, spaceTypeId)
   }
 
   fun saveQueryTypeTemp(query: QuerySelectSpace) { querySelectSpace=query }
@@ -74,20 +75,20 @@ class SpacesQueryDB(
   /** Storing the predicates for this query */
   var storedQuery = dsMisc.readQuerySpace
 
-  private var runnedFirstedQuery = false
+  var runnedInitialQuery = false
   /**
    * Read all spaces
    */
-  fun runFirstQuery() {
-    if (!runnedFirstedQuery) {
-      LOG.E(TAG, "$METHOD: ${querySelectSpace.spaceType}")
-      readSpacesQuery = repo.local.readSpaces() // just read ll spaces..
+  fun runInitialQuery() {
+    if (!runnedInitialQuery) {
+      LOG.W(TAG, "$METHOD: ${querySelectSpace.spaceType}")
 
-      // scope.launch {
-      //  repo.local.querySpaces(storedSpaceQuery.first())
-      // }
+      scope.launch {
+       repo.local.querySpaces(storedQuery.first())
+        readSpacesQuery = repo.local.querySpaces(storedQuery.first())
+      }
     }
-    runnedFirstedQuery = true
+    runnedInitialQuery = true
   }
 }
 

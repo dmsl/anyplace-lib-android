@@ -36,9 +36,13 @@ import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
 
 
+/**
+ * Logging into SMAS
+ *
+ * NOTE: there is also [AnyplaceLoginActivity], that logs into Anyplace
+ */
 @AndroidEntryPoint
 class SmasLoginActivity : BaseActivity() {
-
 
   private lateinit var VM: SmasLoginViewModel
   private var _binding: ActivitySmasLoginBinding?= null
@@ -52,6 +56,9 @@ class SmasLoginActivity : BaseActivity() {
 
     _binding = ActivitySmasLoginBinding.inflate(layoutInflater)
     setContentView(binding.root)
+
+    app.setMainView(binding.root)
+    app.snackbarLong(lifecycleScope, "Please login to SMAS!")
 
     val username = binding.username
     val password = binding.password

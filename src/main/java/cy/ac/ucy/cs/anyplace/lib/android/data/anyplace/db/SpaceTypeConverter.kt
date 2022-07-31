@@ -5,14 +5,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 
 class SpaceTypeConverter {
 
   companion object {
-    fun spaceToEntity(space: Space, ownership: UserOwnership): SpaceEntity {
+    fun spaceToEntity(space: Space, ownership: SpaceOwnership): SpaceEntity {
       return SpaceEntity(
         space.id,
         space.type.uppercase(),

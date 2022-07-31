@@ -66,9 +66,9 @@
   <color name="greenDarker">#025A49</color>
 
   <color name="gmapsGrayColor">#F7F8F9</color>
-  <color name="dev_mode">#E64900</color>
-<!--  <color name="dev_modeOrig">#4320CD</color>-->
-<!--  <color name="dev_modeLight1">#532CEC</color>-->
+  <color name="warning">#E64900</color>
+  <color name="info">@color/holo_light_blue</color>
+  <color name="dev_mode">#4320CD</color>
 
   <color name="velvet">#273697</color>
 

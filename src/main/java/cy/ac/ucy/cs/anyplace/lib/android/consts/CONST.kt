@@ -4,7 +4,7 @@ import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 
 open class CONST(ctx: Context) {
 
@@ -125,6 +125,6 @@ open class CONST(ctx: Context) {
   val PREF_MISC_QUERY_SPACE_TYPE_ID = "pref_misc_queryType_space_typeId"
 
   ///// QUERY TYPES
-  val DEFAULT_QUERY_SPACE_OWNERSHIP = UserOwnership.PUBLIC.toString().uppercase()
-  val DEFAULT_QUERY_SPACE_TYPE = SpaceType.BUILDING.toString().uppercase()
+  val DEFAULT_QUERY_SPACE_OWNERSHIP = SpaceOwnership.ALL.toString().uppercase()
+  val DEFAULT_QUERY_SPACE_TYPE = SpaceType.ALL.toString().uppercase()
 }

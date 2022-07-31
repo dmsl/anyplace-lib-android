@@ -48,7 +48,9 @@
         <include layout="@layout/placeholder_space_row_layout" />
         <include layout="@layout/placeholder_space_row_layout" />
         <include layout="@layout/placeholder_space_row_layout" />
+
         <include layout="@layout/placeholder_space_row_layout" />
+
         <include layout="@layout/placeholder_space_row_layout" />
 
       </LinearLayout>
@@ -68,7 +70,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.37"
-        />
+        app:tint="@color/gray" />
 
     <TextView
         android:id="@+id/error_textView"
@@ -76,6 +78,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:textColor="@color/gray"
         android:gravity="center"
         android:layout_marginTop="8dp"
         android:alpha="0.5"
@@ -95,12 +98,14 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_filter"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorAccent"
+        app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/white"
         android:contentDescription="Filter"
         />
+
+
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

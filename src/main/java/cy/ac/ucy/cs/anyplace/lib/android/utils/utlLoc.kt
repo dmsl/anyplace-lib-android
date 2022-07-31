@@ -8,11 +8,10 @@ import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import java.util.*
 
-// extension function
+// extension functions
 fun Coord.toLatLng() = LatLng(this.lat, this.lon)
+fun Location.toLatLng() = LatLng(latitude, longitude)
 
-// TODO:PM Request permissions then call from onStart and onConnected.
-// TODO:PM Move all fake gps here?
 object utlLoc {
 
   fun toLatLng(coord: Coord) = LatLng(coord.lat, coord.lon)
@@ -20,13 +19,14 @@ object utlLoc {
   /**
    * Returns an address (nullable) given a location
    */
-  private fun getAddress(loc: Location, ctx: Context) : Address? {
+  private fun getAddress(latLng: LatLng, ctx: Context) : Address? {
+
     val addresses: List<Address>?
     val geoCoder = Geocoder(ctx, Locale.getDefault())
     try {
       addresses = geoCoder.getFromLocation(
-              loc.latitude,
-              loc.longitude,
+              latLng.latitude,
+              latLng.longitude,
               1)
       if (addresses != null && addresses.isNotEmpty()) {
         return addresses[0]
@@ -37,7 +37,7 @@ object utlLoc {
   }
 
   fun prettyLocation(loc: Location, ctx: Context) : String {
-    val address = getAddress(loc, ctx)
+    val address = getAddress(loc.toLatLng(), ctx)
     address?.let {
       val addressLine: String = address.getAddressLine(0)
       val city: String = address.locality
@@ -50,5 +50,15 @@ object utlLoc {
       return "$address $city $state $country $knownName"
     }
     return "<empty>"
+  }
+
+  fun getTown(latLng: LatLng, ctx: Context) : String? {
+    val address = getAddress(latLng, ctx)
+    return address?.locality
+  }
+
+  fun getCountry(latLng: LatLng, ctx: Context) : String? {
+    val address = getAddress(latLng, ctx)
+    return address?.countryName
   }
 }

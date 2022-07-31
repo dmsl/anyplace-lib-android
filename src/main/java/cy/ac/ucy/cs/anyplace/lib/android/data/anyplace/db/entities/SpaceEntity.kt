@@ -3,7 +3,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DB_TBL_SPACES
 
-enum class UserOwnership {
+enum class SpaceOwnership {
+  ALL,         // Ignore ownwership, show all buildings
   PUBLIC,      // can be accessed by anyone
   OWNED,       // it is owned by user
   ACCESSIBLE,   // it is accessible by user due to admin/mod priviledges
@@ -31,5 +32,5 @@ data class SpaceEntity(
   val coordinatesLat: String, // TODO convert to LtnLng?
   val coordinatesLon: String,
   val url: String?="",
-  val ownerShip: UserOwnership  // additional entry
+  val ownerShip: SpaceOwnership  // additional entry
   )

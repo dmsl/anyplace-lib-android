@@ -13,6 +13,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+
+enum class SnackType {
+  NORMAL,
+  INFO,
+  WARNING,
+  DEV
+}
+
 class UtilSnackBar(val app: AnyplaceApp) {
   var snackbarForChat = false
   lateinit var rootView: View
@@ -26,13 +34,13 @@ class UtilSnackBar(val app: AnyplaceApp) {
 
     scope.launch(Dispatchers.IO) {
       if(app.hasDevMode()) {
-        show(scope, msg, duration, true)
+        show(scope, msg, duration, SnackType.DEV)
       }
     }
   }
 
   fun show(scope: CoroutineScope, msg: String,
-           duration: Int, devUi : Boolean = false) {
+           duration: Int, type: SnackType = SnackType.NORMAL) {
 
     if (!DBG.DVO) {
       app.showToast(scope, msg, Toast.LENGTH_SHORT)
@@ -43,7 +51,7 @@ class UtilSnackBar(val app: AnyplaceApp) {
       val sb = Snackbar.make(rootView, msg, duration)
       sb.setActionTextColor(app.utlColor.White())
 
-      if (duration != Snackbar.LENGTH_SHORT || devUi) {
+      if (duration != Snackbar.LENGTH_SHORT || type == SnackType.DEV) {
         sb.setAction("OK") { } // dismissible
       }
 
@@ -60,20 +68,39 @@ class UtilSnackBar(val app: AnyplaceApp) {
       tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
       tv.maxLines=3
 
-      if (devUi) {
-        sb.setDrawableLeft(R.drawable.ic_dev_mode)
-        sb.setBackground(R.drawable.bg_snackbar_devmode)
-        sb.setActionTextColor(app.utlColor.GrayLighter())
-      } else {
-        sb.setBackground(R.drawable.bg_snackbar_normal)
-        sb.setActionTextColor(app.utlColor.Info())
+      when (type) {
+        SnackType.DEV -> {
+          sb.setDrawableLeft(R.drawable.ic_dev_mode)
+          sb.setBackground(R.drawable.bg_snackbar_devmode)
+          sb.setActionTextColor(app.utlColor.GrayLighter())
+        }
+        SnackType.WARNING -> {
+          sb.setBackground(R.drawable.bg_snackbar_warning)
+          sb.setActionTextColor(app.utlColor.Info())
 
-        if (duration == Snackbar.LENGTH_INDEFINITE) {
+          if (duration == Snackbar.LENGTH_INDEFINITE) {
+            sb.setDrawableLeft(R.drawable.ic_warning)
+          } else {
+            sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+          }
+        }
+        SnackType.INFO -> {
+          sb.setBackground(R.drawable.bg_snackbar_info)
+          sb.setActionTextColor(app.utlColor.Info())
           sb.setDrawableLeft(R.drawable.ic_info)
-        } else {
-          sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+        }
+        SnackType.NORMAL -> {
+          sb.setBackground(R.drawable.bg_snackbar_normal)
+          sb.setActionTextColor(app.utlColor.Info())
+
+          if (duration == Snackbar.LENGTH_INDEFINITE) {
+            sb.setDrawableLeft(R.drawable.ic_info)
+          } else {
+            sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+          }
         }
       }
+
 
       sb.setIconTint(app.utlColor.White())
       sb.show()

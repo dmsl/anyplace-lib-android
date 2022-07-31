@@ -22,7 +22,7 @@ interface AnyplaceDAO {
   fun querySpaces(spaceName: String): Flow<List<SpaceEntity>>
 
   @Query("SELECT * FROM spaces WHERE type == :spaceType AND ownerShip == :ownership AND name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
-  fun querySpacesOwnerType(ownership: String, spaceType: String, spaceName: String): Flow<List<SpaceEntity>>
+  fun querySpacesOwnerAndType(ownership: String, spaceType: String, spaceName: String): Flow<List<SpaceEntity>>
 
   @Query("SELECT * FROM spaces WHERE type == :spaceType AND name LIKE '%' || :spaceName || '%' ORDER BY name ASC")
   fun querySpacesType(spaceType: String, spaceName: String): Flow<List<SpaceEntity>>

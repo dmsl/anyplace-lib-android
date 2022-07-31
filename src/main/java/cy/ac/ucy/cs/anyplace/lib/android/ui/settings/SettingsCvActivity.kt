@@ -1,8 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
@@ -93,7 +98,7 @@ class SettingsCvActivity: SettingsActivity() {
           private val dsCv: CvDataStore,
           private val repoAP: RepoAP,
           private val repoSmas: RepoSmas,
-  ) : PreferenceFragmentCompat() {
+  ) : PreferenceFragmentCompat() {  // PreferenceFragmentCompat
 
     override fun onResume() {
       super.onResume()
@@ -105,6 +110,8 @@ class SettingsCvActivity: SettingsActivity() {
     var floorH: FloorWrapper? = null
 
     val cache by lazy { Cache(requireActivity()) }
+
+
 
     @SuppressLint("ResourceAsColor")
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
@@ -309,7 +316,7 @@ class SettingsCvActivity: SettingsActivity() {
 
             repoAP.local.dropSpaces()
             VMap.setBackFromSettings()
-            app.showToast(VM.viewModelScope, "Please restart app.")
+            app.showToast(VM.viewModelScope, "Please close & re-open app.")
           }
         }
         true
@@ -336,7 +343,7 @@ class SettingsCvActivity: SettingsActivity() {
       }
     }
 
-  }  // PreferenceFragmentCompat
+  }
 
 
 }

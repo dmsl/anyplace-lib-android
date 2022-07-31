@@ -5,12 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
@@ -31,6 +31,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+
+fun RecyclerView.executeSafely(func : () -> Unit) {
+  if (scrollState != RecyclerView.SCROLL_STATE_IDLE) {
+    val animator = itemAnimator
+    itemAnimator = null
+    func()
+    itemAnimator = animator
+  } else {
+    func()
+  }
+}
 
 /**
  * This implementation should be discarded..
@@ -58,13 +69,13 @@ class SpaceListFragment : Fragment() {
   // Called before onCreateView
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    VM = ViewModelProvider(requireActivity()).get(AnyplaceViewModel::class.java)
-    LOG.D3(TAG, "SpaceListFragment: onCreate")
+    VM = ViewModelProvider(requireActivity())[AnyplaceViewModel::class.java]
+    LOG.D3()
   }
 
   override fun onResume() {
     super.onResume()
-    LOG.D3(TAG, "onResume")
+    LOG.D3()
     handleBackToFragment()
   }
 
@@ -115,8 +126,6 @@ class SpaceListFragment : Fragment() {
    * This code is outdated and will crash. start from scratch..
    */
   private fun setupFabQuery() {
-    // binding.fabFilterSpaces.visibility=View.GONE CLR:PM
-
     binding.fabFilterSpaces.setOnClickListener {
       if(VM.dbqSpaces.loaded) {
         findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
@@ -130,6 +139,8 @@ class SpaceListFragment : Fragment() {
     LOG.D3()
     binding.recyclerView.adapter = mAdapter
     binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    binding.recyclerView.itemAnimator = null  // BUGFIX: https://stackoverflow.com/a/58540280/776345
+
     showShimmerEffect()
   }
 
@@ -177,7 +188,7 @@ class SpaceListFragment : Fragment() {
       VM.dbqSpaces.storedQuery.firstOrNull { query ->
         LOG.E(TAG, "$METHOD: will run first query")
         VM.dbqSpaces.saveQueryTypeTemp(query)
-        VM.dbqSpaces.runFirstQuery()
+        VM.dbqSpaces.runInitialQuery()
 
         LOG.E("$METHOD: loaded spaces: ${!VM.dbqSpaces.loaded} : back from bottom: ${args.backFromBottomSheet}" +
             ": " + (!VM.dbqSpaces.loaded || args.backFromBottomSheet) + "\n")

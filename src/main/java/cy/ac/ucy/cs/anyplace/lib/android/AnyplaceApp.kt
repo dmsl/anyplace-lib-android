@@ -20,6 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.SnackType
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
@@ -118,9 +119,9 @@ abstract class AnyplaceApp : Application() {
   /**
    * Set the main view (root view) of the current [Activity], so we can use more easily [Snackbar]
    */
-  fun setMainView(root_view: View, snackbarOnTop: Boolean) {
+  fun setMainView(root_view: View, forChat: Boolean=false) {
     utlSnackbar.rootView=root_view
-    utlSnackbar.snackbarForChat=snackbarOnTop
+    utlSnackbar.snackbarForChat=forChat
   }
 
   override fun onCreate() {
@@ -179,6 +180,9 @@ abstract class AnyplaceApp : Application() {
 
   fun snackbarShort(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_SHORT)
   fun snackbarLong(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG)
+  fun snackbarWarning(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.WARNING)
+  fun snackbarInfo(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.INFO)
+
   /** Stays on until user acts on it */
   fun snackbarInf(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_INDEFINITE)
 

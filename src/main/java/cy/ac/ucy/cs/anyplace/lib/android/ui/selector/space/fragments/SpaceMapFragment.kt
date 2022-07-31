@@ -15,6 +15,12 @@ import com.google.android.gms.maps.model.MarkerOptions
 import cy.ac.ucy.cs.anyplace.lib.R
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Just for reference (and hidden in bottom nav menu)
+ * - In future, someone could add some points in the map, so the building can be chosen based on that
+ * - could also acquire nearby location, so the user can pick spaces in vicinity
+ *
+ */
 @AndroidEntryPoint
 class SpaceMapFragment : Fragment() {
 

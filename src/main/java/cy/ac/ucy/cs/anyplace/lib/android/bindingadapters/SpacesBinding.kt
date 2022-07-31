@@ -3,15 +3,18 @@ package cy.ac.ucy.cs.anyplace.lib.android.bindingadapters
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.camera.lifecycle.ExperimentalCameraProviderConfiguration
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
+import com.google.android.gms.maps.model.LatLng
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.TP_BUILDING
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.TP_VESSEL
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -49,6 +52,28 @@ object SpacesBinding {
   @JvmStatic
   fun readSpaceName(view:TextView, space: Space?) {
     setText(view, space?.name, "No name")
+  }
+
+  @BindingAdapter("readSpaceTown", requireAll = true)
+  @JvmStatic
+  fun readSpaceTown(view:TextView, space: Space?) {
+    try {
+      val latLng = LatLng(space!!.coordinatesLat.toDouble(), space.coordinatesLon.toDouble())
+      val town = utlLoc.getTown(latLng, view.context)
+      setText(view, town, "")
+    } catch (e: Exception) {
+    }
+  }
+
+  @BindingAdapter("readSpaceCountry", requireAll = true)
+  @JvmStatic
+  fun readSpaceCountry(view:TextView, space: Space?) {
+    try {
+      val latLng = LatLng(space!!.coordinatesLat.toDouble(), space.coordinatesLon.toDouble())
+      val country = utlLoc.getCountry(latLng, view.context)
+      setText(view, country, "")
+    } catch (e: Exception) {
+    }
   }
 
   @BindingAdapter("readSpaceDescription", requireAll = true)

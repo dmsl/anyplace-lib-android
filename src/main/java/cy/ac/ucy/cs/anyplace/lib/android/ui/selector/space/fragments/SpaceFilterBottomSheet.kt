@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
@@ -13,10 +15,15 @@ import com.google.android.material.chip.ChipGroup
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
+import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * Filtering the [Spaces] of the [SpaceListFragment].
@@ -28,28 +35,34 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
   private val binding get() = _binding!!
   private lateinit var VM: AnyplaceViewModel
 
-  // private val C by lazy { CONST(requireActivity()) }
   private lateinit var C : CONST
   private lateinit var queryOwnershipStr : String
   private lateinit var querySpaceTypeStr : String
+  /** These are chip IDs, used to filter on user ownership of a space:
+   * - public: viewed by all
+   * - owner: user has created this building
+   * - accessible: user is co-owner
+   * */
   private var queryOwnershipId = 0
+  /** These are chip IDs, used to filter on the type space (building, vessel) */
   private var querySpaceTypeId= 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    LOG.E(TAG, "ON CREATE!!")
-  }
+    LOG.D2()
 
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-
-    LOG.E(TAG, "ON CREATE!! VIEWWWWWW")
+    LOG.D2()
 
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
+
+    app.setMainView(binding.root)
 
     val activity = requireActivity()
     VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
@@ -57,10 +70,16 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
     querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
 
+    lifecycleScope.launch {
+      if (VM.dbqSpaces.runnedInitialQuery && VM.dbqSpaces.readSpacesQuery.first().isEmpty()) {
+        app.snackbarWarning(VM.viewModelScope, "Previous query had no results!")
+      }
+    }
+
     VM.dbqSpaces.storedQuery.asLiveData().observe(viewLifecycleOwner) { value ->
       queryOwnershipStr = value.ownership.toString()
       querySpaceTypeStr = value.spaceType.toString()
-      val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
+      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
       // initialize the query
@@ -87,7 +106,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     }
 
     binding.applyButton.setOnClickListener {
-      val queryOwnership = UserOwnership.valueOf(queryOwnershipStr)
+      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
       val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
 
       // CHECK storing temp, and below permanent (datastore).
@@ -116,7 +135,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
         targetView.isChecked = true
         chipGroup.requestChildFocus(targetView, targetView)
       } catch(e: Exception) {
-        LOG.E(TAG, "QueryTypeBottomSheet: ${e.message}")
+        LOG.D2(TAG, "$METHOD: ${e.message}")
       }
     }
   }

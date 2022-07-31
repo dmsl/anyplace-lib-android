@@ -6,7 +6,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_UCY_CS_BUILDING
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -53,47 +53,41 @@ class SpacesGetNW(
       try {
         // GET ACCESSIBLE AND PUBLIC SPACES, and merge them into a single result
         // for the public spaces, filter the ones containing 'ucy' (just for demo purposes)
+          /*
+
+           */
 
         // ACCESSIBLE SPACES
         val apUser = dsUser.readUser.first()
-        val respAccessible = repo.remote.getSpacesAccessible(apUser.accessToken)
-        // PUBLIC SPACES
-        val respPublic= repo.remote.getSpacesPublic()
-        LOG.W(TAG, "Accessible Spaces: ${respAccessible.message()}" )
-        LOG.W(TAG, "Public Spaces: ${respPublic.message()}" )
 
-        val nwAccessible= handleSpacesResponse(respAccessible)
-        val nwPublic= handleSpacesResponse(respPublic)
+        // read spaces that are:
+        // - owned by user, are accessible by user, or are public (order matters)
+        // - we'll insert them to DB in that order, which will leave us with the correct ownership
+        // a building that already exists, wont be added again
+        val rSpacesUser= repo.remote.getSpacesUser(apUser.accessToken)
+        val rSpacesAccessible = repo.remote.getSpacesAccessible(apUser.accessToken)
+        val rSpacesPublic= repo.remote.getSpacesPublic()
 
-        if (nwAccessible is NetworkResult.Error || nwPublic is NetworkResult.Error) {
+        LOG.W(TAG, "Owned Spaces: ${rSpacesAccessible.message()}" )
+        LOG.W(TAG, "Accessible Spaces: ${rSpacesAccessible.message()}" )
+        LOG.W(TAG, "Public Spaces: ${rSpacesPublic.message()}" )
+
+        val nwOwned= handleSpacesResponse(rSpacesUser)
+        val nwAccessible= handleSpacesResponse(rSpacesAccessible)
+        val nwPublic= handleSpacesResponse(rSpacesPublic)
+
+        // show error only if public spaces had issues. not the best handling..
+        if (nwPublic is NetworkResult.Error) {
           resp.value = nwAccessible
           return
         }
 
-        val listAccessible= handleSpacesResponse(respAccessible).data
-        val listPublic= handleSpacesResponse(respPublic).data
+        val listOwned= handleSpacesResponse(rSpacesUser).data
+        val listAccessible= handleSpacesResponse(rSpacesAccessible).data
+        val listPublic= handleSpacesResponse(rSpacesPublic).data
 
-        // keep 3-4 buildings, including the UCY CS building
-        val ucySpaces = listPublic?.spaces?.filter {
-          it.name.contains("ucy", true) }?.take(2)
-        // hardcoded: cs@ucy building
-        val ucyCsBuilding = listPublic?.spaces?.filter { it.id== BUID_UCY_CS_BUILDING}
-        LOG.E(TAG, "SIZE: ${ucySpaces?.size}")
+        storeSpaces(listOwned, listAccessible, listPublic)
 
-        // add [ucySpaces] to the accessible spaces
-        // nwAccessible.data.spaces.add
-        val demoSpaces = mutableListOf<Space>()
-        ucyCsBuilding?.forEach { demoSpaces.add(it) }
-        ucySpaces?.forEach { demoSpaces.add(it) }
-        listAccessible?.spaces?.forEach { demoSpaces.add(it) }
-
-        resp.value = NetworkResult.Success(Spaces(demoSpaces))
-
-        val spaces = resp.value!!.data
-        // INFO: FORCING THE ACCESSIBLE BUILDINGS
-        // TODO: put: public... this... and that..............
-        // TODO OWNERSHIP: put it earlier..
-        if (spaces != null) { offlineCacheSpaces(spaces, UserOwnership.ACCESSIBLE) }
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleSafecallError(msg, ce)
@@ -104,6 +98,60 @@ class SpacesGetNW(
     } else {
       resp.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
     }
+  }
+
+  /**
+   * Does some pre-processing (some of it hardcoded for demo purposes),
+   * and then it saves spaces to DB
+   *
+   * 0. first it clears spaces the spaces
+   * 1. then it fetches user own spaces
+   * 2. then user accessible spaces (owned + co-owned)
+   * 3. then public spaces
+   *
+   * SQLite ensures that we have no duplicates.
+   * Because they are added in that particular order, the correct ownership is logged
+   */
+  private fun storeSpaces(listOwned: Spaces?, listAccessible: Spaces?, listPublic: Spaces?) {
+
+    repo.local.dropSpaces()
+
+    val demoSpaces = mutableListOf<Space>()
+
+    // ADD SPACES: both to SQLite and to demo (to be shown in RecyclerView)
+    // 1. ADD ALL OWNED SPACES:
+    // both to SQLite and to demo (to be shown in RecyclerView)
+    if (listOwned != null) {
+      offlineCacheSpaces(listOwned, SpaceOwnership.OWNED)
+      demoSpaces.addAll(listOwned.spaces)
+    }
+
+    // 2. ADD ALL ACCESSIBLE SPACES:
+    // both to SQLite and to demo (to be shown in RecyclerView)
+    // NOTE: if a user is an admin, this will be the WHOLE list of spaces.
+    if (listAccessible != null) {
+      offlineCacheSpaces(listAccessible, SpaceOwnership.ACCESSIBLE)
+      demoSpaces.addAll(listAccessible.spaces)
+    }
+
+    // 3. ADD A SMALL SAMPLE OF PUBLIC SPACES
+    // - For demo purposes:
+    //   - UCY CS building
+    //   - 2 more spaces
+    if (listPublic != null) {
+      val ucyPublicSpaces = listPublic.spaces.filter {
+        it.name.contains("ucy", true) }.take(2)
+      val ucyCsBuilding = listPublic.spaces.filter { it.id== BUID_UCY_CS_BUILDING}
+
+      val ucySelectSpaces = mutableListOf<Space>()
+      ucySelectSpaces.addAll(ucyCsBuilding)
+      ucySelectSpaces.addAll(ucyPublicSpaces)
+      offlineCacheSpaces(Spaces(ucySelectSpaces), SpaceOwnership.PUBLIC)
+
+      demoSpaces.addAll(ucySelectSpaces)
+    }
+
+    resp.value = NetworkResult.Success(Spaces(demoSpaces))
   }
 
 
@@ -120,7 +168,7 @@ class SpacesGetNW(
     return NetworkResult.Error("$tag: ${response.message()}")
   }
 
-  private fun offlineCacheSpaces(spaces: Spaces, ownership: UserOwnership) {
+  private fun offlineCacheSpaces(spaces: Spaces, ownership: SpaceOwnership) {
     LOG.D2(TAG, "$METHOD: $ownership")
     insertSpaces(spaces, ownership)
   }
@@ -128,7 +176,7 @@ class SpacesGetNW(
   /**
    * The [ownership] was supposed to provide some filtering here. Again, incomplete code.
    */
-  private fun insertSpaces(spaces: Spaces, ownership: UserOwnership)  {
+  private fun insertSpaces(spaces: Spaces, ownership: SpaceOwnership)  {
     val method=METHOD
     VM.viewModelScope.launch(Dispatchers.IO) {
       LOG.D2(TAG, "$method: total: " + spaces.spaces.size)

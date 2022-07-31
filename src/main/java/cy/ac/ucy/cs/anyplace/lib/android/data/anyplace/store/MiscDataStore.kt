@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -90,15 +90,15 @@ class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Con
         val spaceTypeStr = preferences[KEY.querySpace_type] ?: C.DEFAULT_QUERY_SPACE_TYPE
         val spaceTypeId = preferences[KEY.querySpace_typeId] ?: 0
 
-        QuerySelectSpace(UserOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
+        QuerySelectSpace(SpaceOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
           SpaceType.valueOf(spaceTypeStr.uppercase()), spaceTypeId)
       }
 }
 
 data class QuerySelectSpace(
-  val ownership: UserOwnership = UserOwnership.PUBLIC,
-  val ownershipId: Int=0,
-  val spaceType: SpaceType = SpaceType.ALL,
-  val spaceTypeId: Int=0,
-  var spaceName: String=""
+        val ownership: SpaceOwnership = SpaceOwnership.ALL,
+        val ownershipId: Int=0,
+        val spaceType: SpaceType = SpaceType.ALL,
+        val spaceTypeId: Int=0,
+        var spaceName: String=""
   )
