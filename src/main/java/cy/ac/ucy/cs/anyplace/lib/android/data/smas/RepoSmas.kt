@@ -13,10 +13,10 @@ import javax.inject.Singleton
  */
 @Singleton
 class RepoSmas @Inject constructor(
-        chatRemoteDataSource: ChatRemoteDataSource,
+        dsRemoteSmas: ChatRemoteDataSource,
         dsLocalAP: SmasLocalDS) {
   /** Talks to the net */
-  val remote = chatRemoteDataSource
+  val remote = dsRemoteSmas
   /** Talks to ROOM */
   val local = dsLocalAP
 }

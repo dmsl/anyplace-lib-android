@@ -72,7 +72,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             LOG.V3(tag, "clicked at: $location")
             handleStoreDetections(location)
           } else {
-            app.snackBarLong(scope, "Scan some objects first!")
+            app.snackbarLong(scope, "Scan some objects first!")
             utlUi.attentionZoom(bottom.logging.btn)
           }
         }

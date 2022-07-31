@@ -135,7 +135,7 @@ class LocationSendNW(
             if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
                       || !errNoInternetShown ) {
 
-              app.snackBarShort(VM.viewModelScope, msg)
+              app.snackbarShort(VM.viewModelScope, msg)
               LOG.W(TAG, "$tag: $msg")
             } else {
               LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")

@@ -5,6 +5,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import retrofit2.Response
 import javax.inject.Inject
 import okhttp3.ResponseBody
+import retrofit2.http.Header
 
 /**
  * Anyplace DataSource
@@ -27,24 +28,6 @@ class DataSourceRemote @Inject constructor(private val RH: RetrofitHolderAP) {
   suspend fun getSpacePOIsAll(buid: String) : Response<POIsResp>
           = RH.api.poisSpaceAll(ReqSpacePOIs(buid))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // DEMO CODE:
-  // USER
   suspend fun userLoginLocal(obj: UserLoginLocalForm) : Response<UserLoginResponse>
       = RH.api.userLoginLocal(obj)
 
@@ -53,4 +36,6 @@ class DataSourceRemote @Inject constructor(private val RH: RetrofitHolderAP) {
 
   // SPACES
   suspend fun getSpacesPublic() : Response<Spaces> = RH.api.getSpacesPublic()
+
+  suspend fun getSpacesAccessible(token: String) : Response<Spaces> = RH.api.getSpacesAccessible(token)
 }

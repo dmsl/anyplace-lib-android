@@ -1,6 +1,17 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:android="http://schemas.android.com/apk/res/android">
 
+  <PreferenceCategory app:title="@string/server_header">
+
+    <!-- Logouts an anyplace user.-->
+    <Preference
+        android:title="Logout"
+        android:key="@string/pref_ap_logout"
+        android:summary="Logs out the user from the anyplace backend"
+        />
+
+  </PreferenceCategory>
+
   <!--TODO:PM remove this..-->
   <PreferenceCategory app:title="@string/server_header">
 

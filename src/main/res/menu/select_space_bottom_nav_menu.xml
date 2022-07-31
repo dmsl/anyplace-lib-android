@@ -4,8 +4,9 @@
     android:id="@+id/spacesListFragment"
     android:title="@string/list"
     android:icon="@drawable/ic_list" />
-  <item
-    android:id="@+id/spacesMapFragment"
-    android:title="@string/map"
-    android:icon="@drawable/ic_map"/>
+
+<!--  <item-->
+<!--    android:id="@+id/spacesMapFragment"-->
+<!--    android:title="@string/map"-->
+<!--    android:icon="@drawable/ic_map"/>-->
 </menu>

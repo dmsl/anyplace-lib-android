@@ -17,10 +17,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.entityToSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsApUser
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsUserAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.observeOnce
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -32,10 +33,12 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class SpaceListFragment : Fragment() {
   private val TAG = SpaceListFragment::class.java.simpleName
+  /** Adapter reponsible for rendering the spaces */
+  private val mAdapter by lazy { SpacesAdapter(requireActivity().app, requireActivity(), lifecycleScope) }
+
   private var _binding: FragmentSpacesListBinding? = null
   private val binding get() = _binding!!
-  private val mAdapter by lazy { SpacesAdapter() }
-  private lateinit var VM: MainViewModel
+  private lateinit var VM: AnyplaceViewModel
   private lateinit var VMspaces: SpacesViewModel
   private lateinit var networkListener: NetworkListener
 
@@ -46,7 +49,7 @@ class SpaceListFragment : Fragment() {
   // Called before onCreateView
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    VM = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+    VM = ViewModelProvider(requireActivity()).get(AnyplaceViewModel::class.java)
     VMspaces = ViewModelProvider(requireActivity()).get(SpacesViewModel::class.java)
     LOG.D3(TAG, "SpaceListFragment: onCreate")
   }
@@ -67,7 +70,7 @@ class SpaceListFragment : Fragment() {
     if(VM.backFromSettings) {
       LOG.D2(TAG, "handleBackToFragment: from settings")
       lifecycleScope.launch {
-        val user = requireActivity().dsApUser.readUser.first()
+        val user = requireActivity().dsUserAP.readUser.first()
         if (user.accessToken.isBlank()) {
           requireActivity().finish()
         } else {
@@ -100,7 +103,13 @@ class SpaceListFragment : Fragment() {
     return binding.root
   }
 
+  /**
+   * This code is outdated and will crash. start from scratch..
+   */
   private fun setupFab() {
+    binding.fabFilterSpaces.visibility=View.GONE
+    if (true) return
+
     binding.fabFilterSpaces.setOnClickListener {
       if(VMspaces.loadedSpaces) {
         findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
@@ -180,7 +189,6 @@ class SpaceListFragment : Fragment() {
                 LOG.D2(TAG, "forced query")
                 loadSpacesQuery()
               } else {
-
                 LOG.D2(TAG, "readDatabase -> requestRemoteSpaceData")
                 requestRemoteSpacesData()
                 observeRemoteSpacesResponse()
@@ -197,7 +205,7 @@ class SpaceListFragment : Fragment() {
 
   /**
    * If null then its ignored
-   * TODO:PM make this callable from both allSpaces and spacesQuery
+   * TODO make this callable from both allSpaces and spacesQuery
    */
   private fun loadSpacesQuery() {
     VMspaces.readSpacesQuery.observeOnce(viewLifecycleOwner) { query ->
@@ -247,7 +255,7 @@ class SpaceListFragment : Fragment() {
   }
 
   private fun observeRemoteSpacesResponse() {
-    VMspaces.spacesResponse.observe(viewLifecycleOwner,  { response ->
+    VMspaces.spacesResponse.observe(viewLifecycleOwner) { response ->
       LOG.D(TAG, "observeSpacesResponse")
       when (response) {
         is NetworkResult.Success -> {
@@ -256,7 +264,7 @@ class SpaceListFragment : Fragment() {
           VMspaces.loadedSpaces = true // TODO Set this from db cache as welL!
         }
         is NetworkResult.Error -> {
-          if(VMspaces.loadedSpaces) LOG.E("Error response: after showed success.")
+          if (VMspaces.loadedSpaces) LOG.E("Error response: after showed success.")
           mAdapter.clearData()
           hideShimmerEffect()
           // if(!showedApiData) {
@@ -265,9 +273,11 @@ class SpaceListFragment : Fragment() {
           // loadDataFromCache() TODO :DB
           Toast.makeText(requireContext(), response.message.toString(), Toast.LENGTH_SHORT).show()
         }
-        is NetworkResult.Loading -> { showShimmerEffect() }
+        is NetworkResult.Loading -> {
+          showShimmerEffect()
+        }
       }
-    })
+    }
   }
 
   private fun showShimmerEffect() {

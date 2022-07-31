@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.UserOwnership
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
@@ -24,7 +24,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
-  private lateinit var VM: MainViewModel
+  private lateinit var VM: AnyplaceViewModel
   private lateinit var VMspaces: SpacesViewModel
 
   private var queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
@@ -36,7 +36,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val activity = requireActivity()
-    VM = ViewModelProvider(activity)[MainViewModel::class.java]
+    VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
     VMspaces = ViewModelProvider(activity)[SpacesViewModel::class.java]
   }
 

@@ -28,21 +28,13 @@ data class OkHttpClientBearer(val client: OkHttpClient)
  */
 @Module
 @InstallIn(SingletonComponent::class)
-class ChatNetworkModule {
+class ModuleSmasNW {
 
   @Singleton
   @Provides
   fun provideHttpClientWithBearer(): OkHttpClientBearer {
-    // return OkHttpClientBearer(OkHttpClient.Builder()
-    //         .authenticator(BearerAuthenticator())
-    //         .readTimeout(15, TimeUnit.SECONDS) // TODO: Make SETTINGS
-    //         .connectTimeout(15, TimeUnit.SECONDS)
-    //         .build())
-
     return getUnsafeOkHttpClientBearer()
   }
-
-
 
   private fun getUnsafeOkHttpClientBearer(): OkHttpClientBearer {
     try {
@@ -66,7 +58,7 @@ class ChatNetworkModule {
       // Create an ssl socket factory with our all-trusting manager
       val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
       return OkHttpClientBearer(OkHttpClient.Builder()
-              .authenticator(BearerAuthenticator())
+              .authenticator(SmasBearerAuth())
               .sslSocketFactory(sslSocketFactory,
                       trustAllCerts[0] as X509TrustManager)
               .hostnameVerifier { _, _ -> true }
@@ -96,7 +88,7 @@ class ChatNetworkModule {
 /**
  * Bearer Authentication for the SMAS Chat
  */
-class BearerAuthenticator : Authenticator {
+class SmasBearerAuth : Authenticator {
   override fun authenticate(route: Route?, response: Response): Request? {
     if (response.request.header("Authorization") != null) {
       return null

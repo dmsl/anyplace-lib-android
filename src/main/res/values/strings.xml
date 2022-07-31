@@ -110,6 +110,7 @@
 
   <!-- Messages Preferences -->
   <string name="title_activity_login">Anyplace Login</string>
+  <string name="title_select_space">Select Space</string>
   <string name="prompt_username">Username</string>
 
   <!-- Sync Preferences -->

@@ -73,6 +73,8 @@ open class CONST(ctx: Context) {
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
+  val PREF_SELECTED_SPACE=ctx.getString(R.string.pref_selected_space)
+
   // COMMON DEFAULTS
   // TODO:PMX LMIN (LAST MIN): change to false
   val DEFAULT_PREF_CV_DEV_MODE = true

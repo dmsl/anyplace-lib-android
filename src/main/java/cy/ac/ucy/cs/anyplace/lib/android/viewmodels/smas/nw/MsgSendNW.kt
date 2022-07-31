@@ -96,8 +96,7 @@ class MsgSendNW(private val app: SmasApp,
           VM.clearReply()
           VM.clearTheReplyToMessage()
           val data = it.data!!
-          val recipients =  data.deliveredTo
-          var msg = when (recipients) {
+          var msg = when (data.deliveredTo) {
             0 -> "No people reached."
             else -> "Sent to ${it.data?.deliveredTo} people."
           }
@@ -106,7 +105,7 @@ class MsgSendNW(private val app: SmasApp,
           else if (data.mdelivery != MDELIVERY_SAME_DECK) {
             msg += " (${prettyMDelivery(data.mdelivery)})"
           }
-          app.showSnackbarDEV(VM.viewModelScope, msg)
+          app.snackbarShortDEV(VM.viewModelScope, msg)
         }
         is NetworkResult.Error -> {
           LOG.D1(TAG, "$tag: Error: ${it.message}")

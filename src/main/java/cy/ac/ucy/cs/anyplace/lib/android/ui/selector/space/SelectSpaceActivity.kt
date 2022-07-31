@@ -7,16 +7,12 @@ import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialogAnyplace
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.MainViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.SpacesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,14 +20,14 @@ import dagger.hilt.android.AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
-  private lateinit var mainViewModel: MainViewModel
-  private lateinit var spaceViewModel: SpacesViewModel
+  private lateinit var VMap: AnyplaceViewModel
+  private lateinit var VMspaces: SpacesViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // setTheme(R.style.AppTheme) // INFO alternative way to present a splash screen
 
-    // TODO:PM SelectSpaceActivity: Open with parameters:
+    // this may be opened with parameters:
     // 1: get spaces of user
     // 2: get spaces that the user can access
     // 3: get all spaces
@@ -40,16 +36,30 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
 
     binding = ActivitySelectSpaceBinding.inflate(layoutInflater)
     setContentView(binding.root)
-    mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-    spaceViewModel = ViewModelProvider(this).get(SpacesViewModel::class.java)
+    VMap = ViewModelProvider(this)[AnyplaceViewModel::class.java]
+    VMspaces = ViewModelProvider(this)[SpacesViewModel::class.java]
 
     binding.lifecycleOwner = this
-    // binding.mainViewModel = this.mainViewModel
 
-    mainViewModel.readBackOnline.observe(this) { mainViewModel.backOnline = it }
-    mainViewModel.readBackFromSettings.observe(this) { mainViewModel.backFromSettings = it }
+    VMap.readBackOnline.observe(this) { VMap.backOnline = it }
+    VMap.readBackFromSettings.observe(this) { VMap.backFromSettings = it }
 
-    mainViewModel.readUserLoggedIn.observe(this) {
+    requireAnyplaceLogin()
+
+    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
+    // The idea was to have a list, or a map view for a Space Selector. but it's incomplete.
+    // navController = findNavController(R.id.navHostFragment)
+    // val appBarConfiguration=AppBarConfiguration(setOf( R.id.spacesListFragment, R.id.spacesMapFragment))
+    // binding.bottomNavigationView.setupWithNavController(navController)
+    // setupActionBarWithNavController(navController, appBarConfiguration)
+  }
+
+  /**
+   * This makes sures the user does not proceed unless there is Anyplace authentication
+   */
+  private fun requireAnyplaceLogin() {
+    VMap.readUserLoggedIn.observe(this) {
+      // INFO: this will force an anyplace login
       if (it.accessToken.isBlank()) {
         // terminate activity if user not logged in
         // there is probably a better way to handle this
@@ -58,14 +68,6 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
         finish()
       }
     }
-    // lifecycleScope.launch { spaceViewModel.runFirstQuery() }
-
-    navController = findNavController(R.id.navHostFragment)
-    val appBarConfiguration = AppBarConfiguration(setOf(
-      R.id.spacesListFragment,  R.id.spacesMapFragment))
-
-    binding.bottomNavigationView.setupWithNavController(navController)
-    setupActionBarWithNavController(navController, appBarConfiguration)
   }
 
   override fun onSupportNavigateUp(): Boolean {
@@ -88,7 +90,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      MainSettingsDialogAnyplace().show(supportFragmentManager, null)
+      startActivity(Intent(this, SettingsCvActivity::class.java))
     }
     return super.onOptionsItemSelected(item)
   }
@@ -98,7 +100,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   }
 
   override fun onQueryTextChange(newText: String?): Boolean {
-    newText?.let { spaceViewModel.searchViewData.value = it }
+    newText?.let { VMspaces.searchViewData.value = it }
     return true
   }
 }

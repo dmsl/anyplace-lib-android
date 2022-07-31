@@ -4,6 +4,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.button.MaterialButton
+import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
@@ -17,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationStatus
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -39,6 +41,8 @@ class UiLocalization(
   val btn: MaterialButton by lazy { act.findViewById(button_id_localization) }
   val btnWhereAmI: MaterialButton by lazy { act.findViewById(button_id_whereami) }
 
+  val hasImuButton = false
+
   fun setup() {
     setupBtnLocalization()
     setupButtonWhereAmI()
@@ -52,9 +56,9 @@ class UiLocalization(
 
       if (isDisabled()) {
         if (disabledUserAction) {
-          app.snackBarInf(scope, disabledCause)
+          app.snackbarInf(scope, disabledCause)
         } else {
-          app.snackBarShort(scope, disabledCause)
+          app.snackbarShort(scope, disabledCause)
         }
 
         if (disabledAttentionViews.isNotEmpty()) {
@@ -87,7 +91,7 @@ class UiLocalization(
         VM.ui.map.animateToLocation(coord.toLatLng())
       } else {
         val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
-        app.snackBarInf(VM.viewModelScope, msg)
+        app.snackbarInf(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
       }
     }
@@ -168,17 +172,16 @@ class UiLocalization(
   fun hide() = utlUi.fadeOut(btn)
   fun show() {
     if (isDisabled()) {
-      enable()
+      enableLocalizationBtn()
     } else {
       utlUi.fadeIn(btn)
     }
   }
-  // fun visibilityGone() = utlUi.gone(btn)
 
   var disabledCause = ""
   var disabledUserAction: Boolean = false
   var disabledAttentionViews = mutableListOf<View>()
-  fun disable(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
+  fun disableLocalizationBtn(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
     disabledCause=cause
     disabledUserAction=requireUserAction
     disabledAttentionViews.clear()
@@ -186,7 +189,7 @@ class UiLocalization(
     utlUi.animateAlpha(btn, 0.5f)
   }
 
-  private fun enable() {
+  private fun enableLocalizationBtn() {
     disabledCause=""
     disabledUserAction=false
     disabledAttentionViews.clear()
@@ -194,5 +197,61 @@ class UiLocalization(
   }
 
   fun isDisabled() = disabledCause.isNotEmpty()
+
+  var imuButtonInited = false
+  lateinit var btnImu : MaterialButton
+  fun setupButtonImu(btnImu: MaterialButton) {
+   if (imuButtonInited) return
+    if (!DBG.uim) return
+
+    this.btnImu=btnImu
+    scope.launch(Dispatchers.IO) {
+      if (!app.hasDevMode()) {
+        utlUi.gone(btnImu)
+        return@launch
+      }
+
+      LOG.W(TAG, METHOD)
+      imuButtonInited=true
+
+      utlUi.visible(btnImu)
+
+      btnImu.setOnClickListener {
+        VM.imuEnabled=!VM.imuEnabled
+
+        if (VM.imuEnabled) imuEnable() else imuDisable()
+
+        when {
+          !act.initedGmap -> {
+            app.snackbarShort(scope, "Cannot start IMU: map not ready yet")
+            imuDisable()
+          }
+
+          app.locationSmas.value.coord == null -> {
+            app.snackbarShort(scope, "IMU needs an initial location.")
+            imuDisable()
+          }
+
+          VM.imuEnabled -> { VM.mu.start() }
+        }
+      }
+    }
+
+  }
+
+  /**
+   * IMU cannot be used (at least for now) in conjuction with localization.
+   * It is an experimental feature (proof of concept)
+   */
+  fun imuEnable() {
+    utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
+    VM.imuEnabled=true
+    app.snackbarShort(scope, "IMU mode ON (experimental)!")
+  }
+
+  fun imuDisable() {
+    utlUi.changeBackgroundMaterial(btnImu, R.color.darkGray)
+    VM.imuEnabled=false
+  }
 
 }

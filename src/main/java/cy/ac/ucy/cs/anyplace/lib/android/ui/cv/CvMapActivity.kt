@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -22,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
@@ -97,6 +99,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.onCreate(savedInstanceState)
     VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
 
+    // XXX: GET THE EXTRAS !!!!
+
+    // val extras = requireActivity().intent.extras
+    // spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, SettingsCvActivity.ARG_SPACE)
+    // floorsH = IntentExtras.getFloors(spaceH, extras, SettingsCvActivity.ARG_FLOORS)
+    // floorH = IntentExtras.getFloor(spaceH, extras, SettingsCvActivity.ARG_FLOOR)
+
+
     // CLR:PM
     // app.showSnackbarInf(lifecycleScope, "Testing msg here")
     // app.showSnackbarInf(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
@@ -153,6 +163,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
+
+        if (prefs.selectedSpace.isEmpty()) {
+          app.showToast(lifecycleScope, "Please select space", Toast.LENGTH_LONG)
+          startActivity(Intent(this@CvMapActivity, SelectSpaceActivity::class.java))
+          finish()
+        }
+
         onLoadedPrefsCvMap()
         true
       }
@@ -173,8 +190,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
+  var cvMapPrefsLoaded = false
   private fun onLoadedPrefsCvMap() {
     LOG.W()
+    cvMapPrefsLoaded=true
     setupUi()
   }
 
@@ -271,10 +290,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   override fun onMapReady(googleMap: GoogleMap) {
     LOG.E(TAG, "onMapReadyCallback: [CvMap]")
-    VM.ui.map.setup(googleMap)
-    VM.ui.localization.setup()
 
-    collectLocationREMOTE()
+    VM.ui.map.setup(googleMap, this)
+    lifecycleScope.launch(Dispatchers.Main) {
+      VM.ui.localization.setup()
+      collectOwnUserLocation()
+    }
+
   }
 
   override fun onProcessImageFinished() {
@@ -284,7 +306,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
-      app.snackBarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
+      app.snackbarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
     }
   }
 
@@ -366,37 +388,35 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   var collectingLocationRemote = false
-  fun collectLocationREMOTE() {
+  suspend fun collectOwnUserLocation() {
     if (collectingLocationRemote) return
     collectingLocationRemote=true
 
-    lifecycleScope.launch (Dispatchers.IO){
-      app.locationSmas.collect { result ->
-        when (result) {
-          is LocalizationResult.Unset -> { }
-          is LocalizationResult.Error -> {
-            var msg = result.message.toString()
-            val details = result.details
-            if (details != null) {
-              msg+="\n$details"
-            }
-            app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
+    app.locationSmas.collect { result ->
+      when (result) {
+        is LocalizationResult.Unset -> { }
+        is LocalizationResult.Error -> {
+          var msg = result.message.toString()
+          val details = result.details
+          if (details != null) {
+            msg+="\n$details"
           }
-          is LocalizationResult.Success -> {
-            val usedMethod = LocalizationResult.getUsedMethod(result)
-            LOG.W(TAG, "Collected: method: $usedMethod")
-            result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
-            val coord = result.coord!!
-            val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
-            LOG.E(TAG, msg)
-            val curFloor = app.wFloor?.floorNumber()
-            if (coord.level != curFloor) {
-              LOG.W(TAG, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
-              // app.showToast(lifecycleScope, )
-            }
+          app.showToast(lifecycleScope, msg, Toast.LENGTH_LONG)
+        }
+        is LocalizationResult.Success -> {
+          val usedMethod = LocalizationResult.getUsedMethod(result)
+          LOG.W(TAG, "Collected: method: $usedMethod")
+          result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
+          val coord = result.coord!!
+          val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
+          LOG.E(TAG, msg)
+          val curFloor = app.wFloor?.floorNumber()
+          if (coord.level != curFloor) {
+            LOG.W(TAG, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
+            // app.showToast(lifecycleScope, )
+          }
 
-            app.wFloors.moveToFloor(VM, coord.level)
-          }
+          app.wFloors.moveToFloor(VM, coord.level)
         }
       }
     }

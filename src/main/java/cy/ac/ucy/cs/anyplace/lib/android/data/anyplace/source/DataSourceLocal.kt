@@ -2,7 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.source
 
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.AnyplaceDao
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.AnyplaceDAO
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.spaceToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class DataSourceLocal @Inject constructor(
-  private val anyplaceDao: AnyplaceDao) {
+  private val DAO: AnyplaceDAO) {
 
   // TODO must be converted to multiple objects...
   fun readSpaces(): Flow<List<SpaceEntity>> {
-    return anyplaceDao.readSpaces()
+    return DAO.readSpaces()
   }
 
   fun querySpaces(query: QuerySelectSpace): Flow<List<SpaceEntity>> {
@@ -30,23 +30,27 @@ class DataSourceLocal @Inject constructor(
     var ownershipStr = query.ownership.toString().uppercase()
     val typeStr = query.spaceType.toString().uppercase()
     if (ownership && type) {
-      return anyplaceDao.querySpacesOwnerType(
+      return DAO.querySpacesOwnerType(
         query.ownership.toString().uppercase(),
         query.spaceType.toString().uppercase(),
         query.spaceName)
     } else if (ownership) {
       LOG.E("QUERY: ownership: $ownershipStr")
-      return anyplaceDao.querySpaceOwner(ownershipStr, query.spaceName)
+      return DAO.querySpaceOwner(ownershipStr, query.spaceName)
     } else if (type) {
       LOG.E("QUERY: space type: $typeStr")
-      return anyplaceDao.querySpacesType(typeStr, query.spaceName)
+      return DAO.querySpacesType(typeStr, query.spaceName)
     }
 
-    return anyplaceDao.querySpaces(query.spaceName)  // spaceName
+    return DAO.querySpaces(query.spaceName)  // spaceName
   }
 
   suspend fun insertSpace(space: Space, ownership: UserOwnership) {
     LOG.V5("insert: ${space.name} : ${space.type}")
-    anyplaceDao.insertSpace(spaceToEntity(space, ownership))
+    DAO.insertSpace(spaceToEntity(space, ownership))
+  }
+
+  fun dropSpaces() {
+    DAO.dropSpaces()
   }
 }

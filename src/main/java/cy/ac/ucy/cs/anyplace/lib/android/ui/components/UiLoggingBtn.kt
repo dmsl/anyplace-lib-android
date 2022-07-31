@@ -62,12 +62,12 @@ class UiLoggingBtn(
         LoggingStatus.running -> { resetLogging() }
 
         LoggingStatus.mustStore -> {
-          app.snackBarLong(scope, "Long-click on map to store detections")
+          app.snackbarLong(scope, "Long-click on map to store detections")
         }
 
         LoggingStatus.stopped -> {
           if (!VM.canRecognizeObjects()) {
-            app.snackBarInf(scope, C.ERR_NO_CV_CLASSES)
+            app.snackbarInf(scope, C.ERR_NO_CV_CLASSES)
             return@setOnClickListener
           }
 

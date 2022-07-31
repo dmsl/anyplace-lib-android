@@ -74,7 +74,7 @@ class GmapWrapper(
 
   var gmapWrLoaded = false
   @SuppressLint("PotentialBehaviorOverride")
-  fun setup(googleMap: GoogleMap) {
+  fun setup(googleMap: GoogleMap, act: CvMapActivity) {
     LOG.D()
     LOG.E(TAG, "$tag: setup")
 
@@ -92,10 +92,15 @@ class GmapWrapper(
       isIndoorLevelPickerEnabled = false
     }
 
-
-    // TODO Space must be sent here using some SelectSpaceActivity (w/ SafeArgs?)
     // (maybe using Bundle is easier/better)
-    loadSpaceAndFloor()
+    scope.launch(Dispatchers.IO) {
+      // wait for prefs to be loaded: the user might not have selected a space
+      // in that case the activity will close (once prefs are ready)
+      // otherwise, we'll continue loading the space / level
+      while(!act.cvMapPrefsLoaded) delay(100)
+
+      loadSpaceAndLevel()
+    }
 
     // SETUP SEVERAL MAP CLICK LISTENERS
     obj.setOnMapClickListener {
@@ -134,9 +139,9 @@ class GmapWrapper(
             val ownUid = app.dsSmasUser.read.first().uid
             if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
               if (ownUid == uid) {
-                app.snackBarShort(scope, "Copied own location to clipboard")
+                app.snackbarShort(scope, "Copied own location to clipboard")
               } else {
-                app.snackBarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
+                app.snackbarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
               }
             }
           }
@@ -211,19 +216,18 @@ class GmapWrapper(
    *
    * TODO Implement this from network (@earlier), and pass it w/[SafeArgs] / [Bundle]
    */
-  fun loadSpaceAndFloor() {
+  fun loadSpaceAndLevel() {
     LOG.V2()
-
     if(!loadSpaceAndFloorFromAssets()) return
 
     VM.selectInitialFloor(ctx)
 
-    fHandler.observeFloorChanges(this)
+    fHandler.observeFloorChanges(this@GmapWrapper)
     fHandler.observeFloorplanChanges(obj)
   }
 
   private fun loadSpaceAndFloorFromAssets() : Boolean {
-    LOG.W(TAG, "$METHOD: loading space from assets")
+    LOG.E(TAG, "$METHOD: LOADING SPACE FROM ASSETS")
     app.space = assetReader.getSpace()
     app.floors = assetReader.getFloors()
 

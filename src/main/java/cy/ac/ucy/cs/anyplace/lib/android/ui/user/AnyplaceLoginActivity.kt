@@ -41,6 +41,14 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+/**
+ * Logins to the Anyplace backend
+ *
+ * Not in use, but can be used as a reference.
+ * Things are now deprecated and probably wont work
+ * (i.e. google login does not work, might need some changes)
+ *
+ */
 @AndroidEntryPoint
 class AnyplaceLoginActivity : BaseActivity() {
 

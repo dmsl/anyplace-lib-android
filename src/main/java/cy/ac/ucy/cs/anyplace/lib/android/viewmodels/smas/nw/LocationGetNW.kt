@@ -132,7 +132,7 @@ class LocationGetNW(
             errCnt+=1
             if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
                     || !errNoInternetShown ) {
-              app.snackBarShort(VM.viewModelScope, msg)
+              app.snackbarShort(VM.viewModelScope, msg)
               LOG.W(TAG, "$tag: $msg")
             } else {
               LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")
@@ -222,7 +222,7 @@ class LocationGetNW(
             LOG.E(TAG, "RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
-          app.snackBarShort(VM.viewModelScope, "Restored last location.")
+          app.snackbarShort(VM.viewModelScope, "Restored last location.")
           delay(500)
           VM.ui.map.animateToLocation(ownLocation.toCoord().toLatLng())
         }

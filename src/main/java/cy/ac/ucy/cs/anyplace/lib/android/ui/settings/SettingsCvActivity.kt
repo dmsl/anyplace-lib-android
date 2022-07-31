@@ -23,9 +23,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.AnyplaceSettingsActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.SettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.IntentExtras
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
@@ -53,7 +54,7 @@ import kotlinx.coroutines.launch
  * CvMapDS
  */
 @AndroidEntryPoint
-class SettingsCvActivity: AnyplaceSettingsActivity() {
+class SettingsCvActivity: SettingsActivity() {
   companion object {
     const val ARG_SPACE = "pref_act_space"
     const val ARG_FLOORS = "pref_act_floors"
@@ -78,24 +79,20 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
     VM = ViewModelProvider(this)[SmasMainViewModel::class.java]
 
-    // TODO: get whether we are from Smas or Logger apps
-
-    settingsFragment = SettingsCvFragment(app, VM, dsCvMap, dsCv, repoAP, repoSmas)
+    settingsFragment = SettingsCvFragment(app, VM, VMap, dsCvMap, dsCv, repoAP, repoSmas)
     setupFragment(settingsFragment, savedInstanceState)
-
-    // TODO: icon not shown
-    // preferenceScreen.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_settings)
   }
 
   class SettingsCvFragment(
-    private val app: AnyplaceApp,
-    private val VM: CvViewModel,
-    /** Only this is binded to the activity */
+          private val app: AnyplaceApp,
+          private val VM: CvViewModel,
+          private val VMap: AnyplaceViewModel,
+          /** Only this is binded to the activity */
           private val ds: CvMapDataStore,
-    /** NOT binded to this activity. Only used to independently change (Dialog UI) the Model*/
+          /** NOT binded to this activity. Only used to independently change (Dialog UI) the Model*/
           private val dsCv: CvDataStore,
-    private val repoAP: RepoAP,
-    private val repoSmas: RepoSmas,
+          private val repoAP: RepoAP,
+          private val repoSmas: RepoSmas,
   ) : PreferenceFragmentCompat() {
 
     override fun onResume() {
@@ -130,21 +127,28 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
 
-        // setNumericInput(R.string.pref_smas_location_refresh,
-        //         R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
-        // TODO:PMX: LMT 500ms (above)
-        setNumericInput(R.string.pref_smas_location_refresh,
-                R.string.summary_refresh_locations, prefs.locationRefreshMs, 0)
-
         setNumericInput(R.string.pref_cv_scan_delay,
                 R.string.summary_cv_scan_delay, prefs.scanDelay, 0)
 
         setNumericInput(R.string.pref_cv_localization_ms,
                 R.string.summary_localization_window, prefs.windowLocalizationMs, 0)
 
-        // TODO:PMX: LMT 1000ms (above)
-        setNumericInput(R.string.pref_cv_logging_ms,
-                R.string.summary_logging_window, prefs.windowLoggingMs, 0)
+        if (DBG.LMT) {
+          setNumericInput(R.string.pref_cv_logging_ms,
+                  R.string.summary_logging_window, prefs.windowLoggingMs, 1000)
+        } else {
+          setNumericInput(R.string.pref_cv_logging_ms,
+                  R.string.summary_logging_window, prefs.windowLoggingMs, 0)
+        }
+
+        if (DBG.LMT) {
+          setNumericInput(R.string.pref_smas_location_refresh,
+                  R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
+        } else {
+          setNumericInput(R.string.pref_smas_location_refresh,
+                  R.string.summary_refresh_locations, prefs.locationRefreshMs, 0)
+        }
+
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
@@ -156,6 +160,8 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         setupUiClearCvModelsDB(app, VM)
 
         setupDownloadCvMap(app, VM)
+        clearAvailableSpaces(app, VM, VMap)
+        clearSelectedSpace()
       }
     }
 
@@ -163,7 +169,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       val pref = findPreference<Preference>(getString(R.string.pref_anyplace_server))
       pref?.setOnPreferenceClickListener {
         LOG.D(TAG_METHOD)
-        startActivity(Intent(requireActivity(), SettingsAnyplaceServerActivity::class.java))
+        startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
         true
       }
     }
@@ -191,7 +197,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 "Will delete the CV Model classes.\n" +
                         "and then download them again.", cancellable = true, isImportant = false) { // on confirmed
 
-          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+          lifecycleScope.launch(Dispatchers.IO) {
             if (!app.hasInternet()) {
               app.showToast(VM.viewModelScope, "Internet connection is required")
               return@launch
@@ -209,7 +215,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
 
 
     private fun setupDownloadCvMap(app: AnyplaceApp, VM: CvViewModel) {
-      val pref = findPreference<Preference>(getString(R.string.pref_localization_cv_map))
+      val pref = findPreference<Preference>(getString(R.string.pref_loc_cv_map))
 
       if (!DBG.CVM) {
         pref?.isVisible = false
@@ -223,7 +229,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
                 "The previous CvMap will be overridden.\nAn application restart is required.",
                 cancellable = true, isImportant = false) { // on confirmed
 
-          lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+          lifecycleScope.launch(Dispatchers.IO) {
             if (!app.hasInternet()) {
               app.showToast(VM.viewModelScope, "Internet connection is required")
               return@launch
@@ -237,6 +243,79 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
       }
     }
 
+
+    fun getSelectedSpaceSummary(value: String) : String {
+      return value.ifEmpty {
+        "No space selected"
+      }
+    }
+
+    /**
+     * Clears the selected space.
+     * The user will have to select a different one from the SpaceSelector
+     */
+    private fun clearSelectedSpace() {
+      val pref = findPreference<Preference>(getString(R.string.pref_selected_space))
+      if (!DBG.SLR) { pref?.isVisible = false; return }
+
+      lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.Main) {
+          pref?.summary = getSelectedSpaceSummary(ds.read.first().selectedSpace)
+        }
+      }
+
+      // set initial value and update on new values
+      pref?.setOnPreferenceChangeListener { it, value ->
+        it.summary=getSelectedSpaceSummary(value.toString())
+        true
+      }
+
+      pref?.setOnPreferenceClickListener {
+        LOG.W(TAG, "$METHOD: setting up")
+        val mgr = requireActivity().supportFragmentManager
+        ConfirmActionDialog.SHOW(mgr, "Clear selected space",
+                "Space Selector will open again,"+
+                        "so you can select a different space.\n",
+                cancellable = true, isImportant = false) { // on confirmed
+
+          lifecycleScope.launch(Dispatchers.IO) {
+            ds.clearSelectedSpace()
+          }
+        }
+        true
+      }
+    }
+
+
+    private fun clearAvailableSpaces(app: AnyplaceApp, VM: CvViewModel, VMap: AnyplaceViewModel) {
+      val pref = findPreference<Preference>(getString(R.string.pref_clear_available_spaces))
+
+      if (!DBG.SLR) { pref?.isVisible = false; return }
+
+      pref?.setOnPreferenceClickListener {
+        LOG.W(TAG, "$METHOD: setting up")
+        val mgr = requireActivity().supportFragmentManager
+        ConfirmActionDialog.SHOW(mgr, "Clear available spaces",
+                "Space Selector will fetch them again from remote.\n"+
+                        "Use this if the remote spaces had changes.\n",
+                cancellable = true, isImportant = false) { // on confirmed
+
+          lifecycleScope.launch(Dispatchers.IO) {
+            if (!app.hasInternet()) {
+              app.showToast(VM.viewModelScope, "Internet connection is required")
+              return@launch
+            }
+
+            repoAP.local.dropSpaces()
+            VMap.setBackFromSettings()
+            app.showToast(VM.viewModelScope, "Please restart app.")
+          }
+        }
+        true
+      }
+    }
+
+    // CLR: V22 implemented in the UI btnUploadDiscard
     private fun setupClearCvFingerprints() {
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
       pref?.isEnabled = cache.hasFingerprints()
@@ -248,7 +327,7 @@ class SettingsCvActivity: AnyplaceSettingsActivity() {
         // ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
         //         "These are scanned objects that have not been uploaded yet to the database.\n" +
         //                 "Proceed only if you want to discard them.") { // on confirmed
-        //   lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
+        //   lifecycleScope.launch(Dispatchers.IO) {
         //     cache.deleteFingerprintsCache()
         //   }
         // }

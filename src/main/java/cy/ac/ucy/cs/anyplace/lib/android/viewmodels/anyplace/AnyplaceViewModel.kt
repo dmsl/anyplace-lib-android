@@ -35,7 +35,7 @@ TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
  This is for Anyplace?
 */
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class AnyplaceViewModel @Inject constructor(
         app: Application,
         private val repo: RepoAP,
         private val RH: RetrofitHolderAP,

@@ -98,7 +98,7 @@ open class CvViewModel @Inject constructor(
   val cache by lazy { Cache(application) }
 
   lateinit var mu: IMU
-  var miEnabled = false
+  var imuEnabled = false
 
   // UI
   //// COMPONENTS
@@ -271,7 +271,7 @@ open class CvViewModel @Inject constructor(
   suspend fun localizeOffline(detectionsReq: List<CvObjectReq>) {
     if (!repoSmas.local.hasCvMap()) {
       val msg = "Cannot localize offline: No CvMap.\nUse settings to download the latest one."
-      app.snackBarInf(viewModelScope, msg)
+      app.snackbarInf(viewModelScope, msg)
       return
     }
 
@@ -398,7 +398,7 @@ open class CvViewModel @Inject constructor(
                 msg="Previous location expired.\nPlease localize or set it manually"
               }
 
-              app.snackBarLong(viewModelScope, msg)
+              app.snackbarLong(viewModelScope, msg)
             }
           }
         }

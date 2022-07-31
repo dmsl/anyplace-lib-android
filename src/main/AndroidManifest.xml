@@ -33,7 +33,13 @@
         android:theme="@style/AppTheme.Compat"
         android:screenOrientation="portrait"
         android:label="@string/title_activity_login" />
-    <activity android:name=".android.ui.selector.space.SelectSpaceActivity" />
+    <activity
+        android:name=".android.ui.selector.space.SelectSpaceActivity"
+        android:exported="true"
+        android:theme="@style/AppTheme.Compat.whiteToolbar"
+        android:screenOrientation="portrait"
+        android:label="@string/title_select_space" />
+
     <!-- SMAS ACTIVITIES -->
     <activity
         android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity"
@@ -69,7 +75,7 @@
         android:theme="@style/AppTheme.Compat"
         android:label="SMAS Settings" />
     <activity
-        android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
+        android:name=".android.ui.settings.SettingsServerActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat"

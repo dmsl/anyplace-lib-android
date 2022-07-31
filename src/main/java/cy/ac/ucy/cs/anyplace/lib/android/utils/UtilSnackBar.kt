@@ -17,8 +17,22 @@ class UtilSnackBar(val app: AnyplaceApp) {
   var snackbarForChat = false
   lateinit var rootView: View
 
+  fun showDEV(scope: CoroutineScope, msg: String,
+                      duration: Int = Snackbar.LENGTH_SHORT) {
+    if (!DBG.DVO) {
+      app.showToast(scope, msg, Toast.LENGTH_SHORT)
+      return
+    }
+
+    scope.launch(Dispatchers.IO) {
+      if(app.hasDevMode()) {
+        show(scope, msg, duration, true)
+      }
+    }
+  }
+
   fun show(scope: CoroutineScope, msg: String,
-           duration: Int, devMode : Boolean = false) {
+           duration: Int, devUi : Boolean = false) {
 
     if (!DBG.DVO) {
       app.showToast(scope, msg, Toast.LENGTH_SHORT)
@@ -29,7 +43,7 @@ class UtilSnackBar(val app: AnyplaceApp) {
       val sb = Snackbar.make(rootView, msg, duration)
       sb.setActionTextColor(app.utlColor.White())
 
-      if (duration != Snackbar.LENGTH_SHORT || devMode) {
+      if (duration != Snackbar.LENGTH_SHORT || devUi) {
         sb.setAction("OK") { } // dismissible
       }
 
@@ -46,7 +60,7 @@ class UtilSnackBar(val app: AnyplaceApp) {
       tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
       tv.maxLines=3
 
-      if (devMode) {
+      if (devUi) {
         sb.setDrawableLeft(R.drawable.ic_dev_mode)
         sb.setBackground(R.drawable.bg_snackbar_devmode)
         sb.setActionTextColor(app.utlColor.GrayLighter())

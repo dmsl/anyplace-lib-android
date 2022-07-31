@@ -19,7 +19,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
@@ -68,7 +67,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
 
-  val utlSnackBar by lazy { UtilSnackBar(this) }
+  val utlSnackbar by lazy { UtilSnackBar(this) }
 
   /** Root [View] of an activity ([SmasMainActivity], or [CvLoggerActivity]). Used for [SnackBar] */
   lateinit var cvUtils: CvUtils
@@ -120,8 +119,8 @@ abstract class AnyplaceApp : Application() {
    * Set the main view (root view) of the current [Activity], so we can use more easily [Snackbar]
    */
   fun setMainView(root_view: View, snackbarOnTop: Boolean) {
-    utlSnackBar.rootView=root_view
-    utlSnackBar.snackbarForChat=snackbarOnTop
+    utlSnackbar.rootView=root_view
+    utlSnackbar.snackbarForChat=snackbarOnTop
   }
 
   override fun onCreate() {
@@ -178,30 +177,16 @@ abstract class AnyplaceApp : Application() {
     if (devMode) { showToast(scope, msg, len) }
   }
 
-  fun snackBarShort(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_SHORT)
-  fun snackBarLong(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_LONG)
+  fun snackbarShort(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_SHORT)
+  fun snackbarLong(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG)
   /** Stays on until user acts on it */
-  fun snackBarInf(scope: CoroutineScope, msg: String) = utlSnackBar.show(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  fun snackbarInf(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
-  fun snackBarShortDev(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_SHORT)
-  fun snackbarLongDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_LONG)
-  fun snackbarInfDEV(scope: CoroutineScope, msg: String) = showSnackbarDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  fun snackbarShortDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_SHORT)
+  fun snackbarLongDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_LONG)
+  fun snackbarInfDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
 
   suspend fun hasDevMode() = dsCvMap.read.first().devMode
-
-  fun showSnackbarDEV(scope: CoroutineScope, msg: String,
-                      duration: Int = Snackbar.LENGTH_SHORT) {
-    if (!DBG.DVO) {
-      showToast(scope, msg, Toast.LENGTH_SHORT)
-      return
-    }
-
-    scope.launch(Dispatchers.IO) {
-      if(hasDevMode()) {
-        utlSnackBar.show(scope, msg, duration, true)
-      }
-    }
-  }
 
 
 

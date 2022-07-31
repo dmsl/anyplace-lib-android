@@ -18,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -29,6 +30,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.TestOnly
@@ -190,9 +192,9 @@ class SmasLoginActivity : BaseActivity() {
   }
 
   private fun openLoggedInActivity() {
-    lifecycleScope.launch {
+    lifecycleScope.launch (Dispatchers.Main) {
       val prefsCv = appSmas.dsCvMap.read.first()
-      StartActivity.openActivity(prefsCv.startActivity, this@SmasLoginActivity)
+      StartActivity.openActivity(prefsCv, this@SmasLoginActivity)
     }
   }
 

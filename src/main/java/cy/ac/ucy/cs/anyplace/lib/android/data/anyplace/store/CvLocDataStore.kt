@@ -42,6 +42,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_SMAS_LOCATION_REFRESH_MS,
           C.PREF_CV_AUTOSET_INITIAL_LOCATION,
           C.PREF_CV_FOLLOW_SELECTED_USER,
+          C.PREF_SELECTED_SPACE,
   )
 
   private class Keys(c: CONST) {
@@ -54,6 +55,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     val locationRefreshMs = stringPreferencesKey(c.PREF_SMAS_LOCATION_REFRESH_MS)
     val autoSetInitialLocation = booleanPreferencesKey(c.PREF_CV_AUTOSET_INITIAL_LOCATION)
     val followSelectedUser = booleanPreferencesKey(c.PREF_CV_FOLLOW_SELECTED_USER)
+    val selectedSpace = stringPreferencesKey(c.PREF_SELECTED_SPACE)
   }
   private val KEY = Keys(C)
 
@@ -99,6 +101,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREV_CVMAP_ALPHA-> it[KEY.mapAlpha] = value ?: C.DEFAULT_PREF_CVMAP_ALPHA
 
           C.PREF_SMAS_LOCATION_REFRESH_MS-> it[KEY.locationRefreshMs] = value ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
+
+          C.PREF_SELECTED_SPACE-> it[KEY.selectedSpace] = value ?: ""
         }
       }
     }
@@ -130,6 +134,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         C.PREF_CV_SCAN_DELAY-> { prefs.scanDelay }
         C.PREV_CVMAP_ALPHA-> prefs.mapAlpha
         C.PREF_SMAS_LOCATION_REFRESH_MS-> prefs.locationRefreshMs
+        C.PREF_SELECTED_SPACE -> prefs.selectedSpace
         else -> null
       }
     }
@@ -151,6 +156,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val locationRefresh= preferences[KEY.locationRefreshMs] ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
             val autoSetInitialLocation = preferences[KEY.autoSetInitialLocation] ?: C.DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION
             val followSelectedUser = preferences[KEY.followSelectedUser] ?: C.DEFAULT_PREF_CV_FOLLOW_SELECTED_USER
+            val selecteSpace = preferences[KEY.selectedSpace] ?: ""
 
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
@@ -160,11 +166,14 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     devMode,
                     locationRefresh,
                     autoSetInitialLocation,
-                    followSelectedUser)
+                    followSelectedUser,
+                    selecteSpace)
             prefs
           }
 
   fun setMainActivity(value: String) { putString(C.PREF_CV_START_ACT, value) }
+  fun setSelectedSpace(buid: String) { putString(C.PREF_SELECTED_SPACE, buid) }
+  fun clearSelectedSpace() { setSelectedSpace("") }
 }
 
 data class CvMapPrefs(
@@ -179,5 +188,6 @@ data class CvMapPrefs(
         /** how often to fetch nearby users location (in seconds) */
         val locationRefreshMs: String,
         val autoSetInitialLocation: Boolean,
-        val followSelectedUser: Boolean
+        val followSelectedUser: Boolean,
+        val selectedSpace: String,
 )

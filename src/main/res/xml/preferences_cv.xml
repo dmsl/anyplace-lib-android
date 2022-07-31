@@ -75,9 +75,21 @@
     <!-- Updates the CV map.-->
     <Preference
         android:title="Download CvMap"
-        android:key="@string/pref_localization_cv_map"
+        android:key="@string/pref_loc_cv_map"
         android:summary="Fetch the latest CV fingerprints from the backend"
         />
+
+    <Preference
+        android:title="Clear selected space"
+        android:key="@string/pref_selected_space"
+        app:summary="[selected spacd]"
+        />
+
+    <Preference
+        android:title="Clear available spaces"
+        android:key="@string/pref_clear_available_spaces"
+        app:summary="Space Selector will download spaces again."
+    />
 
     <Preference
         android:title="Clear floorplans"

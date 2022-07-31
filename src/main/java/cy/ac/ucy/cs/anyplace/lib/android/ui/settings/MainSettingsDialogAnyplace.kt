@@ -109,7 +109,7 @@ class MainSettingsDialogAnyplace : DialogFragment() {
 
   private fun setupServerSettings() {
     binding.buttonSettingsServer.setOnClickListener {
-      startActivity(Intent(requireActivity(), SettingsAnyplaceServerActivity::class.java))
+      startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
     }
   }
 

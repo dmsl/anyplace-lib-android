@@ -13,6 +13,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 @TypeConverters(SpaceTypeConverter::class)
 abstract class AnyplaceDatabase: RoomDatabase() {
 
-  abstract fun anyplaceDao(): AnyplaceDao
+  abstract fun anyplaceDao(): AnyplaceDAO
 
 }

@@ -1,13 +1,17 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db
 import androidx.room.*
+import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface AnyplaceDao {
+interface AnyplaceDAO {
   // TODO on conflict? update all except ownership... (unless that was public..)
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertSpace(space: SpaceEntity)
+
+  @Query("DELETE FROM spaces")
+  fun dropSpaces()
 
   // instead of LiveData. When it reaches the relevant ViewModel
   // it will be converted to LiveData

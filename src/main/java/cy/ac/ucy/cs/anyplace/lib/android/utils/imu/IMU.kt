@@ -56,7 +56,7 @@ class IMU(
       // MODE 1
       LOG.W(TAG, "Observing..: cnt: $stepCount")
 
-      if (VM.miEnabled && DBG.uim) { // TODO:PMX: option in VM?
+      if (VM.imuEnabled && DBG.uim) { // TODO:PMX: option in VM?
         val lastCoord= app.locationSmas.value.coord
         if (lastCoord == null) {
           LOG.W(TAG, "OBSERVE: ret: no last coord")

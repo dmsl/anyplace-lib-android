@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -107,6 +106,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private lateinit var btnFlir: Button
   private lateinit var btnAlert: MaterialButton
 
+  private val btnImu by lazy { findViewById<MaterialButton>(R.id.btn_imu) }
   private val utlNotify by lazy { UtilNotify(applicationContext) }
 
   /** whether this activity is active or not */
@@ -133,7 +133,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     setupButtonFlir()
     setupButtonAlert()
 
-    setupClickm()
+    VM.ui.localization.setupButtonImu(btnImu)
   }
 
 
@@ -159,7 +159,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun forceUserLocation(forcedLocation: LatLng) {
     LOG.W(TAG, "forcing location: $forcedLocation")
-    app.snackBarShort(lifecycleScope, "Location set manually (long-clicked)")
+    app.snackbarShort(lifecycleScope, "Location set manually (long-clicked)")
 
     val floorNum = app.wFloor!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -292,7 +292,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.Main) {
       VM.readHasNewMessages.observeForever { hasNewMsgs ->
         val btn = btnChat as MaterialButton
-        val ctx = this@SmasMainActivity
         LOG.W(TAG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
@@ -386,12 +385,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
-      app.snackBarShort(lifecycleScope, "Long-press to toggle alert")
+      app.snackbarShort(lifecycleScope, "Long-press to toggle alert")
     }
 
     btnAlert.setOnLongClickListener {
       if (app.locationSmas.value is LocalizationResult.Unset) {
-        app.snackBarLong(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
+        app.snackbarLong(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
         return@setOnLongClickListener true
       }
 
@@ -442,49 +441,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  var setupClickm = false
-  private fun setupClickm() {
-    if (setupClickm) return
-    if (!DBG.uim) return
-    setupClickm=true
-    // TODO: PM: put in localization button component?
-    // - hide along with localization
-    // - put also in XML: activity_cv_logger
-    LOG.E(TAG, "$METHOD")
 
-    val btn = findViewById<MaterialButton>(R.id.btn_imu)
-    btn.visibility= View.VISIBLE
-
-    btn.setOnClickListener {
-      VM.miEnabled=!VM.miEnabled
-
-      if (VM.miEnabled) mToggleOn(btn) else mToggleOff(btn)
-
-      when {
-        !initedGmap -> {
-          app.showToast(lifecycleScope, "Cannot start (map not ready)")
-          mToggleOff(btn)
-        }
-
-        app.locationSmas.value.coord == null -> {
-          app.showToast(lifecycleScope, "Cannot start (need an initial location)")
-          mToggleOff(btn)
-        }
-
-        VM.miEnabled -> { VM.mu.start() }
-      }
-    }
-  }
-
-  fun mToggleOn(btn: MaterialButton) {
-    utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
-    VM.miEnabled=true
-  }
-
-  fun mToggleOff(btn: MaterialButton) {
-    utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
-    VM.miEnabled=false
-  }
 
   private fun setupButtonFlir() {
     btnFlir = findViewById(R.id.btnFlir)
@@ -558,7 +515,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!app.hasLastLocation()) {
           val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
-          app.snackBarInf(lifecycleScope, msg)
+          app.snackbarInf(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
           return@launch
         }
