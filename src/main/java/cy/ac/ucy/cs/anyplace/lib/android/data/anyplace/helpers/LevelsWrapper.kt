@@ -29,12 +29,12 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   })
 
   val size : Int get() = obj.size
-  fun hasFloors()  = obj.isNotEmpty()
+  fun hasLevels()  = obj.isNotEmpty()
   fun getFirstLevel() = obj[0]
   fun getLastLevel() = obj[obj.size-1]
 
-  fun getFloor(num: Int) = getFloor(num.toString())
-  fun getFloor(str: String) : Level? {
+  fun getLevel(num: Int) = getLevel(num.toString())
+  fun getLevel(str: String) : Level? {
     obj.forEach { floor ->
       if (floor.number == str) return floor
     }
@@ -42,7 +42,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
     return null
   }
 
-  fun getFloorIdx(str: String) : Int {
+  fun getLevelIdx(str: String) : Int {
     for (i in obj.indices) {
       if (obj[i].number == str) return i
     }
@@ -147,7 +147,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   fun moveToFloor(VM: CvViewModel, floorNum: Int) {
     LOG.D2(TAG, "$METHOD: to: $floorNum")
     val app = VM.app
-    val floor = app.wLevels.getFloor(floorNum)!!
+    val floor = app.wLevels.getLevel(floorNum)!!
     moveToFloorLvl(VM, floor)
   }
 
@@ -172,7 +172,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   }
 
   fun getFloorAbove(curFloorStr: String): Level? {
-    val idx = getFloorIdx(curFloorStr) +1
+    val idx = getLevelIdx(curFloorStr) +1
     LOG.D5(TAG_METHOD, "IDX: $idx")
     return if (idx>=0 && idx<obj.size) obj[idx] else null
   }
@@ -184,7 +184,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   }
 
   fun getFloorBelow(curFloorStr: String): Level? {
-    val idx = getFloorIdx(curFloorStr) + -1
+    val idx = getLevelIdx(curFloorStr) + -1
     LOG.D5(TAG_METHOD, "IDX: $idx")
     return if (idx>=0 && idx<obj.size) obj[idx] else null
   }

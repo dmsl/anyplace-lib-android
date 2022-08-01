@@ -28,7 +28,8 @@ class ApLocalDS @Inject constructor(
   }
 
   fun querySpaces(queryFilter: SpaceFilter): Flow<List<SpaceEntity>> {
-    LOG.W(TAG, "$METHOD: name'${queryFilter.spaceName}'")
+    val MT = ::querySpaces.name
+    LOG.V3(TG, "$MT: name'${queryFilter.spaceName}'")
 
     // val name = query.spaceName.isNotEmpty()
     val filterOwnership = queryFilter.ownership != SpaceOwnership.ALL
@@ -48,13 +49,13 @@ class ApLocalDS @Inject constructor(
 
       // filter only on ownership
       filterOwnership -> {
-        LOG.E("QUERY: ownership: $ownershipStr")
+        LOG.V2(TG, "$MT: query: ownership: $ownershipStr")
         DAO.querySpaceOwner(ownershipStr, queryFilter.spaceName)
       }
 
       // filter only on type
       filterType -> {
-        LOG.E("QUERY: space type: $typeStr")
+        LOG.V2(TG, "$MT: query: space type: $typeStr")
         DAO.querySpacesType(typeStr, queryFilter.spaceName)
       }
 

@@ -39,6 +39,7 @@ const val TAG_ANYPLACE = "anyplace"
  * Simpler version:
  * val Any.TAG : String get() = "ap_${this::class.java.simpleName}"
 */
+@Deprecated("dont use. See LOGGING.md")
 val Any.TAG: String get()  {
   var i=2
   while (true) {
@@ -83,7 +84,10 @@ val Any.TAG: String get()  {
  * frame 1: getStackTrace
  * frame 2: getMETHOD
  * frame 3: getTAG_METHOD (some times.. depends where it is called from
+ *
+ * TODO: use val MT = ::theMethodsName.name
  */
+@Deprecated("dont use. See LOGGING.md")
 val Any.METHOD: String get()  {
   try {
     var i=2

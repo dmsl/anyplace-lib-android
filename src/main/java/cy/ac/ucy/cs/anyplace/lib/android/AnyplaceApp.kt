@@ -124,7 +124,7 @@ abstract class AnyplaceApp : Application() {
     return locationSmas.value is LocalizationResult.Success
   }
 
-  var mustSelectSpaceForCvMap = false
+  // var mustSelectSpaceForCvMap = false
 
   /**
    * Set the main view (root view) of the current [Activity],
@@ -238,15 +238,9 @@ abstract class AnyplaceApp : Application() {
     this.levels = newLevels
     wLevels = LevelsWrapper(this.levels!!, this.wSpace)
 
-    // CLEAR any leve selection
+    // CLEAR any previous level selection
     this.level.update { null }
     this.wLevel = null
-
-    LOG.E(tag, "$method: XXX: app.space: ${space?.buid}")
-    LOG.E(tag, "$method: XXX: app.wSpace: ${wSpace.obj.buid}")
-    LOG.E(tag, "$method: XXX: app.level: ${level.value?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.wSpace: ${wLevel?.wSpace?.obj?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.: ${wLevel?.obj?.buid}")
 
     if (newSpace == null || newLevels == null) {
       snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")

@@ -19,6 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.update
  */
 @AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
+  val TG = "act-select-space"
   private lateinit var binding: ActivitySelectSpaceBinding
   private lateinit var navController: NavController
   lateinit var VM: AnyplaceViewModel
@@ -144,6 +146,12 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   }
 
   override fun onQueryTextChange(newText: String?): Boolean {
+    val MT = ::onQueryTextChange.name
+    if (app.spaceSelectionInProgress) {
+      LOG.I(TG, "$MT: ignoring: space selection in progress..")
+      return true
+    }
+
     newText?.let { VM.dbqSpaces.searchViewData.value = it }
     return true
   }

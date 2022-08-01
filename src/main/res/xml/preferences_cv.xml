@@ -79,11 +79,12 @@
         android:summary="Fetch the latest CV fingerprints from the backend"
         />
 
-    <Preference
-        android:title="Clear selected space"
-        android:key="@string/pref_selected_space"
-        app:summary="[selected spacd]"
-        />
+<!--    CLR:PM -->
+<!--    <Preference-->
+<!--        android:title="Clear selected space"-->
+<!--        android:key="@string/pref_selected_space"-->
+<!--        app:summary="[selected spacd]"-->
+<!--        />-->
 
     <Preference
         android:title="Clear available spaces"

@@ -6,12 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
@@ -49,7 +50,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
           val act: SelectSpaceActivity,
           private val scope: CoroutineScope,
   ):
-    RecyclerView.ViewHolder(binding.root) {
+          RecyclerView.ViewHolder(binding.root) {
 
     fun bind(space: Space, act: SelectSpaceActivity) {
       binding.space = space
@@ -62,13 +63,13 @@ class SpacesAdapter(private val app: AnyplaceApp,
         val activeTag = "downloading-button"
         val btn = binding.btnSelectSpace
 
-       if (app.spaceSelectionInProgress)  {
-         val tagStr = if (btn.tag == null) "" else btn.tag.toString()
-         if (tagStr != activeTag) {
-           act.utlUi.attentionInvalidOption(btn)
-         }
-         return@setOnClickListener
-       }
+        if (app.spaceSelectionInProgress)  {
+          val tagStr = if (btn.tag == null) "" else btn.tag.toString()
+          if (tagStr != activeTag) {
+            act.utlUi.attentionInvalidOption(btn)
+          }
+          return@setOnClickListener
+        }
         app.spaceSelectionInProgress=true
 
         LOG.W(TG, "selecting Space: ${space.name} ${space.buid}")
@@ -95,24 +96,10 @@ class SpacesAdapter(private val app: AnyplaceApp,
           app.backToSpaceSelectorFromOtherActivities=true
 
 
-          // 1. Download JSON objects for the Space and all the Floors
-          val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
-          val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
 
-          if (!gotSpace || !gotFloors) {
-            app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
-            app.spaceSelectionInProgress=false
-            act.finishAndRemoveTask()
-          }
 
-          // 2. Load the downloaded objects
-          app.initializeSpace(scope,
-                  app.cache.readJsonSpace(prefsCv.selectedSpace),
-                  app.cache.readJsonFloors(prefsCv.selectedSpace))
+          downloadSpaceResources(prefsCv)
 
-          // 3. Download floorplans
-          app.wLevels.showedMsgDownloading=true
-          app.wLevels.fetchAllFloorplans(act.VMcv)
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)
@@ -131,6 +118,57 @@ class SpacesAdapter(private val app: AnyplaceApp,
           }
           act.finish()
         }
+      }
+    }
+
+    /**
+     * Caches all resources of a space, so the next activity will have them already in cache
+     * These are:
+     * - Json of Space and Levels (needed anyway to open a space)
+     * - Level plan (base64 bitmap of floorplans/deckplans)
+     * - POIs, and Connections
+     */
+    suspend fun downloadSpaceResources(prefsCv: CvMapPrefs) {
+      // must be in this order
+      downloadSpaceAndLevels(prefsCv) // needed first
+      loadSpaceAndLevels(prefsCv)
+      downloadFloorplans()
+      downloadConnectionsAndPois()
+    }
+
+    /**
+     *  Download JSON objects for the Space and all the Floors
+     */
+    private suspend fun downloadSpaceAndLevels(prefsCv: CvMapPrefs) {
+      val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
+      val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
+
+      if (!gotSpace || !gotFloors) {
+        app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
+        app.spaceSelectionInProgress=false
+        act.finishAndRemoveTask()
+      }
+    }
+
+    /**
+     * 2. Load the downloaded objects
+     */
+    private fun loadSpaceAndLevels(prefsCv: CvMapPrefs) {
+      app.initializeSpace(scope,
+              app.cache.readJsonSpace(prefsCv.selectedSpace),
+              app.cache.readJsonFloors(prefsCv.selectedSpace))
+    }
+
+    private suspend fun downloadFloorplans() {
+      app.wLevels.showedMsgDownloading=true
+      app.wLevels.fetchAllFloorplans(act.VMcv)
+    }
+
+    private suspend fun downloadConnectionsAndPois() {
+      if (app.space!=null && !act.VMcv.cache.hasSpaceConnectionsAndPois(app.space!!)) {
+        LOG.D2(TAG, "Fetching POIs and Connections..")
+        act.VMcv.nwPOIs.callBlocking(app.space!!.buid)
+        act.VMcv.nwConnections.callBlocking(app.space!!.buid)
       }
     }
   }
