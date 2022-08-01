@@ -10,7 +10,9 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -23,8 +25,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogSettingsSmasBinding
 // import cy.ac.ucy.cs.anyplace.smas.ui.SmasMainActivity
 // import cy.ac.ucy.cs.anyplace.smas.ui.settings.SettingsChatActivity
@@ -98,14 +103,10 @@ class MainSettingsDialog(
     setupMapSettings()
     setupChatUser()
     setupChatSettings()
-
-    // misc:
-    setupLashfireLink()
-    // setupAnyplaceLink()
-
-    // var versionStr = BuildConfig.VERSION_NAME
     setupVersion(version)
     setupButtonSwitch(parentActivity)
+    setupButtonChangeSpace(parentActivity)
+    setupLashfireLink()  // misc
   }
 
   private fun adaptUI () {
@@ -143,7 +144,41 @@ class MainSettingsDialog(
       startActivity(Intent(requireActivity(), klass))
       parentActivity.finish()
     }
+  }
 
+  /**
+   * Clears the selected space, and closes the parent activity.
+   * The user will be presented with [SelectSpaceActivity], to pick another space.
+   */
+  @SuppressLint("SetTextI18n")
+  private fun setupButtonChangeSpace(parentActivity: Activity) {
+    val btn = binding.btnChangeSpace
+    if (!DBG.SLR) { btn.visibility= View.GONE; return }
+
+    btn.text = "Change space"
+    if (app.wSpace.isVessel()) {
+      val btnDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_vessel, null)
+      btn.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+    }
+
+    val name=app.wSpace.obj.name
+    val shortName= if (name.length<15) name else name.take(15)+".."
+    btn.text="Change space ($shortName)"
+
+    btn.setOnClickListener {
+      lifecycleScope.launch(Dispatchers.IO) {
+        app.dsCvMap.clearSelectedSpace()
+        app.showToast(lifecycleScope, "Please select another space.")
+        // app.mustSelectSpaceForCvMap=true
+        val intent = Intent(app.applicationContext, SelectSpaceActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+
+        parentActivity.finishAndRemoveTask()
+
+        dialog?.dismiss()
+      }
+    }
   }
 
 
@@ -172,13 +207,6 @@ class MainSettingsDialog(
       startActivity(Intent(requireActivity(), SettingsChatActivity::class.java))
     }
   }
-
-  // private fun setupAnyplaceLink() {
-  //   binding.btnAboutAnyplace.setOnClickListener {
-  //     startActivity(Intent(Intent.ACTION_VIEW,
-  //             Uri.parse(getString(R.string.url_anyplace_about))))
-  //   }
-  // }
 
   private fun setupLashfireLink() {
     binding.btnAboutLashfire.setOnClickListener {

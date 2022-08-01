@@ -11,7 +11,6 @@ import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
@@ -27,6 +26,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
@@ -66,7 +66,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsUserSmas: SmasUserDataStore
 
   /** Miscellaneous settings */
-  @Inject lateinit var dsSpaceSelector: SpaceSelectorDS
+  @Inject lateinit var dsSpaceSelector: SpaceFilterDS
   // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
@@ -108,7 +108,6 @@ abstract class AnyplaceApp : Application() {
   var wLevel: LevelWrapper? = null
 
   val utlColor by lazy { UtilColor(applicationContext) }
-  val dbqSpaces by lazy { SpacesQueryDB(repoAP, dsSpaceSelector) }
 
   /** true when a user is issuing an alert */
   var alerting = false
@@ -118,19 +117,15 @@ abstract class AnyplaceApp : Application() {
    */
   var userOutOfBounds: MutableStateFlow<MapBounds> = MutableStateFlow(MapBounds.notLocalizedYet)
 
-  // TODO:PM: inject all those. otherwise we might have constructor issues.
-  // they must be singleton, but after app ctx is created
-  // example:
-  // @Inject lateinit var serverDS: ServerDataStore
+  /** Terrible workaround for the terrible SpaceSelector code */
+  var backToSpaceSelectorFromOtherActivities= false
 
-  /**
-   * The user has localized at least once
-   */
+  /** The user has localized at least once */
   fun hasLastLocation() : Boolean {
     return locationSmas.value is LocalizationResult.Success
   }
 
-  var mustSelectSpaceForCvMap = false
+  // var mustSelectSpaceForCvMap = false
 
   /**
    * Set the main view (root view) of the current [Activity],
@@ -244,15 +239,9 @@ abstract class AnyplaceApp : Application() {
     this.levels = newLevels
     wLevels = LevelsWrapper(this.levels!!, this.wSpace)
 
-    // CLEAR any leve selection
+    // CLEAR any previous level selection
     this.level.update { null }
     this.wLevel = null
-
-    LOG.E(tag, "$method: XXX: app.space: ${space?.buid}")
-    LOG.E(tag, "$method: XXX: app.wSpace: ${wSpace.obj.buid}")
-    LOG.E(tag, "$method: XXX: app.level: ${level.value?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.wSpace: ${wLevel?.wSpace?.obj?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.: ${wLevel?.obj?.buid}")
 
     if (newSpace == null || newLevels == null) {
       snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")

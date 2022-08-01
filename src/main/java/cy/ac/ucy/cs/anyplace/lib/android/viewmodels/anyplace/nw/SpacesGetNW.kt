@@ -39,13 +39,16 @@ class SpacesGetNW(
 
   val resp: MutableStateFlow<NetworkResult<Spaces>> = MutableStateFlow(NetworkResult.Unset())
 
+  // CHECK CHANGE TO THIS: for spacesResponse
+  fun safeCall() = VM.viewModelScope.launch(Dispatchers.IO) { getSpaces() }
+
   /**
    * Hardcoded version:
    * - gets accessible spaces (owned or co-owned by user)
    * - and fetches also some UCY public buildings
    */
-  suspend fun safeCall() {
-    resp.update { NetworkResult.Loading() }
+  private suspend fun getSpaces() {
+    resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
         val apUser = dsUser.read.first()

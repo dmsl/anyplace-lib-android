@@ -167,6 +167,20 @@
         app:layout_constraintVertical_bias="0.0"
         app:backgroundTint="@null" />
 
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_changeSpace"
+        android:drawableLeft="@drawable/ic_building"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:text="@string/change_space"
+        app:layout_constraintTop_toBottomOf="@+id/btn_switchMode"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        style="@style/SettingsButton"
+        app:layout_constraintVertical_bias="0.0"
+        app:backgroundTint="@null" />
+
+
     <!-- DIVIDER -->
     <View
         android:id="@+id/divider_settings"
@@ -179,7 +193,7 @@
         android:background="?android:attr/listDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_switchMode"
+        app:layout_constraintTop_toBottomOf="@+id/btn_changeSpace"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView

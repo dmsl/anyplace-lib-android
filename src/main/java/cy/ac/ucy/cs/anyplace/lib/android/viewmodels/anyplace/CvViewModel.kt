@@ -67,21 +67,21 @@ enum class LocalizationStatus {
  */
 @HiltViewModel
 open class CvViewModel @Inject constructor(
-  /** [application] is not an [AnyplaceApp], hence it is not a field.
+        /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
-  dsCv: CvDataStore,
-  private val dsMisc: SpaceSelectorDS,
-  dsCvMap: CvMapDataStore,
-  val repo: RepoAP,
-  val RH: RetrofitHolderAP,
-  val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
-  val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
+        dsCv: CvDataStore,
+        private val dsMisc: SpaceFilterDS,
+        dsCvMap: CvMapDataStore,
+        val repo: RepoAP,
+        val RH: RetrofitHolderAP,
+        val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
+        val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
   /** Make sure to initialize this one */
   private lateinit var attachedActivityId: String
   val app : AnyplaceApp = application as AnyplaceApp
-  val tag = "vm-cv"
+  val TG = "vm-cv"
 
   private val C by lazy { CONST(app) }
   private val utlUi by lazy { UtilUI(app.applicationContext, viewModelScope) }
@@ -146,7 +146,7 @@ open class CvViewModel @Inject constructor(
   // FLOOR PLANS
   fun getFloorplanFromRemote(fw: LevelWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
   private fun loadFloorplanFromAsset() {
-    LOG.W(tag, "loading from asset file")
+    LOG.W(TG, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
     val bitmap = base64?.let { utlImg.decodeBase64(it) }
     levelplanImg.value =
@@ -162,8 +162,8 @@ open class CvViewModel @Inject constructor(
    *
    */
   private suspend fun getFloorplanSafeCall(FH: LevelWrapper) {
-    val method = ::getFloorplanSafeCall.name
-    LOG.E(tag, "$method: remote")
+    val MT = ::getFloorplanSafeCall.name
+    LOG.E(TG, "$MT: remote")
     levelplanImg.update { NetworkResult.Loading() }
 
     if (app.hasInternet()) {
@@ -196,8 +196,8 @@ open class CvViewModel @Inject constructor(
 
   open fun processDetections(recognitions: List<Classifier.Recognition>,
                              activity: DetectorActivityBase) {
-    val method = ::processDetections.name
-    LOG.V2(tag, "$method: ${recognitions.size}")
+    val MT = ::processDetections.name
+    LOG.V2(TG, "$MT: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)
@@ -210,8 +210,8 @@ open class CvViewModel @Inject constructor(
    * Update [detections] that are related only to the localization window.
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
-    val method = :: updateDetectionsLocalization.name
-    LOG.W(tag, "$method: updating for localization..")
+    val MT = :: updateDetectionsLocalization.name
+    LOG.W(TG, "$MT: updating for localization..")
     currentTime = System.currentTimeMillis()
     val appendedDetections = detectionsLOC.value + detections
 
@@ -219,16 +219,16 @@ open class CvViewModel @Inject constructor(
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
         statusLocalization.tryEmit(LocalizationStatus.stopped)
         if (appendedDetections.isNotEmpty()) {
-          LOG.W(tag, "$method: stop: objects: ${appendedDetections.size}")
+          LOG.W(TG, "$MT: stop: objects: ${appendedDetections.size}")
           // deduplicate detections (as we are scanning things in a window of a few seconds)
           val detectionsDedup = detectionsLOC.value
           // val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
 
-          LOG.W(tag, "$method: stop: objects: ${detectionsDedup.size} (dedup)")
+          LOG.W(TG, "$MT: stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
           if (!app.cvUtils.isModelInited()) {
-            LOG.E(tag, "CvUtils: classes not inited")
+            LOG.E(TG, "CvUtils: classes not inited")
             return
           }
 
@@ -236,19 +236,19 @@ open class CvViewModel @Inject constructor(
 
           detectionsLOC.value = emptyList()
         } else {
-          LOG.W(tag, "$method: stopped. no detections..")
+          LOG.W(TG, "$MT: stopped. no detections..")
         }
       } else -> {  // Within a window
       detectionsLOC.value = appendedDetections as MutableList<Classifier.Recognition>
-      LOG.D5(tag, "$method: append: ${appendedDetections.size}")
+      LOG.D5(TG, "$MT: append: ${appendedDetections.size}")
     }
     }
   }
 
   var collectingCvLocalization = false
   fun localizeCvMap(recognitions: List<Classifier.Recognition>) {
-    val method = ::localizeCvMap.name
-    LOG.D2(tag, "$method: performing remote localization")
+    val MT = ::localizeCvMap.name
+    LOG.D2(TG, "$MT: performing remote localization")
 
     // TODO convert detections
     val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)
@@ -284,62 +284,53 @@ open class CvViewModel @Inject constructor(
   }
 
   /** TODO in new class
+   * If there was a previous level selection, it picks that.
+   * Otherwise:
+   * - it picks `0` if exists
+   * - else the smallest level
    * Selects the first available floor, or the last floor that was picked
    * for a particular space.
    */
   fun selectInitialLevel() {
-    val method = ::selectInitialLevel.name
+    val MT = ::selectInitialLevel.name
     LOG.V2()
-    LOG.E(tag,"$method: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
+    LOG.E(TG,"$MT: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
 
-    if (!app.wLevels.hasFloors()) {  // space has no floors
+    if (!app.wLevels.hasLevels()) {  // space has no floors
       val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
-      LOG.W(tag, "$method: msg")
+      LOG.W(TG, "$MT: msg")
       app.snackbarWarning(viewModelScope, msg)
       app.level.update { null }
     }
 
-    LOG.E(tag, "$method: XXX: app.space: ${app.space?.buid}")
-    LOG.E(tag, "$method: XXX: app.wSpace: ${app.wSpace.obj.buid}")
-    LOG.E(tag, "$method: XXX: app.level: ${app.level.value?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.wSpace: ${app.wLevel?.wSpace?.obj?.buid}")
-    LOG.E(tag, "$method: XXX: app.wLevel.: ${app.wLevel?.obj?.buid}")
+    LOG.E(TG, "$MT: XXX: app.space: ${app.space?.buid}")
+    LOG.E(TG, "$MT: XXX: app.wSpace: ${app.wSpace.obj.buid}")
+    LOG.E(TG, "$MT: XXX: app.level: ${app.level.value?.buid}")
+    LOG.E(TG, "$MT: XXX: app.wLevel.wSpace: ${app.wLevel?.wSpace?.obj?.buid}")
+    LOG.E(TG, "$MT: XXX: app.wLevel.: ${app.wLevel?.obj?.buid}")
 
     if (app.wSpace.hasLastValuesCached()) {
-      LOG.E(tag, "$method: HAS last values cached")
+      LOG.E(TG, "$MT: HAS last values cached")
       val lastVal = app.wSpace.loadLastValues()
-      LOG.E(tag, "$method: Space: ${app.wSpace.obj.name} has last floor: ${lastVal.lastFloor}")
-      if (lastVal.lastFloor!=null) {
-        LOG.E(tag, "$method: lastVal cache: ${app.wSpace.prettyLevel}${lastVal.lastFloor}.")
-        val lastLevel = app.wLevels.getFloor(lastVal.lastFloor!!)!!
-        LOG.E(tag, "$method: lastLevel: ${lastLevel.name} ${lastLevel.buid}")
+      LOG.E(TG, "$MT: Space: ${app.wSpace.obj.name} has last floor: ${lastVal.lastFloor}")
+      if (lastVal.lastFloor != null) {
+        LOG.E(TG, "$MT: lastVal cache: ${app.wSpace.prettyLevel}${lastVal.lastFloor}.")
+        val lastLevel = app.wLevels.getLevel(lastVal.lastFloor!!)!!
+        LOG.E(TG, "$MT: lastLevel: ${lastLevel.name} ${lastLevel.buid}")
         app.level.update { lastLevel }
       }
       lastValSpaces = lastVal
     } else {
-      LOG.E(tag, "$method: NO last values cached")
-      LOG.W(tag, "$method: loading first level")
-      // TODO:PMX: load first level here
-      // TODO:PMX: load first level here
-      // LEFTHERE
-      // LEFTHERE
-      // LEFTHERE
-      // LEFTHERE
+      // try to get level 0. if not exists, get 1st available floor
+      // e.g. 1. a building might have just floors 3, and 4. it will pick 3
+      // e.g. 1. a building might have floors -3 to 3. it will pick 0
+      LOG.E(TG, "$MT: WILL load first level")
+      val pickedLevel = app.wLevels.getLevel(0) ?: app.wLevels.getFirstLevel()
+      app.level.update { pickedLevel }
+      LOG.E(TG, "$MT: firstLevel: ${pickedLevel.name} ${pickedLevel.buid}")
     }
 
-    if (app.level.value == null)  {
-      LOG.E(tag, "$method: WILL load first")
-
-      LOG.V3(tag, "$method: Loading first ${app.wSpace.prettyLevel}.")
-
-      val firstLevel = app.wLevels.getFirstLevel()
-      LOG.E(tag, "$method: firstLevel: ${firstLevel.name} ${firstLevel.buid}")
-      app.level.update { firstLevel }
-    } else {
-      LOG.E(tag, "$method: DID NOT load first")
-    }
-
-    LOG.E(tag, "$method: Selected ${app.wSpace.obj.buid}/${app.level.value?.buid} ${app.wSpace.prettyLevel}: ${app.level.value!!.number}")
+    LOG.E(TG, "$MT: Selected ${app.wSpace.obj.buid}/${app.level.value?.buid} ${app.wSpace.prettyLevel}: ${app.level.value!!.number}")
   }
 
   // TODO:PM network manager? ineternet connectiovity?
@@ -423,12 +414,11 @@ open class CvViewModel @Inject constructor(
 
             // show notification on smas
             if (attachedActivityId==ACT_NAME_SMAS) {
-              var msg = "Please localize or set location manually."
-              if (dsCvMap.read.first().autoSetInitialLocation) {
-                msg="Previous location expired.\nPlease localize or set it manually"
-              }
-
-              app.snackbarLong(viewModelScope, msg)
+              // var msg = "Please localize or set location manually."
+              // if (dsCvMap.read.first().autoSetInitialLocation) {
+              //   // msg="Previous location expired.\nPlease localize or set it manually"
+              // }
+              // app.snackbarLong(viewModelScope, msg)
             }
           }
         }

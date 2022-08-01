@@ -6,12 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
@@ -31,6 +32,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
 
   companion object {
+    private const val TG = "adapter-spaces"
     fun from(parent: ViewGroup, app: AnyplaceApp, act: SelectSpaceActivity,
              scope: CoroutineScope): MyViewHolder {
       val layoutInflater = LayoutInflater.from(parent.context)
@@ -42,14 +44,13 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
   private var spaces = emptyList<Space>()
 
-
   class MyViewHolder(
           private val binding: RowSpaceBinding,
           private val app: AnyplaceApp,
           val act: SelectSpaceActivity,
           private val scope: CoroutineScope,
   ):
-    RecyclerView.ViewHolder(binding.root) {
+          RecyclerView.ViewHolder(binding.root) {
 
     fun bind(space: Space, act: SelectSpaceActivity) {
       binding.space = space
@@ -62,19 +63,16 @@ class SpacesAdapter(private val app: AnyplaceApp,
         val activeTag = "downloading-button"
         val btn = binding.btnSelectSpace
 
-        // LEFTHERE: minor thing on downloading.
-       if (app.spaceSelectionInProgress)  {
-         val tagStr = if (btn.tag == null) "" else btn.tag.toString()
-         if (tagStr != activeTag) {
-           act.utlUi.attentionInvalidOption(btn)
-         }
-
-         return@setOnClickListener
-       }
+        if (app.spaceSelectionInProgress)  {
+          val tagStr = if (btn.tag == null) "" else btn.tag.toString()
+          if (tagStr != activeTag) {
+            act.utlUi.attentionInvalidOption(btn)
+          }
+          return@setOnClickListener
+        }
         app.spaceSelectionInProgress=true
 
-        LOG.W(TAG, "Selecting Space: ${space.name} ${space.buid}")
-
+        LOG.W(TG, "selecting Space: ${space.name} ${space.buid}")
 
         scope.launch(Dispatchers.IO) {
           app.dsCvMap.setSelectedSpace(space.buid) // store the sapce
@@ -92,24 +90,16 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.utlUi.changeBackgroundMaterial(btn, R.color.green)
           btn.tag=activeTag
 
-          // 1. Download JSON objects for the Space and all the Floors
-          val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
-          val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
+          // Reset some VM state
+          act.VM.dbqSpaces.loaded=false
+          act.VM.dbqSpaces.runnedInitialQuery=false
+          app.backToSpaceSelectorFromOtherActivities=true
 
-          if (!gotSpace || !gotFloors) {
-            app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
-            app.spaceSelectionInProgress=false
-            act.finishAndRemoveTask()
-          }
 
-          // 2. Load the downloaded objects
-          app.initializeSpace(scope,
-                  app.cache.readJsonSpace(prefsCv.selectedSpace),
-                  app.cache.readJsonFloors(prefsCv.selectedSpace))
 
-          // 3. Download floorplans
-          app.wLevels.showedMsgDownloading=true
-          app.wLevels.fetchAllFloorplans(act.VMcv)
+
+          downloadSpaceResources(prefsCv)
+
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)
@@ -118,9 +108,9 @@ class SpacesAdapter(private val app: AnyplaceApp,
             act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
             btn.tag=null
 
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
 
             val userAP = app.dsUserAP.read.first()
             StartActivity.openActivity(prefsCv, userAP, act)
@@ -130,17 +120,70 @@ class SpacesAdapter(private val app: AnyplaceApp,
         }
       }
     }
+
+    /**
+     * Caches all resources of a space, so the next activity will have them already in cache
+     * These are:
+     * - Json of Space and Levels (needed anyway to open a space)
+     * - Level plan (base64 bitmap of floorplans/deckplans)
+     * - POIs, and Connections
+     */
+    suspend fun downloadSpaceResources(prefsCv: CvMapPrefs) {
+      // must be in this order
+      downloadSpaceAndLevels(prefsCv) // needed first
+      loadSpaceAndLevels(prefsCv)
+      downloadFloorplans()
+      downloadConnectionsAndPois()
+    }
+
+    /**
+     *  Download JSON objects for the Space and all the Floors
+     */
+    private suspend fun downloadSpaceAndLevels(prefsCv: CvMapPrefs) {
+      val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
+      val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
+
+      if (!gotSpace || !gotFloors) {
+        app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
+        app.spaceSelectionInProgress=false
+        act.finishAndRemoveTask()
+      }
+    }
+
+    /**
+     * 2. Load the downloaded objects
+     */
+    private fun loadSpaceAndLevels(prefsCv: CvMapPrefs) {
+      app.initializeSpace(scope,
+              app.cache.readJsonSpace(prefsCv.selectedSpace),
+              app.cache.readJsonFloors(prefsCv.selectedSpace))
+    }
+
+    private suspend fun downloadFloorplans() {
+      app.wLevels.showedMsgDownloading=true
+      app.wLevels.fetchAllFloorplans(act.VMcv)
+    }
+
+    private suspend fun downloadConnectionsAndPois() {
+      if (app.space!=null && !act.VMcv.cache.hasSpaceConnectionsAndPois(app.space!!)) {
+        LOG.D2(TAG, "Fetching POIs and Connections..")
+        act.VMcv.nwPOIs.callBlocking(app.space!!.buid)
+        act.VMcv.nwConnections.callBlocking(app.space!!.buid)
+      }
+    }
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-    LOG.V5(TAG, "$METHOD")
     return from(parent, app, act, scope)
   }
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-    LOG.V5(TAG, "$METHOD: position: $position (sz: ${spaces.size})")
-    val currentSpace = spaces[position]
-    holder.bind(currentSpace, holder.act)
+    val MT = "onBindViewHolder"
+    LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
+    if (spaces.isNotEmpty()) {
+      val currentSpace = spaces[position]
+      holder.bind(currentSpace, holder.act)
+    }
   }
 
   override fun getItemCount(): Int {
@@ -155,7 +198,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
    *    - updates the whole RV.
    */
   fun setData(newSpaces: Spaces) {
-    LOG.V5(TAG, "setData: ${newSpaces.spaces.size}")
+    LOG.V5(TG, "setData: ${newSpaces.spaces.size}")
 
     try {
       val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
@@ -165,12 +208,11 @@ class SpacesAdapter(private val app: AnyplaceApp,
         diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
       }
     } catch (e: Exception) {
-      LOG.E(TAG, "setData: EXCEPTION: ${e.message}")
+      LOG.E(TG, "setData: EXCEPTION: ${e.message}")
     }
   }
 
   fun clearData() {
-    LOG.D2()
     val size = spaces.size
     scope.launch(Dispatchers.IO) {
       spaces = emptyList()

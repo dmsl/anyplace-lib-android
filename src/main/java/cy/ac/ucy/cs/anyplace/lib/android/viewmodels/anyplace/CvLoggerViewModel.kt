@@ -43,15 +43,15 @@ enum class TimerAnimation { running,  reset  }
  */
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
-  application: Application,
-  dsCv: CvDataStore,
-  dsCvMap: CvMapDataStore,
-  dsMisc: SpaceSelectorDS,
+        application: Application,
+        dsCv: CvDataStore,
+        dsCvMap: CvMapDataStore,
+        dsMisc: SpaceFilterDS,
         // dsCvLog: CvLoggerDataStore,
-  repoAP: RepoAP,
-  repoSmas: RepoSmas,
-  RHap: RetrofitHolderAP,
-  RHsmas: RetrofitHolderSmas):
+        repoAP: RepoAP,
+        repoSmas: RepoSmas,
+        RHap: RetrofitHolderAP,
+        RHsmas: RetrofitHolderSmas):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
 
   private val C by lazy { SMAS(app.applicationContext) }

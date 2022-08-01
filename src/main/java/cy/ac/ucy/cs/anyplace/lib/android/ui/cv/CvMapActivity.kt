@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -15,11 +16,13 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
@@ -51,6 +54,8 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
+  private val TG = "ACT-CVM"
+
   // ALL THESE COMPONENTS MUST BE PROVIDED TO ANY CLASS THAT INHERITS [CvMapActivity]
   //// PROVIDE TO BASE CLASS [CameraActivity]:
   override val layout_activity: Int get() = R.layout.example_cvmap
@@ -91,40 +96,27 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
-  private val TAG = "ACT-CVM"
-
   lateinit var VMsensor: SensorsViewModel
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
-
-    // CLR:PM
-    // XXX: GET THE EXTRAS !!!!
-    // val extras = requireActivity().intent.extras
-    // spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, SettingsCvActivity.ARG_SPACE)
-    // floorsH = IntentExtras.getFloors(spaceH, extras, SettingsCvActivity.ARG_FLOORS)
-    // floorH = IntentExtras.getFloor(spaceH, extras, SettingsCvActivity.ARG_FLOOR)
-
-    // app.showSnackbarInf(lifecycleScope, "Testing msg here")
-    // app.showSnackbarInf(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
-    // app.showSnackbarInfDEV(lifecycleScope, "Testing msg here")
-    // app.showSnackbarInfDEV(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
   }
 
   override fun postResume() {
     super.postResume()
+    val MT = ::postResume.name
 
     VM = _vm as CvViewModel
     VM.setAttachedActivityId(actName)
 
-    LOG.D(TAG, METHOD)
+    LOG.D(TG, MT)
 
     updateModelName()
 
     lifecycleScope.launch(Dispatchers.IO) {
-      LOG.D(TAG, "CvMap: $METHOD: getting models.. CvModels")
-      LOG.I(TAG, "FUTURE: get fingerprints too here?")
+      LOG.D(TG, "CvMap: $MT: getting models.. CvModels")
+      LOG.I(TG, "FUTURE: get fingerprints too here?")
       // FUTURE: with a new backend endpoint, we could try to auto-update the local fingerprints given connectivity
       // - the backend must provide timestamp TS on Fingerprint download
       // - that TS should also be materialized (SQLite or DataStore)
@@ -138,7 +130,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.D2()
+    LOG.E(TG, "onResume")
 
     continueWithPrefs()
   }
@@ -152,7 +144,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun continueWithPrefs() {
     lifecycleScope.launch(Dispatchers.IO) {
       val method = METHOD
-      LOG.W(TAG, method)
+      LOG.W(TG, method)
 
       dsCv.read.first { prefs ->
         VM.prefsCv= prefs
@@ -161,24 +153,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
 
       if (!DBG.SLR) {
-        LOG.E(TAG, "$method: Forcing space: $BUID_HARDCODED")
+        LOG.E(TG, "$method: Forcing space: $BUID_HARDCODED")
         dsCvMap.setSelectedSpace(BUID_HARDCODED)
       }
 
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
-        if (DBG.SLR) {
-          if (prefs.selectedSpace.isEmpty() || app.mustSelectSpaceForCvMap) {
-            app.mustSelectSpaceForCvMap=false // handled below
-            app.showToast(lifecycleScope, "Please re-run app.")
-            // val intent = Intent(app.applicationContext, SelectSpaceActivity::class.java)
-            // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            // startActivity(intent)
-            finishAndRemoveTask()
-          }
-        }
-
-        LOG.E(TAG, "$method: SELECTED SPACE ID: '${prefs.selectedSpace}'")
+        // checkIfSpaceRemoved(prefs)
+        LOG.E(TG, "$method: SELECTED SPACE ID: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
       }
@@ -186,6 +168,18 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       VM.reactToPrefChanges()
     }
   }
+
+  // private fun checkIfSpaceRemoved(prefs: CvMapPrefs) {
+  //   if (DBG.SLR) {
+  //     if (prefs.selectedSpace.isEmpty() || app.mustSelectSpaceForCvMap) {
+  //       app.mustSelectSpaceForCvMap=false // handled below
+  //       val intent = Intent(app.applicationContext, SelectSpaceActivity::class.java)
+  //       intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+  //       startActivity(intent)
+  //       finishAndRemoveTask()
+  //     }
+  //   }
+  // }
 
   // CHECK: is this needed
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
@@ -212,7 +206,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   abstract fun setupUiAfterGmap()
 
   protected open fun setupUi() {
-    LOG.E(TAG, "setupUi")
+    LOG.E(TG, "setupUi")
     setupUiFloorSelector()
     setupUiGmap()
 
@@ -223,7 +217,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvMap.read.collect {
-        LOG.V4(TAG, "reacting for BottomSheet")
+        LOG.V4(TG, "reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
         VM.uiBottomInited=true
@@ -266,10 +260,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   var initedGmap = false
   private fun setupUiGmap() {
-    LOG.E(TAG, "Setup CommonUI & GMap")
+    LOG.E(TG, "Setup CommonUI & GMap")
     if (initedGmap) return
 
-    LOG.W(TAG, "SETUP CommonUI & GMAP: ACTUAL INIT")
+    LOG.W(TG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
 
     VM.ui = CvUI(
@@ -280,7 +274,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             id_btn_whereami,
     )
 
-    LOG.W(TAG, "$METHOD: ui (component) is now loaded.")
+    LOG.W(TG, "$METHOD: ui (component) is now loaded.")
     VM.ui.map.attach(VM, this, R.id.mapView)
     VM.mu = IMU(this,VM, VM.ui.map)
     VM.uiComponentInited=true
@@ -291,7 +285,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun setMapOpacity() {
     val view = findViewById<View>(id_gmap)
     val value =VM.prefsCvMap.mapAlpha.toInt()
-    LOG.E(TAG, "$METHOD: setting opacity: $value")
+    LOG.E(TG, "$METHOD: setting opacity: $value")
     view.alpha=value/100f
   }
 
@@ -299,7 +293,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    LOG.I(TAG, "onMapReadyCallback: [CvMap]")
+    LOG.I(TG, "onMapReadyCallback: [CvMap]")
 
     VM.ui.map.setup(googleMap, this)
     lifecycleScope.launch(Dispatchers.Main) {
@@ -328,7 +322,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch {
       VM.detectionsLOC.collectLatest {
         it.forEach { rec ->
-          LOG.E(TAG, "Detection: ${rec.id} ${rec.title}")
+          LOG.E(TG, "Detection: ${rec.id} ${rec.title}")
         }
       }
     }
@@ -338,11 +332,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   var firstLevelLoaded = false
 
   open fun onFirstLevelLoaded() {
-    LOG.D2(TAG, "First floor loaded: ${app.wLevel?.floorNumber()}")
+    LOG.D2(TG, "First floor loaded: ${app.wLevel?.floorNumber()}")
   }
 
   open fun onLevelLoaded() {
-    LOG.D2(TAG, "Floor loaded: ${app.wLevel?.floorNumber()}")
+    LOG.D2(TG, "Floor loaded: ${app.wLevel?.floorNumber()}")
     lifecycleScope.launch(Dispatchers.IO) {
       if (app.wLevel != null) {
         VM.waitForUi()
@@ -368,7 +362,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       if (!DBG.uim) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
-        LOG.D2(TAG, "Fetching POIs and Connections..")
+        LOG.D2(TG, "Fetching POIs and Connections..")
         VM.nwPOIs.callBlocking(app.space!!.buid)
         VM.nwConnections.callBlocking(app.space!!.buid)
       }
@@ -390,8 +384,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       app.level.collect { level ->
         if (level == null) return@collect
 
-        LOG.W(TAG, "$method: collected level: ${level.buid}")
-        LOG.W(TAG, "$method: collected level: ${level.number}")
+        LOG.W(TG, "$method: collected level: ${level.buid}")
+        LOG.W(TG, "$method: collected level: ${level.number}")
 
         // update FloorWrapper & FloorSelector
         app.wLevel = LevelWrapper(level, app.wSpace)
@@ -403,10 +397,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           onFirstLevelLoaded()
         }
 
-        LOG.V3(TAG, "$METHOD: -> level: ${level.number}")
-        LOG.V2(TAG, "$METHOD: -> updating cache: level: ${app.level.value?.number}")
+        LOG.V3(TG, "$METHOD: -> level: ${level.number}")
+        LOG.V2(TG, "$METHOD: -> updating cache: level: ${app.level.value?.number}")
         VM.ui.map.fHandler.cacheLastLevel(app.level.value)
-        LOG.V2(TAG, "$METHOD: -> loadFloor: ${level.number}")
+        LOG.V2(TG, "$METHOD: -> loadFloor: ${level.number}")
         VM.ui.levelSelector.lazilyChangeLevel(VM, lifecycleScope)
 
         onLevelLoaded()
@@ -432,14 +426,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         }
         is LocalizationResult.Success -> {
           val usedMethod = LocalizationResult.getUsedMethod(result)
-          LOG.W(TAG, "Collected: method: $usedMethod")
+          LOG.W(TG, "Collected: method: $usedMethod")
           result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
           val coord = result.coord!!
           val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
-          LOG.E(TAG, msg)
+          LOG.E(TG, msg)
           val curFloor = app.wLevel?.floorNumber()
           if (coord.level != curFloor) {
-            LOG.W(TAG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
+            LOG.W(TG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
             // app.showToast(lifecycleScope, )
           }
 
@@ -456,12 +450,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   fun updateModelName() {
     val method = METHOD
-    LOG.W(TAG, method)
+    LOG.W(TG, method)
     lifecycleScope.launch(Dispatchers.IO) {
       while (!VM.detectorLoaded) delay(100)
 
       val modelInfo = "$actName | ${VM.model.modelName}"
-      LOG.W(TAG, "$method: $modelInfo")
+      LOG.W(TG, "$method: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
     }
   }

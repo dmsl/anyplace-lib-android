@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils.imu
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
@@ -92,6 +93,12 @@ class IMU(
     if (ActivityCompat.checkSelfPermission(act,
                     Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED)
       permissions.add(Manifest.permission.ACTIVITY_RECOGNITION)
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      if (ActivityCompat.checkSelfPermission(act,
+                      Manifest.permission.HIGH_SAMPLING_RATE_SENSORS) != PackageManager.PERMISSION_GRANTED)
+        permissions.add(Manifest.permission.HIGH_SAMPLING_RATE_SENSORS)
+    }
 
 
     val ALL_PERMISSIONS = 101

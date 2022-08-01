@@ -23,7 +23,7 @@ val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dsAnyplace: AnyplaceDataStore get() = this.app.dsAnyplace
 val Activity.dsCv: CvDataStore get() = this.app.dsCv
 val Activity.dsCvMap: CvMapDataStore get() = this.app.dsCvMap
-val Activity.dsMisc: SpaceSelectorDS get() = this.app.dsSpaceSelector
+val Activity.dsMisc: SpaceFilterDS get() = this.app.dsSpaceSelector
 val Activity.dsUserAP: ApUserDataStore get() = this.app.dsUserAP
 
 val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
@@ -39,6 +39,7 @@ const val TAG_ANYPLACE = "anyplace"
  * Simpler version:
  * val Any.TAG : String get() = "ap_${this::class.java.simpleName}"
 */
+@Deprecated("dont use. See LOGGING.md")
 val Any.TAG: String get()  {
   var i=2
   while (true) {
@@ -83,7 +84,10 @@ val Any.TAG: String get()  {
  * frame 1: getStackTrace
  * frame 2: getMETHOD
  * frame 3: getTAG_METHOD (some times.. depends where it is called from
+ *
+ * TODO: use val MT = ::theMethodsName.name
  */
+@Deprecated("dont use. See LOGGING.md")
 val Any.METHOD: String get()  {
   try {
     var i=2
