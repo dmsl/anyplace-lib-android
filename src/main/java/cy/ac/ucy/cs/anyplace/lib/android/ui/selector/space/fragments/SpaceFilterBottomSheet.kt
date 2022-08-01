@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
@@ -15,11 +14,13 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.FilterSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -27,34 +28,37 @@ import kotlinx.coroutines.launch
  * This crashes. dont use.
  */
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
+  val TG = "bsheet-space-filter"
 
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
   private lateinit var VM: AnyplaceViewModel
 
   private lateinit var C : CONST
-  private lateinit var queryOwnershipStr : String
-  private lateinit var querySpaceTypeStr : String
+  private lateinit var ownershipStr : String
+  private lateinit var spaceTypeStr : String
+
   /** These are chip IDs, used to filter on user ownership of a space:
    * - public: viewed by all
    * - owner: user has created this building
    * - accessible: user is co-owner
    * */
-  private var queryOwnershipId = 0
+  private var ownershipId = 0
   /** These are chip IDs, used to filter on the type space (building, vessel) */
-  private var querySpaceTypeId= 0
+  private var spaceTypeId= 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    LOG.D2()
-
+    val MT = ::onCreate.name
+    LOG.D2(TG, MT)
   }
 
   override fun onCreateView(
-    inflater: LayoutInflater, container: ViewGroup?,
-    savedInstanceState: Bundle?
+          inflater: LayoutInflater, container: ViewGroup?,
+          savedInstanceState: Bundle?
   ): View {
-    LOG.D2()
+    val MT = ::onCreateView.name
+    LOG.W(TG, MT)
 
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
@@ -64,75 +68,131 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     val activity = requireActivity()
     VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
     C=CONST(activity)
-    queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
-    querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
+    ownershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
+    spaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
 
-    lifecycleScope.launch {
-      if (VM.dbqSpaces.runnedInitialQuery && VM.dbqSpaces.readSpacesQuery.first().isEmpty()) {
-        app.snackbarShort(VM.viewModelScope, "Reset filters: previous query was empty!")
+    setInitialChipStates()
+    setupChipClicks()
+    setupButtonApply()
+
+    return binding.root
+  }
+
+  /**
+   * Update filters based on the stored query
+   */
+  private fun setInitialChipStates() {
+    val MT = ::setInitialChipStates.name
+
+    lifecycleScope.launch(Dispatchers.IO) {
+      // val value = app.dbqSpaces.storedFilter.first()
+
+      app.dsSpaceSelector.readSpaceFilter.collectLatest { value ->
+        LOG.E(TG, "$MT: new value: $value")
+        LOG.E(TG, "$MT: onwerIt: ${value.ownership}: ${value.ownershipId}")
+        LOG.E(TG, "$MT: type: ${value.spaceType}: ${value.spaceTypeId}")
+
+        // UPDATING LOCAL VARIABLES..
+        ownershipStr = value.ownership.toString()
+        spaceTypeStr = value.spaceType.toString()
+
+
+        // UPDATE FILTER. WHY?!1
+        // val ownership = SpaceOwnership.valueOf(ownershipStr)
+        // val spaceType = SpaceType.valueOf(spaceTypeStr)
+        // val filter = FilterSpaces(ownership, ownershipId, spaceType, spaceTypeId)
+        // LOG.E(TG, "$MT: filter: $filter")
+        // LOG.E(TG, "$MT: onwerIt: ${ownership}: ${ownershipStr}")
+        // LOG.E(TG, "$MT: type: ${spaceType}: ${spaceTypeStr}")
+        // app.dbqSpaces.updateTempFilter(filter)
+
+        updateChip(value.ownershipId, binding.chipGroupOwnership)
+        updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
+      }
+
+      // ownershipStr = value.ownership.toString()
+      // spaceTypeStr = value.spaceType.toString()
+      // // val ownership = SpaceOwnership.valueOf(ownershipStr)
+      // // val spaceType = SpaceType.valueOf(spaceTypeStr)
+      //
+      // // val filter = FilterSpaces(ownership, ownershipId, spaceType, spaceTypeId)
+      // // app.dbqSpaces.updateTempFilter(value)
+      // updateChip(value.ownershipId, binding.chipGroupOwnership)
+      // updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
+    }
+
+    // app.dbqSpaces.storedFilter.asLiveData().observe(viewLifecycleOwner) { value ->
+    //   ownershipStr = value.ownership.toString()
+    //   spaceTypeStr = value.spaceType.toString()
+    //   val ownership = SpaceOwnership.valueOf(ownershipStr)
+    //   val spaceType = SpaceType.valueOf(spaceTypeStr)
+    //   val filter = FilterSpaces(ownership, ownershipId, spaceType, spaceTypeId)
+    //   app.dbqSpaces.updateTempFilter(filter)
+    //   updateChip(value.ownershipId, binding.chipGroupOwnership)
+    //   updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
+    // }
+  }
+
+  private fun setupButtonApply() {
+    val MT = ::setupButtonApply.name
+    binding.applyButton.setOnClickListener {
+      val ownership = SpaceOwnership.valueOf(ownershipStr)
+      val spaceType = SpaceType.valueOf(spaceTypeStr)
+
+      val filter = FilterSpaces(ownership, ownershipId, spaceType, spaceTypeId)
+
+      if (app.dbqSpaces.filterChanged(filter) || app.dbqSpaces.wasReset) {
+        if (app.dbqSpaces.filterChanged(filter)) {
+          LOG.E(TG, "FITLER HAS CHANGED: $filter")
+          app.dbqSpaces.printTempFilter()
+        } else {
+          LOG.E(TG, "FILTER has not changed")
+        }
+
+        if (app.dbqSpaces.wasReset) {
+          LOG.E(TG, "FITLER WAS RESET")
+        } else {
+          LOG.E(TG, "FILTER was NOT reset")
+        }
+
+        app.dbqSpaces.wasReset=false
+        app.dbqSpaces.updateTempFilter(filter)
+
+        // send action, so a query will run
+        val action = SpaceFilterBottomSheetDirections
+                .actionSpaceFilterBottomSheetToSpacesListFragment(true)
+        findNavController().navigate(action)
+      } else {
+        LOG.E(TG,"$MT: no changes: dismissing bsheet")
+        this@SpaceFilterBottomSheet.dismiss()
       }
     }
+  }
 
-    VM.dbqSpaces.storedQuery.asLiveData().observe(viewLifecycleOwner) { value ->
-      queryOwnershipStr = value.ownership.toString()
-      querySpaceTypeStr = value.spaceType.toString()
-      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
-      val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
-
-      // initialize the query
-      VM.dbqSpaces.saveQueryTypeTemp(
-              queryOwnership, queryOwnershipId,
-              querySpaceType, querySpaceTypeId)
-
-      updateChip(value.ownershipId, binding.chipGroupOwnership)
-      updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
-
-      LOG.D2(TAG, "Spaces Query: Ownership: $queryOwnershipStr Type: $querySpaceTypeStr")
-    }
-
+  private fun setupChipClicks() {
     binding.chipGroupOwnership.setOnCheckedChangeListener { group, chipId ->
       val chip = group.findViewById<Chip>(chipId)
-      queryOwnershipStr = chip.text.toString().uppercase()
-      queryOwnershipId = chipId
+      ownershipStr = chip.text.toString().uppercase()
+      ownershipId = chipId
     }
 
     binding.chipGroupSpaceType.setOnCheckedChangeListener { group, chipId ->
       val chip = group.findViewById<Chip>(chipId)
-      querySpaceTypeStr = chip.text.toString().uppercase()
-      querySpaceTypeId = chipId
+      spaceTypeStr = chip.text.toString().uppercase()
+      spaceTypeId = chipId
     }
-
-    binding.applyButton.setOnClickListener {
-      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
-      val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
-
-      // CHECK storing temp, and below permanent (datastore).
-      // must do: if query is null, then don't store it.
-      VM.dbqSpaces.saveQueryTypeTemp(
-        queryOwnership, queryOwnershipId,
-        querySpaceType, querySpaceTypeId)
-
-      // TODO: if query does not return empty results, then store it.. (after it's performed)
-      // or: keep the previous query and swap it
-      VM.dbqSpaces.saveQueryTypeDataStore()
-
-      // LOG.E(TAG, "BUG: SpaceFilterBottomSheetDirections might be using obsolete code")
-      val action = SpaceFilterBottomSheetDirections
-          .actionSpaceFilterBottomSheetToSpacesListFragment(true)
-      findNavController().navigate(action)
-    }
-
-    return binding.root
   }
 
   private fun updateChip(chipId: Int, chipGroup: ChipGroup) {
     if(chipId != 0) {
       try {
-        val targetView = chipGroup.findViewById<Chip>(chipId)
-        targetView.isChecked = true
-        chipGroup.requestChildFocus(targetView, targetView)
+        lifecycleScope.launch(Dispatchers.Main) {
+          val targetView = chipGroup.findViewById<Chip>(chipId)
+          targetView.isChecked = true
+          chipGroup.requestChildFocus(targetView, targetView)
+        }
       } catch(e: Exception) {
-        LOG.D2(TAG, "$METHOD: ${e.message}")
+        LOG.D2(TG, "$METHOD: ${e.message}")
       }
     }
   }
