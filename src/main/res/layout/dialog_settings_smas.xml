@@ -167,9 +167,9 @@
         app:layout_constraintVertical_bias="0.0"
         app:backgroundTint="@null" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_changeSpace"
-        app:icon="@drawable/ic_building"
+        android:drawableLeft="@drawable/ic_building"
         android:layout_marginStart="0dp"
         android:layout_marginTop="0dp"
         android:text="@string/change_space"
