@@ -2,15 +2,12 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilter
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
@@ -21,33 +18,31 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SpacesQueryDB(
-        private val app: AnyplaceApp,
         VM: AnyplaceViewModel,
         private val repo: RepoAP,
-        private val dsMisc: MiscDataStore,
+        private val dsMisc: SpaceFilterDS,
         ) {
+  val TG = "dbq-spaces"
 
   val scope = VM.viewModelScope
 
-  /** This is outdated.. */
   @Deprecated("outdated structure? use something else..")
   val searchViewData: MutableLiveData<String> = MutableLiveData()
-  private val C by lazy { CONST(app.applicationContext) }
 
+  /** workaround to force re-running the query when changing a space
+   * This is because the app stays open and some state is invalid.
+   * (terrible workaround, on terrible code)
+   */
   var loaded = false // TODO move in SpaceVM
-  private var querySelectSpace = QuerySelectSpace()
+  private var querySelectSpace = SpaceFilter()
 
-  //// DATASTORE
   /**
    * Persistently saves the query (in Misc DataStore)
    */
-  fun saveQueryTypeDataStore() =
-          scope.launch(Dispatchers.IO) { dsMisc.saveQuerySpace(querySelectSpace) }
+  fun saveQueryTypeDataStore() = scope.launch(Dispatchers.IO) { dsMisc.saveQuerySpace(querySelectSpace) }
 
   fun resetQuery()  {
-    scope.launch(Dispatchers.IO) {
-      dsMisc.saveQuerySpace(QuerySelectSpace())
-    }
+    scope.launch(Dispatchers.IO) { dsMisc.saveQuerySpace(SpaceFilter()) }
   }
 
   /**
@@ -56,37 +51,34 @@ class SpacesQueryDB(
   fun saveQueryTypeTemp(spaceOwnership: SpaceOwnership, ownershipId: Int,
                         spaceType: SpaceType, spaceTypeId: Int) {
     LOG.D(TAG, "Saving query type: $spaceOwnership $spaceType")
-    querySelectSpace= QuerySelectSpace(spaceOwnership, ownershipId, spaceType, spaceTypeId)
+    querySelectSpace= SpaceFilter(spaceOwnership, ownershipId, spaceType, spaceTypeId)
   }
 
-  fun saveQueryTypeTemp(query: QuerySelectSpace) { querySelectSpace=query }
+  fun saveQueryTypeTemp(queryFilter: SpaceFilter) { querySelectSpace=queryFilter }
 
   private fun saveQuerySpaceName(newText: String) {
     querySelectSpace.spaceName = newText
-    readSpacesQuery = repo.local.querySpaces(querySelectSpace)
+    spacesQuery = repo.local.querySpaces(querySelectSpace)
     loaded=false
   }
 
   fun applyQuery(newText: String) = saveQuerySpaceName(newText)
 
-  //// ROOM
-  var readSpacesQuery: Flow<List<SpaceEntity>> = MutableStateFlow(emptyList())
+  var spacesQuery: Flow<List<SpaceEntity>> = MutableStateFlow(emptyList())
 
   /** Storing the predicates for this query */
-  var storedQuery = dsMisc.readQuerySpace
+  var spaceFilter = dsMisc.readSpaceFilterFilter
 
   var runnedInitialQuery = false
   /**
    * Read all spaces
    */
-  fun runInitialQuery() {
+  suspend fun tryInitialQuery() {
+    val MT = ::tryInitialQuery.name
     if (!runnedInitialQuery) {
-      LOG.W(TAG, "$METHOD: ${querySelectSpace.spaceType}")
-
-      scope.launch {
-       repo.local.querySpaces(storedQuery.first())
-        readSpacesQuery = repo.local.querySpaces(storedQuery.first())
-      }
+      LOG.W(TG, "$MT: ${querySelectSpace.spaceType}")
+      repo.local.querySpaces(spaceFilter.first())
+      spacesQuery = repo.local.querySpaces(spaceFilter.first())
     }
     runnedInitialQuery = true
   }

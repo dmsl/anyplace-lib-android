@@ -29,7 +29,11 @@ import kotlinx.coroutines.flow.update
 /**
  * Sample activity for fetching [Spaces] and selecting one ([Space]) from the Anyplace backend.
  * The space is then stored to [CvMapActivity], and it is used in its child activities.
- * In general, it's written in a complicated way. Probably should be written from scratch, or scrapped altogether.
+ *
+ * It's written in a complicated way.
+ * Probably should be written from scratch, or scrapped altogether.
+ * This also applies to:
+ * - SpaceFilterBottomSheet, SpaceListFragment, SpaceAdapter
  *
  */
 @AndroidEntryPoint

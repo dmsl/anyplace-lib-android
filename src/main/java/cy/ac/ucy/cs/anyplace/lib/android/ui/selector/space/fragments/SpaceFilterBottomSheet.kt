@@ -26,37 +26,38 @@ import kotlinx.coroutines.launch
 
 /**
  * Filtering the [Spaces] of the [SpaceListFragment].
- * This crashes. dont use.
  */
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
+  val TG = "bsheet-space-filter"
 
   private var _binding: BottomSheetSpaceFilterBinding? = null
   private val binding get() = _binding!!
   private lateinit var VM: AnyplaceViewModel
 
   private lateinit var C : CONST
-  private lateinit var queryOwnershipStr : String
-  private lateinit var querySpaceTypeStr : String
+  private lateinit var ownershipStr : String
+  private lateinit var spaceTypeStr : String
   /** These are chip IDs, used to filter on user ownership of a space:
    * - public: viewed by all
    * - owner: user has created this building
    * - accessible: user is co-owner
    * */
-  private var queryOwnershipId = 0
+  private var ownershipId = 0
   /** These are chip IDs, used to filter on the type space (building, vessel) */
-  private var querySpaceTypeId= 0
+  private var spaceTypeId= 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    LOG.D2()
-
+    val MT = ::onCreate.name
+    LOG.D2(TG, MT)
   }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    LOG.D2()
+    val MT = ::onCreateView.name
+    LOG.D2(TG, MT)
 
     // Inflate the layout for this fragment
     _binding = BottomSheetSpaceFilterBinding.inflate(inflater, container, false)
@@ -66,65 +67,67 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
     val activity = requireActivity()
     VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
     C=CONST(activity)
-    queryOwnershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
-    querySpaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
+    ownershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
+    spaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
 
-    lifecycleScope.launch {
-      if (VM.dbqSpaces.runnedInitialQuery && VM.dbqSpaces.readSpacesQuery.first().isEmpty()) {
-        app.snackbarWarning(VM.viewModelScope, "Previous query had no results!")
-      }
-    }
-
-    VM.dbqSpaces.storedQuery.asLiveData().observe(viewLifecycleOwner) { value ->
-      queryOwnershipStr = value.ownership.toString()
-      querySpaceTypeStr = value.spaceType.toString()
-      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
-      val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
-
-      // initialize the query
-      VM.dbqSpaces.saveQueryTypeTemp(
-              queryOwnership, queryOwnershipId,
-              querySpaceType, querySpaceTypeId)
-
-      updateChip(value.ownershipId, binding.chipGroupOwnership)
-      updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
-
-      LOG.D2(TAG, "Spaces Query: Ownership: $queryOwnershipStr Type: $querySpaceTypeStr")
-    }
+    observeSpaceFilter()
 
     binding.chipGroupOwnership.setOnCheckedChangeListener { group, chipId ->
       val chip = group.findViewById<Chip>(chipId)
-      queryOwnershipStr = chip.text.toString().uppercase()
-      queryOwnershipId = chipId
+      ownershipStr = chip.text.toString().uppercase()
+      ownershipId = chipId
     }
 
     binding.chipGroupSpaceType.setOnCheckedChangeListener { group, chipId ->
       val chip = group.findViewById<Chip>(chipId)
-      querySpaceTypeStr = chip.text.toString().uppercase()
-      querySpaceTypeId = chipId
+      spaceTypeStr = chip.text.toString().uppercase()
+      spaceTypeId = chipId
     }
 
     binding.applyButton.setOnClickListener {
-      val queryOwnership = SpaceOwnership.valueOf(queryOwnershipStr)
-      val querySpaceType = SpaceType.valueOf(querySpaceTypeStr)
+      val queryOwnership = SpaceOwnership.valueOf(ownershipStr)
+      val querySpaceType = SpaceType.valueOf(spaceTypeStr)
 
-      // CHECK storing temp, and below permanent (datastore).
-      // must do: if query is null, then don't store it.
       VM.dbqSpaces.saveQueryTypeTemp(
-        queryOwnership, queryOwnershipId,
-        querySpaceType, querySpaceTypeId)
+        queryOwnership, ownershipId,
+        querySpaceType, spaceTypeId)
 
       // TODO: if query does not return empty results, then store it.. (after it's performed)
       // or: keep the previous query and swap it
       VM.dbqSpaces.saveQueryTypeDataStore()
 
-      // LOG.E(TAG, "BUG: SpaceFilterBottomSheetDirections might be using obsolete code")
       val action = SpaceFilterBottomSheetDirections
           .actionSpaceFilterBottomSheetToSpacesListFragment(true)
       findNavController().navigate(action)
     }
 
     return binding.root
+  }
+
+  /**
+   * Observe space filter in order to:
+   * - initialize the query in memory
+   * - update the chips ([Chip])
+   */
+  private fun observeSpaceFilter() {
+    val MT = ::observeSpaceFilter.name
+
+    VM.dbqSpaces.spaceFilter.asLiveData().observe(viewLifecycleOwner) { value ->
+      ownershipStr = value.ownership.toString()
+      spaceTypeStr = value.spaceType.toString()
+      val queryOwnership = SpaceOwnership.valueOf(ownershipStr)
+      val querySpaceType = SpaceType.valueOf(spaceTypeStr)
+
+      // initialize the query
+      VM.dbqSpaces.saveQueryTypeTemp(
+              queryOwnership, ownershipId,
+              querySpaceType, spaceTypeId)
+
+      updateChip(value.ownershipId, binding.chipGroupOwnership)
+      updateChip(value.spaceTypeId, binding.chipGroupSpaceType)
+
+      LOG.D2(TG, "$MT: Spaces Query: Ownership: $ownershipStr Type: $spaceTypeStr")
+    }
   }
 
   private fun updateChip(chipId: Int, chipGroup: ChipGroup) {

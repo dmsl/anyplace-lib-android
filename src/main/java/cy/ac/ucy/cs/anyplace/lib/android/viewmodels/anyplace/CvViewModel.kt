@@ -67,16 +67,16 @@ enum class LocalizationStatus {
  */
 @HiltViewModel
 open class CvViewModel @Inject constructor(
-  /** [application] is not an [AnyplaceApp], hence it is not a field.
+        /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
-  dsCv: CvDataStore,
-  private val dsMisc: MiscDataStore,
-  dsCvMap: CvMapDataStore,
-  val repo: RepoAP,
-  val RH: RetrofitHolderAP,
-  val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
-  val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
+        dsCv: CvDataStore,
+        private val dsMisc: SpaceFilterDS,
+        dsCvMap: CvMapDataStore,
+        val repo: RepoAP,
+        val RH: RetrofitHolderAP,
+        val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
+        val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
   /** Make sure to initialize this one */
   private lateinit var attachedActivityId: String
@@ -321,10 +321,14 @@ open class CvViewModel @Inject constructor(
       LOG.W(tag, "$method: loading first level")
       // TODO:PMX: load first level here
       // TODO:PMX: load first level here
+
       // LEFTHERE
       // LEFTHERE
       // LEFTHERE
       // LEFTHERE
+
+
+
     }
 
     if (app.level.value == null)  {
@@ -423,12 +427,11 @@ open class CvViewModel @Inject constructor(
 
             // show notification on smas
             if (attachedActivityId==ACT_NAME_SMAS) {
-              var msg = "Please localize or set location manually."
-              if (dsCvMap.read.first().autoSetInitialLocation) {
-                msg="Previous location expired.\nPlease localize or set it manually"
-              }
-
-              app.snackbarLong(viewModelScope, msg)
+              // var msg = "Please localize or set location manually."
+              // if (dsCvMap.read.first().autoSetInitialLocation) {
+              //   // msg="Previous location expired.\nPlease localize or set it manually"
+              // }
+              // app.snackbarLong(viewModelScope, msg)
             }
           }
         }

@@ -8,7 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.AnyplaceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
@@ -33,7 +33,7 @@ class AnyplaceViewModel @Inject constructor(
         private val RH: RetrofitHolderAP,
         dsAnyplace: AnyplaceDataStore,
         dsUserAP: ApUserDataStore,
-        private val dsMisc: MiscDataStore,
+        private val dsMisc: SpaceFilterDS,
   ): AndroidViewModel(application) {
 
   private val app = application as AnyplaceApp
@@ -44,12 +44,9 @@ class AnyplaceViewModel @Inject constructor(
   val nwSpaceGet by lazy { SpaceGetNW(app, this, RH, repo) }
   val nwFloorsGet by lazy { FloorsGetNW(app, this, RH, repo) }
   val nwSpacesGet by lazy { SpacesGetNW(app, this, RH, dsUserAP, repo) }
-  val dbqSpaces by lazy { SpacesQueryDB(app, this, repo, dsMisc) }
+  val dbqSpaces by lazy { SpacesQueryDB(this, repo, dsMisc) }
 
-  // PREFERENCES
   val prefsServer = dsAnyplace.read
-
-  //// RETROFIT
 
   var networkStatus = false
   /** normal var, filled by the observer (SelectSpaceActivity) */

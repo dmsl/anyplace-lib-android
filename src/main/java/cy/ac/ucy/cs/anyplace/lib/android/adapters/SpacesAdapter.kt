@@ -31,7 +31,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
 
   companion object {
-    val TG = "adapter-spaces"
+    private const val TG = "adapter-spaces"
     fun from(parent: ViewGroup, app: AnyplaceApp, act: SelectSpaceActivity,
              scope: CoroutineScope): MyViewHolder {
       val layoutInflater = LayoutInflater.from(parent.context)
@@ -42,7 +42,6 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   private var spaces = emptyList<Space>()
-
 
   class MyViewHolder(
           private val binding: RowSpaceBinding,
@@ -72,8 +71,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
        }
         app.spaceSelectionInProgress=true
 
-        LOG.W(TG, "Selecting Space: ${space.name} ${space.buid}")
-
+        LOG.W(TG, "selecting Space: ${space.name} ${space.buid}")
 
         scope.launch(Dispatchers.IO) {
           app.dsCvMap.setSelectedSpace(space.buid) // store the sapce
@@ -90,6 +88,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
           act.utlUi.changeBackgroundMaterial(btn, R.color.green)
           btn.tag=activeTag
+
+          // Reset some VM state
+          act.VM.dbqSpaces.loaded=false
+          act.VM.dbqSpaces.runnedInitialQuery=false
+          app.backToSpaceSelectorFromOtherActivities=true
+
 
           // 1. Download JSON objects for the Space and all the Floors
           val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
@@ -132,13 +136,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-    LOG.V5(TG, "$METHOD")
     return from(parent, app, act, scope)
   }
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
     val MT = "onBindViewHolder"
-    LOG.E(TG, "$MT: position: $position (sz: ${spaces.size})")
+    LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
     if (spaces.isNotEmpty()) {
       val currentSpace = spaces[position]
       holder.bind(currentSpace, holder.act)
@@ -172,7 +175,6 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   fun clearData() {
-    LOG.D2()
     val size = spaces.size
     scope.launch(Dispatchers.IO) {
       spaces = emptyList()

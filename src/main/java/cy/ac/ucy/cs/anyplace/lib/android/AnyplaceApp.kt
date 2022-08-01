@@ -65,7 +65,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsUserSmas: SmasUserDataStore
 
   /** Miscellaneous settings */
-  @Inject lateinit var dsSpaceSelector: MiscDataStore
+  @Inject lateinit var dsSpaceSelector: SpaceFilterDS
   // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
@@ -116,14 +116,10 @@ abstract class AnyplaceApp : Application() {
    */
   var userOutOfBounds: MutableStateFlow<MapBounds> = MutableStateFlow(MapBounds.notLocalizedYet)
 
-  // TODO:PM: inject all those. otherwise we might have constructor issues.
-  // they must be singleton, but after app ctx is created
-  // example:
-  // @Inject lateinit var serverDS: ServerDataStore
+  /** Terrible workaround for the terrible SpaceSelector code */
+  var backToSpaceSelectorFromOtherActivities= false
 
-  /**
-   * The user has localized at least once
-   */
+  /** The user has localized at least once */
   fun hasLastLocation() : Boolean {
     return locationSmas.value is LocalizationResult.Success
   }

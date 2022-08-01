@@ -1,7 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.source
 
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilter
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.AnyplaceDAO
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.toEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
@@ -27,44 +27,39 @@ class ApLocalDS @Inject constructor(
     }
   }
 
-  // CLR:PM
-  // fun readSpacesAll(): Flow<List<SpaceEntity>> {
-  //   return DAO.readSpaces()
-  // }
-
-  fun querySpaces(query: QuerySelectSpace): Flow<List<SpaceEntity>> {
-    LOG.W(TAG, "$METHOD: name'${query.spaceName}'")
+  fun querySpaces(queryFilter: SpaceFilter): Flow<List<SpaceEntity>> {
+    LOG.W(TAG, "$METHOD: name'${queryFilter.spaceName}'")
 
     // val name = query.spaceName.isNotEmpty()
-    val filterOwnership = query.ownership != SpaceOwnership.ALL
-    val filterType = query.spaceType != SpaceType.ALL
+    val filterOwnership = queryFilter.ownership != SpaceOwnership.ALL
+    val filterType = queryFilter.spaceType != SpaceType.ALL
 
-    val ownershipStr = query.ownership.toString().uppercase()
-    val typeStr = query.spaceType.toString().uppercase()
+    val ownershipStr = queryFilter.ownership.toString().uppercase()
+    val typeStr = queryFilter.spaceType.toString().uppercase()
 
     return when  {
       // filter on both user ownership and type
       filterOwnership && filterType -> {
         DAO.querySpacesOwnerAndType(
-                query.ownership.toString().uppercase(),
-                query.spaceType.toString().uppercase(),
-                query.spaceName)
+                queryFilter.ownership.toString().uppercase(),
+                queryFilter.spaceType.toString().uppercase(),
+                queryFilter.spaceName)
       }
 
       // filter only on ownership
       filterOwnership -> {
         LOG.E("QUERY: ownership: $ownershipStr")
-        DAO.querySpaceOwner(ownershipStr, query.spaceName)
+        DAO.querySpaceOwner(ownershipStr, queryFilter.spaceName)
       }
 
       // filter only on type
       filterType -> {
         LOG.E("QUERY: space type: $typeStr")
-        DAO.querySpacesType(typeStr, query.spaceName)
+        DAO.querySpacesType(typeStr, queryFilter.spaceName)
       }
 
       // read all spaces
-      query.spaceName.isNotEmpty() -> { DAO.querySpaces(query.spaceName) }
+      queryFilter.spaceName.isNotEmpty() -> { DAO.querySpaces(queryFilter.spaceName) }
 
       // no filter: read all spaces
       else -> { DAO.readSpaces() }

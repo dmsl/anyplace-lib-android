@@ -15,16 +15,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Miscellaneous preferences
+ * Filtering preferences for the [SelectSpaceActivity]
  */
 @Singleton
-class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
+class SpaceFilterDS @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreMisc by preferencesDataStore(name = C.PREF_MISC_NAME)
-
-  // TODO: DEBUG MODES:
-  // BETA, ALPHA, DEV ?
 
   private class Keys(c: CONST) {
     val backOnline = booleanPreferencesKey(c.PREF_MISC_BACK_ONLINE)
@@ -66,16 +63,16 @@ class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Con
       }.map { prefs -> prefs[KEY.backFromSettings] ?: false }
 
 
-  suspend fun saveQuerySpace(query: QuerySelectSpace) {
+  suspend fun saveQuerySpace(queryFilter: SpaceFilter) {
     ctx.dataStoreMisc.edit { preferences ->
-      preferences[KEY.querySpace_ownership] = query.ownership.toString().uppercase()
-      preferences[KEY.querySpace_ownershipId] = query.ownershipId
-      preferences[KEY.querySpace_type] = query.spaceType.toString().uppercase()
-      preferences[KEY.querySpace_typeId] = query.spaceTypeId
+      preferences[KEY.querySpace_ownership] = queryFilter.ownership.toString().uppercase()
+      preferences[KEY.querySpace_ownershipId] = queryFilter.ownershipId
+      preferences[KEY.querySpace_type] = queryFilter.spaceType.toString().uppercase()
+      preferences[KEY.querySpace_typeId] = queryFilter.spaceTypeId
     }
   }
 
-  val readQuerySpace: Flow<QuerySelectSpace> = ctx.dataStoreMisc.data
+  val readSpaceFilterFilter: Flow<SpaceFilter> = ctx.dataStoreMisc.data
       .catch { exception ->
         if (exception is IOException)  {
           emit(emptyPreferences())
@@ -90,12 +87,12 @@ class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Con
         val spaceTypeStr = preferences[KEY.querySpace_type] ?: C.DEFAULT_QUERY_SPACE_TYPE
         val spaceTypeId = preferences[KEY.querySpace_typeId] ?: 0
 
-        QuerySelectSpace(SpaceOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
+        SpaceFilter(SpaceOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
           SpaceType.valueOf(spaceTypeStr.uppercase()), spaceTypeId)
       }
 }
 
-data class QuerySelectSpace(
+data class SpaceFilter(
         val ownership: SpaceOwnership = SpaceOwnership.ALL,
         val ownershipId: Int=0,
         val spaceType: SpaceType = SpaceType.ALL,
