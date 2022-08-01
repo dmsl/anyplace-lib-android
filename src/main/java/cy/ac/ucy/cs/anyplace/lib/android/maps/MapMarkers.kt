@@ -33,6 +33,7 @@ class MapMarkers(private val app: AnyplaceApp,
   private val ctx = app.applicationContext
 
   companion object {
+    private const val TG = "ui-map-markers"
     private const val MAX_SECONDS_INACTIVE = 120 // up to 2 minutes is considered active
     private const val SHARED_CHAT_LOC = "SHARED-CHAT-LOC"
     fun isUserConsideredInactive(seconds: Long) = seconds > MAX_SECONDS_INACTIVE
@@ -41,7 +42,6 @@ class MapMarkers(private val app: AnyplaceApp,
   /** Markers of scanned objects (from logger) */
   var scannedMarkers: MutableList<Marker> = mutableListOf()
 
-  // TODO:PM show storedMarkers with green color
   var stored: MutableList<Marker> = mutableListOf()
 
   /** Marker of the last location calculated remotely using SMAS */
@@ -55,17 +55,6 @@ class MapMarkers(private val app: AnyplaceApp,
   /** Active users on the map */
   var userLocations: MutableList<Marker> = mutableListOf()
 
-  // private fun toString(ll: LatLng) : String {
-  //   // ll.toString()
-  //   // TODO:PMX FR10
-  //   // return ""
-  //   return ll.latitude.toString() + ",\n" + ll.longitude.toString()
-  // }
-
-  // private fun toString(coord: Coord) : String {
-  //   return toString(toLatLng(coord))
-  // }
-
   private fun ownLocationDrawable(setMethod: LocalizationMethod, alerting: Boolean): Int {
     return when {
       alerting -> R.drawable.marker_location_own_alert
@@ -74,8 +63,6 @@ class MapMarkers(private val app: AnyplaceApp,
       else -> R.drawable.marker_location_own_smas
     }
   }
-
-
 
   /** Last Location marker */
   private fun ownLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) : MarkerOptions  {
@@ -163,7 +150,6 @@ class MapMarkers(private val app: AnyplaceApp,
    * return a pretty string of the last activity of the user
    */
   fun getActiveInfo(secondsElapsed: Long) : String {
-    // TODO:PMX: FR10
     val prettySecs = utlTime.getSecondsPretty(secondsElapsed)
     return "Active: $prettySecs ago"
   }
@@ -175,14 +161,13 @@ class MapMarkers(private val app: AnyplaceApp,
       val detailedMsg = getActiveInfo(secondsElapsed)
 
       val title = uid
-      val marker = when {  // TODO:FR10
+      val marker = when {
         alert == 1 -> userAlertMarker(latLng, title, detailedMsg)
         isUserConsideredInactive(secondsElapsed) -> userInactiveMarker(latLng, title, detailedMsg)
         else -> userMarker(latLng, title, detailedMsg)
       }
 
       // add a marker and then store it
-      // val marker = userMarker(latLng, title, detailedMsg) // TODO:PMX: FR10
       scope.launch(Dispatchers.Main) {
         map.obj.addMarker(marker)?.let {
           userLocations.add(it)
@@ -198,11 +183,11 @@ class MapMarkers(private val app: AnyplaceApp,
 
           // reopen the last selected user
           if (userWasLastSelected(uid)) {
-            LOG.E(TAG,"FOUND LAST USER: $uid (opening)")
+            LOG.E(TG,"FOUND LAST USER: $uid (opening)")
             it.showInfoWindow()
             // also follow the user on map
             if (app.dsCvMap.read.first().followSelectedUser) {
-              LOG.D3(TAG, "following user on map..")
+              LOG.D3(TG, "following user on map..")
               map.moveIfOutOufBounds(latLng)
             }
           }
@@ -239,7 +224,7 @@ class MapMarkers(private val app: AnyplaceApp,
       val metadata = marker.tag as UserInfoMetadata?
       if (metadata!=null) {
         lastSelectedUser = metadata.uid
-        LOG.E(TAG, "STORE LAST: ${metadata.uid}")
+        LOG.E(TG, "STORE LAST: ${metadata.uid}")
       }
     }
   }
@@ -248,7 +233,8 @@ class MapMarkers(private val app: AnyplaceApp,
    * IMPORTANT: it must run on the Main thread
    */
   fun clearAllInfoWindow() {
-    LOG.I(TAG, "$METHOD: clearing all markers")
+    val MT = ::clearAllInfoWindow.name
+    LOG.I(TG, "$MT: clearing all markers")
     // clear last selected user
     userLocations.forEach {
       it.hideInfoWindow()
@@ -275,16 +261,15 @@ class MapMarkers(private val app: AnyplaceApp,
     }
   }
 
-  // private fun getSnippetOwnLocation(coord: Coord) = toString(coord)
-
   /**
    * If the location marker is on a different floor it will become transparent,
    * and show relevant info in the snippet
    */
   fun updateLocationMarkerBasedOnFloor(floorNum: Int) {
+    val MT = ::updateLocationMarkerBasedOnFloor.name
     if (lastOwnLocation == null || lastCoord == null) return
 
-    LOG.D(TAG, "$METHOD: floor: $floorNum. last one: ${lastCoord!!.level}")
+    LOG.D(TG, "$MT: floor: $floorNum. last one: ${lastCoord!!.level}")
 
     var alpha = 1f
     var snippet = ""
@@ -313,8 +298,9 @@ class MapMarkers(private val app: AnyplaceApp,
 
   var lastCoord : Coord?=null
   fun setOwnLocationMarker(coord: Coord, locMethod: LocalizationMethod, alerting: Boolean) {
+    val MT = ::setOwnLocationMarker.name
     val latLng = coord.toLatLng()
-    LOG.D2()
+    LOG.D2(TG, MT)
 
     lastCoord=coord
     map.moveToLocation(latLng)
@@ -333,18 +319,42 @@ class MapMarkers(private val app: AnyplaceApp,
               utlTime.epoch(),
               alerting)
     }
-
     updateLocationMarkerBasedOnFloor(coord.level)
   }
 
-
   fun clearChatLocationMarker() {
-    LOG.D2()
+    val MT = ::clearChatLocationMarker.name
+    LOG.D2(TG, MT)
     scope.launch(Dispatchers.Main) {
       if (lastChatShareLocation != null) { // hide previous location
         lastChatShareLocation!!.remove()
         lastChatShareLocation = null
       }
+    }
+  }
+
+
+  /**
+   * Draw a location marker that was returned from the [SmasChatActivity].
+   */
+  fun addSharedLocationMarker(coord: Coord) {
+    val MT = ::addSharedLocationMarker.name
+    LOG.E(TG, MT)
+
+    scope.launch(Dispatchers.Main) {
+      val latLng = coord.toLatLng()
+      map.moveToLocation(latLng)
+      // otherwise, if there is no perfect overlap: draw a [sharedChatLocationMarker]
+      lastChatShareLocation = map.obj.addMarker(sharedChatLocationMarker(latLng)
+              .zIndex(102f))
+      lastChatShareLocation!!.tag = UserInfoMetadata(
+              UserInfoType.SharedLocation,
+              LocalizationMethod.NA,
+              SHARED_CHAT_LOC,
+              coord,
+              utlTime.epoch(),
+              false)
+      lastChatShareLocation!!.showInfoWindow()
     }
   }
 
@@ -363,18 +373,18 @@ class MapMarkers(private val app: AnyplaceApp,
             && coord.level == lastCoord!!.level) {
       lastOwnLocation!!.showInfoWindow()
 
-      LOG.E(TAG, "found own user")
+      LOG.E(TG, "found own user")
       return true
     }
 
     userLocations.forEach {  // these users are on the current floor anyway (so no need to check the floor)
       if (latLng == it.position) {
-        LOG.E(TAG, "found existing other user")
+        LOG.E(TG, "found existing other user")
         // extract uid from tag
         val metadata = it.tag as UserInfoMetadata?
         if (metadata != null) {
           lastSelectedUser = metadata.uid
-          LOG.E(TAG, "USER FOUND: $metadata.uid")
+          LOG.E(TG, "USER FOUND: $metadata.uid")
         }
 
         // very ugly workaround: open InfoWindow in a few moments
@@ -383,7 +393,7 @@ class MapMarkers(private val app: AnyplaceApp,
           delay(250)
           scope.launch(Dispatchers.Main) { // switch to main thread
 
-            LOG.E(TAG, "SHOWING INFO WIN")
+            LOG.E(TG, "SHOWING INFO WIN")
             it.showInfoWindow()
           }
         }
@@ -391,36 +401,6 @@ class MapMarkers(private val app: AnyplaceApp,
       }
     }
     return false  // an additional marker will have to be drawn
-  }
-
-  /**
-   * Draw a location marker that was returned from the [SmasChatActivity].
-   */
-  fun addSharedLocationMarker(coord: Coord) {
-    LOG.E(TAG, "addChatLocationMarker")
-
-    scope.launch(Dispatchers.Main) {
-      val latLng = coord.toLatLng()
-      map.moveToLocation(latLng)
-
-      // DONT DO THIS...
-      // there was an existing marker already (either own user marker, or other user marker)
-      // In that case, avoid drawing another ovelapping marker on top of that.
-      // if (tryToOpenExistingMarker(coord)) return@launch
-
-      // otherwise, if there is no perfect overlap: draw a [sharedChatLocationMarker]
-      lastChatShareLocation = map.obj.addMarker(sharedChatLocationMarker(latLng)
-              .zIndex(102f))
-      lastChatShareLocation!!.tag = UserInfoMetadata(
-              UserInfoType.SharedLocation,
-              LocalizationMethod.NA,
-              SHARED_CHAT_LOC,
-              coord,
-              utlTime.epoch(),
-              false)
-      lastChatShareLocation!!.showInfoWindow()
-    }
-
   }
 
 }

@@ -136,15 +136,14 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             location.latitude, location.longitude)
 
     VM.cacheDetectionsLocally(userCoord, location)
-    checkForUploadCache(true) // TODO:PMX UPL: OK? CLR this one?
+    checkForUploadCache(true)
 
     if (DBG.UPL) bottom.logging.showUploadBtn()
 
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Scan: $curPoint"
-    // val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
-    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.number}" // TODO:PMX FR10
+    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.number}"
     val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
     ui.map.markers.addScanMarker(coord, msg, snippet)
     ui.map.moveIfOutOufBounds(location)

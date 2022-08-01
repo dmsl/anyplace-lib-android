@@ -37,34 +37,15 @@ import java.util.*
  * Things like BottomSheet were removed.
  *
  * -------------------------------
- *
- * TODO: review the below comments:
- *
- * The changes from the original code:
- * - It is converted to Kotlin
- * - TODO It is using ViewBinding
- * - TODO It is using a ViewModel (MVVM):
- *   - storing the detections
- *
- * TODO:
- * - COMMON:
- *   - bottom sheet
- *   - settings button
- *   - setup those from here
- *
- *  - BaseClass:
- *   - CvMapActivity:
- *    - COMMON:
- *      - floor picker, etc..
- *
- * ORIGINAL DOC:
- * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track
- * objects.
+ * An activity that uses a TensorFlowMultiBoxDetector and ObjectTracker to detect and then track objects.
+ * -------------------------------
  */
 @AndroidEntryPoint
 abstract class DetectorActivityBase : CameraActivity(),
         OnImageAvailableListener {
   companion object {
+    private val TG = "act-detector"
+    
     private const val SAVE_PREVIEW_BITMAP = false // debug option
     private const val MAINTAIN_ASPECT = false
     private val DESIRED_PREVIEW_SIZE = Size(640, 480)
@@ -96,7 +77,6 @@ abstract class DetectorActivityBase : CameraActivity(),
   override fun onPreviewSizeChosen(size: Size?, rotation: Int) {
     if (size == null) return
 
-    // TODO:PMX OPT
     lifecycleScope.launch {
       if (!setupDetector()) {
         // You have to put models in the assets before building the app (see README)
@@ -114,8 +94,8 @@ abstract class DetectorActivityBase : CameraActivity(),
       previewHeight = size.height
       sensorOrientation = rotation - screenOrientation
 
-      LOG.V3(TAG_METHOD, "Camera orientation relative to screen canvas: $sensorOrientation")
-      LOG.V3(TAG_METHOD, "Initializing at size ${previewWidth}x${previewHeight}")
+      LOG.V3(TG, "Camera orientation relative to screen canvas: $sensorOrientation")
+      LOG.V3(TG, "Initializing at size ${previewWidth}x${previewHeight}")
 
       val cropSize = VMD.model.inputSize
       rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888)
@@ -136,8 +116,6 @@ abstract class DetectorActivityBase : CameraActivity(),
       }
       VMD.tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation!!)
     }
-
-    // MERGE: bind values with bottomSheet vars?
   }
 
   /** Artificial delay between inference calls (in ms) to save battery */
@@ -164,7 +142,7 @@ abstract class DetectorActivityBase : CameraActivity(),
       }
       else -> {
         val elapsedTime = currentTime - lastScan
-        LOG.V5(TAG, "elapsed: $elapsedTime")
+        LOG.V5(TG, "elapsed: $elapsedTime")
         if (elapsedTime >= scanDelay) {
           lastScan = currentTime
           return true
@@ -176,8 +154,8 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   suspend fun setupDetector(): Boolean {
-    // modelEnumLoaded must unset it first..
-    LOG.W(TAG, "$METHOD: setting up detector..")
+    val MT = ::setupDetector.name
+    LOG.W(TG, "$MT: setting up detector..")
     try {
       // Read DS Preferences:
       val prefsCv = VMD.dsCv.read.first()
@@ -194,20 +172,21 @@ abstract class DetectorActivityBase : CameraActivity(),
       VMD.setDetectorLoaded()
     } catch (e: IOException) {
       val msg = "Cant initialize classifier"
-      LOG.E(TAG_METHOD, msg, e)
+      LOG.E(TG, "$MT: $msg", e)
       return false
     }
     return true
   }
 
   override fun processImage() {
-    // ViewModel
+    val MT = ::processImage.name
+
     ++timestamp
     VMD.trackingOverlay.postInvalidate()
 
     // No mutex needed as this method is not reentrant.
     if (!delayPassed()) {
-      LOG.V3(TAG, "$METHOD: Skipping inference.. (delay)")
+      LOG.V3(TG, "$MT: Skipping inference.. (delay)")
       readyForNextImage()
       return
     }
@@ -220,20 +199,19 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     val currTimestamp = timestamp
     computingDetection = true
-    LOG.V3(TAG_METHOD, "Preparing image $currTimestamp for detection in bg thread.")
+    LOG.V3(TG, "Preparing image $currTimestamp for detection in bg thread.")
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight)
 
     readyForNextImage()
 
     // No mutex needed as this method is not reentrant.
-    // PMX: BUG
     if (!VMD.isDetecting() ) {
-      LOG.V3(TAG, "$METHOD: Skipping inference.. (disabled)")
-      if (DBG.CTR) skipDetection() // TODO: PMX: CTR
+      LOG.E(TG, "$MT: Skipping inference.. (disabled)")
+      skipDetection()
       return
     }
 
-    LOG.V2(TAG_METHOD, "RUNNING INFERENCE..")
+    LOG.W(TG, "$MT: running inference..")
 
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
@@ -247,15 +225,14 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   /**
-   * Draw a an empty canvas:
+   * Draw an empty canvas:
    *
    * Similar to [runDetection], but instead it skips running inference
    * It draws an empty canvas (without any detections in it)
-   *
-   * CLR:PM
    */
   private fun skipDetection() {
-    LOG.V4(TAG_METHOD, "Skip detection on image")
+    val MT = ::skipDetection.name
+    LOG.W(TG, "$MT: Skip detection on image")
     val canvas = Canvas(croppedBitmap)
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
@@ -268,7 +245,9 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   private fun runDetection(currTimestamp: Long) {
-    LOG.V4(TAG_METHOD, "Running detection on image $currTimestamp")
+    val MT = ::runDetection.name
+
+    LOG.V4(TG, "$MT: Running detection on image $currTimestamp")
     var canvas = Canvas(croppedBitmap)
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 
@@ -276,9 +255,9 @@ abstract class DetectorActivityBase : CameraActivity(),
     val results = VMD.detector.recognizeImage(croppedBitmap)
     lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime
 
-    LOG.V3(TAG_METHOD, "Detections: ${results.size}")
+    LOG.V3(TG, "$MT: Detections: ${results.size}")
     results.forEach { rec ->
-      LOG.V3(TAG, "Detection: ${rec.detectedClass} ${rec.title}")
+      LOG.V3(TG, "$MT: Detection: ${rec.detectedClass} ${rec.title}")
     }
 
     cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
@@ -300,12 +279,6 @@ abstract class DetectorActivityBase : CameraActivity(),
   // Which detection model to use:
   // by default uses Tensorflow Object Detection API frozen checkpoints.
   private enum class DetectorMode { TF_OD_API }
-
-  // public fun drawEmptyCanvas(canvas: Canvas) {
-  //   cropCopyBitmap = Bitmap.createBitmap(croppedBitmap)
-  //   storeResults(emptyList(), cropCopyBitmap)
-  // }
-
 
   fun storeResults(results: List<Classifier.Recognition>, canvas: Canvas):
           MutableList<Classifier.Recognition> {
@@ -348,7 +321,7 @@ abstract class DetectorActivityBase : CameraActivity(),
   }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.D2(TAG, "$METHOD: DetectorBaseActivity")
-    // LOG.V3(TAG, "$METHOD: detections: $detections.size")
+    val MT = ::onInferenceRan.name
+    LOG.D2(TG, MT)
   }
 }

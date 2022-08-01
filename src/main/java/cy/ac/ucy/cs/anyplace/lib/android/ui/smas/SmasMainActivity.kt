@@ -192,7 +192,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     updateLocationsLOOP()  // send own location & receive other users locations
     lifecycleScope.launch(Dispatchers.IO) {
-      if (DBG.BG5) VM.waitForUi()
+      VM.waitForUi()
       VM.collectLocations(VMchat, VM.ui.map)
     }
     collectAlertingUser()
@@ -206,7 +206,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     lifecycleScope.launch(Dispatchers.IO) {
       // workaround: wait for UI to be ready (not the best one)
-      if (DBG.BG5) VM.waitForUi()
+      VM.waitForUi()
 
       VM.ui.map.markers.clearChatLocationMarker()
     }
@@ -471,7 +471,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    */
   private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
   { result: ActivityResult ->
-    if (!DBG.GREs) return@registerForActivityResult
     if (result.resultCode == Activity.RESULT_OK) {
       val intent: Intent? = result.data
       if (intent != null) {

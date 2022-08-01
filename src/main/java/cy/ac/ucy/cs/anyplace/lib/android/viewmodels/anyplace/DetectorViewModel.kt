@@ -77,8 +77,7 @@ open class DetectorViewModel @Inject constructor(
    status.update { DetectorStatus.disabled }
   }
 
-  // TODO:PMX: CO5
-  fun isDetecting() = status.value == DetectorStatus.enabled || !DBG.CO5
+  fun isDetecting() = status.value == DetectorStatus.enabled
 
   fun enableCvDetection() {
     status.update { DetectorStatus.enabled }

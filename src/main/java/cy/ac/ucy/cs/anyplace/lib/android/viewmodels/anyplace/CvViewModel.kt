@@ -329,8 +329,7 @@ open class CvViewModel @Inject constructor(
 
     viewModelScope.launch(Dispatchers.IO) {
 
-      // wait for UI components to become ready
-      if (DBG.BG5) waitForUi()
+      waitForUi()  // wait for UI components to become ready
 
       app.userOutOfBounds.collectLatest { state ->
         if (!DBG.WAI) return@collectLatest

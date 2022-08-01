@@ -77,7 +77,7 @@ class GmapWrapper(
     LOG.D(tag, method)
 
     obj = googleMap
-    obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))   // TODO:PMX FR10
+    obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
     markers = MapMarkers(app, scope, VM, this)
     lines = MapLines(app, scope, VM, this)
 
