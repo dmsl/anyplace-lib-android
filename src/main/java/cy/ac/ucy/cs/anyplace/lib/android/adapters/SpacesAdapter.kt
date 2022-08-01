@@ -31,6 +31,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
 
   companion object {
+    val TG = "adapter-spaces"
     fun from(parent: ViewGroup, app: AnyplaceApp, act: SelectSpaceActivity,
              scope: CoroutineScope): MyViewHolder {
       val layoutInflater = LayoutInflater.from(parent.context)
@@ -62,18 +63,16 @@ class SpacesAdapter(private val app: AnyplaceApp,
         val activeTag = "downloading-button"
         val btn = binding.btnSelectSpace
 
-        // LEFTHERE: minor thing on downloading.
        if (app.spaceSelectionInProgress)  {
          val tagStr = if (btn.tag == null) "" else btn.tag.toString()
          if (tagStr != activeTag) {
            act.utlUi.attentionInvalidOption(btn)
          }
-
          return@setOnClickListener
        }
         app.spaceSelectionInProgress=true
 
-        LOG.W(TAG, "Selecting Space: ${space.name} ${space.buid}")
+        LOG.W(TG, "Selecting Space: ${space.name} ${space.buid}")
 
 
         scope.launch(Dispatchers.IO) {
@@ -118,9 +117,9 @@ class SpacesAdapter(private val app: AnyplaceApp,
             act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
             btn.tag=null
 
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
 
             val userAP = app.dsUserAP.read.first()
             StartActivity.openActivity(prefsCv, userAP, act)
@@ -133,14 +132,17 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-    LOG.V5(TAG, "$METHOD")
+    LOG.V5(TG, "$METHOD")
     return from(parent, app, act, scope)
   }
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-    LOG.V5(TAG, "$METHOD: position: $position (sz: ${spaces.size})")
-    val currentSpace = spaces[position]
-    holder.bind(currentSpace, holder.act)
+    val MT = "onBindViewHolder"
+    LOG.E(TG, "$MT: position: $position (sz: ${spaces.size})")
+    if (spaces.isNotEmpty()) {
+      val currentSpace = spaces[position]
+      holder.bind(currentSpace, holder.act)
+    }
   }
 
   override fun getItemCount(): Int {
@@ -155,7 +157,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
    *    - updates the whole RV.
    */
   fun setData(newSpaces: Spaces) {
-    LOG.V5(TAG, "setData: ${newSpaces.spaces.size}")
+    LOG.V5(TG, "setData: ${newSpaces.spaces.size}")
 
     try {
       val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
@@ -165,7 +167,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
       }
     } catch (e: Exception) {
-      LOG.E(TAG, "setData: EXCEPTION: ${e.message}")
+      LOG.E(TG, "setData: EXCEPTION: ${e.message}")
     }
   }
 

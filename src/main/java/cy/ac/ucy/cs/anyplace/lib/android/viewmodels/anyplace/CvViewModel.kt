@@ -71,7 +71,7 @@ open class CvViewModel @Inject constructor(
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
   dsCv: CvDataStore,
-  private val dsMisc: SpaceSelectorDS,
+  private val dsMisc: MiscDataStore,
   dsCvMap: CvMapDataStore,
   val repo: RepoAP,
   val RH: RetrofitHolderAP,

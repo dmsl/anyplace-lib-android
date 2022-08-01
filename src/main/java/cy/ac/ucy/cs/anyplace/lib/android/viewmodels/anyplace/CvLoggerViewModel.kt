@@ -46,7 +46,7 @@ class CvLoggerViewModel @Inject constructor(
   application: Application,
   dsCv: CvDataStore,
   dsCvMap: CvMapDataStore,
-  dsMisc: SpaceSelectorDS,
+  dsMisc: MiscDataStore,
         // dsCvLog: CvLoggerDataStore,
   repoAP: RepoAP,
   repoSmas: RepoSmas,

@@ -23,7 +23,7 @@ val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dsAnyplace: AnyplaceDataStore get() = this.app.dsAnyplace
 val Activity.dsCv: CvDataStore get() = this.app.dsCv
 val Activity.dsCvMap: CvMapDataStore get() = this.app.dsCvMap
-val Activity.dsMisc: SpaceSelectorDS get() = this.app.dsSpaceSelector
+val Activity.dsMisc: MiscDataStore get() = this.app.dsSpaceSelector
 val Activity.dsUserAP: ApUserDataStore get() = this.app.dsUserAP
 
 val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp

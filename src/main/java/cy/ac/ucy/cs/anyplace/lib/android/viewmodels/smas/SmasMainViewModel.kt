@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceSelectorDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
@@ -44,7 +44,7 @@ class SmasMainViewModel @Inject constructor(
         val dsChat: SmasDataStore,
         dsCv: CvDataStore,
         dsCvMap: CvMapDataStore,
-        dsMisc: SpaceSelectorDS,
+        dsMisc: MiscDataStore,
         RHsmas: RetrofitHolderSmas,
         RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {

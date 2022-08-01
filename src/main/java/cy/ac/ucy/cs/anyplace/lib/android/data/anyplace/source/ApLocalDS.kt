@@ -1,17 +1,16 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.source
 
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.FilterSpaces
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.AnyplaceDAO
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.toEntity
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.toSpaces
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
@@ -29,16 +28,12 @@ class ApLocalDS @Inject constructor(
   }
 
   // CLR:PM
-  // fun querySpaces(query: FilterSpaces): List<SpaceEntity> {
-  //   val MT = ::querySpaces.name
-  //   val queryResult = querySpacesInternal(query).collect().
-  //   LOG.E(TG, "$MT: rows: ${queryResult.size} query: $query")
-  //   return queryResult
+  // fun readSpacesAll(): Flow<List<SpaceEntity>> {
+  //   return DAO.readSpaces()
   // }
 
-  fun querySpaces(query: FilterSpaces): List<Space> {
-    val MT = ::querySpaces.name
-    // LOG.W(TG, "$MT: txtFilter: '${query.spaceName}'")
+  fun querySpaces(query: QuerySelectSpace): Flow<List<SpaceEntity>> {
+    LOG.W(TAG, "$METHOD: name'${query.spaceName}'")
 
     // val name = query.spaceName.isNotEmpty()
     val filterOwnership = query.ownership != SpaceOwnership.ALL
@@ -50,27 +45,29 @@ class ApLocalDS @Inject constructor(
     return when  {
       // filter on both user ownership and type
       filterOwnership && filterType -> {
-        toSpaces(DAO.querySpacesOwnerAndType(
+        DAO.querySpacesOwnerAndType(
                 query.ownership.toString().uppercase(),
                 query.spaceType.toString().uppercase(),
-                query.spaceName)).spaces
+                query.spaceName)
       }
 
-      filterOwnership -> {  // filter only on ownership
+      // filter only on ownership
+      filterOwnership -> {
         LOG.E("QUERY: ownership: $ownershipStr")
-        toSpaces(DAO.querySpaceOwner(ownershipStr, query.spaceName)).spaces
+        DAO.querySpaceOwner(ownershipStr, query.spaceName)
       }
 
-      filterType -> {  // filter only on type
+      // filter only on type
+      filterType -> {
         LOG.E("QUERY: space type: $typeStr")
-        toSpaces(DAO.querySpacesType(typeStr, query.spaceName)).spaces
+        DAO.querySpacesType(typeStr, query.spaceName)
       }
 
       // read all spaces
-      query.spaceName.isNotEmpty() -> { toSpaces(DAO.querySpaces(query.spaceName)).spaces }
+      query.spaceName.isNotEmpty() -> { DAO.querySpaces(query.spaceName) }
 
       // no filter: read all spaces
-      else -> { toSpaces(DAO.readSpaces()).spaces }
+      else -> { DAO.readSpaces() }
     }
   }
 

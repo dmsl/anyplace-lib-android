@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -28,6 +29,8 @@ import kotlinx.coroutines.flow.update
 /**
  * Sample activity for fetching [Spaces] and selecting one ([Space]) from the Anyplace backend.
  * The space is then stored to [CvMapActivity], and it is used in its child activities.
+ * In general, it's written in a complicated way. Probably should be written from scratch, or scrapped altogether.
+ *
  */
 @AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
@@ -94,11 +97,12 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
         return@setOnClickListener
       }
 
-      // if(VM.dbqSpaces.resultsLoaded) {
-      navController.navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
-      // } else {
-      //   app.snackbarWarning(lifecycleScope, "No spaces loaded")
-      // }
+      // TODO: move this to app?
+      if(VM.dbqSpaces.loaded) {
+        navController.navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
+      } else {
+        app.snackbarWarning(lifecycleScope, "No spaces loaded")
+      }
     }
   }
 
@@ -114,7 +118,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     val searchView = search.actionView as? SearchView
     searchView?.queryHint = getString(R.string.search_space)
     searchView?.setOnQueryTextListener(this)
-    
+
     return super.onCreateOptionsMenu(menu)
   }
 
@@ -136,9 +140,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   }
 
   override fun onQueryTextChange(newText: String?): Boolean {
-    if (app.spaceSelectionInProgress) return true
-    app.dbqSpaces.txtQuery.update { newText?:"" }
-
+    newText?.let { VM.dbqSpaces.searchViewData.value = it }
     return true
   }
 }

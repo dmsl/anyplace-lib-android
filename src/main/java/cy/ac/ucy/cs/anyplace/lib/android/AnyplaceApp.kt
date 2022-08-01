@@ -11,7 +11,6 @@ import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
@@ -66,7 +65,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsUserSmas: SmasUserDataStore
 
   /** Miscellaneous settings */
-  @Inject lateinit var dsSpaceSelector: SpaceSelectorDS
+  @Inject lateinit var dsSpaceSelector: MiscDataStore
   // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
@@ -108,7 +107,6 @@ abstract class AnyplaceApp : Application() {
   var wLevel: LevelWrapper? = null
 
   val utlColor by lazy { UtilColor(applicationContext) }
-  val dbqSpaces by lazy { SpacesQueryDB(repoAP, dsSpaceSelector) }
 
   /** true when a user is issuing an alert */
   var alerting = false

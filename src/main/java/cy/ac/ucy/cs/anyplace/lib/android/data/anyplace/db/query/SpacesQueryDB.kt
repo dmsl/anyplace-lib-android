@@ -1,98 +1,95 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query
 
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceSelectorDS
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.FilterSpaces
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.QuerySelectSpace
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class SpacesQueryDB(
-        // VM: AnyplaceViewModel,
+        private val app: AnyplaceApp,
+        VM: AnyplaceViewModel,
         private val repo: RepoAP,
-        private val dsSpaceSelector: SpaceSelectorDS,
+        private val dsMisc: MiscDataStore,
         ) {
-  private val TG = "db-query-spaces"
 
-  // val scope = VM.viewModelScope
-
-  /** The spaces that are queried locally, and will end up in the [RecyclerView] */
-  var spaces: MutableStateFlow<List<Space>> = MutableStateFlow(emptyList())
-
-  /** Storing the predicates for this query */
-  var storedFilter = dsSpaceSelector.readSpaceFilter
+  val scope = VM.viewModelScope
 
   /** This is outdated.. */
-  // @Deprecated("outdated structure? use something else..")
-  // val searchViewData: MutableLiveData<String> = MutableLiveData()
-  var txtQuery: MutableStateFlow<String> = MutableStateFlow("")
+  @Deprecated("outdated structure? use something else..")
+  val searchViewData: MutableLiveData<String> = MutableLiveData()
+  private val C by lazy { CONST(app.applicationContext) }
 
-  // var resultsLoaded = false
-  private var tempFilter = FilterSpaces()
+  var loaded = false // TODO move in SpaceVM
+  private var querySelectSpace = QuerySelectSpace()
 
-  /** Persist the query (to restore the ui chips - [Chip]) */
-  suspend fun persistFilters() {
-    dsSpaceSelector.persistFilter(tempFilter)
-  }
+  //// DATASTORE
+  /**
+   * Persistently saves the query (in Misc DataStore)
+   */
+  fun saveQueryTypeDataStore() =
+          scope.launch(Dispatchers.IO) { dsMisc.saveQuerySpace(querySelectSpace) }
 
-  var wasReset=false
-  suspend fun resetFilters()  {
-    val MT = ::resetFilters.name
-    LOG.E(TG, MT)
-    wasReset=true
-    dsSpaceSelector.persistFilter(FilterSpaces())
+  fun resetQuery()  {
+    scope.launch(Dispatchers.IO) {
+      dsMisc.saveQuerySpace(QuerySelectSpace())
+    }
   }
 
   /**
    * Saves the query in the ViewModel (not persistent).
-   * tempSaveQueryFilters
    */
-  fun updateTempFilter(filter: FilterSpaces) {
-    val method = ::updateTempFilter.name
-    LOG.E(TG, "$method: ${filter.ownership} ${filter.spaceType}")
-    tempFilter = filter
+  fun saveQueryTypeTemp(spaceOwnership: SpaceOwnership, ownershipId: Int,
+                        spaceType: SpaceType, spaceTypeId: Int) {
+    LOG.D(TAG, "Saving query type: $spaceOwnership $spaceType")
+    querySelectSpace= QuerySelectSpace(spaceOwnership, ownershipId, spaceType, spaceTypeId)
   }
 
-  fun printTempFilter() {
-    LOG.E(TG, "tempFilter: $tempFilter")
+  fun saveQueryTypeTemp(query: QuerySelectSpace) { querySelectSpace=query }
+
+  private fun saveQuerySpaceName(newText: String) {
+    querySelectSpace.spaceName = newText
+    readSpacesQuery = repo.local.querySpaces(querySelectSpace)
+    loaded=false
   }
 
-  fun filterChanged(filter: FilterSpaces) = filter != tempFilter
+  fun applyQuery(newText: String) = saveQuerySpaceName(newText)
 
-  // fun saveFiltersInMem(query: QuerySelectSpace) { querySelectSpace=query }
+  //// ROOM
+  var readSpacesQuery: Flow<List<SpaceEntity>> = MutableStateFlow(emptyList())
 
-  suspend fun runTextQuery(newText: String) {
-    tempFilter.spaceName = newText
-    // resultsLoaded=false
-    runQuery("runTextQuery")
-  }
+  /** Storing the predicates for this query */
+  var storedQuery = dsMisc.readQuerySpace
 
-  var firstQuery=true
-  // var runInitialQuery = false
+  var runnedInitialQuery = false
   /**
    * Read all spaces
    */
-  suspend fun runQuery(from: String) {
-    val MT = ::runQuery.name
-    val filter = if (firstQuery) storedFilter.first() else tempFilter
-    LOG.E(TG, "$MT: FROM: $from: $filter")
-    // if (runInitialQuery) {
-    //   LOG.E(TG, "$MT: running initial query")
-    //   LOG.E(TG, "$MT: ${querySelectSpace.spaceType}")
-    //   scope.launch {
-    //     runQuery()
-    //   repo.local.querySpaces(storedQuery.first())
-      spaces.update { repo.local.querySpaces(filter) }
-      // resultsLoaded = true
-      firstQuery=false
-    // }
-    // }
-    // runInitialQuery = false
-  }
+  fun runInitialQuery() {
+    if (!runnedInitialQuery) {
+      LOG.W(TAG, "$METHOD: ${querySelectSpace.spaceType}")
 
-  fun hasSpaces() = repo.local.hasSpaces()
+      scope.launch {
+       repo.local.querySpaces(storedQuery.first())
+        readSpacesQuery = repo.local.querySpaces(storedQuery.first())
+      }
+    }
+    runnedInitialQuery = true
+  }
 }
 
 

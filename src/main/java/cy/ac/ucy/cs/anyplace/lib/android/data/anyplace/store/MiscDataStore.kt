@@ -18,10 +18,10 @@ import javax.inject.Singleton
  * Miscellaneous preferences
  */
 @Singleton
-class SpaceSelectorDS @Inject constructor(@ApplicationContext private val ctx: Context) {
+class MiscDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   private val C by lazy { CONST(ctx) }
-  private val Context.dsSpaceFilter by preferencesDataStore(name = C.PREF_MISC_NAME)
+  private val Context.dataStoreMisc by preferencesDataStore(name = C.PREF_MISC_NAME)
 
   // TODO: DEBUG MODES:
   // BETA, ALPHA, DEV ?
@@ -48,17 +48,17 @@ class SpaceSelectorDS @Inject constructor(@ApplicationContext private val ctx: C
     saveBoolean(KEY.backOnline, value)
 
   private suspend fun saveBoolean(key: Preferences.Key<Boolean>, value: Boolean) {
-    ctx.dsSpaceFilter.edit { prefs -> prefs[key] = value }
+    ctx.dataStoreMisc.edit { prefs -> prefs[key] = value }
   }
 
-  val readBackOnline : Flow<Boolean> = ctx.dsSpaceFilter.data
+  val readBackOnline : Flow<Boolean> = ctx.dataStoreMisc.data
       .catch {  exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
         } else { throw exception }
       }.map { prefs -> prefs[KEY.backOnline] ?: false }
 
-  val readBackFromSettings : Flow<Boolean> = ctx.dsSpaceFilter.data
+  val readBackFromSettings : Flow<Boolean> = ctx.dataStoreMisc.data
       .catch {  exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
@@ -66,8 +66,8 @@ class SpaceSelectorDS @Inject constructor(@ApplicationContext private val ctx: C
       }.map { prefs -> prefs[KEY.backFromSettings] ?: false }
 
 
-  suspend fun persistFilter(query: FilterSpaces) {
-    ctx.dsSpaceFilter.edit { preferences ->
+  suspend fun saveQuerySpace(query: QuerySelectSpace) {
+    ctx.dataStoreMisc.edit { preferences ->
       preferences[KEY.querySpace_ownership] = query.ownership.toString().uppercase()
       preferences[KEY.querySpace_ownershipId] = query.ownershipId
       preferences[KEY.querySpace_type] = query.spaceType.toString().uppercase()
@@ -75,7 +75,7 @@ class SpaceSelectorDS @Inject constructor(@ApplicationContext private val ctx: C
     }
   }
 
-  val readSpaceFilter: Flow<FilterSpaces> = ctx.dsSpaceFilter.data
+  val readQuerySpace: Flow<QuerySelectSpace> = ctx.dataStoreMisc.data
       .catch { exception ->
         if (exception is IOException)  {
           emit(emptyPreferences())
@@ -90,12 +90,12 @@ class SpaceSelectorDS @Inject constructor(@ApplicationContext private val ctx: C
         val spaceTypeStr = preferences[KEY.querySpace_type] ?: C.DEFAULT_QUERY_SPACE_TYPE
         val spaceTypeId = preferences[KEY.querySpace_typeId] ?: 0
 
-        FilterSpaces(SpaceOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
+        QuerySelectSpace(SpaceOwnership.valueOf(ownershipStr.uppercase()), ownershipId,
           SpaceType.valueOf(spaceTypeStr.uppercase()), spaceTypeId)
       }
 }
 
-data class FilterSpaces(
+data class QuerySelectSpace(
         val ownership: SpaceOwnership = SpaceOwnership.ALL,
         val ownershipId: Int=0,
         val spaceType: SpaceType = SpaceType.ALL,
