@@ -12,9 +12,9 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 class SpaceTypeConverter {
 
   companion object {
-    fun spaceToEntity(space: Space, ownership: SpaceOwnership): SpaceEntity {
+    fun toEntity(space: Space, ownership: SpaceOwnership): SpaceEntity {
       return SpaceEntity(
-        space.id,
+        space.buid,
         space.type.uppercase(),
         space.bucode,
         space.name,
@@ -26,7 +26,7 @@ class SpaceTypeConverter {
         ownership)
     }
 
-    private fun entityToSpace(tuple: SpaceEntity): Space {
+    private fun toSpace(tuple: SpaceEntity): Space {
       return Space(
               tuple.id,
               tuple.type.lowercase(),
@@ -37,17 +37,17 @@ class SpaceTypeConverter {
               tuple.coordinatesLat,
               tuple.coordinatesLon,
               tuple.url ?: "",
-              tuple.ownerShip.toString().lowercase().replaceFirstChar(Char::uppercase)
+              tuple.ownerShip.toString().lowercase()
       )
     }
 
     /**
      * Convert a list of tuples (entities) to Spaces (that has a list of Space)
      */
-    fun entityToSpaces(tuples: List<SpaceEntity>): Spaces {
+    fun toSpaces(tuples: List<SpaceEntity>): Spaces {
       val spaces = mutableListOf<Space>()
       tuples.forEach { tuple ->
-        spaces.add(entityToSpace(tuple))
+        spaces.add(toSpace(tuple))
       }
       return Spaces(spaces)
     }

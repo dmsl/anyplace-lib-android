@@ -140,7 +140,7 @@ class UiLoggingBtn(
     uploadWasVisible = uiLog.groupUpload.isVisible
     if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
 
-    ui.floorSelector.disable()
+    ui.levelSelector.disable()
     utlUi.disable(act.btnSettings)
     uiLog.bottom.hideBottomSheet()
 
@@ -162,7 +162,7 @@ class UiLoggingBtn(
 
   fun stopLogging() {
     if (uploadWasVisible) showUploadBtn()
-    ui.floorSelector.enable()
+    ui.levelSelector.enable()
     utlUi.enable(act.btnSettings)
     uiLog.bottom.showBottomSheet()
 
@@ -190,7 +190,7 @@ class UiLoggingBtn(
     VM.statObjWindowUNQ=0
 
     VM.enableCvDetection()
-    ui.floorSelector.hide()
+    ui.levelSelector.hide()
 
     ui.localization.hide()
     ui.map.mapView.alpha = alphaMin
@@ -210,7 +210,7 @@ class UiLoggingBtn(
     VM.statusLogging.update { LoggingStatus.stopped }
     uiLog.bottom.showBottomSheet()
     utlUi.enable(uiLog.btnSettings)
-    ui.floorSelector.show()
+    ui.levelSelector.show()
     act.layoutCamera.setBackgroundColor(VM.utlColor.Black())
 
     ui.localization.show() // show it anyway

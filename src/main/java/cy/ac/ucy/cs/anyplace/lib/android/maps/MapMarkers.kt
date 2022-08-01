@@ -187,7 +187,7 @@ class MapMarkers(private val app: AnyplaceApp,
         map.obj.addMarker(marker)?.let {
           userLocations.add(it)
 
-          val currentFloor = app.wFloor?.floorNumber()!!
+          val currentFloor = app.wLevel?.floorNumber()!!
           val otherUserCoords = Coord(latLng.latitude, latLng.longitude, currentFloor)
           it.tag = UserInfoMetadata(UserInfoType.OtherUser,
                   LocalizationMethod.NA,
@@ -203,7 +203,7 @@ class MapMarkers(private val app: AnyplaceApp,
             // also follow the user on map
             if (app.dsCvMap.read.first().followSelectedUser) {
               LOG.D3(TAG, "following user on map..")
-              animateOnOutOfBounds(latLng)
+              map.moveIfOutOufBounds(latLng)
             }
           }
         }
@@ -290,7 +290,7 @@ class MapMarkers(private val app: AnyplaceApp,
     var snippet = ""
     if (floorNum != lastCoord!!.level)  {  // on a different floor
       alpha=0.7f
-      snippet += "On ${app.wFloor?.prettyFloor}: ${lastCoord?.level}"
+      snippet += "On ${app.wLevel?.prettyFloor}: ${lastCoord?.level}"
     }
 
     scope.launch(Dispatchers.Main) {
@@ -317,12 +317,12 @@ class MapMarkers(private val app: AnyplaceApp,
     LOG.D2()
 
     lastCoord=coord
-    map.animateToLocation(latLng)
+    map.moveToLocation(latLng)
 
     scope.launch(Dispatchers.Main) {
       removeLastOwnLocation()
 
-      val uid = app.dsSmasUser.read.first().uid
+      val uid = app.dsUserSmas.read.first().uid
       // app.dsUser.readUser.first().id
       lastOwnLocation = map.obj.addMarker(ownLocationMarker(coord, locMethod, alerting))
       lastOwnLocation!!.tag = UserInfoMetadata(
@@ -337,12 +337,6 @@ class MapMarkers(private val app: AnyplaceApp,
     updateLocationMarkerBasedOnFloor(coord.level)
   }
 
-
-  fun animateOnOutOfBounds(latLng: LatLng) {
-    if (map.outOfMapBounds(latLng)) {
-      map.animateToLocation(latLng)
-    }
-  }
 
   fun clearChatLocationMarker() {
     LOG.D2()
@@ -407,7 +401,7 @@ class MapMarkers(private val app: AnyplaceApp,
 
     scope.launch(Dispatchers.Main) {
       val latLng = coord.toLatLng()
-      map.animateToLocation(latLng)
+      map.moveToLocation(latLng)
 
       // DONT DO THIS...
       // there was an existing marker already (either own user marker, or other user marker)

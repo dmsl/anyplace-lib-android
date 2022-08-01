@@ -88,7 +88,7 @@
   <string name="map">Map</string>
   <string name="no_internet_connection">No Internet Connection!</string>
   <string name="town_">Town:</string>
-  <string name="ownership_">Ownership:</string>
+  <string name="visibility_">Visibility:</string>
   <string name="country_">Country:</string>
   <string name="indoor_space">Indoor Space</string>
   <string name="server_header">Anyplace Server</string>
@@ -257,5 +257,7 @@
   <string name="delete_local_msgs">Delete local messages</string>
   <string name="upload_scans">Upload Scans</string>
   <string name="uploading">Uploading..</string>
+  <string name="filter">Filter</string>
+  <string name="no_results">No results.</string>
 
 </resources>

@@ -5,15 +5,15 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
 import retrofit2.Response
 import java.lang.Exception
 import java.net.ConnectException
 
 /**
- * Manages Location fetching of [Floors]
+ * Manages Location fetching of [Levels]
  */
 class FloorsGetNW(
         private val app: AnyplaceApp,
@@ -25,7 +25,7 @@ class FloorsGetNW(
 
   private val C by lazy { CONST(app.applicationContext) }
 
-  /** Get [Floors]*/
+  /** Get [Levels]*/
   suspend fun blockingCall(buid: String) : Boolean {
     LOG.E(TAG, "$tag: blockingCall")
 
@@ -48,7 +48,7 @@ class FloorsGetNW(
     }
   }
 
-  private fun handleResponse(resp: Response<Floors>): Boolean {
+  private fun handleResponse(resp: Response<Levels>): Boolean {
     LOG.D3(TAG)
     if(resp.isSuccessful) {
       return when {

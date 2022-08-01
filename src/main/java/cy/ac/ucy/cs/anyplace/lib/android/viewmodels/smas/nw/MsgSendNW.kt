@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
@@ -40,7 +40,7 @@ class MsgSendNW(private val app: SmasApp,
   suspend fun safeCall(userCoords: UserCoordinates, mdelivery: String, mtype: Int, msg: String?, mexten: String?) {
     LOG.D2(TAG_METHOD)
     resp.value = NetworkResult.Loading()
-    smasUser = app.dsSmasUser.read.first()
+    smasUser = app.dsUserSmas.read.first()
 
     if (app.hasInternet()) {
       try {
@@ -101,7 +101,7 @@ class MsgSendNW(private val app: SmasApp,
             else -> "Sent to ${it.data?.deliveredTo} people."
           }
 
-          if (data.level != null) msg+=" (${app.wSpace.prettyFloor}: ${data.level})"
+          if (data.level != null) msg+=" (${app.wSpace.prettyLevel}: ${data.level})"
           else if (data.mdelivery != MDELIVERY_SAME_DECK) {
             msg += " (${prettyMDelivery(data.mdelivery)})"
           }

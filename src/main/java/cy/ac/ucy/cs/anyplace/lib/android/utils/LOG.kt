@@ -8,11 +8,16 @@ class DBG {
 
     const val LEVEL = 2
 
+    const val notificationsDisabled = true // TODO:PMX
+
     const val D1 = LEVEL >= 1
     const val D2 = LEVEL >= 2
     const val D3 = LEVEL >= 3
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
+
+    const val CO5 = true // STABLE
+    const val CTR = true // STABLE
 
     const val SLR = true
     const val DVO = true
@@ -20,9 +25,6 @@ class DBG {
     const val GREs = true
 
     const val BG5 = true
-
-    const val CO5 = true
-    const val CTR = true
 
     const val CVM = true
     const val LMT = true

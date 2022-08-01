@@ -4,7 +4,7 @@ import android.content.Context
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import java.io.IOException
 import java.io.InputStream
@@ -18,11 +18,11 @@ open class AssetReader(val ctx: Context) {
 
   private val SELECTED_SPACE = SPACE_STENA_FLAVIA
 
-  fun getFloors(): Floors? {
+  fun getFloors(): Levels? {
     val str = getFloorsStr()
     str.let {
       try {
-        return Gson().fromJson(str, Floors::class.java)
+        return Gson().fromJson(str, Levels::class.java)
       } catch (e: Exception) {
         LOG.E("Failed to parse: $str")
       }

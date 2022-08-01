@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
@@ -81,23 +80,21 @@ class UiLocalization(
       val lr = app.locationSmas.value
       if (lr is LocalizationResult.Success) {
         val coord = lr.coord!!
-        val curFloor = app.wFloor?.floorNumber()
+        val curFloor = app.wLevel?.floorNumber()
 
         if (coord.level != curFloor) {
-          app.wFloors.moveToFloor(VM, coord.level)
+          app.wLevels.moveToFloor(VM, coord.level)
         }
 
         LOG.E(TAG, "whereami click")
         VM.ui.map.markers.clearAllInfoWindow()
-        VM.ui.map.animateToLocation(coord.toLatLng())
+        VM.ui.map.moveToLocation(coord.toLatLng())
       } else {
         val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
         app.snackbarInf(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
 
-        val latLng = LatLng(app.wSpace.obj.coordinatesLat.toDouble(),
-                app.wSpace.obj.coordinatesLon.toDouble())
-        VM.ui.map.animateToLocation(latLng)
+        VM.ui.map.moveToLocation(app.wLevel!!.bounds().center)
       }
     }
     btnWhereAmISetup=true
@@ -236,12 +233,10 @@ class UiLocalization(
             app.snackbarShort(scope, "IMU needs an initial location.")
             imuDisable()
           }
-
           VM.imuEnabled -> { VM.mu.start() }
         }
       }
     }
-
   }
 
   /**
@@ -250,12 +245,14 @@ class UiLocalization(
    */
   fun imuEnable() {
     utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
+    utlUi.flashingLoop(btnImu)
     VM.imuEnabled=true
-    app.snackbarShort(scope, "IMU mode ON (experimental)!")
+    app.snackbarWarning(scope, "IMU mode ON! [experimental]")
   }
 
   fun imuDisable() {
     utlUi.changeBackgroundMaterial(btnImu, R.color.darkGray)
+    utlUi.clearAnimation(btnImu)
     VM.imuEnabled=false
   }
 

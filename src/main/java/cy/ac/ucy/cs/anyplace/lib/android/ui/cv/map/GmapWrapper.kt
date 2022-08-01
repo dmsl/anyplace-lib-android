@@ -2,24 +2,20 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Bundle
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.copyToClipboard
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.*
-import cy.ac.ucy.cs.anyplace.lib.android.maps.camera.CameraAndViewport
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -39,6 +35,10 @@ class GmapWrapper(
         private val scope: CoroutineScope,
         private val UI: CvUI) {
 
+  companion object {
+    const val ZOOM_LEVEL_DEF = 19f
+  }
+
   val tag = "wr-gmap"
   private val ctx: Context = app.applicationContext
   lateinit var obj: GoogleMap
@@ -47,7 +47,7 @@ class GmapWrapper(
   private val assetReader by lazy { AssetReader(ctx) }
   /** Overlays on top of the map, like Heatmaps */
   val overlays by lazy { Overlays(ctx, scope) }
-  private val fHandler by lazy { FloorHandler(VM, scope, ctx, UI, overlays) }
+  val fHandler by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI, overlays) }
 
   lateinit var mapView : MapView
 
@@ -73,8 +73,8 @@ class GmapWrapper(
   var gmapWrLoaded = false
   @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap, act: CvMapActivity) {
-    LOG.D()
-    LOG.E(TAG, "$tag: setup OF GMAP-WRAPPER")
+    val method = ::setup.name
+    LOG.D(tag, method)
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))   // TODO:PMX FR10
@@ -97,7 +97,7 @@ class GmapWrapper(
       // otherwise, we'll continue loading the space / level
       while(!act.cvMapPrefsLoaded) delay(100)
 
-      loadSpaceAndLevel()
+      loadSpace()
 
       setupOnMapAndMarkerClick()
       setupInfoWindowClick()
@@ -126,6 +126,7 @@ class GmapWrapper(
   var infoWindowClickSetup=false
   @SuppressLint("PotentialBehaviorOverride")
   private fun setupInfoWindowClick() {
+    val method = ::setupInfoWindowClick.name
     if (infoWindowClickSetup) return
     infoWindowClickSetup=true
 
@@ -135,13 +136,13 @@ class GmapWrapper(
         val metadata = it.tag as UserInfoMetadata?
         if (metadata != null) {
           if(metadata.type == UserInfoType.SharedLocation) {
-            LOG.W(TAG, "clearing chat location marker")
+            LOG.W(tag, "$method: clearing chat location marker")
             markers.clearChatLocationMarker()
             return@setOnInfoWindowClickListener
           }
 
-          LOG.E(TAG, "USER: ${metadata.uid}")
-          LOG.E(TAG, "LOCATION: ${metadata.coord}")
+          LOG.E(tag, "$method: USER: ${metadata.uid}")
+          LOG.E(tag, "$method: LOCATION: ${metadata.coord}")
 
           val uid = metadata.uid
           val deck = metadata.coord.level
@@ -149,12 +150,11 @@ class GmapWrapper(
           val lon = metadata.coord.lon
 
           if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
-
             val clipboardLocation = SmasChatViewModel.ClipboardLocation(uid, deck, lat, lon)
             clipboardLocation.toString().copyToClipboard(ctx)
 
             scope.launch(Dispatchers.IO) {
-              val ownUid = app.dsSmasUser.read.first().uid
+              val ownUid = app.dsUserSmas.read.first().uid
               if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
                 if (ownUid == uid) {
                   app.snackbarShort(scope, "Copied own location to clipboard")
@@ -178,39 +178,37 @@ class GmapWrapper(
   }
 
   /**
-   * when the [Floor] is loaded, it continues the setup by:
+   * when the first [Level] is loaded, it continues the setup by:
    * - bringing the floor plans (downloading or from cache)
    * - setting up zoom preferences
    */
-  fun onFloorLoaded() {
-    // TODO:PM this must be moved to earlier activity
+  fun onFirstLevelLoaded() {
+    val method = ::onFirstLevelLoaded.name
+    LOG.E(tag, METHOD)
+
+    // CHECK:PM TODO:PM this must be moved to earlier activity ??
     // along with Space/Floors loading (that also needs implementation).
-    scope.launch(Dispatchers.IO) { app.wFloors.fetchAllFloorplans(VM) }
+    scope.launch(Dispatchers.IO) { app.wLevels.fetchAllFloorplans(VM) }
 
-    val maxZoomLevel = obj.maxZoomLevel // may be different from device to device
+    scope.launch(Dispatchers.Main) {
+      val maxZoomLevel = obj.maxZoomLevel // may differ per device
+      obj.setMinZoomPreference(maxZoomLevel-4)
+      LOG.E(tag, "MAX ZOOM: $maxZoomLevel (restriction)")
 
-    obj.setMinZoomPreference(maxZoomLevel-4)
-    // place some restrictions on the map
-    LOG.D2(TAG, "MAX ZOOM: $maxZoomLevel (restriction)")
-
-    // restrict screen to current bounds.
-    scope.launch {
-      delay(500) // CHECK is ths a bugfix?
-
-      if (app.wFloor == null) {
-        LOG.E(TAG_METHOD, "Floor is null. Cannot update google map location")
+      if (app.wLevel == null) {
+        val msg = "Cannot locate floor ($TAG)"
+        app.snackbarLongDEV(scope, msg)
+        LOG.E(tag, msg)
         return@launch
       }
 
-      LOG.W(TAG, "Setting camera bounds: users will be restricted to viewing just the particular space")
-      LOG.E(TAG, "SP: ${app.wSpace.obj.name}")
-      LOG.E(TAG, "FLOOR: ${app.wFloor?.prettyFloorNumber()}")
+      LOG.E(tag, "$method: SPACE: ${app.wSpace.obj.name}")
+      LOG.E(tag, "$method: FLOOR: ${app.wLevel?.prettyFloorNumber()}")
+      LOG.E(tag, "$method: MOVING TO CENTER")
+      VM.ui.map.moveToBounds(app.wLevel!!.bounds())
 
-      obj.setLatLngBoundsForCameraTarget(app.wFloor?.bounds())
-      animateToLocation(app.wFloor?.bounds()!!.center)
+      // delay(500) // CHECK is ths a bugfix? CHECK: if OK: CLR:PM ?
 
-      val floorOnScreenBounds = obj.projection.visibleRegion.latLngBounds
-      LOG.D2("bounds: ${floorOnScreenBounds.center}")
     }
   }
 
@@ -218,26 +216,27 @@ class GmapWrapper(
   // }
 
   /**
-   * Loads from assets the Space and the Space's Floors
-   * Then it loads the floorplan for [selectedFloorPlan].
-   *
-   * TODO Implement this from network (@earlier), and pass it w/[SafeArgs] / [Bundle]
+   * Loads some necessary json objects for:
+   * - the space itself
+   * - the levels (floors/decks) of the building
+   * 
+   * It can load:
+   * - dynamically (from cache, given they were already downloaded)
+   * - of from assets (used for development/debugging)
    */
-  fun loadSpaceAndLevel() {
+  fun loadSpace() {
     LOG.V2()
 
     scope.launch(Dispatchers.IO) {
       if (!DBG.SLR) {
-        if(!loadSpaceAndFloorFromAssets()) return@launch
+        if(!loadSpaceFromAssets()) return@launch
       } else {
         val prefs = VM.dsCvMap.read.first()
-        LOG.W(TAG, "$METHOD: loading dynamically: ${prefs.selectedSpace}")
-        loadSpaceAndFloorFromCache(prefs.selectedSpace)
+        loadSpaceFromCache(prefs.selectedSpace)
       }
 
-      VM.selectInitialFloor(ctx)
-      fHandler.observeFloorChanges(this@GmapWrapper)
-      fHandler.observeFloorplanChanges(obj)
+      VM.selectInitialLevel()
+      fHandler.observeLevelplanImage(obj)
     }
   }
 
@@ -245,18 +244,19 @@ class GmapWrapper(
    * Cache is prepared by [SpaceSelector]
    * TODO put other act here
    */
-  private fun loadSpaceAndFloorFromCache(selectedSpace: String): Boolean {
-    LOG.E(TAG, "$METHOD: space: $selectedSpace (DYNAMICALLY)")
-    return app.initSpaceAndFloors(scope,
+  private fun loadSpaceFromCache(selectedSpace: String): Boolean {
+    val method = ::loadSpaceFromCache.name
+    LOG.E(tag, "$method: $selectedSpace (DYNAMICALLY)")
+    return app.initializeSpace(scope,
             VM.cache.readJsonSpace(selectedSpace),
             VM.cache.readJsonFloors(selectedSpace))
   }
 
 
   @Deprecated("for testing")
-  private fun loadSpaceAndFloorFromAssets() : Boolean {
+  private fun loadSpaceFromAssets() : Boolean {
     LOG.W()
-    return app.initSpaceAndFloors(scope,
+    return app.initializeSpace(scope,
             assetReader.getSpace(),
             assetReader.getFloors())
   }
@@ -267,13 +267,15 @@ class GmapWrapper(
    * Observe user bounds to update WAI functionality
    */
   fun setupObserverUserBounds() {
+    val method = ::setupObserverUserBounds.name
     if (setUserPannedOutOfBounds) return
     setUserPannedOutOfBounds=true
 
     scope.launch(Dispatchers.Main) {
       obj.setOnCameraIdleListener {
+        val zoomLevel = obj.cameraPosition.zoom
         var boundsState = MapBounds.notLocalizedYet
-        LOG.W(TAG, "Map idle (movement ended)") // CLR:PM D3
+        LOG.W(tag, "$method: map idle: zoom: $zoomLevel") // CLR:PM D3
         val lr = app.locationSmas.value
         if (lr is LocalizationResult.Success) {  // there was a user location
           // NOTE: on floor changing the [app.userOutOfBounds] might also get updated,
@@ -290,44 +292,66 @@ class GmapWrapper(
   }
 
   /**
-   * Pan camera to new location
+   * moves camera when the [latLng] is out of bounds:
+   * - not visible in current map's projection
    */
-  fun animateToLocation(latLng: LatLng) {
-    // nice animation but it causes issues..
-    // map.obj.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, map.obj.maxZoomLevel))
-
+  fun moveIfOutOufBounds(latLng: LatLng) {
     scope.launch(Dispatchers.Main) {
-      val cameraPosition = CameraPosition(
-              latLng, obj.cameraPosition.zoom,
-              // don't alter tilt/bearing
-              obj.cameraPosition.tilt,
-              obj.cameraPosition.bearing)
-
-      // val cancellableCallback= object : GoogleMap.CancelableCallback {
-      //   override fun onCancel() {}
-      //   override fun onFinish() {}
-      // }
-
-      val newCameraPosition = CameraUpdateFactory.newCameraPosition(cameraPosition)
-      obj.moveCamera(newCameraPosition)
+      if (outOfMapBounds(latLng)) {
+        moveToLocation(latLng)
+      }
     }
   }
 
-  private fun showError(space: Space?, floors: Floors?, floor: Floor? = null, floorNum: Int = 0) {
-    var msg = ""
-    when {
-      space == null -> msg = "No space selected."
-      floors == null -> msg = "Failed to get ${app.wSpace.prettyFloors}."
-      floor == null -> msg = "Failed to get ${app.wSpace.prettyFloor} $floorNum."
+  /**
+   * Set the camera to an area that the whole [bounds] are visible
+   */
+  fun moveToBounds(bounds: LatLngBounds, padding: Int = 10) {
+    scope.launch(Dispatchers.Main) {
+      obj.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
     }
-    LOG.E(msg)
-    app.snackbarShort(scope, msg)
   }
+
+  /**
+   * move camera to [latLong], optionally changing zoom level
+   */
+  fun moveToLocation(latLng: LatLng, changeZoomLevel: Boolean = false) {
+    val method = ::moveToLocation.name
+    scope.launch(Dispatchers.Main) {
+      LOG.E(tag, "$method: zoom: ${obj.cameraPosition.zoom}")
+
+      val zoomLevel = if (changeZoomLevel) ZOOM_LEVEL_DEF else obj.cameraPosition.zoom
+
+      // don't alter tilt, bearing
+      val oldPos = obj.cameraPosition
+      val newPos = CameraPosition(latLng, zoomLevel, oldPos.tilt, oldPos.bearing)
+      obj.moveCamera(CameraUpdateFactory.newCameraPosition(newPos))
+    }
+  }
+
+  fun animateToCenter(location: LatLng) {
+    scope.launch(Dispatchers.Main) {
+
+      val oldPos = obj.cameraPosition
+      // don't alter tilt/bearing
+      val newPos = CameraPosition(location, oldPos.zoom, oldPos.tilt, oldPos.bearing)
+      obj.animateCamera(CameraUpdateFactory.newCameraPosition(newPos))
+    }
+  }
+
+  // private fun showError(space: Space?, levels: Levels?, level: Level? = null, floorNum: Int = 0) {
+  //   var msg = ""
+  //   when {
+  //     space == null -> msg = "No space selected."
+  //     levels == null -> msg = "Failed to get ${app.wSpace.prettyFloors}."
+  //     level == null -> msg = "Failed to get ${app.wSpace.prettyLevel} $floorNum."
+  //   }
+  //   LOG.E(tag, msg)
+  //   app.snackbarShort(scope, msg)
+  // }
 
   fun removeUserLocations() {
-    scope.launch(Dispatchers.Main) {
-      hideUserMarkers()
-    }
+    scope.launch(Dispatchers.Main) { hideUserMarkers() }
   }
 
   fun renderUserLocations(userLocation: List<UserLocation>) {
@@ -350,23 +374,12 @@ class GmapWrapper(
   /**
    * Sets a new marker location on the map.
    *
-   * - [userSet]: whether the location was manually added by user
+   * - [locMethod]: what localization method was used
    */
   fun setUserLocation(coord: Coord, locMethod: LocalizationMethod) {
-    LOG.D(TAG, "$METHOD")
+    val method = ::setUserLocation.name
+    LOG.D(tag, method)
     markers.setOwnLocationMarker(coord, locMethod, app.alerting)
-  }
-
-  fun recenterCamera(location: LatLng) {
-    scope.launch(Dispatchers.Main) {
-      obj.animateCamera(
-              CameraUpdateFactory.newCameraPosition(
-                      CameraPosition(
-                              location, obj.cameraPosition.zoom,
-                              // don't alter tilt/bearing
-                              obj.cameraPosition.tilt,
-                              obj.cameraPosition.bearing)))
-    }
   }
 
 }

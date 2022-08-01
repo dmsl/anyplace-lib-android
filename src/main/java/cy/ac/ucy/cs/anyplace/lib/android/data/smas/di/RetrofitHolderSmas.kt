@@ -1,11 +1,11 @@
-package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
+package cy.ac.ucy.cs.anyplace.lib.android.data.smas.di
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderBase
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderBase
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatAPI
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

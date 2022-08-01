@@ -11,10 +11,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
@@ -46,7 +46,7 @@ class CvLoggerViewModel @Inject constructor(
   application: Application,
   dsCv: CvDataStore,
   dsCvMap: CvMapDataStore,
-  dsMisc: MiscDataStore,
+  dsMisc: SpaceSelectorDS,
         // dsCvLog: CvLoggerDataStore,
   repoAP: RepoAP,
   repoSmas: RepoSmas,
@@ -220,7 +220,7 @@ class CvLoggerViewModel @Inject constructor(
 
     uiLog.bottom.logging.uploadWasVisible = uiLog.groupUpload.isVisible
     utlUi.fadeOut(uiLog.groupUpload)
-    ui.floorSelector.hide()
+    ui.levelSelector.hide()
     uiLog.bottom.logging.hide()
   }
 
@@ -230,7 +230,7 @@ class CvLoggerViewModel @Inject constructor(
     if (!DBG.LCLG) return // PMX: LCLG
 
     if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.groupUpload)
-      ui.floorSelector.show()
+      ui.levelSelector.show()
       uiLog.bottom.logging.show()
   }
 }

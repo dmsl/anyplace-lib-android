@@ -10,8 +10,8 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogConfirmActionBinding
@@ -35,7 +35,7 @@ open class ConfirmActionDialog(
 
     /**
      * Creating the dialog.
-     * It gets a [SpaceWrapper], [FloorsWrapper], and a [FloorWrapper] and:
+     * It gets a [SpaceWrapper], [LevelsWrapper], and a [LevelWrapper] and:
      * - if each object is not null:
      *   - it is serialized (into a [String]) and put into the bundle
      * - Once the dialog is created they are deserialized to provide additional clear cache options

@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasVersion
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import kotlinx.coroutines.flow.MutableStateFlow
 import retrofit2.Response
 import java.lang.Exception

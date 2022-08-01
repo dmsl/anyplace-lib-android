@@ -121,18 +121,18 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
 
-    if (app.wFloor==null) {
+    if (app.wLevel==null) {
       app.showToast(scope, "Cannot store detections. (null floor)", Toast.LENGTH_LONG)
       resetLogging()
       return
     }
 
-    val FW = app.wFloor!!
-    val SW = FW.spaceH
+    val FW = app.wLevel!!
+    val SW = FW.wSpace
 
     // find the floor
-    val userCoord = UserCoordinates(SW.obj.id,
-            FW.obj.floorNumber.toInt(),
+    val userCoord = UserCoordinates(SW.obj.buid,
+            FW.obj.number.toInt(),
             location.latitude, location.longitude)
 
     VM.cacheDetectionsLocally(userCoord, location)
@@ -144,10 +144,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Scan: $curPoint"
     // val snippet="$windowDetections D: ${FW.obj.floorNumber}" // TODO:PMX FR10
-    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.floorNumber}" // TODO:PMX FR10
+    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.number}" // TODO:PMX FR10
     val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
     ui.map.markers.addScanMarker(coord, msg, snippet)
-    ui.map.recenterCamera(location)
+    ui.map.moveIfOutOufBounds(location)
 
     resetLogging()
   }

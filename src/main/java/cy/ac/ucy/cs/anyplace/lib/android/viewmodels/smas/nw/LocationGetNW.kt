@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
@@ -61,7 +61,7 @@ class LocationGetNW(
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D3(TAG, "LocationGet")
-    smasUser = app.dsSmasUser.read.first()
+    smasUser = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
@@ -160,10 +160,10 @@ class LocationGetNW(
     LOG.D3(TAG_METHOD)
     if (locations == null) return
 
-    val FW = FloorWrapper(app.floor.value!!, app.wSpace)
+    val FW = LevelWrapper(app.level.value!!, app.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
-      userLocation.buid == FW.spaceH.obj.id &&  // same space
-              userLocation.deck == FW.obj.floorNumber.toInt() && // same deck
+      userLocation.buid == FW.wSpace.obj.buid &&  // same space
+              userLocation.deck == FW.obj.number.toInt() && // same deck
               userLocation.uid != smasUser.uid // not current user
     }
 
@@ -224,7 +224,8 @@ class LocationGetNW(
           }
           app.snackbarShort(VM.viewModelScope, "Restored last location.")
           delay(500)
-          VM.ui.map.animateToLocation(ownLocation.toCoord().toLatLng())
+
+          VM.ui.map.moveToLocation(ownLocation.toCoord().toLatLng())
         }
       }
     }
@@ -240,7 +241,7 @@ class LocationGetNW(
     LOG.V2(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}")
 
     if (VM.hasNewMsgs(localTs, lastMsgTs)) {
-      LOG.W(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}: pulling msgs..")
+      LOG.V2(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}: pulling msgs..")
       VMchat.nwPullMessages()
     }
   }

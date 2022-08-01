@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -225,7 +224,7 @@ fun MessageCard(
                   }
                   // When the message is either a location or an alert..
                   if (message.mtype == 3 || message.mtype == 4) {
-                    val deckInfo = "${app.wSpace.prettyFloor} ${message.deck}"
+                    val deckInfo = "${app.wSpace.prettyLevel} ${message.deck}"
                     Column {
                       Text(
                               text = when (message.mtype) {

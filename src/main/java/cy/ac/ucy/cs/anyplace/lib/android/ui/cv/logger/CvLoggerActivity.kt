@@ -2,7 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -19,7 +18,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -151,7 +149,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun setupCollectors() {
     if (collectorsSet) return
     LOG.D(TAG_METHOD)
-    observeFloors()
+    observeLevels()
     collectLoggedInChatUser()
     VM.nwCvFingerprintSend.collect()
     collectorsSet=true
@@ -164,7 +162,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun collectLoggedInChatUser() {
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
-      appSmas.dsSmasUser.read.collect { user ->
+      appSmas.dsUserSmas.read.collect { user ->
         if (user.sessionkey.isBlank()) {
           finish()
           startActivity(Intent(this@CvLoggerActivity, SmasLoginActivity::class.java))

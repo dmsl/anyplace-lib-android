@@ -5,9 +5,8 @@ import android.graphics.BitmapFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import android.util.Base64
-import androidx.compose.ui.text.capitalize
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
@@ -17,29 +16,32 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 
 /**
- * Extra functionality on top of the [Floor] data class.
+ * Extra functionality on top of the [Level] data class.
  */
-class FloorWrapper(val obj: Floor,
-                   val spaceH: SpaceWrapper) {
+class LevelWrapper(val obj: Level,
+                   val wSpace: SpaceWrapper,
+) {
 
-  override fun toString(): String = Gson().toJson(obj, Floor::class.java)
+  val tag = "lvl-wrapper"
+
+  override fun toString(): String = Gson().toJson(obj, Level::class.java)
 
   companion object {
-    fun parse(str: String): Floor = Gson().fromJson(str, Floor::class.java)
+    fun parse(str: String): Level = Gson().fromJson(str, Level::class.java)
   }
 
-  private val cache by lazy { Cache(spaceH.ctx) }
+  private val cache by lazy { Cache(wSpace.ctx) }
 
-  fun floorNumber() : Int = obj.floorNumber.toInt()
-  fun prettyFloorplanNumber() = "${spaceH.prettyFloorplan}${obj.floorNumber}"
-  fun prettyFloorNumber() = "${spaceH.prettyFloor}${obj.floorName}"
-  fun prettyFloorName() = "${spaceH.prettyFloor} ${obj.floorName}"
+  fun floorNumber() : Int = obj.number.toInt()
+  fun prettyFloorplanNumber() = "${wSpace.prettyFloorplan}${obj.number}"
+  fun prettyFloorNumber() = "${wSpace.prettyLevel}${obj.name}"
+  fun prettyFloorName() = "${wSpace.prettyLevel} ${obj.name}"
 
   val prettyFloorCapitalize : String get() = prettyFloor.replaceFirstChar(Char::uppercase)
-  val prettyFloor : String get() = spaceH.prettyFloor
-  val prettyFloors : String get() = spaceH.prettyFloors
-  val prettyFloorPlan : String get() = spaceH.prettyFloorplan
-  val prettyFloorPlans : String get() = spaceH.prettyFloorplans
+  val prettyFloor : String get() = wSpace.prettyLevel
+  val prettyFloors : String get() = wSpace.prettyFloors
+  val prettyFloorPlan : String get() = wSpace.prettyFloorplan
+  val prettyFloorPlans : String get() = wSpace.prettyFloorplans
 
   fun northEast() : LatLng {
     val latNE = obj.topRightLat.toDouble()
@@ -58,7 +60,13 @@ class FloorWrapper(val obj: Floor,
   }
 
   fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(obj) }
-  fun loadFromCache() : Bitmap? { return cache.readFloorplan(obj) }
+
+  fun loadFromCache() : Bitmap? {
+    val method = ::loadFromCache.name
+    LOG.E(tag, "$method: ${obj.number} ${obj.name} ${obj.buid}")
+    return cache.readLevelplan(obj)
+  }
+
   fun clearCacheFloorplan() { cache.deleteFloorplan(obj) }
   // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
   /** Deletes the cvmap folder that might contain several CvMaps
@@ -69,15 +77,12 @@ class FloorWrapper(val obj: Floor,
   }
   fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(obj, bitmap) } }
 
-
-  // CLR:PM
-  // https://ap-dev.cs.ucy.ac.cy:9001/api/floorplans64/vessel_9bdb1052-ff23-4f9b-b9f9-aae5095af468_1634646807927/-2
   /**
    * Request and cache a [Bitmap]
    */
   suspend fun requestRemoteFloorplan() : Bitmap? {
-    LOG.D3(TAG,"$METHOD: ${obj.buid}: ${obj.floorNumber}")
-    val response = spaceH.repo.remote.getFloorplanBase64(obj.buid, obj.floorNumber)
+    LOG.D3(TAG,"$METHOD: ${obj.buid}: ${obj.number}")
+    val response = wSpace.repo.remote.getFloorplanBase64(obj.buid, obj.number)
     return handleResponse(response)
   }
 

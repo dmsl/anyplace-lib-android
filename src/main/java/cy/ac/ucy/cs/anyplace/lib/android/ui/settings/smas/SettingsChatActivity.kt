@@ -20,7 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint

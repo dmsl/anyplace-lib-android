@@ -72,11 +72,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:ellipsize="end"
             android:maxLines="2"
             tools:text="Space description this can be long\nand even multiline, taking 2 lines max"
             readSpaceDescription="@{space}"
+            android:layout_marginRight="20dp"
             app:layout_constraintStart_toEndOf="@+id/imageView_spaceType"
+            app:layout_constraintEnd_toStartOf="@id/btnSelectSpace"
             app:layout_constraintTop_toTopOf="@+id/imageView_spaceType" />
 
         <TextView
@@ -84,17 +85,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/ownership_"
+            android:text="@string/visibility_"
             app:layout_constraintStart_toStartOf="@id/description_textView"
+            app:layout_constraintRight_toLeftOf="@id/guideline2"
             app:layout_constraintTop_toBottomOf="@+id/description_textView" />
 
+        <!-- Guide_being: this is fixed! -->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_begin="156dp" />
+            app:layout_constraintGuide_begin="150dp"
+            app:layout_constraintLeft_toRightOf="@id/tv_lblOwner"
+            />
 
         <TextView
             android:id="@+id/tv_town"
@@ -102,9 +106,10 @@
             android:layout_height="wrap_content"
             tools:text="Public"
             android:layout_marginLeft="10dp"
+            app:layout_constraintStart_toEndOf="@id/guideline2"
             readSpaceOwnership="@{space}"
-            app:layout_constraintStart_toEndOf="@+id/guideline2"
-            app:layout_constraintTop_toTopOf="@+id/tv_lblOwner" />
+            app:layout_constraintTop_toTopOf="@+id/tv_lblOwner"
+            />
 
         <TextView
             android:id="@+id/tv_type"
@@ -112,6 +117,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             readSpaceType="@{space}"
+            android:translationY="-7dp"
             tools:text="building"
             app:layout_constraintEnd_toEndOf="@+id/imageView_spaceType"
             app:layout_constraintStart_toStartOf="@+id/imageView_spaceType"
@@ -137,8 +143,9 @@
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:iconSize="30dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             />
 
 

@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvLocalizeReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvLocalizeResp
 import cy.ac.ucy.cs.anyplace.lib.smas.models.FingerprintSendReq
@@ -11,9 +12,9 @@ import retrofit2.Response
 import javax.inject.Inject
 
 /**
- * Chat DataSource
+ * SMAS Remote DataSource (uses SMAS API)
  */
-class ChatRemoteDataSource @Inject constructor(
+class SmasRemoteDS @Inject constructor(
         private val RH: RetrofitHolderSmas) {
 
   // MISC

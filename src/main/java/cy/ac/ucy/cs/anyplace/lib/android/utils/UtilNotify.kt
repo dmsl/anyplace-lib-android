@@ -54,14 +54,16 @@ class UtilNotify(val ctx: Context) {
   }
 
   fun msgReceived() {
+    if (DBG.notificationsDisabled) return
+
     beepMsgReceived()
     vibrate()
   }
 
   fun alertReceived() {
-    // TODO:PMX enable
-    // beepAlertReceived()
-    // vibrateAlert()
-    // beepAlertReceived()
+    if (DBG.notificationsDisabled) return
+    beepAlertReceived()
+    vibrateAlert()
+    beepAlertReceived()
   }
 }

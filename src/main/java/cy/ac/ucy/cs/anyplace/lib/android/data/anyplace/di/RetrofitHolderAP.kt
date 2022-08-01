@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.utils.net
+package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.anyplace.API
@@ -8,11 +8,6 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
-open class RetrofitHolderBase {
-  lateinit var retrofit: Retrofit
-  lateinit var baseURL: String
-}
 
 
 /**
@@ -57,4 +52,9 @@ data class RetrofitHolderAP(
     this.api = this.retrofit.create(API::class.java)
     return this
   }
+}
+
+open class RetrofitHolderBase {
+  lateinit var retrofit: Retrofit
+  lateinit var baseURL: String
 }

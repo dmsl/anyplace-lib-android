@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
@@ -18,7 +17,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -61,27 +59,38 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
     private fun setupBtnSelectSpace(space: Space, act: SelectSpaceActivity) {
       binding.btnSelectSpace.setOnClickListener {
+        val activeTag = "downloading-button"
         val btn = binding.btnSelectSpace
 
+        // LEFTHERE: minor thing on downloading.
        if (app.spaceSelectionInProgress)  {
-         act.utlUi.attentionInvalidOption(btn)
+         val tagStr = if (btn.tag == null) "" else btn.tag.toString()
+         if (tagStr != activeTag) {
+           act.utlUi.attentionInvalidOption(btn)
+         }
+
          return@setOnClickListener
        }
         app.spaceSelectionInProgress=true
 
-        LOG.W(TAG, "Selecting Space: ${space.name} ${space.id}")
+        LOG.W(TAG, "Selecting Space: ${space.name} ${space.buid}")
 
-        val msg = "Downloading resources of ${space.name}.."
-        app.snackbarInf(scope, msg)
-
-        act.utlUi.disable(btn)
-        act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
-        act.utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
-        act.utlUi.flashingLoop(btn)
 
         scope.launch(Dispatchers.IO) {
-          app.dsCvMap.setSelectedSpace(space.id) // store the sapce
+          app.dsCvMap.setSelectedSpace(space.buid) // store the sapce
           val prefsCv = app.dsCvMap.read.first()
+
+          // if these json resources exists, then most likely the remaining components would exist also
+          val showNotif = app.cache.hasSpaceAndFloor(prefsCv.selectedSpace)
+          if (!showNotif) {
+            val msg = "Downloading resources of ${space.name.take(20)}.."
+            app.snackbarLong(scope, msg)
+          }
+
+          act.utlUi.flashingLoop(btn)
+          act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
+          act.utlUi.changeBackgroundMaterial(btn, R.color.green)
+          btn.tag=activeTag
 
           // 1. Download JSON objects for the Space and all the Floors
           val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
@@ -94,23 +103,27 @@ class SpacesAdapter(private val app: AnyplaceApp,
           }
 
           // 2. Load the downloaded objects
-          app.initSpaceAndFloors(scope,
+          app.initializeSpace(scope,
                   app.cache.readJsonSpace(prefsCv.selectedSpace),
                   app.cache.readJsonFloors(prefsCv.selectedSpace))
 
           // 3. Download floorplans
-          app.wFloors.showedMsgDownloading=true
-          app.wFloors.fetchAllFloorplans(act.VMcv)
+          app.wLevels.showedMsgDownloading=true
+          app.wLevels.fetchAllFloorplans(act.VMcv)
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)
             act.utlUi.enable(btn)
             act.utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_forward)
             act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+            btn.tag=null
 
             LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.E(TAG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
 
-            StartActivity.openActivity(prefsCv, act)
+            val userAP = app.dsUserAP.read.first()
+            StartActivity.openActivity(prefsCv, userAP, act)
             app.spaceSelectionInProgress=false
           }
           act.finish()
@@ -120,12 +133,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-    LOG.W(TAG, "$METHOD: onCreateViewHolder")
+    LOG.V5(TAG, "$METHOD")
     return from(parent, app, act, scope)
   }
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-    LOG.W(TAG, "$METHOD: position: $position (sz: ${spaces.size})")
+    LOG.V5(TAG, "$METHOD: position: $position (sz: ${spaces.size})")
     val currentSpace = spaces[position]
     holder.bind(currentSpace, holder.act)
   }
@@ -142,7 +155,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
    *    - updates the whole RV.
    */
   fun setData(newSpaces: Spaces) {
-    LOG.W(TAG, "setData: ${newSpaces.spaces.size}")
+    LOG.V5(TAG, "setData: ${newSpaces.spaces.size}")
 
     try {
       val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)

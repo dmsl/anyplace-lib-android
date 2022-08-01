@@ -7,30 +7,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.adapters.SpacesAdapter
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Companion.entityToSpaces
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.dsUserAP
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
-import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 fun RecyclerView.executeSafely(func : () -> Unit) {
@@ -53,7 +48,7 @@ fun RecyclerView.executeSafely(func : () -> Unit) {
  */
 @AndroidEntryPoint
 class SpaceListFragment : Fragment() {
-  private val TAG = SpaceListFragment::class.java.simpleName
+  val TG = "frgmt-spacelist"
   /** Adapter responsible for rendering the spaces */
   private val mAdapter by lazy {
     SpacesAdapter(requireActivity().app,
@@ -70,26 +65,30 @@ class SpaceListFragment : Fragment() {
   // Called before onCreateView
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    val MT = ::onCreate.name
+    LOG.W(TG, MT)
     VM = ViewModelProvider(requireActivity())[AnyplaceViewModel::class.java]
-    LOG.D3()
   }
 
   override fun onResume() {
     super.onResume()
+    val MT = ::onResume.name
+    LOG.W(TG, MT)
     LOG.D3()
     handleBackToFragment()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    VM.dbqSpaces.loaded=false
+    // app.dbqSpaces.resultsLoaded=false
   }
 
   private fun handleBackToFragment() {
+    val MT = ::handleBackToFragment.name
     if(VM.backFromSettings) {
-      LOG.D2(TAG, "$METHOD: from settings")
+      LOG.E(TG, "$MT: from settings")
       lifecycleScope.launch {
-        val user = requireActivity().dsUserAP.readUser.first()
+        val user = requireActivity().dsUserAP.read.first()
         if (user.accessToken.isBlank()) {
           requireActivity().finish()
         } else {
@@ -100,10 +99,12 @@ class SpaceListFragment : Fragment() {
   }
 
   override fun onCreateView(
-    inflater: LayoutInflater, container: ViewGroup?,
-    savedInstanceState: Bundle?
+          inflater: LayoutInflater, container: ViewGroup?,
+          savedInstanceState: Bundle?
   ): View {
-    LOG.D(TAG, "onCreateView")
+    val MT = ::onCreateView.name
+
+    LOG.E(TG, "$MT: from settings")
 
     // Inflate the layout for this fragment
     _binding = FragmentSpacesListBinding.inflate(inflater, container, false)
@@ -115,58 +116,46 @@ class SpaceListFragment : Fragment() {
     setHasOptionsMenu(true)
     collectNetwork()
     setupRecyclerView()
-    loadSpaces()
-    setupFabQuery()
-
-    collectSearchView()
+    setupSpaceDataSources()
+    collectTextQueriesFromToolbar()
 
     return binding.root
   }
 
-  /**
-   * This code is outdated and will crash. start from scratch..
-   */
-  private fun setupFabQuery() {
-    binding.fabFilterSpaces.setOnClickListener {
-      if (app.spaceSelectionInProgress) {
-        val utlUi = UtilUI(requireContext(), lifecycleScope)
-        utlUi.attentionInvalidOption(binding.fabFilterSpaces)
-        return@setOnClickListener
-      }
-
-
-      if(VM.dbqSpaces.loaded) {
-        findNavController().navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
-      } else {
-        app.snackbarWarning(lifecycleScope, "No spaces loaded")
-      }
-    }
-  }
 
   private fun setupRecyclerView() {
-    LOG.D3()
+    val MT = ::setupRecyclerView.name
+    LOG.D2(TG, MT)
     binding.recyclerView.adapter = mAdapter
     binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    // recycler view was randomly crashing
     binding.recyclerView.itemAnimator = null  // BUGFIX: https://stackoverflow.com/a/58540280/776345
 
     showShimmerEffect()
   }
 
   /**
-   * Listen for network changes, and request data once back online
-   * Runs on the very first time (when Activity is created), and then on Network changes.
+   *
+   * Reads spaces (either from local or remote)
+   * and setups collectors for getting those spaces (either local or remote)
    */
-  private fun loadSpaces() {
-    LOG.D3()
+  private fun setupSpaceDataSources() {
+    val MT = ::setupSpaceDataSources.name
+    LOG.E(TG, MT)
 
-    lifecycleScope.launchWhenStarted { readDatabase() }
+    lifecycleScope.launch (Dispatchers.IO){
+      readSpaces()
+      LOG.W(TG, "$MT: wiiill setup collect spaces query...")
+      collectSpacesQuery()
+      collectRemoteResponse()
+    }
   }
 
   private fun collectNetwork() {
     lifecycleScope.launch {
-    networkListener = NetworkListener()
+      networkListener = NetworkListener()
       networkListener.checkNetworkAvailability(requireActivity()).collect { status ->
-        LOG.D(TAG, "Network status: $status")
+        LOG.D(TG, "Network status: $status")
         VM.networkStatus = status
         // VM.showNetworkStatus()
       }
@@ -174,98 +163,133 @@ class SpaceListFragment : Fragment() {
   }
 
   var collectingQueries=false
-  private fun collectSearchView() {
+  /**
+   * Collecting text queries from the [searchView] in the toolbar
+   */
+  private fun collectTextQueriesFromToolbar() {
+    val MT = ::collectTextQueriesFromToolbar.name
     if (collectingQueries) return
     collectingQueries=true
-      VM.dbqSpaces.searchViewData.observe(viewLifecycleOwner) { spaceName ->
-        LOG.D(TAG, "searchview: $spaceName")
 
-        VM.dbqSpaces.applyQuery(spaceName)
-        lifecycleScope.launch(Dispatchers.IO) {
-          VM.dbqSpaces.readSpacesQuery.collect { query ->
-            LOG.E(TAG, "Query: ${query.size}")
-            loadDatabaseResults(query)
-          }
+    lifecycleScope.launch(Dispatchers.IO) {
+      app.dbqSpaces.txtQuery.collect { spaceName ->
+        LOG.D(TG, "$MT: txtQuery changed: $spaceName")
+        if (args.backFromBottomSheet || app.dbqSpaces.firstQuery) {
+          LOG.E(TG, "$MT: ignoring (back from bottomsheet)")
+          return@collect
         }
+        app.dbqSpaces.runTextQuery(spaceName)
       }
+    }
+
+    // CLR:PM
+    // app.dbqSpaces.searchViewData.observe(viewLifecycleOwner) { spaceName ->
+    //   app.dbqSpaces.runTextQuery(spaceName)
+    //   // COLLECT:CLR
+    //   // lifecycleScope.launch(Dispatchers.IO) {
+    //   //   app.dbqSpaces.spacesLocal.collect { spaces ->
+    //   //     LOG.E(TG, "Query: ${spaces.size}")
+    //   //     updateRecyclerView(spaces)
+    //   //   }
+    //   // }
+    // }
   }
 
-  private fun readDatabase() {
-    LOG.E()
-    lifecycleScope.launch {
-      VM.dbqSpaces.storedQuery.firstOrNull { query ->
-        VM.dbqSpaces.saveQueryTypeTemp(query)
-        VM.dbqSpaces.runInitialQuery()
+  private fun readSpaces() {
+    val MT = ::readSpaces.name
+    lifecycleScope.launch(Dispatchers.IO) {
 
-        LOG.E("$METHOD: loaded spaces: ${!VM.dbqSpaces.loaded} : back from bottom: ${args.backFromBottomSheet}" +
-            ": " + (!VM.dbqSpaces.loaded || args.backFromBottomSheet) + "\n")
+      LOG.E(TG,"$MT: running read spaces...")
+      // app.dbqSpaces.storedQuery.firstOrNull { query ->
+      // app.dbqSpaces.saveFiltersInMem(query) // WHYT?!?!
+      // app.dbqSpaces.readSpaces()
 
-        // if we are back from bottom sheet we must reload
-        if (!VM.dbqSpaces.loaded || args.backFromBottomSheet) {
-          if (args.backFromBottomSheet) {
-            LOG.E("$METHOD: Back from bottom sheet\n")
-            LOG.D(TAG, "  -> loadSpacesQuery")
-            loadSpacesQuery()
-          } else {
-            VM.dbqSpaces.readSpacesQuery.collect { spaces ->
-              if (spaces.isNotEmpty()) {
-                LOG.D2(TAG, "forced query")
-                loadSpacesQuery()
-              } else {
-                LOG.D2(TAG, "  -> requestRemoteSpaceData")
-                requestRemoteSpacesData()
-                collectSpaces()
-              }
-            }
-          }
-        } else {
-          LOG.W(TAG, "Not reloading...")
-        }
-        true
+      // if we are back from bottom sheet we must reload
+      // !app.dbqSpaces.loaded || THIS WAS  liek that.....
+
+      if (!app.dbqSpaces.hasSpaces()) {
+        LOG.E(TG, "$MT: no spaces: remote request")
+        readSpacesFromRemote()
+        app.dbqSpaces.runQuery("readSpaces1")
+      } else if (args.backFromBottomSheet) {
+        LOG.E(TG, "$MT: back from bottom sheet")
+        app.dbqSpaces.runQuery("readSpaces2")
+      } else if (app.dbqSpaces.firstQuery) {
+        LOG.E(TG, "$MT: reloading: first query..")
+        // INFO was not reloading..
+        app.dbqSpaces.runQuery("readSpaces3")
+        // LOG.E(TG, "$MT: Not reloading..")
+      } else {
+        LOG.E(TG, "$MT: Not reloading..")
       }
+      // true
+      // }
     }
   }
 
+  var collectingSpacesQuery = false
   /**
    * If null then its ignored
    * TODO make this callable from both allSpaces and spacesQuery
    */
-  private fun loadSpacesQuery() {
-    lifecycleScope.launch(Dispatchers.IO) {
-      VM.dbqSpaces.readSpacesQuery.collect { query ->
-        LOG.D(TAG, "Query: ${query.size}")
-        loadDatabaseResults(query)
+  private suspend fun collectSpacesQuery() {
+    val MT = ::collectSpacesQuery.name
+    if (collectingSpacesQuery) return
+    collectingSpacesQuery = true
+
+    app.dbqSpaces.spaces.collect { spaces ->
+      LOG.E(TG, "$MT: collected: spaces: ${spaces.size}")
+      if (app.dbqSpaces.firstQuery && spaces.isEmpty()) {
+        // this is normal
+        LOG.W(TG, "$MT: ignoring: no query run yet (so no spaces)")
+        return@collect
       }
+
+      updateRecyclerView(spaces)
     }
   }
 
-  private fun requestRemoteSpacesData() = VM.nwSpacesGet.safeCall()
+  private suspend fun readSpacesFromRemote()  {
+    val MT = ::readSpacesFromRemote.name
+    LOG.E(TG, MT)
+    VM.nwSpacesGet.safeCall()
+  }
 
-  private fun reloadSpacesFromRemote() {
+  private suspend fun reloadSpacesFromRemote() {
+    val MT = ::reloadSpacesFromRemote.name
+    LOG.E(TG, MT)
+
     VM.unsetBackFromSettings()
-    VM.dbqSpaces.loaded = false
-    requestRemoteSpacesData()
+    // app.dbqSpaces.resultsLoaded = false
+    readSpacesFromRemote()
   }
 
   /**
    * Loads the recycler view with content from the database
    */
-  private fun loadDatabaseResults(spaces: List<SpaceEntity>) {
-    LOG.W()
-    if (!VM.dbqSpaces.loaded) {
-      hideShimmerEffect()
-      spaces.let { mAdapter.setData(entityToSpaces(spaces)) }
-      if (spaces.isNotEmpty()) {
-        LOG.V3(TAG, "Found ${spaces.size} spaces.")
-        hideErrorMsg()
-      } else {
-        showErrorMsg("No results.")
-        VM.dbqSpaces.resetQuery()
+  private fun updateRecyclerView(spaces: List<Space>) {
+    val MT = ::updateRecyclerView.name
+    // LOG.E(TG, MT)
+
+    // if (!app.dbqSpaces.resultsLoaded) {
+    // LOG.E(TG, "$MT: results not loaded: hide shimmer")
+    hideShimmerEffect()
+    // LOG.E(TG, "$MT: setting data: sp: ${spaces.size}")
+    spaces.let { mAdapter.setData(Spaces(spaces)) }
+
+    if (spaces.isNotEmpty()) {
+      LOG.E(TG, "$MT: Found ${spaces.size} spaces. (filter persisted)")
+      hideErrorMsg()
+      lifecycleScope.launch(Dispatchers.IO) {
+        app.dbqSpaces.persistFilters()
       }
     } else {
-      LOG.W(TAG, "loadDatabaseResults: skipped loading..")
+      LOG.E(TG, "$MT: no results. (filter reset)")
+      lifecycleScope.launch(Dispatchers.IO) {
+        app.dbqSpaces.resetFilters()
+      }
+      showNoResults()
     }
-    VM.dbqSpaces.loaded = true
   }
 
   private fun hideErrorMsg() {
@@ -275,47 +299,60 @@ class SpaceListFragment : Fragment() {
     }
   }
 
-  private fun showErrorMsg(msg: String) {
+  private fun showNoResults() {
     lifecycleScope.launch(Dispatchers.Main) {
       binding.errorImageView.visibility = View.VISIBLE
       binding.errorTextView.visibility = View.VISIBLE
-      binding.errorTextView.text = msg
+      binding.errorTextView.text = getText(R.string.no_results)
     }
   }
 
   var collectingRemoteSpaces=false
-  private fun collectSpaces() {
+
+  /**
+   * When a remote request (API) was made, collect the response
+   * - on success: means we fetched new spaces and stored them locally
+   *   - in that case, run a query so they can finally be presented
+   * - otherwise: show relevant error.
+   */
+  private suspend fun collectRemoteResponse() {
+    val MT = ::collectRemoteResponse.name
+    LOG.E(TG, "$MT: setup collector")
     if (collectingRemoteSpaces) return
     collectingRemoteSpaces=true
 
-    val method = METHOD
-    lifecycleScope.launch(Dispatchers.IO) {
-      VM.nwSpacesGet.resp.collectLatest { response ->
-        LOG.D(TAG, method)
+    LOG.W(TG, "$MT: setup collector: st 2")
 
-        when (response) {
-          is NetworkResult.Success -> {
-            hideShimmerEffect()
-            response.data?.let { mAdapter.setData(it) }
-            VM.dbqSpaces.loaded = true // TODO set this from db cache as welL!
-          }
-          is NetworkResult.Error -> {
-            if (VM.dbqSpaces.loaded) LOG.E("Error response: after showed success.")
-            mAdapter.clearData()
-            hideShimmerEffect()
-            // if(!showedApiData) { showShimmerEffect() }
-            // loadDataFromCache() TODO: DB ?
-            val errMsg = response.message.toString()
-            if (activity != null) {
-              app.showToast(lifecycleScope, errMsg)
-            }
-            LOG.E(TAG, errMsg)
-          }
-          is NetworkResult.Loading -> {
-            showShimmerEffect()
-          }
-          else -> {}
+    VM.nwSpacesGet.resp.collect { response ->
+      LOG.W(TG, "$MT: collected $response")
+      LOG.W(TG, "$MT: collected $response")
+
+      when (response) {
+        is NetworkResult.Success -> {
+          // don't hide the shimmer effect now, as still have to query the DB
+          // before showing any results
+          LOG.E(TG, "$MT: success: running query")
+          LOG.W(TG, "success: running query")
+          app.dbqSpaces.runQuery("collectedRemoteResp: success")
         }
+        is NetworkResult.Error -> {
+          LOG.E(TG, "$MT: error")
+          // if (app.dbqSpaces.resultsLoaded) LOG.E(TG, "$MT: Error response: after showed success.")
+          mAdapter.clearData()
+          hideShimmerEffect()
+          val errMsg = response.message.toString()
+          if (activity != null) {
+            app.showToast(lifecycleScope, errMsg)
+          }
+
+          // app.dbqSpaces.runQuery()
+          LOG.E(TG, "$MT: $errMsg")
+        }
+        is NetworkResult.Loading -> {
+          LOG.E(TG, "$MT: loading")
+          showShimmerEffect()
+        }
+        else -> {}
       }
     }
   }
@@ -324,8 +361,6 @@ class SpaceListFragment : Fragment() {
    * Showing a Shimmer Effect while buildings are being fetched/loaded
    */
   private fun showShimmerEffect() {
-    LOG.V5()
-
     lifecycleScope.launch(Dispatchers.Main) {
       binding.shimmerLayout.startShimmer()
       binding.shimmerLayout.visibility = View.VISIBLE
@@ -333,8 +368,10 @@ class SpaceListFragment : Fragment() {
     }
   }
 
+  /**
+   * Hiding the shimmer effect and showing the recycler view
+   */
   private fun hideShimmerEffect() {
-    LOG.V5()
     lifecycleScope.launch(Dispatchers.Main) {
       binding.shimmerLayout.stopShimmer()
       binding.shimmerLayout.visibility = View.GONE

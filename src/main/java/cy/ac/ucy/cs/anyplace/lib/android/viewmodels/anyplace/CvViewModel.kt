@@ -1,7 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
-import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
@@ -15,27 +14,22 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Error
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult.Success
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -73,20 +67,21 @@ enum class LocalizationStatus {
  */
 @HiltViewModel
 open class CvViewModel @Inject constructor(
-        /** [application] is not an [AnyplaceApp], hence it is not a field.
+  /** [application] is not an [AnyplaceApp], hence it is not a field.
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
-        dsCv: CvDataStore,
-        private val dsMisc: MiscDataStore,
-        dsCvMap: CvMapDataStore,
-        val repo: RepoAP,
-        val RH: RetrofitHolderAP,
-        val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
-        val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
+  dsCv: CvDataStore,
+  private val dsMisc: SpaceSelectorDS,
+  dsCvMap: CvMapDataStore,
+  val repo: RepoAP,
+  val RH: RetrofitHolderAP,
+  val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
+  val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
   /** Make sure to initialize this one */
   private lateinit var attachedActivityId: String
   val app : AnyplaceApp = application as AnyplaceApp
+  val tag = "vm-cv"
 
   private val C by lazy { CONST(app) }
   private val utlUi by lazy { UtilUI(app.applicationContext, viewModelScope) }
@@ -102,7 +97,7 @@ open class CvViewModel @Inject constructor(
 
   // UI
   //// COMPONENTS
-  lateinit var floorSelector: FloorSelector
+  lateinit var levelSelector: LevelSelector
   /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
   var uiComponentInited = false
   var uiBottomInited = false
@@ -132,45 +127,56 @@ open class CvViewModel @Inject constructor(
    * Currently not much use (for a field var), but if we have multiple
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
-  val floorplanFlow : MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
+  /** the [Bitmap] of the current level (floorplan, or deckplan) */
+  val levelplanImg: MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
+
+  /** workaround. no the best one */
+  @Deprecated("this may be an ugly hack")
+  suspend fun waitForUi() {
+    while(!uiLoaded()) delay(100)
+  }
 
   fun uiLoaded(): Boolean {
-    return uiComponentInited && ui.map.gmapWrLoaded && uiBottomInited
+    return uiComponentInited &&
+            ui.map.gmapWrLoaded &&
+            uiBottomInited &&
+            (!DBG.WAI || ui.localization.btnWhereAmISetup)
   }
 
   // FLOOR PLANS
-  fun getFloorplanFromRemote(fw: FloorWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
+  fun getFloorplanFromRemote(fw: LevelWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
   private fun loadFloorplanFromAsset() {
-    LOG.W(TAG, "loading from asset file")
+    LOG.W(tag, "loading from asset file")
     val base64 = assetReader.getFloorplan64Str()
     val bitmap = base64?.let { utlImg.decodeBase64(it) }
-    floorplanFlow.value =
+    levelplanImg.value =
             when (bitmap) {
-              null -> Error("Cant read asset deckplan.")
-              else -> Success(bitmap)
+              null -> NetworkResult.Error("Cant read asset deckplan.")
+              else -> NetworkResult.Success(bitmap)
             }
   }
 
   /**
-   * Requests a floorplan from remote and publishes outcome to [floorplanFlow].
+   * Requests a floorplan from remote and publishes outcome to [levelplanImg].
+   * TODO:PMX put in LevelplanNW
+   *
    */
-  private suspend fun getFloorplanSafeCall(FH: FloorWrapper) {
-    LOG.E(TAG, "$METHOD: getFloorplanSafeCall (remote)")
-    floorplanFlow.value = NetworkResult.Loading()
-    // loadFloorplanFromAsset()
+  private suspend fun getFloorplanSafeCall(FH: LevelWrapper) {
+    val method = ::getFloorplanSafeCall.name
+    LOG.E(tag, "$method: remote")
+    levelplanImg.update { NetworkResult.Loading() }
 
     if (app.hasInternet()) {
       val bitmap = FH.requestRemoteFloorplan()
       if (bitmap != null) {
-        floorplanFlow.value = Success(bitmap)
+        levelplanImg.value = NetworkResult.Success(bitmap)
         FH.cacheFloorplan(bitmap)
       } else {
-        val msg ="getFloorplanSafeCall: bitmap was null. Failed to get ${FH.spaceH.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
-        LOG.E(TAG, msg)
-        floorplanFlow.value = Error(msg)
+        val msg ="getFloorplanSafeCall: bitmap was null. Failed to get ${FH.wSpace.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
+        levelplanImg.update { NetworkResult.Error(msg) }
       }
     } else {
-      floorplanFlow.value = Error(C.ERR_MSG_NO_INTERNET)
+      levelplanImg.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
     }
   }
 
@@ -190,7 +196,8 @@ open class CvViewModel @Inject constructor(
 
   open fun processDetections(recognitions: List<Classifier.Recognition>,
                              activity: DetectorActivityBase) {
-    LOG.V2(TAG, "VM: CvBASE: $METHOD: ${recognitions.size}")
+    val method = ::processDetections.name
+    LOG.V2(tag, "$method: ${recognitions.size}")
     when(statusLocalization.value) {
       LocalizationStatus.running -> {
         updateDetectionsLocalization(recognitions)
@@ -203,29 +210,25 @@ open class CvViewModel @Inject constructor(
    * Update [detections] that are related only to the localization window.
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
-    LOG.W(TAG, "$METHOD: updating for localization..")
+    val method = :: updateDetectionsLocalization.name
+    LOG.W(tag, "$method: updating for localization..")
     currentTime = System.currentTimeMillis()
     val appendedDetections = detectionsLOC.value + detections
-
-    /**
-     - HOW many objects are sending up
-
-     */
 
     when {
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
         statusLocalization.tryEmit(LocalizationStatus.stopped)
         if (appendedDetections.isNotEmpty()) {
-          LOG.W(TAG_METHOD, "stop: objects: ${appendedDetections.size}")
+          LOG.W(tag, "$method: stop: objects: ${appendedDetections.size}")
           // deduplicate detections (as we are scanning things in a window of a few seconds)
           val detectionsDedup = detectionsLOC.value
           // val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
 
-          LOG.W(TAG_METHOD, "stop: objects: ${detectionsDedup.size} (dedup)")
+          LOG.W(tag, "$method: stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
           if (!app.cvUtils.isModelInited()) {
-            LOG.E(TAG, "CvUtils: classes not inited")
+            LOG.E(tag, "CvUtils: classes not inited")
             return
           }
 
@@ -233,18 +236,19 @@ open class CvViewModel @Inject constructor(
 
           detectionsLOC.value = emptyList()
         } else {
-          LOG.W(TAG_METHOD, "stopped. no detections..")
+          LOG.W(tag, "$method: stopped. no detections..")
         }
       } else -> {  // Within a window
       detectionsLOC.value = appendedDetections as MutableList<Classifier.Recognition>
-      LOG.D5(TAG_METHOD, "append: ${appendedDetections.size}")
+      LOG.D5(tag, "$method: append: ${appendedDetections.size}")
     }
     }
   }
 
   var collectingCvLocalization = false
   fun localizeCvMap(recognitions: List<Classifier.Recognition>) {
-    LOG.D2(TAG, "$METHOD: performing remote localization")
+    val method = ::localizeCvMap.name
+    LOG.D2(tag, "$method: performing remote localization")
 
     // TODO convert detections
     val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)
@@ -262,7 +266,7 @@ open class CvViewModel @Inject constructor(
         // return@launch
       } else {
         // REMOTE: ALGO
-        nwCvLocalize.safeCall(app.wSpace.obj.id, detectionsReq, model)
+        nwCvLocalize.safeCall(app.wSpace.obj.buid, detectionsReq, model)
       }
 
     }
@@ -275,43 +279,67 @@ open class CvViewModel @Inject constructor(
       return
     }
 
-    val chatUser = app.dsApUser.readUser.first()
-    repoSmas.local.localize(this, model.idSmas, app.space!!.id, detectionsReq, chatUser)
+    val chatUser = app.dsUserAP.read.first()
+    repoSmas.local.localize(this, model.idSmas, app.space!!.buid, detectionsReq, chatUser)
   }
 
   /** TODO in new class
    * Selects the first available floor, or the last floor that was picked
    * for a particular space.
    */
-  fun selectInitialFloor(ctx: Context) {
+  fun selectInitialLevel() {
+    val method = ::selectInitialLevel.name
     LOG.V2()
-    LOG.V2(TAG,"${app.wSpace.prettyFloors}: ${app.wFloors.size}")
+    LOG.E(tag,"$method: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
 
-    if (!app.wFloors.hasFloors()) {  // space has no floors
+    if (!app.wLevels.hasFloors()) {  // space has no floors
       val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
-      LOG.W(TAG_METHOD, msg)
-      Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show()
-      app.floor.update { null }
+      LOG.W(tag, "$method: msg")
+      app.snackbarWarning(viewModelScope, msg)
+      app.level.update { null }
     }
 
-    // var floor : Floor? = null
-    // START OF: select floor: last selection or first available
-    // VMb.floor.value = null
+    LOG.E(tag, "$method: XXX: app.space: ${app.space?.buid}")
+    LOG.E(tag, "$method: XXX: app.wSpace: ${app.wSpace.obj.buid}")
+    LOG.E(tag, "$method: XXX: app.level: ${app.level.value?.buid}")
+    LOG.E(tag, "$method: XXX: app.wLevel.wSpace: ${app.wLevel?.wSpace?.obj?.buid}")
+    LOG.E(tag, "$method: XXX: app.wLevel.: ${app.wLevel?.obj?.buid}")
+
     if (app.wSpace.hasLastValuesCached()) {
+      LOG.E(tag, "$method: HAS last values cached")
       val lastVal = app.wSpace.loadLastValues()
+      LOG.E(tag, "$method: Space: ${app.wSpace.obj.name} has last floor: ${lastVal.lastFloor}")
       if (lastVal.lastFloor!=null) {
-        LOG.V3(TAG_METHOD, "lastVal cache: ${app.wSpace.prettyFloor}${lastVal.lastFloor}.")
-        app.floor.update { app.wFloors.getFloor(lastVal.lastFloor!!) }
+        LOG.E(tag, "$method: lastVal cache: ${app.wSpace.prettyLevel}${lastVal.lastFloor}.")
+        val lastLevel = app.wLevels.getFloor(lastVal.lastFloor!!)!!
+        LOG.E(tag, "$method: lastLevel: ${lastLevel.name} ${lastLevel.buid}")
+        app.level.update { lastLevel }
       }
       lastValSpaces = lastVal
+    } else {
+      LOG.E(tag, "$method: NO last values cached")
+      LOG.W(tag, "$method: loading first level")
+      // TODO:PMX: load first level here
+      // TODO:PMX: load first level here
+      // LEFTHERE
+      // LEFTHERE
+      // LEFTHERE
+      // LEFTHERE
     }
 
-    if (app.floor.value == null)  {
-      LOG.V3(TAG_METHOD, "Loading first ${app.wSpace.prettyFloor}.")
-      app.floor.update { app.wFloors.getFirstFloor() }
+    if (app.level.value == null)  {
+      LOG.E(tag, "$method: WILL load first")
+
+      LOG.V3(tag, "$method: Loading first ${app.wSpace.prettyLevel}.")
+
+      val firstLevel = app.wLevels.getFirstLevel()
+      LOG.E(tag, "$method: firstLevel: ${firstLevel.name} ${firstLevel.buid}")
+      app.level.update { firstLevel }
+    } else {
+      LOG.E(tag, "$method: DID NOT load first")
     }
 
-    LOG.V2(TAG_METHOD, "Selected ${app.wSpace.prettyFloor}: ${app.floor.value!!.floorNumber}")
+    LOG.E(tag, "$method: Selected ${app.wSpace.obj.buid}/${app.level.value?.buid} ${app.wSpace.prettyLevel}: ${app.level.value!!.number}")
   }
 
   // TODO:PM network manager? ineternet connectiovity?
@@ -324,6 +352,7 @@ open class CvViewModel @Inject constructor(
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()
 
+  // TODO:PMX IST
   fun showNetworkStatus() {
     if (!networkStatus) {
       app.showToast(viewModelScope, C.ERR_MSG_NO_INTERNET, Toast.LENGTH_LONG)
@@ -361,7 +390,7 @@ open class CvViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
 
       // wait for UI components to become ready
-      if (DBG.BG5) while (!uiLoaded()|| !ui.localization.btnWhereAmISetup) delay(100)
+      if (DBG.BG5) waitForUi()
 
       app.userOutOfBounds.collectLatest { state ->
         if (!DBG.WAI) return@collectLatest
@@ -387,6 +416,10 @@ open class CvViewModel @Inject constructor(
             utlUi.fadeIn(ui.localization.btnWhereAmI)
             utlUi.changeBackgroundMaterial(ui.localization.btnWhereAmI, R.color.redDark)
             utlUi.attentionZoom(ui.localization.btnWhereAmI)
+
+            if (app.wLevel!= null) {
+              ui.map.moveIfOutOufBounds(app.wLevel!!.bounds().center)
+            }
 
             // show notification on smas
             if (attachedActivityId==ACT_NAME_SMAS) {

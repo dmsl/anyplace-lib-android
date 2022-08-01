@@ -8,10 +8,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ServerDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceSelectorDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.AnyplaceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.FloorsGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.SpaceGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.SpacesGetNW
@@ -31,9 +31,9 @@ class AnyplaceViewModel @Inject constructor(
         app: Application,
         private val repo: RepoAP,
         private val RH: RetrofitHolderAP,
-        dsServer: ServerDataStore,
-        dsUser: ApUserDataStore,
-        private val dsMisc: MiscDataStore,
+        dsAnyplace: AnyplaceDataStore,
+        dsUserAP: ApUserDataStore,
+        private val dsMisc: SpaceSelectorDS,
   ): AndroidViewModel(app) {
 
   private val C by lazy { CONST(app.applicationContext) }
@@ -42,11 +42,10 @@ class AnyplaceViewModel @Inject constructor(
   val nwVersion by lazy { VersionApNW(app as AnyplaceApp, this, RH, repo) }
   val nwSpaceGet by lazy { SpaceGetNW(app as AnyplaceApp, this, RH, repo) }
   val nwFloorsGet by lazy { FloorsGetNW(app as AnyplaceApp, this, RH, repo) }
-  val nwSpacesGet by lazy { SpacesGetNW(app as AnyplaceApp, this, RH, dsUser, repo) }
-  val dbqSpaces by lazy { SpacesQueryDB(app as AnyplaceApp, this, repo, dsMisc) }
+  val nwSpacesGet by lazy { SpacesGetNW(app as AnyplaceApp, this, RH, dsUserAP, repo) }
 
   // PREFERENCES
-  val prefsServer = dsServer.read
+  val prefsServer = dsAnyplace.read
 
   //// RETROFIT
 
@@ -55,7 +54,7 @@ class AnyplaceViewModel @Inject constructor(
   var backOnline = false
   // TODO:PM: bind this when connectivity status changes
   var readBackOnline = dsMisc.readBackOnline.asLiveData()
-  var readUserLoggedIn = dsUser.readUser.asLiveData()
+  var readUserLoggedIn = dsUserAP.read.asLiveData()
 
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()

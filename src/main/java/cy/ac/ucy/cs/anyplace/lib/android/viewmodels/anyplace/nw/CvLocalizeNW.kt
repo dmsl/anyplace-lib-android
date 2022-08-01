@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.OfflineLocalization
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
@@ -55,7 +55,7 @@ class CvLocalizeNW(
   suspend fun safeCall(buid: String,
                        detections: List<CvObjectReq>,
                        model: DetectionModel) {
-    user = app.dsSmasUser.read.first()
+    user = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Unset()
 

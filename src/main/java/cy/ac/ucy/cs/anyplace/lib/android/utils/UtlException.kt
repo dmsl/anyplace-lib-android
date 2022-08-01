@@ -3,18 +3,17 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils
 import com.google.gson.stream.MalformedJsonException
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderBase
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderBase
 import kotlinx.coroutines.CoroutineScope
 import java.net.ConnectException
 
 object utlException {
 
   fun handleException(
-          app: AnyplaceApp,
-          RHB: RetrofitHolderBase,
-          scope: CoroutineScope, e: Exception?,
-          tag: String="") : String {
+    app: AnyplaceApp,
+    RHB: RetrofitHolderBase,
+    scope: CoroutineScope, e: Exception?,
+    tag: String="") : String {
 
     var resultMsg = tag
     if (e == null) {

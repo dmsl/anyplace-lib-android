@@ -11,15 +11,15 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceSelectorDS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -44,7 +44,7 @@ class SmasMainViewModel @Inject constructor(
         val dsChat: SmasDataStore,
         dsCv: CvDataStore,
         dsCvMap: CvMapDataStore,
-        dsMisc: MiscDataStore,
+        dsMisc: SpaceSelectorDS,
         RHsmas: RetrofitHolderSmas,
         RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
@@ -81,7 +81,7 @@ class SmasMainViewModel @Inject constructor(
   fun collectLocations(VMchat: SmasChatViewModel,mapH: GmapWrapper) {
     if (collectingLocations) return
     collectingLocations=true
-    if (app.floor.value == null) {  // floor not ready yet
+    if (app.level.value == null) {  // floor not ready yet
       LOG.W(TAG_METHOD, "Floor not loaded yet")
       return
     }

@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvMapRow
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
@@ -23,7 +23,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
+/**
+ * Smas Local DataStore (uses SQLite)
+ */
 class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
+  val tag = "ds-local-smas"
 
   fun readMsgs(): Flow<List<ChatMsgEntity>> {
     return DAO.readMsgs()
@@ -52,7 +56,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   suspend fun insertCvModelClass(o: CvModelClass) {
-    LOG.D4("DB: insert: CvModelClass: ${o.cid}: ${o.name}")
+    LOG.D4(tag, "DB: insert: CvModelClass: ${o.cid}: ${o.name}")
     DAO.insertCvModelClass(cvModelClassToEntity(o))
   }
 
@@ -87,11 +91,11 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     DAO.dropCvMap()
   }
 
-  suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUser: User) {
+  suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUserAP: UserAP) {
     // Preparation: fill tmp array with scans
     DAO.dropLocalizeFpTemp()
     detectionsReq.forEach {
-      DAO.insertLocalizeTemp(localizationFingerprintTempToEntity(chatUser.id, it))
+      DAO.insertLocalizeTemp(localizationFingerprintTempToEntity(chatUserAP.id, it))
     }
 
     val strInfo = "Recognitions: ${detectionsReq.size}. Algo: Offline"

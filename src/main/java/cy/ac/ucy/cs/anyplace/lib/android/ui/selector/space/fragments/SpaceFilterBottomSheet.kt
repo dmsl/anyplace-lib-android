@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
@@ -20,9 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
-import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**

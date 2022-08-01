@@ -15,8 +15,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -101,8 +101,8 @@ class SettingsCvActivity: SettingsActivity() {
     }
 
     var spaceH : SpaceWrapper? = null
-    var floorsH: FloorsWrapper? = null
-    var floorH: FloorWrapper? = null
+    var levelsH: LevelsWrapper? = null
+    var levelH: LevelWrapper? = null
 
     val cache by lazy { Cache(requireActivity()) }
 
@@ -116,8 +116,8 @@ class SettingsCvActivity: SettingsActivity() {
 
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, ARG_SPACE)
-      floorsH = IntentExtras.getFloors(spaceH, extras, ARG_FLOORS)
-      floorH = IntentExtras.getFloor(spaceH, extras, ARG_FLOOR)
+      levelsH = IntentExtras.getFloors(spaceH, extras, ARG_FLOORS)
+      levelH = IntentExtras.getFloor(spaceH, extras, ARG_FLOOR)
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
@@ -275,9 +275,9 @@ class SettingsCvActivity: SettingsActivity() {
       pref?.setOnPreferenceClickListener {
         LOG.W(TAG, "$METHOD: setting up")
         val mgr = requireActivity().supportFragmentManager
-        ConfirmActionDialog.SHOW(mgr, "Clear selected space",
-                "The application will close,\n"+
-                        "and you can load it again to select a different space.",
+        ConfirmActionDialog.SHOW(mgr, "App will close!",
+                "If you clear the space, the app will close.\n"+
+                        "Once you re-open, you can choose a new space.",
                 cancellable = true, isImportant = true) { // on confirmed
 
           lifecycleScope.launch(Dispatchers.IO) {

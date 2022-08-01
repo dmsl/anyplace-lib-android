@@ -14,10 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
@@ -37,12 +34,15 @@ import org.jetbrains.annotations.TestOnly
 
 
 /**
- * Logging into SMAS
+ * Logs in a user to SMAS backend service, and then opens the relevant activity
+ * - Might need to select space (and might check for AnyplaceLogin in that case too)
+ * - or open SMAS/Logger (depending on last user's action)
  *
  * NOTE: there is also [AnyplaceLoginActivity], that logs into Anyplace
  */
 @AndroidEntryPoint
 class SmasLoginActivity : BaseActivity() {
+  val TG = "act-login-smas"
 
   private lateinit var VM: SmasLoginViewModel
   private var _binding: ActivitySmasLoginBinding?= null
@@ -81,10 +81,10 @@ class SmasLoginActivity : BaseActivity() {
 
     setupButtonSettings()
     setupSmasLogin(username, password)
-    observeLoginResponse()
+    collectLogin()
   }
 
-    /**
+  /**
    * Setup listeners for the username and password editext,
    * changes on the submitted text, enabling/disabling login button, etc
    */
@@ -132,7 +132,7 @@ class SmasLoginActivity : BaseActivity() {
           if (event.action == MotionEvent.ACTION_UP) {  // hide password
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
           } else if (event.action == MotionEvent.ACTION_DOWN) { // show password
-              inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
           }
           return@setOnTouchListener true
         }
@@ -161,12 +161,13 @@ class SmasLoginActivity : BaseActivity() {
    * as the backend returns the same, compatible user object
    */
   @SuppressLint("SetTextI18n")
-  private fun observeLoginResponse() {
+  private fun collectLogin() {
+    val method = ::collectLogin.name
     lifecycleScope.launch {
       VM.resp.collect { response ->
-       unsetLoginButtonLoading()
+        unsetLoginButtonLoading()
         // observe(this@SmasLoginActivity) { response ->
-        LOG.D3(TAG_METHOD, "Resp: ${response.message}")
+        LOG.D3(TG, "$method: resp: ${response.message}")
         when (response) {
           is NetworkResult.Success -> {
             // binding.loading.visibility = View.GONE
@@ -176,12 +177,11 @@ class SmasLoginActivity : BaseActivity() {
             // Store user in datastore
             val user = response.data
             user?.let {
-              appSmas.dsSmasUser.storeUser(SmasUser(user.uid, user.sessionkey))
+              app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
               openLoggedInActivity()
             }
           }
           is NetworkResult.Error -> {
-            // LOG.D(TAG, "observeUserLoginResponse: err")
             binding.textViewError.text = response.message
             binding.loading.visibility = View.GONE
             binding.imageViewError.visibility = View.VISIBLE
@@ -200,8 +200,9 @@ class SmasLoginActivity : BaseActivity() {
 
   private fun openLoggedInActivity() {
     lifecycleScope.launch (Dispatchers.Main) {
-      val prefsCv = appSmas.dsCvMap.read.first()
-      StartActivity.openActivity(prefsCv, this@SmasLoginActivity)
+      val prefsCv = app.dsCvMap.read.first()
+      val userAP = app.dsUserAP.read.first()
+      StartActivity.openActivity(prefsCv, userAP, this@SmasLoginActivity)
     }
   }
 
@@ -213,18 +214,20 @@ class SmasLoginActivity : BaseActivity() {
 
   @TestOnly
   private fun loginProgrammatically() {
+    val MT = ::loginProgrammatically.name
+
     // BUG: how login affects communicating w/ version?
     // done for a different account..
-    LOG.W(TAG_METHOD)
+    LOG.W(TG, MT)
     // val demoUser = ChatUserLoginForm(BuildConfig.LASH_DEMO_LOGIN_UID, BuildConfig.LASH_DEMO_LOGIN_PASS)
     val demoUser = SmasLoginReq("username", "password")
     VM.login(demoUser)
     lifecycleScope.launch {
       VM.resp.collect {
-        LOG.D(TAG, "Logged in user: ${it.data?.sessionkey}")
-        LOG.D(TAG, "descr: ${it.data?.descr}")
+        LOG.D(TG, "$MT: Logged in user: ${it.data?.sessionkey}")
+        LOG.D(TG, "$MT: descr: ${it.data?.descr}")
         if (it is NetworkResult.Error) {
-          LOG.E(TAG, "LOGIN ERROR.")
+          LOG.E(TG, "$MT: LOGIN ERROR.")
         }
       }
     }

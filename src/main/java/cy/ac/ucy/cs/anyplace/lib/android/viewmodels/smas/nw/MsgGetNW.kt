@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToChatMessages
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,7 +62,7 @@ class MsgGetNW(
 
     resp.value = NetworkResult.Loading()
     // LOG.D2(TAG, "msg-get: size: ${app.msgList.size} after resetting..")
-    smasUser = app.dsSmasUser.read.first()
+    smasUser = app.dsUserSmas.read.first()
 
     if (app.hasInternet()) {
       try {
@@ -85,11 +85,8 @@ class MsgGetNW(
         // no new msgs fetched. instead the prev msgs were were loaded from localDB
         val dbLoaded = resp.value.message.toString() == NetworkResult.DB_LOADED
         if (msgs != null && msgs.msgs.isNotEmpty() && !dbLoaded) {
-          LOG.W(TAG, "Persisting to DB..")
+          LOG.D(TAG, "Persisting new msgs to db")
           persistToDB(msgs)
-        } else {
-          // TODO only for new msgs..
-          LOG.W(TAG, "NOT persisting to DB..")
         }
 
       } catch (ce: ConnectException) {
@@ -229,7 +226,7 @@ class MsgGetNW(
             NetworkResult.DB_LOADED,
             null -> {
               val msgs = it.data!!.msgs
-              LOG.W(TAG, "MSGS: collect: new: ${msgs.size}. old: ${app.msgList.size}. (processing)")
+              LOG.V2(TAG, "MSGS: collect: new: ${msgs.size}. old: ${app.msgList.size}. (processing)")
               appendMessages(app, VM, msgs)
             }
           }

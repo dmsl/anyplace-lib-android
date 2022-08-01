@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceSelectorDS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
@@ -20,7 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.ReplyToMessage
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.ImgDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MsgDeliveryDialog
@@ -50,7 +50,7 @@ class SmasChatViewModel @Inject constructor(
         private val RFH: RetrofitHolderSmas,
         private val dsChat: SmasDataStore,
         dsCvMap: CvMapDataStore,
-        private val dsMisc: MiscDataStore,
+        private val dsMisc: SpaceSelectorDS,
 ) : AndroidViewModel(_application) {
 
   val tag = "vm-smas-chat"
@@ -80,7 +80,7 @@ class SmasChatViewModel @Inject constructor(
   fun getLoggedInUser(): String {
     var uid = ""
     viewModelScope.launch {
-      uid = app.dsSmasUser.read.first().uid
+      uid = app.dsUserSmas.read.first().uid
     }
     return uid
   }
@@ -123,7 +123,7 @@ class SmasChatViewModel @Inject constructor(
     val userCoord: UserCoordinates?
     if (app.locationSmas.value.coord != null) {
       val smasCoord =  app.locationSmas.value.coord!!
-      userCoord = UserCoordinates(app.wSpace.obj.id,
+      userCoord = UserCoordinates(app.wSpace.obj.buid,
               smasCoord.level,
               smasCoord.lat,
               smasCoord.lon)
@@ -135,8 +135,8 @@ class SmasChatViewModel @Inject constructor(
 
   private fun getCenterOfFloor(): UserCoordinates {
     val latLng = app.wSpace.latLng()
-    return UserCoordinates(app.wSpace.obj.id,
-            app.wFloor?.obj!!.floorNumber.toInt(),
+    return UserCoordinates(app.wSpace.obj.buid,
+            app.wLevel?.obj!!.number.toInt(),
             latLng.latitude,
             latLng.longitude)
   }
@@ -173,7 +173,7 @@ class SmasChatViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
       var ownUserCoords = getUserCoordinates()
       if (ownUserCoords==null) {
-        val msg = "Cannot attach location to msg.\nUsing selected floor's (${app.floor.value?.floorNumber}) center."
+        val msg = "Cannot attach location to msg.\nUsing selected floor's (${app.level.value?.number}) center."
         LOG.E(TAG, "$tag: $METHOD: $msg")
         ownUserCoords = getCenterOfFloor()
       }
@@ -190,10 +190,10 @@ class SmasChatViewModel @Inject constructor(
           // 2. a location message of the attached location
           // otherwise: if it's our own location, just share it as normal..
 
-          val ownUid = app.dsSmasUser.read.first().uid
+          val ownUid = app.dsUserSmas.read.first().uid
 
           // share location
-          val otherUserCoords = UserCoordinates(app.space!!.id,
+          val otherUserCoords = UserCoordinates(app.space!!.buid,
                   pastedLocation.deck,
                   pastedLocation.lat,
                   pastedLocation.lon)

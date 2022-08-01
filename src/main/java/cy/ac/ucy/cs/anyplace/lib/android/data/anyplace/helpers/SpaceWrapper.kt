@@ -10,9 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.resizeTo
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.setColor
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.ConnectionsResp
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.LastValSpaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.POIsResp
@@ -32,6 +30,8 @@ class SpaceWrapper(val ctx: Context,
     const val TP_VESSEL = "vessel"
 
     const val BUID_UCY_CS_BUILDING = "username_1373876832005"
+    const val BUID_UCY_FST02 = "building_3ae47293-69d1-45ec-96a3-f59f95a70705_1423000957534"
+
     const val BUID_STENA_FLAVIA= "vessel_2a2cf77c-91e0-41e2-971b-e80f5570d616_1635154314048"
 
     const val BUID_HARDCODED = BUID_STENA_FLAVIA
@@ -50,7 +50,7 @@ class SpaceWrapper(val ctx: Context,
   val prettyTypeAllCaps: String
     get() = prettyType.uppercase()
 
-  val prettyFloor : String
+  val prettyLevel : String
     get() {
       return when (obj.type) {
         TP_BUILDING -> "floor"
@@ -60,7 +60,7 @@ class SpaceWrapper(val ctx: Context,
     }
 
   val prettyFloorAllCaps: String
-    get() = prettyFloor.uppercase()
+    get() = prettyLevel.uppercase()
 
   /** Returns an icon according to the [Space] typ */
   fun getIcon(ctx: Context): Drawable? = getIcon(ctx, null, null)
@@ -81,11 +81,11 @@ class SpaceWrapper(val ctx: Context,
   /** Capitalize first letter */
   val prettyFloorCapitalize : String
     get() {
-      return prettyFloor.replaceFirstChar(Char::uppercase)
+      return prettyLevel.replaceFirstChar(Char::uppercase)
     }
 
-  val prettyFloors : String get() = "${prettyFloor}s"
-  val prettyFloorplan : String get() = "${prettyFloor}plan"
+  val prettyFloors : String get() = "${prettyLevel}s"
+  val prettyFloorplan : String get() = "${prettyLevel}plan"
   val prettyFloorplans : String get() = "${prettyFloorplan}s"
 
   fun isBuilding() : Boolean = obj.type == TP_BUILDING
@@ -98,6 +98,7 @@ class SpaceWrapper(val ctx: Context,
   }
 
   fun cacheLastValues(lastValSpaces: LastValSpaces) {
+    LOG.E(TAG, "$METHOD: ${lastValSpaces.lastFloor}")
     cache.saveSpaceLastValues(obj, lastValSpaces)
   }
 
@@ -105,7 +106,7 @@ class SpaceWrapper(val ctx: Context,
   fun loadLastValues() : LastValSpaces {
     val lastVal = cache.readSpaceLastValues(obj)
     return if (lastVal != null) {
-      LOG.D2(TAG_METHOD, "${prettyFloor}: ${lastVal.lastFloor}")
+      LOG.D2(TAG_METHOD, "${prettyLevel}: ${lastVal.lastFloor}")
       lastVal
     } else {
       LastValSpaces()

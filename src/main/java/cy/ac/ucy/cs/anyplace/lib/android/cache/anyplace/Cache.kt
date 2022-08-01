@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
@@ -22,6 +21,7 @@ import java.nio.file.Paths
  *
  */
 open class Cache(val ctx: Context) {
+  val tag = "cache"
 
   companion object {
     // FILES
@@ -46,9 +46,9 @@ open class Cache(val ctx: Context) {
   // SPACES
 
   fun dirSpace(buid: String) : String {  return "$spacesDir/$buid"  }
-  fun dirSpace(space: Space) : String {  return "$spacesDir/${space.id}"  }
-  fun dirSpace(floor: Floor) : String {  return "$spacesDir/${floor.buid}" }
-  fun dirSpace(floors: Floors) : String {  return "$spacesDir/${floors.floors[0].buid}" }
+  fun dirSpace(space: Space) : String {  return "$spacesDir/${space.buid}"  }
+  fun dirSpace(level: Level) : String {  return "$spacesDir/${level.buid}" }
+  fun dirSpace(levels: Levels) : String {  return "$spacesDir/${levels.levels[0].buid}" }
   fun jsonSpace(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE" }
   fun jsonSpace(buid: String) : String {  return "${dirSpace(buid)}/$JS_SPACE" }
   fun hasJsonSpace(buid: String) : Boolean {  return File(jsonSpace(buid)).exists() }
@@ -56,12 +56,12 @@ open class Cache(val ctx: Context) {
 
   fun readJsonSpace(buid: String): Space? {
     val filename = jsonSpace(buid)
-    LOG.V4(TAG, "$METHOD: file: $filename")
+    LOG.V4(tag, "$METHOD: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, Space::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$METHOD: $filename: ${e.message}")
     }
     return null
   }
@@ -73,10 +73,10 @@ open class Cache(val ctx: Context) {
       val fw = FileWriter(File(filename))
       Gson().toJson(space, fw)
       fw.close()
-      LOG.V3(TAG, "$METHOD: $filename")
+      LOG.V3(tag, "$METHOD: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$METHOD: $filename: ${e.message}")
       false
     }
   }
@@ -88,29 +88,38 @@ open class Cache(val ctx: Context) {
   fun deleteSpaceLastValues(space: Space) {  File(jsonSpaceLastValues(space)).delete()  }
 
   fun saveSpaceLastValues(space: Space, lastVal: LastValSpaces): Boolean {
+    val method = ::saveSpaceLastValues.name
+
     val filename = jsonSpaceLastValues(space)
     return try {
       File(dirSpace(space)).mkdirs()
       val fw= FileWriter(File(filename))
       Gson().toJson(lastVal, fw)
       fw.close()
-      LOG.V3(TAG, "$METHOD: $lastVal")
-      LOG.V3(TAG, "$METHOD: $filename")
+      LOG.V3(tag, "$method: $lastVal")
+      LOG.V3(tag, "$method: $filename")
+
+      LOG.W(tag, "$method: CACHED: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
+
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
       false
     }
   }
 
   fun readSpaceLastValues(space: Space): LastValSpaces? {
+    val method = ::readSpaceLastValues.name
+
     val filename = jsonSpaceLastValues(space)
-    LOG.V4(TAG, "readSpaceLastValues: file: $filename")
+    LOG.V4(tag, "$method: file: $filename")
     try {
       val json = File(filename).readText()
+
+      LOG.W(tag, "$method: CLOAD: lastval from: ($filename(") // CLR:PM
       return Gson().fromJson(json, LastValSpaces::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "readSpaceLastValues: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -120,6 +129,7 @@ open class Cache(val ctx: Context) {
   fun deleteSpaceConnections(space: Space) {  File(jsonSpaceConnections(space)).delete()  }
 
   fun saveSpaceConnections(space: Space, connections: ConnectionsResp): Boolean {
+    val method = ::saveSpaceConnections.name
     val filename = jsonSpaceConnections(space)
     return try {
       File(dirSpace(space)).mkdirs()
@@ -128,19 +138,20 @@ open class Cache(val ctx: Context) {
       fw.close()
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
       false
     }
   }
 
   fun readSpaceConnections(space: Space): ConnectionsResp? {
+    val method = ::readSpaceConnections.name
     val filename = jsonSpaceConnections(space)
-    LOG.V4(TAG, "$METHOD: file: $filename")
+    LOG.V4(tag, "$method: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, ConnectionsResp::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -150,6 +161,7 @@ open class Cache(val ctx: Context) {
   fun hasSpacePOIs(space: Space): Boolean { return File(jsonSpacePOIs(space)).exists() }
   fun deleteSpacePOIs(space: Space) {  File(jsonSpacePOIs(space)).delete()  }
   fun saveSpacePois(space: Space, pois: POIsResp) : Boolean {
+    val method = ::saveSpacePois.name
     val filename = jsonSpacePOIs(space)
     return try {
       File(dirSpace(space)).mkdirs()
@@ -158,19 +170,20 @@ open class Cache(val ctx: Context) {
       fw.close()
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
       false
     }
   }
 
   fun readSpacePOIs(space: Space): POIsResp? {
+    val method = ::readSpacePOIs.name
     val filename = jsonSpacePOIs(space)
-    LOG.V4(TAG, "$METHOD: file: $filename")
+    LOG.V4(tag, "$method: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, POIsResp::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -180,87 +193,99 @@ open class Cache(val ctx: Context) {
   }
 
   fun jsonFloors(buid: String) : String {  return "${dirSpace(buid)}/$JS_FLOORS"  }
-  fun jsonFloors(floors: Floors) : String {  return "${dirSpace(floors)}/$JS_FLOORS"  }
+  fun jsonFloors(levels: Levels) : String {  return "${dirSpace(levels)}/$JS_FLOORS"  }
   fun hasJsonFloors(buid: String) : Boolean {  return File(jsonFloors(buid)).exists() }
-  fun deleteJsonFloors(floors: Floors) : Boolean {  return File(jsonFloors(floors)).delete() }
+  fun deleteJsonFloors(levels: Levels) : Boolean {  return File(jsonFloors(levels)).delete() }
 
-  fun readJsonFloors(buid: String): Floors? {
+  fun readJsonFloors(buid: String): Levels? {
+    val method = ::readJsonFloors.name
     val filename = jsonFloors(buid)
-    LOG.V4(TAG, "$METHOD: file: $filename")
+    LOG.V4(tag, "$method: file: $filename")
     try {
       val json = File(filename).readText()
-      return Gson().fromJson(json, Floors::class.java)
+      return Gson().fromJson(json, Levels::class.java)
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
     }
     return null
   }
 
-  fun storeJsonFloors(floors: Floors): Boolean {
-    val filename = jsonFloors(floors)
+  fun storeJsonFloors(levels: Levels): Boolean {
+    val method = ::storeJsonFloors.name
+    val filename = jsonFloors(levels)
     return try {
-      File(dirSpace(floors)).mkdirs()
+      File(dirSpace(levels)).mkdirs()
       val fw = FileWriter(File(filename))
-      Gson().toJson(floors, fw)
+      Gson().toJson(levels, fw)
       fw.close()
-      LOG.V3(TAG, "$METHOD: $filename")
+      LOG.V3(tag, "$method: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "$METHOD: $filename: ${e.message}")
+      LOG.E(tag, "$method: $filename: ${e.message}")
       false
     }
   }
 
   //// FLOOR
-  fun dirFloor(floor: Floor) : String { return "${dirSpace(floor)}/${floor.floorNumber}" }
-  fun floorplan(floor: Floor) : String { return "${dirFloor(floor)}/$PNG_FLOORPLAN" }
+  fun dirFloor(level: Level) : String { return "${dirSpace(level)}/${level.number}" }
+  fun floorplan(level: Level) : String { return "${dirFloor(level)}/$PNG_FLOORPLAN" }
 
-  fun hasFloorplan(floor: Floor): Boolean { return File(floorplan(floor)).exists() }
-  fun deleteFloorplan(floor: Floor) {  File(floorplan(floor)).delete()  }
+  fun hasFloorplan(level: Level): Boolean { return File(floorplan(level)).exists() }
+  fun deleteFloorplan(level: Level) {  File(floorplan(level)).delete()  }
   // VERIFY:PM
   // 1. update the json and restore it later
   // 2. cache the image and check that it is cached.
   // 3. if cache exists: load from cache.
   // 4. delete cache option.
-  fun saveFloorplan(floor: Floor, bitmap: Bitmap?): Boolean {
+  fun saveFloorplan(level: Level, bitmap: Bitmap?): Boolean {
+    val method = ::saveFloorplan.name
     if (bitmap == null) return false
 
     return try {
-      File(dirFloor(floor)).mkdirs()
-      val file = File(floorplan(floor))
+      File(dirFloor(level)).mkdirs()
+      val file = File(floorplan(level))
       val ostream = FileOutputStream(file)
       bitmap.compress(Bitmap.CompressFormat.PNG, 100, ostream)
       ostream.flush()
       ostream.close()
       true
     } catch (e: Exception) {
-      LOG.E(TAG, "Failed: ${floorplan(floor)}: ${e.message}")
+      LOG.E(tag, "$method: Failed: ${floorplan(level)}: ${e.message}")
       false
     }
   }
 
-  fun readFloorplan(floor: Floor): Bitmap? {
-    return BitmapFactory.decodeFile(floorplan(floor))
+  fun readLevelplan(level: Level): Bitmap? {
+    val method = ::readLevelplan.name
+
+    LOG.E(tag, "$method: BUG")
+    LOG.E(tag, "$method: BUG")
+    LOG.E(tag, "$method: level: buid: ${level.buid}")
+    LOG.E(tag, "$method: level: name: ${level.name}")
+
+    val filename=floorplan(level)
+    LOG.E(tag, "$method: file: $filename")
+    return BitmapFactory.decodeFile(filename)
   }
 
   fun hasFingerprints(): Boolean { return File(fingerprintsFilename).exists() }
 
   fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvObjectReq>, model: DetectionModel) {
-    LOG.D(TAG, "$METHOD: to local cache")
+    val method = ::storeFingerprints.name
+    LOG.D(tag, "$method: to local cache")
     val time = utlTime.epoch().toString()
     val entry = FingerprintScan(userCoords, time, detectionsReq, model.idSmas)
 
     // val gson: Gson = GsonBuilder().create()
     val fw= FileWriter(File(fingerprintsFilename), true)
     val lineEntry = gson.toJson(entry)
-    LOG.D2(TAG, "$METHOD: ENTRY: $lineEntry")
+    LOG.D2(tag, "$method: ENTRY: $lineEntry")
     fw.write(lineEntry + "\n")
     fw.close()
   }
 
   fun topFingerprintsEntry(): FingerprintScan? {
     val str = File(fingerprintsFilename).bufferedReader().use { it.readLine() } ?: return null
-
     return gson.fromJson(str, FingerprintScan::class.java)
   }
 

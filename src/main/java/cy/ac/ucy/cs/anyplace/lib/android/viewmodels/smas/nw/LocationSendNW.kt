@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendResp
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -63,7 +63,7 @@ class LocationSendNW(
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates) {
-    smasUser = app.dsSmasUser.read.first()
+    smasUser = app.dsUserSmas.read.first()
 
     LOG.D4(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
 

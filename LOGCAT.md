@@ -1,3 +1,17 @@
+# TODO: update logging:
+
+## Logging conventions:
+- Use `TG` for tag name, and `MT` for a method's name
+- see `TG` examples in different classes to figure out the value to assign
+- To asign value to `MT`use `::methodName.name` to get the name
+- why?
+  - because it is resolved at compile time (does not take runtime)
+  - refactoring the method name changes this name automatically
+- what about `overloaded` methods?
+  - doesn't work unfortunately. just make a string of that method name
+
+
+
 # Logcat (LOG.kt)
 Study the relevant sources in:
 - [LOG.kt](lib-android/src/main/java/cy/ac/ucy/cs/anyplace/lib/android/utils/LOG.kt)

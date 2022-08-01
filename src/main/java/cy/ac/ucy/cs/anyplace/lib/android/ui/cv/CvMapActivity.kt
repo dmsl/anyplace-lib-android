@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -13,16 +12,14 @@ import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
@@ -41,9 +38,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import android.app.Activity
-
-
 
 
 /**
@@ -97,7 +91,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   open lateinit var uiBottom : BottomSheetCvUI  // TODO: put in [CvMapUi]
   val utlUi by lazy { UtilUI(applicationContext, lifecycleScope) }
 
-  private val tag = "act-cvcomm"
+  private val TAG = "ACT-CVM"
 
   lateinit var VMsensor: SensorsViewModel
 
@@ -105,15 +99,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.onCreate(savedInstanceState)
     VMsensor = ViewModelProvider(this)[SensorsViewModel::class.java]
 
+    // CLR:PM
     // XXX: GET THE EXTRAS !!!!
-
     // val extras = requireActivity().intent.extras
     // spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, SettingsCvActivity.ARG_SPACE)
     // floorsH = IntentExtras.getFloors(spaceH, extras, SettingsCvActivity.ARG_FLOORS)
     // floorH = IntentExtras.getFloor(spaceH, extras, SettingsCvActivity.ARG_FLOOR)
 
-
-    // CLR:PM
     // app.showSnackbarInf(lifecycleScope, "Testing msg here")
     // app.showSnackbarInf(lifecycleScope, "Testing msg here\nThis is the second line\nAnd there is even a third one")
     // app.showSnackbarInfDEV(lifecycleScope, "Testing msg here")
@@ -125,9 +117,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     VM = _vm as CvViewModel
     VM.setAttachedActivityId(actName)
-    LOG.V2(TAG_METHOD, "ViewModel: VM currentTime: ${VM.currentTime}")
 
-    LOG.D(TAG, "$tag: $METHOD")
+    LOG.D(TAG, METHOD)
 
     updateModelName()
 
@@ -149,7 +140,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     super.onResume()
     LOG.D2()
 
-    readPrefsAndContinue()
+    continueWithPrefs()
   }
 
 
@@ -158,9 +149,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * -[VM.prefsCV] preferences: model, cvmaps. floorplans,
    * -[DataStoreNav]: map opacity, localization interval, etc
    */
-  private fun readPrefsAndContinue() {
+  private fun continueWithPrefs() {
     lifecycleScope.launch(Dispatchers.IO) {
-      LOG.W(TAG, "$tag: $METHOD")
+      val method = METHOD
+      LOG.W(TAG, method)
+
       dsCv.read.first { prefs ->
         VM.prefsCv= prefs
         onLoadedPrefsCvEngine(prefs)
@@ -168,7 +161,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
 
       if (!DBG.SLR) {
-        LOG.E(TAG, "$METHOD: Forcing space: $BUID_HARDCODED")
+        LOG.E(TAG, "$method: Forcing space: $BUID_HARDCODED")
         dsCvMap.setSelectedSpace(BUID_HARDCODED)
       }
 
@@ -185,7 +178,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           }
         }
 
-        LOG.E(TAG, "SELECTED SPACE: '${prefs.selectedSpace}'")
+        LOG.E(TAG, "$method: SELECTED SPACE ID: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
       }
@@ -230,7 +223,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     // keep reacting to  settings updates
     lifecycleScope.launch(Dispatchers.IO) {
       app.dsCvMap.read.collect {
-        LOG.V4(TAG, "$tag: reacting for BottomSheet")
+        LOG.V4(TAG, "reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
         VM.uiBottomInited=true
@@ -246,7 +239,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     if (floorSelectorInited) return
     floorSelectorInited=true
 
-    VM.floorSelector = FloorSelector(applicationContext,
+    VM.levelSelector = LevelSelector(applicationContext,
             lifecycleScope,
             findViewById(id_group_floorSelector),
             findViewById(id_tvTitleFloor),
@@ -255,7 +248,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             findViewById(id_btnFloorDown))
 
     /** Updates on the wMap after a floor has changed */
-    val fsCallback = object: FloorSelector.Callback() {
+    val fsCallback = object: LevelSelector.Callback() {
       override fun before() {
         LOG.D4(TAG_METHOD, "remove user locations")
         // clear any overlays
@@ -268,7 +261,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun after() { }
     }
 
-    VM.floorSelector.callback = fsCallback
+    VM.levelSelector.callback = fsCallback
   }
 
   var initedGmap = false
@@ -282,7 +275,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     VM.ui = CvUI(
             app, this@CvMapActivity, VM, lifecycleScope,
             supportFragmentManager,
-            VM.floorSelector,
+            VM.levelSelector,
             id_btn_localization,
             id_btn_whereami,
     )
@@ -327,7 +320,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-  fun observerDetections() {
+  var collectingDetections=false
+  fun collectDetections() {
+    if (collectingDetections) return
+    collectingDetections=true
+
     lifecycleScope.launch {
       VM.detectionsLOC.collectLatest {
         it.forEach { rec ->
@@ -335,23 +332,23 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         }
       }
     }
-    // detectionsLocalization.coll
+    // detectionsLocalization.call
   }
 
-  var firstFloorLoaded = false
+  var firstLevelLoaded = false
 
-  open fun onFirstFloorLoaded() {
-    LOG.D2(TAG, "First floor loaded: ${app.wFloor?.floorNumber()}")
+  open fun onFirstLevelLoaded() {
+    LOG.D2(TAG, "First floor loaded: ${app.wLevel?.floorNumber()}")
   }
 
-  open fun onFloorLoaded() {
-    LOG.D2(TAG, "Floor loaded: ${app.wFloor?.floorNumber()}")
+  open fun onLevelLoaded() {
+    LOG.D2(TAG, "Floor loaded: ${app.wLevel?.floorNumber()}")
     lifecycleScope.launch(Dispatchers.IO) {
-      if (app.wFloor != null) {
-      while (!VM.uiLoaded()) delay(100) // workaround (not the best one..)
+      if (app.wLevel != null) {
+        VM.waitForUi()
 
-        val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
-        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wFloor!!.floorNumber())
+        // val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
+        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wLevel!!.floorNumber())
         loadPOIsAndConnections()
       }
 
@@ -372,34 +369,47 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         LOG.D2(TAG, "Fetching POIs and Connections..")
-        VM.nwPOIs.callBlocking(app.space!!.id)
-        VM.nwConnections.callBlocking(app.space!!.id)
+        VM.nwPOIs.callBlocking(app.space!!.buid)
+        VM.nwConnections.callBlocking(app.space!!.buid)
       }
-      VM.ui.map.lines.loadPolylines(app.wFloor!!.floorNumber())
+      VM.ui.map.lines.loadPolylines(app.wLevel!!.floorNumber())
   }
 
-  var observingFloors = false
+  var observingLevels = false
   /**
    * Observes when the initial floor will be loaded, and runs a method
    */
-  fun observeFloors() {
-    if (observingFloors) return
-    observingFloors=true
+  fun observeLevels() {
+    if (observingLevels) return
+    observingLevels=true
 
-    val _method = METHOD
+    val method = METHOD
     lifecycleScope.launch(Dispatchers.IO) {
-      app.floor.collect { floor ->
-        LOG.W(TAG, "$_method: floor is: ${floor?.floorNumber}")
-        if (floor == null) return@collect
+      VM.waitForUi()
 
-        app.wFloor = FloorWrapper(floor, app.wSpace)
+      app.level.collect { level ->
+        if (level == null) return@collect
 
-        if (!firstFloorLoaded) { // runs only when the first floor is loaded
-          onFirstFloorLoaded()
-          firstFloorLoaded = true
+        LOG.W(TAG, "$method: collected level: ${level.buid}")
+        LOG.W(TAG, "$method: collected level: ${level.number}")
+
+        // update FloorWrapper & FloorSelector
+        app.wLevel = LevelWrapper(level, app.wSpace)
+        VM.ui.levelSelector.updateFloorSelector(level, app.wLevels)
+
+        if (!firstLevelLoaded) { // runs only when the first level is loaded
+          firstLevelLoaded = true
+          VM.ui.map.onFirstLevelLoaded()
+          onFirstLevelLoaded()
         }
 
-        onFloorLoaded()
+        LOG.V3(TAG, "$METHOD: -> level: ${level.number}")
+        LOG.V2(TAG, "$METHOD: -> updating cache: level: ${app.level.value?.number}")
+        VM.ui.map.fHandler.cacheLastLevel(app.level.value)
+        LOG.V2(TAG, "$METHOD: -> loadFloor: ${level.number}")
+        VM.ui.levelSelector.lazilyChangeLevel(VM, lifecycleScope)
+
+        onLevelLoaded()
       }
     }
   }
@@ -425,15 +435,15 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           LOG.W(TAG, "Collected: method: $usedMethod")
           result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
           val coord = result.coord!!
-          val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} floor: ${coord.level}"
+          val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
           LOG.E(TAG, msg)
-          val curFloor = app.wFloor?.floorNumber()
+          val curFloor = app.wLevel?.floorNumber()
           if (coord.level != curFloor) {
-            LOG.W(TAG, "Changing to ${app.wFloor?.prettyFloor}: ${coord.level}")
+            LOG.W(TAG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
             // app.showToast(lifecycleScope, )
           }
 
-          app.wFloors.moveToFloor(VM, coord.level)
+          app.wLevels.moveToFloor(VM, coord.level)
         }
       }
     }

@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 // import cy.ac.ucy.cs.anyplace.smas.viewmodel.SmasChatViewModel
 // import androidx.compose.runtime.mutableStateListOf

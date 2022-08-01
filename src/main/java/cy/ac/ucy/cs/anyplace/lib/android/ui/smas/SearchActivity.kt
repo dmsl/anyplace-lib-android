@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -79,14 +78,14 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
    */
   private fun setupCollectors() {
     LOG.D(TAG_METHOD)
-    observeFloors()
+    observeLevels()
   }
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
   }
 
-  override fun onFirstFloorLoaded() {
+  override fun onFirstLevelLoaded() {
     TODO("Not yet implemented")
   }
 

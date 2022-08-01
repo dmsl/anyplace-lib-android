@@ -62,13 +62,13 @@ class MapLines(private val app: AnyplaceApp,
   /**
    * Initialize maps of POIs and connections
    */
-  suspend fun loadFromCache() {
-    LOG.W(TAG, "$METHOD")
+  fun loadFromCache() {
+    LOG.W(TAG, METHOD)
     if(app.space == null) {
       LOG.E(TAG, "$METHOD: empty space!")
+      app.snackbarLongDEV(scope, "Empty space ($METHOD)")
       return
     }
-    LOG.W(TAG, "$METHOD: space not null")
 
     val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {
@@ -76,7 +76,7 @@ class MapLines(private val app: AnyplaceApp,
       return
     }
 
-    LOG.W(TAG, "$METHOD: reading POIs..")
+    LOG.D2(TAG, "$METHOD: reading POIs..")
 
     // add in two maps
     val pois= cache.readSpacePOIs(space)!!
@@ -89,7 +89,7 @@ class MapLines(private val app: AnyplaceApp,
       floorPOIs[level]?.add(poi)
     }
 
-    LOG.W(TAG, "$METHOD: reading connections..")
+    LOG.D2(TAG, "$METHOD: reading connections..")
     val connections = cache.readSpaceConnections(space)!!
     connections.objs.forEach { connection ->
       val level = connection.floorA.toInt()

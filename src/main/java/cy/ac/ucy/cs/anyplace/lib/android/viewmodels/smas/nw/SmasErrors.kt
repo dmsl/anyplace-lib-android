@@ -42,7 +42,7 @@ class SmasErrors(private val app: SmasApp,
   }
 
   private suspend fun logoutUser() {
-    app.dsSmasUser.deleteUser()
+    app.dsUserSmas.deleteUser()
   }
 
 }

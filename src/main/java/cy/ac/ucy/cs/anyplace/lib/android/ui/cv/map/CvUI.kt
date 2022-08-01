@@ -1,16 +1,14 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
-import android.app.Activity
 import android.content.Context
 import androidx.fragment.app.FragmentManager
 import com.google.android.gms.maps.GoogleMap
 import com.google.maps.android.heatmaps.WeightedLatLng
-import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.ui.components.FloorSelector
+import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -35,7 +33,7 @@ open class CvUI(
         protected val VM: CvViewModel,
         protected val scope: CoroutineScope,
         protected val fragmentManager: FragmentManager,
-        val floorSelector: FloorSelector,
+        val levelSelector: LevelSelector,
         val btn_id_localization: Int,
         val btn_id_whereami: Int
 ) {
@@ -66,8 +64,8 @@ open class CvUI(
   }
 
   fun setupOnFloorSelectionClick(){
-    floorSelector.onFloorDown { app.wFloors.tryGoDown(VM) }
-    floorSelector.onFloorUp { app.wFloors.tryGoUp(VM) }
+    levelSelector.onLevelDown { app.wLevels.tryGoDown(VM) }
+    levelSelector.onLevelUp { app.wLevels.tryGoUp(VM) }
   }
 
   fun removeHeatmap() {

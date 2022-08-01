@@ -11,9 +11,10 @@ import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.FloorsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -25,15 +26,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.SnackType
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floor
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Floors
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -51,21 +53,27 @@ enum class MapBounds {
  *  - the FileCache
  */
 abstract class AnyplaceApp : Application() {
+  private val tag = "app"
 
   var spaceSelectionInProgress: Boolean = false
   @Inject lateinit var RH: RetrofitHolderAP
 
-  // DATASTORES (Preferences/Settings)
-  @Inject lateinit var dsServer: ServerDataStore
-  @Inject lateinit var dsApUser: ApUserDataStore
-  @Inject lateinit var dsMisc: MiscDataStore
+  /** Anyplace Server preferences */
+  @Inject lateinit var dsAnyplace: AnyplaceDataStore
+  /** Logged-in Anyplace User */
+  @Inject lateinit var dsUserAP: ApUserDataStore
+  /** Logged-in SMAS user */
+  @Inject lateinit var dsUserSmas: SmasUserDataStore
+
+  /** Miscellaneous settings */
+  @Inject lateinit var dsSpaceSelector: SpaceSelectorDS
+  // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
 
   /** SMAS Server preferences */
   @Inject lateinit var dsSmas: SmasDataStore
-  /** Logged-in SMAS user */
-  @Inject lateinit var dsSmasUser: SmasUserDataStore
+
 
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
@@ -85,21 +93,22 @@ abstract class AnyplaceApp : Application() {
   /** Selected [Space] (model)*/
   var space: Space? = null
   /** All floors of the selected [space] (model) */
-  var floors: Floors? = null
-  /** Selected floor/deck ([Floor]) of [space] (model) */
-  var floor: MutableStateFlow<Floor?> = MutableStateFlow(null)
+  var levels: Levels? = null
+  /** Selected floor/deck ([Level]) of [space] (model) */
+  var level: MutableStateFlow<Level?> = MutableStateFlow(null)
 
   /** Selected [Space] ([SpaceWrapper]) */
   lateinit var wSpace: SpaceWrapper
   /** floorsH of selected [wSpace] */
-  lateinit var wFloors: FloorsWrapper
-  /** Selected floorH of [wFloors], using the UI ([FloorSelector]
+  lateinit var wLevels: LevelsWrapper
+  /** Selected floorH of [wLevels], using the UI ([FloorSelector]
    * NOTE: the [locationSmas] of a user can be on a different level (floor or deck)
    * from this selection
    */
-  var wFloor: FloorWrapper? = null
+  var wLevel: LevelWrapper? = null
 
   val utlColor by lazy { UtilColor(applicationContext) }
+  val dbqSpaces by lazy { SpacesQueryDB(repoAP, dsSpaceSelector) }
 
   /** true when a user is issuing an alert */
   var alerting = false
@@ -149,7 +158,7 @@ abstract class AnyplaceApp : Application() {
    * Instead we are manually setting/injecting again a new instance through the RetrofitHolder.
    */
   private fun observeServerPrefs() {
-    val serverPref = dsServer.read
+    val serverPref = dsAnyplace.read
     serverPref.asLiveData().observeForever { prefs ->
       RH.set(prefs)
       LOG.D2(TAG, "URL: ANYPLACE: ${RH.baseURL}")
@@ -163,7 +172,7 @@ abstract class AnyplaceApp : Application() {
     if (userHasLocation()) {  // there was a previous user location
       val coord = locationSmas.value.coord!!
       val lastLevel = coord.level
-      val selectedLevel = wFloor?.floorNumber() // this is a UI selection
+      val selectedLevel = wLevel?.floorNumber() // this is a UI selection
       return lastLevel != selectedLevel
     }
     return false
@@ -216,30 +225,49 @@ abstract class AnyplaceApp : Application() {
   }
 
   /**
-   * Initialize the wrappers for the space and the floors
+   * Initialize the wrappers for the space (and all the levels)
+   *
+   * It also CLEARS any previous level selection
+   * - that will be loaded later on to either:
+   *   - the first available level of that space
+   *   - or the last selected level of that space
    */
-  fun initSpaceAndFloors(scope: CoroutineScope, newSpace: Space?, newFloors: Floors?): Boolean {
-      LOG.W()
+  fun initializeSpace(scope: CoroutineScope, newSpace: Space?, newLevels: Levels?): Boolean {
+    val method = ::initializeSpace.name
+    LOG.E(tag, method)
 
-      this.space = newSpace
-      this.floors = newFloors
+    // Initialize space
+    this.space = newSpace
+    wSpace = SpaceWrapper(applicationContext, repoAP, this.space!!)
+    // Initialize levels:
+    // - the available floors or decks of that space
+    this.levels = newLevels
+    wLevels = LevelsWrapper(this.levels!!, this.wSpace)
 
-      if (newSpace == null || newFloors == null) {
-        snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")
-        return false
-      }
+    // CLEAR any leve selection
+    this.level.update { null }
+    this.wLevel = null
 
-      wSpace = SpaceWrapper(applicationContext, repoAP, this.space!!)
-      wFloors = FloorsWrapper(this.floors!!, this.wSpace)
-      val prettySpace = wSpace.prettyTypeCapitalize
-      val prettyFloors= wSpace.prettyFloors
+    LOG.E(tag, "$method: XXX: app.space: ${space?.buid}")
+    LOG.E(tag, "$method: XXX: app.wSpace: ${wSpace.obj.buid}")
+    LOG.E(tag, "$method: XXX: app.level: ${level.value?.buid}")
+    LOG.E(tag, "$method: XXX: app.wLevel.wSpace: ${wLevel?.wSpace?.obj?.buid}")
+    LOG.E(tag, "$method: XXX: app.wLevel.: ${wLevel?.obj?.buid}")
 
-      LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${space!!.name} " +
-              "(has ${floors!!.floors.size} $prettyFloors)")
+    if (newSpace == null || newLevels == null) {
+      snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")
+      return false
+    }
 
-      LOG.W(TAG, "$METHOD: pretty: ${wSpace.prettyType} ${wSpace.prettyFloor}")
+    val prettySpace = wSpace.prettyTypeCapitalize
+    val prettyFloors= wSpace.prettyFloors
 
-      return true
+    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${space!!.name} " +
+            "(has ${levels!!.levels.size} $prettyFloors)")
+
+    LOG.W(TAG, "$METHOD: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
+
+    return true
   }
 
 

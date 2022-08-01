@@ -10,10 +10,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
@@ -38,10 +37,9 @@ class CvFingerprintSendNW(
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
+  val TG = "nw-fp-send"
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
-
-  val tag = "nw-fp-send"
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<FingerprintSendResp>> = MutableStateFlow(NetworkResult.Unset())
@@ -49,12 +47,11 @@ class CvFingerprintSendNW(
   private val C by lazy { SMAS(app.applicationContext) }
   private lateinit var smasUser : SmasUser
 
-  private val utlUi by lazy { UtilUI(app, VM.viewModelScope) }
-
   suspend fun uploadFromCache(uiLog: CvLoggerUI) {
-    smasUser = app.dsSmasUser.read.first()
+    val MT = ::uploadFromCache.name
+    smasUser = app.dsUserSmas.read.first()
 
-    LOG.E(TAG, "$METHOD: upload from cache")
+    LOG.W(TG, "$MT: upload from cache")
     val msg = C.ERR_MSG_NO_INTERNET
 
     if (!app.hasInternet()) {
@@ -78,7 +75,7 @@ class CvFingerprintSendNW(
       }
 
       if (entry==null || entry.cvDetections.isNullOrEmpty()) {
-        LOG.E(TAG, "Ignoring null entry")
+        LOG.W(TG, "$MT: ignoring null entry")
         nullEntries++
       } else {
         if (uploadEntry(smasUser, entry)) {
@@ -109,18 +106,20 @@ class CvFingerprintSendNW(
    * TODO:PMX OFL Implement this for offline
    */
   private suspend fun uploadEntry(smasUser: SmasUser, entry: FingerprintScan): Boolean {
-    LOG.W(TAG, "$tag: $METHOD: $entry\n")
+    val MT = ::uploadEntry.name
+    LOG.W(TG, "$TG: $MT: $entry\n")
+
     try {
       val req= FingerprintSendReq(smasUser, entry)
       val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
-      LOG.D3(TAG, "$tag: ${req.time}: #: ${entry.cvDetections.size} coords: $coordStr")
+      LOG.D3(TG, "$MT: ${req.time}: #: ${entry.cvDetections.size} coords: $coordStr")
       val response = repo.remote.cvFingerprintSend(req)
-      LOG.D3(TAG, "$tag: Resp: ${response.message()}" )
+      LOG.D3(TG, "$MT: Resp: ${response.message()}" )
 
       return when (val resp = handleResponse(response)) {
         is NetworkResult.Success -> {
           val msg = "Uploaded objects: ${resp.data?.rows}"
-          LOG.W(TAG, msg)
+          LOG.W(TG, "$MT: $msg")
           // app.showSnackbarShortDEV(VM.viewModelScope, msg)
           true
         }
@@ -129,7 +128,7 @@ class CvFingerprintSendNW(
         }
       }
     } catch(e: Exception) {
-      val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+      val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
       resp.value = NetworkResult.Error(msg)
     }
     return false
@@ -139,9 +138,10 @@ class CvFingerprintSendNW(
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates,
                        detectionsReq: List<CvObjectReq>, model: DetectionModel) {
-    smasUser = app.dsSmasUser.read.first()
+    val MT = ::safeCall.name
+    smasUser = app.dsUserSmas.read.first()
 
-    LOG.D2(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
+    LOG.D2(TG, "$MT: session: ${smasUser.uid} ${smasUser.sessionkey}")
 
     resp.value = NetworkResult.Unset()
     resp.value = NetworkResult.Loading()
@@ -150,12 +150,12 @@ class CvFingerprintSendNW(
         val req= FingerprintSendReq(smasUser, userCoords, utlTime.epoch().toString(),
                 detectionsReq, model.idSmas)
         val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
-        LOG.W(TAG, "$tag: ${req.time}: #: ${detectionsReq.size} coords: $coordStr")
+        LOG.W(TG, "$MT: ${req.time}: #: ${detectionsReq.size} coords: $coordStr")
         val response = repo.remote.cvFingerprintSend(req)
-        LOG.W(TAG, "$tag: Resp: ${response.message()}" )
+        LOG.W(TG, "$MT: resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(e: Exception) {
-        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(msg)
       }
     } else {
@@ -164,7 +164,8 @@ class CvFingerprintSendNW(
   }
 
   private fun handleResponse(resp: Response<FingerprintSendResp>): NetworkResult<FingerprintSendResp> {
-    LOG.D3(TAG, "handleResponse")
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if(resp.isSuccessful) {
       when {
         resp.errorBody() != null -> {
@@ -179,20 +180,21 @@ class CvFingerprintSendNW(
         else -> return NetworkResult.Error(resp.message())
       }
     }
-    return NetworkResult.Error("$tag: ${resp.message()}")
+    return NetworkResult.Error("$TG: ${resp.message()}")
   }
 
   fun collect() {
+    val MT = ::collect.name
     VM.viewModelScope.launch(Dispatchers.IO) {
       resp.collect {
         when (it)  {
           is NetworkResult.Success -> {
             val msg = "Uploaded Fingerprints (${it.data?.rows})"
-            LOG.W(TAG, msg)
+            LOG.W(TG, "$MT: $msg")
             app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
           }
           is NetworkResult.Error -> {
-            if (!err.handle(app, it.message, "loc-send")) {
+            if (!err.handle(app, it.message, TG)) {
               val msg = it.message ?: "unspecified error"
               app.snackbarInf(VM.viewModelScope, msg)
             }

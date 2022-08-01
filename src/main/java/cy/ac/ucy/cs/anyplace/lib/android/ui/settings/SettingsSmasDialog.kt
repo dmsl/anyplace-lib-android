@@ -149,7 +149,7 @@ class MainSettingsDialog(
 
   private fun setupChatUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val chatUser = requireActivity().appSmas.dsSmasUser.read.first()
+      val chatUser = requireActivity().appSmas.dsUserSmas.read.first()
       if (chatUser.sessionkey.isNotBlank()) {
         binding.user = chatUser
         binding.tvAccountType.isVisible = true
@@ -190,7 +190,7 @@ class MainSettingsDialog(
     CoroutineScope(Dispatchers.Main).launch {
 
       val prefsChat = requireActivity().appSmas.dsSmas.read.first()
-      LOG.W(TAG, "Ver: $prefsChat")
+      LOG.V2(TAG, "Ver: $prefsChat")
       var versionStr = version
       if (prefsChat.version != null) versionStr += " (${prefsChat.version})"
       binding.btnVersionSmas.text = getString(R.string.smas_version, versionStr)
@@ -202,10 +202,10 @@ class MainSettingsDialog(
     binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val chatUserDS = requireActivity().appSmas.dsSmasUser
+        val chatUserDS = requireActivity().appSmas.dsUserSmas
         val user = chatUserDS.read.first()
         if (user.sessionkey.isNotBlank()) {
-          msg = "Logging out ${app.dsApUser.readUser.first().name}.."
+          msg = "Logging out ${app.dsUserAP.read.first().name}.."
           chatUserDS.deleteUser()
           dialog?.dismiss()
         } else {

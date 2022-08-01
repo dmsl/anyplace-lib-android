@@ -23,7 +23,7 @@ import javax.inject.Singleton
  * - host url, port, etc.
  */
 @Singleton // INFO cannot be ViewModelScoped, as it is used by NetworkModule
-class ServerDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
+class AnyplaceDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
 
   private val C by lazy { CONST(ctx) }

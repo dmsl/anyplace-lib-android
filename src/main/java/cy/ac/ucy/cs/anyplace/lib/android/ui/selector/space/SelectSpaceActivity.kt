@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.update
 
 /**
  * Sample activity for fetching [Spaces] and selecting one ([Space]) from the Anyplace backend.
@@ -52,7 +54,11 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     VM.readBackFromSettings.observe(this) { VM.backFromSettings = it }
 
     requireAnyplaceLogin()
+    setupNavController()
+    setupFabQuery()
+  }
 
+  private fun setupNavController() {
     navController = findNavController(R.id.navHostFragment)
     // map not being used..
     // The idea was to have a list, or a map view for a Space Selector. but it's incomplete.
@@ -60,6 +66,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
             R.id.spacesListFragment,  R.id.spacesMapFragment))
 
     binding.bottomNavigationView.setupWithNavController(navController)
+    binding.bottomNavigationView.elevation=1f
     setupActionBarWithNavController(navController, appBarConfiguration)
   }
 
@@ -79,6 +86,22 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     }
   }
 
+  private fun setupFabQuery() {
+    binding.fabFilterSpaces.setOnClickListener {
+      if (app.spaceSelectionInProgress) {
+        val utlUi = UtilUI(applicationContext, lifecycleScope)
+        utlUi.attentionInvalidOption(binding.fabFilterSpaces)
+        return@setOnClickListener
+      }
+
+      // if(VM.dbqSpaces.resultsLoaded) {
+      navController.navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
+      // } else {
+      //   app.snackbarWarning(lifecycleScope, "No spaces loaded")
+      // }
+    }
+  }
+
   override fun onSupportNavigateUp(): Boolean {
     // enables navigation between the fragments
     // INFO it was enabled without this
@@ -91,14 +114,19 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
     val searchView = search.actionView as? SearchView
     searchView?.queryHint = getString(R.string.search_space)
     searchView?.setOnQueryTextListener(this)
-
+    
     return super.onCreateOptionsMenu(menu)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     val id = item.itemId
     if(id == R.id.item_settings) {
-      startActivity(Intent(this, SettingsCvActivity::class.java))
+      if (app.spaceSelectionInProgress)  {
+        val view = findViewById<View>(R.id.item_settings)
+        utlUi.attentionInvalidOption(view)
+      } else {
+        startActivity(Intent(this, SettingsCvActivity::class.java))
+      }
     }
     return super.onOptionsItemSelected(item)
   }
@@ -108,7 +136,9 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
   }
 
   override fun onQueryTextChange(newText: String?): Boolean {
-    newText?.let { VM.dbqSpaces.searchViewData.value = it }
+    if (app.spaceSelectionInProgress) return true
+    app.dbqSpaces.txtQuery.update { newText?:"" }
+
     return true
   }
 }

@@ -10,7 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -47,7 +47,7 @@ class CvModelsGetNW(
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     LOG.D2(TAG, "$METHOD: $tag")
-    smasUser = app.dsSmasUser.read.first()
+    smasUser = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Loading()
 

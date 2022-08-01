@@ -33,7 +33,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class AnyplaceLoginActivity : BaseActivity() {
+  val TG = "act-login-ap"
 
   private lateinit var VMlogin: LoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
@@ -228,10 +229,10 @@ class AnyplaceLoginActivity : BaseActivity() {
 
           // Store user in datastore
           lifecycleScope.launch {
-            val user = response.data?.user
+            val user = response.data?.userAP
             user?.let {
               LOG.W(TAG, "Logged in successfully: user.name. [storing user]")
-              app.dsApUser.storeUser(user)
+              app.dsUserAP.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()
             }
@@ -264,8 +265,8 @@ class AnyplaceLoginActivity : BaseActivity() {
    * 4. Once authenticated get the Anyplace User account and put in a datastore
    * 5. Sign out from the google authentication
    */
-  private fun signOutGoogleAuth(user: User) {
-    if (user.account == "google") {
+  private fun signOutGoogleAuth(userAP: UserAP) {
+    if (userAP.account == "google") {
       mGoogleSignInClient.signOut().addOnCompleteListener {
         LOG.D2(TAG, "Signed out Google oauth after successful Anyplace login.")
       }

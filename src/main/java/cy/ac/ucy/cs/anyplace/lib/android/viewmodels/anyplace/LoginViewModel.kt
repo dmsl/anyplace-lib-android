@@ -14,7 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.LoginFormState
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginResponse
@@ -145,7 +145,7 @@ class LoginViewModel @Inject constructor(
       }
       response.isSuccessful -> {
         val user = response.body()!!
-        photoUri?.let { user.user.photoUri=photoUri.toString() }
+        photoUri?.let { user.userAP.photoUri=photoUri.toString() }
         NetworkResult.Success(user)
       } // can be nullable
       else -> NetworkResult.Error(response.message())

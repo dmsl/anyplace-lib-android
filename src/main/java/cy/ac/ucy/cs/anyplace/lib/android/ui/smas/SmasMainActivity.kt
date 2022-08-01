@@ -161,7 +161,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TAG, "forcing location: $forcedLocation")
     app.snackbarShort(lifecycleScope, "Location set manually (long-clicked)")
 
-    val floorNum = app.wFloor!!.floorNumber()
+    val floorNum = app.wLevel!!.floorNumber()
     val loc = forcedLocation.toCoord(floorNum)
     app.locationSmas.update { LocalizationResult.Success(loc, LocalizationResult.MANUAL) }
   }
@@ -185,14 +185,14 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /**
    * Runs only once, when any of the floors is loaded for the first time.
    */
-  override fun onFirstFloorLoaded() {
-    LOG.I(TAG, "$tag: $METHOD: Floor: ${app.floor.value?.floorNumber}")
+  override fun onFirstLevelLoaded() {
+    LOG.I(TAG, "$tag: $METHOD: Floor: ${app.level.value?.number}")
 
-    super.onFirstFloorLoaded()
+    super.onFirstLevelLoaded()
 
     updateLocationsLOOP()  // send own location & receive other users locations
     lifecycleScope.launch(Dispatchers.IO) {
-      if (DBG.BG5) while (!VM.uiLoaded()) delay(100) // workaround until ui component is loaded (not the best one..)
+      if (DBG.BG5) VM.waitForUi()
       VM.collectLocations(VMchat, VM.ui.map)
     }
     collectAlertingUser()
@@ -201,12 +201,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
 
   /* Runs when any of the floors is loaded */
-  override fun onFloorLoaded() {
-    super.onFloorLoaded()
+  override fun onLevelLoaded() {
+    super.onLevelLoaded()
 
     lifecycleScope.launch(Dispatchers.IO) {
       // workaround: wait for UI to be ready (not the best one)
-      if (DBG.BG5) while (!VM.uiLoaded()) delay(100)
+      if (DBG.BG5) VM.waitForUi()
 
       VM.ui.map.markers.clearChatLocationMarker()
     }
@@ -230,7 +230,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         var msg = "pull"
         if (isActive && app.hasLastLocation()) {
           val coords = app.locationSmas.value.coord!!
-          val userCoords = UserCoordinates(app.wSpace.obj.id,
+          val userCoords = UserCoordinates(app.wSpace.obj.buid,
                   coords.level, coords.lat, coords.lon)
           VM.nwLocationSend.safeCall(userCoords)
           msg+="&send"
@@ -282,7 +282,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.D()
 
     collectLoggedInUser()
-    observeFloors()
+    observeLevels()
   }
 
   /**
@@ -318,7 +318,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
 
-      val user= appSmas.dsSmasUser.read.first()
+      val user= appSmas.dsUserSmas.read.first()
       if (user.sessionkey.isBlank()) {
         finish()
         startActivity(Intent(this@SmasMainActivity, SmasLoginActivity::class.java))
@@ -373,12 +373,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
               alertingUser.y,
               alertingUser.deck)
 
-      val curFloor = app.wFloor?.floorNumber()
+      val curFloor = app.wLevel?.floorNumber()
       if (alertingUser.deck != curFloor) {
-        app.wFloors.moveToFloor(VM, alertingUser.deck)
+        app.wLevels.moveToFloor(VM, alertingUser.deck)
       }
 
-      VM.ui.map.animateToLocation(alertingUserCoords.toLatLng())
+      VM.ui.map.moveToLocation(alertingUserCoords.toLatLng())
     }
   }
 
@@ -486,9 +486,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           VM.ui.map.markers.clearAllInfoWindow()
 
           lifecycleScope.launch(Dispatchers.IO) {
-            val curFloor = app.wFloor?.floorNumber()
+            val curFloor = app.wLevel?.floorNumber()
             if (level != curFloor) {
-              app.wFloors.moveToFloor(VM, level)
+              app.wLevels.moveToFloor(VM, level)
               LOG.E(TAG," will clear all info (from actForResult)")
 
               // add some delay, so any markers can be rendered

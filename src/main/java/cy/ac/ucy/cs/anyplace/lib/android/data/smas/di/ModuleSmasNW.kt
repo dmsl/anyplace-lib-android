@@ -2,7 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.smas.di
 
 import android.app.Application
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.source.RetrofitHolderSmas
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -93,7 +92,7 @@ class SmasBearerAuth : Authenticator {
     if (response.request.header("Authorization") != null) {
       return null
     }
-    val token = BuildConfig.LASH_CHAT_API_KEY
+    val token = BuildConfig.SMAS_API_KEY
     return response.request.newBuilder().header("Authorization", "Bearer $token").build()
   }
 }

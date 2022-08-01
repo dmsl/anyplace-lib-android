@@ -23,8 +23,10 @@
     <!-- SETTINGS -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSettings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        app:iconSize="38dp"
+        android:backgroundTint="@color/colorPrimary"
         android:layout_alignParentEnd="true"
         android:layout_gravity="end"
         android:elevation="50dp"
@@ -32,12 +34,10 @@
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        android:backgroundTint="@color/lash_blue_dark"
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_settings_dark"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
-        app:iconSize="42dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

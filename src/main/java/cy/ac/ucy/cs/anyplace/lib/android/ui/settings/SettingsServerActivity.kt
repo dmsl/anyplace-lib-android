@@ -9,11 +9,11 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ServerDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.AnyplaceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.SettingsActivity
-import cy.ac.ucy.cs.anyplace.lib.android.utils.net.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,7 @@ class SettingsServerActivity: SettingsActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    settingsFragment = SettingsServerFragment(app, VMap, rfhAP, dsServer, dsUserAP)
+    settingsFragment = SettingsServerFragment(app, VMap, rfhAP, dsAnyplace, dsUserAP)
     setupFragment(settingsFragment, savedInstanceState)
   }
 
@@ -35,10 +35,10 @@ class SettingsServerActivity: SettingsActivity() {
           private val app: AnyplaceApp,
           private val VMap: AnyplaceViewModel,
           private val RFHap: RetrofitHolderAP,
-          private val ds: ServerDataStore,
+          private val ds: AnyplaceDataStore,
           private val dsUserAp: ApUserDataStore,
 
-  ) : PreferenceFragmentCompat() {
+          ) : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       preferenceManager.preferenceDataStore = ds

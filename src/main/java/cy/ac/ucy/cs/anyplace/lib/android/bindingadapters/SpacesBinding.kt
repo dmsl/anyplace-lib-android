@@ -58,7 +58,7 @@ object SpacesBinding {
   @BindingAdapter("readSpaceOwnership", requireAll = true)
   @JvmStatic
   fun readSpaceOwnership(view:TextView, space: Space?) {
-    setText(view, space?.ownerShip, "Public")
+    setText(view, space?.ownerShip?.replaceFirstChar(Char::uppercase), "<unset>")
   }
 
   @BindingAdapter("readSpaceDescription", requireAll = true)

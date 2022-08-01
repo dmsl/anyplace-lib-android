@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.User
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -36,7 +36,7 @@ class ApUserDataStore @Inject constructor(@ApplicationContext private val ctx: C
   }
   private val KEY = Keys(C)
 
-  val readUser: Flow<User> =
+  val read: Flow<UserAP> =
     ctx.dataStoreUser.data
         .catch { exception ->
          if (exception is IOException)  { emit(emptyPreferences()) } else { throw exception }
@@ -51,22 +51,22 @@ class ApUserDataStore @Inject constructor(@ApplicationContext private val ctx: C
           val email = it[KEY.email] ?: ""
           val photoUri = it[KEY.photoUri] ?: ""
 
-          User(accessToken, id, name, type, account, username, email, photoUri)
+          UserAP(accessToken, id, name, type, account, username, email, photoUri)
         }
 
   /**
    * Stores a logged in user to the datastore
    */
-  suspend fun storeUser(user: User) {
+  suspend fun storeUser(userAP: UserAP) {
     ctx.dataStoreUser.edit {
-      it[KEY.accessToken] = user.accessToken
-      it[KEY.id] = user.id
-      it[KEY.name] = user.name
-      it[KEY.type] = user.type
-      it[KEY.account] = user.account
-      it[KEY.username] = user.username
-      it[KEY.email] = user.email
-      it[KEY.photoUri] = user.photoUri
+      it[KEY.accessToken] = userAP.accessToken
+      it[KEY.id] = userAP.id
+      it[KEY.name] = userAP.name
+      it[KEY.type] = userAP.type
+      it[KEY.account] = userAP.account
+      it[KEY.username] = userAP.username
+      it[KEY.email] = userAP.email
+      it[KEY.photoUri] = userAP.photoUri
     }
   }
 
