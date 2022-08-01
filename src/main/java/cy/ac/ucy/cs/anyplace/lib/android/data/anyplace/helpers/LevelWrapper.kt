@@ -13,10 +13,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
  * Extra functionality on top of the [Level] data class.
  */
 class LevelWrapper(val obj: Level,
-                   val wSpace: SpaceWrapper,
-) {
-
-  val tag = "lvl-wrapper"
+                   val wSpace: SpaceWrapper) {
+  val TG = "lvl-wrapper"
 
   override fun toString(): String = Gson().toJson(obj, Level::class.java)
 
@@ -56,8 +54,8 @@ class LevelWrapper(val obj: Level,
   fun hasLevelplanCached(): Boolean { return cache.hasFloorplan(obj) }
 
   fun loadLevelplanFromCache() : Bitmap? {
-    val method = ::loadLevelplanFromCache.name
-    LOG.E(tag, "$method: ${obj.number} ${obj.name} ${obj.buid}")
+    val MT = ::loadLevelplanFromCache.name
+    LOG.V2(TG, "$MT: ${obj.number} ${obj.name} ${obj.buid}")
     return cache.readLevelplan(obj)
   }
 

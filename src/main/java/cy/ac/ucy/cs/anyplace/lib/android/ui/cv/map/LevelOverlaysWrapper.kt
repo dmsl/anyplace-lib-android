@@ -50,13 +50,13 @@ open class LevelOverlaysWrapper(
     val method = ::observeLevelplanImage.name
 
     if (collectingLevelplanChanges) return
-    LOG.E(tag, "$method: setup")
+    LOG.V2(tag, "$method: setup")
     collectingLevelplanChanges=true
 
     scope.launch(Dispatchers.IO) {
       VM.nwLevelPlan.bitmap.collect { response ->
 
-        LOG.E(tag, "$method: levelplan updated..")
+        LOG.D2(tag, "$method: levelplan updated..")
         when (response) {
           is NetworkResult.Loading -> {
             LOG.W(tag, "$method: will load ${app.wSpace.prettyLevelplan}..")

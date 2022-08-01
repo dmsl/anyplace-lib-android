@@ -163,7 +163,6 @@ class SettingsCvActivity: SettingsActivity() {
 
         setupDownloadCvMap(app, VM)
         clearAvailableSpaces(app, VM, VMap)
-        // clearSelectedSpace()
       }
     }
 

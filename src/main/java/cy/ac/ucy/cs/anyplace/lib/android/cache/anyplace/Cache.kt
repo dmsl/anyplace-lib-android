@@ -260,14 +260,10 @@ open class Cache(val ctx: Context) {
    */
   fun readLevelplan(level: Level): Bitmap? {
     val method = ::readLevelplan.name
-
-    LOG.E(tag, "$method: BUG")
-    LOG.E(tag, "$method: BUG")
-    LOG.E(tag, "$method: level: buid: ${level.buid}")
-    LOG.E(tag, "$method: level: name: ${level.name}")
+    LOG.D2(tag, "$method: level: buid: ${level.buid}: name: ${level.name}")
 
     val filename=floorplan(level)
-    LOG.E(tag, "$method: file: $filename")
+    LOG.V3(tag, "$method: file: $filename")
     return BitmapFactory.decodeFile(filename)
   }
 

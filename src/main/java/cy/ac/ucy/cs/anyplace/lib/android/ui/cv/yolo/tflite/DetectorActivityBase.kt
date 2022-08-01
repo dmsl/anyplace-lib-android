@@ -206,12 +206,12 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // No mutex needed as this method is not reentrant.
     if (!VMD.isDetecting() ) {
-      LOG.E(TG, "$MT: Skipping inference.. (disabled)")
+      LOG.V4(TG, "$MT: Skipping inference.. (disabled)")
       skipDetection()
       return
     }
 
-    LOG.W(TG, "$MT: running inference..")
+    LOG.V2(TG, "$MT: running inference..")
 
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
@@ -232,7 +232,7 @@ abstract class DetectorActivityBase : CameraActivity(),
    */
   private fun skipDetection() {
     val MT = ::skipDetection.name
-    LOG.W(TG, "$MT: Skip detection on image")
+    LOG.V3(TG, "$MT: Skip detection on image")
     val canvas = Canvas(croppedBitmap)
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null)
 

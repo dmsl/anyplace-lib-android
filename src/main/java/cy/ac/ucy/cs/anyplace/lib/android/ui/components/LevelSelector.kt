@@ -35,7 +35,7 @@ class LevelSelector(
         private val btnLevelDown: MaterialButton) {
 
   /** UI-Component: Level Selector */
-  private val tag = "ui-lvlsel"
+  private val TG = "ui-lvlsel"
 
   abstract class Callback {
     /** Right after a floor is selected. For rendering new elements. */
@@ -51,7 +51,7 @@ class LevelSelector(
   fun hide() = utlUi.fadeOut(group)
 
   fun enable() {
-    LOG.V2(tag, "enabling")
+    LOG.V2(TG, "enabling")
 
     if (!DBG.FLD) { show(); return }
 
@@ -68,7 +68,7 @@ class LevelSelector(
   }
 
   fun disable() {
-    LOG.V2(tag, "disabling")
+    LOG.V2(TG, "disabling")
     if (!DBG.FLD) { hide(); return }
     utlUi.changeBackgroundMaterial(btnSelectedLevel, R.color.darkGray)
     utlUi.alpha(btnSelectedLevel, 0.4f)
@@ -153,7 +153,7 @@ class LevelSelector(
           delay(200)
         } while(diff < DELAY_LEVEL_CHANGE)
 
-        LOG.V2(tag, "lazilyChangeFloor: to level: ${app.wLevel!!.prettyLevelName()} (after delay)")
+        LOG.V2(TG, "lazilyChangeFloor: to level: ${app.wLevel!!.prettyLevelName()} (after delay)")
 
         isLazilyChangingLevel = false
 
@@ -174,32 +174,31 @@ class LevelSelector(
    * Must be called each time wee want to load a floor.
    */
   private fun loadLevel(VM: CvViewModel, scope: CoroutineScope) {
-    val method = ::loadLevel.name
+    val MT = ::loadLevel.name
     val app = VM.app
     
-    LOG.E(tag, method)
+    LOG.D2(TG, MT)
 
     callback?.before()
 
     if (app.wLevel==null) {
-      LOG.E(tag, "$method: level is null.")
+      LOG.W(TG, "$MT: level is null.")
       return
     }
 
     val WF = app.wLevel!!
-    LOG.E(tag, "$method: app space: ${app.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
-    LOG.E(tag, "$method: ${WF.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
+    LOG.D2(TG, "$MT: app space: ${app.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
+    LOG.D2(TG, "$MT: ${WF.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
 
     scope.launch(Dispatchers.IO) {
       if (WF.hasLevelplanCached()) {
-        LOG.E(tag, "$method: local")
+        LOG.D(TG, "$MT: local")
         VM.nwLevelPlan.readFromCache(VM, WF)
       } else {
-        LOG.E(tag, "$method: remote")
+        LOG.D(TG, "$MT: remote")
         VM.nwLevelPlan.getLevelplan(WF)
       }
     }
     callback?.after()
   }
-
 }

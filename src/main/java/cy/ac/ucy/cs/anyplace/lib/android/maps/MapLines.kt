@@ -18,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.POI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -36,6 +37,7 @@ class MapLines(private val app: AnyplaceApp,
                 private val scope: CoroutineScope,
                 private val VM: CvViewModel,
                 private val map: GmapWrapper) {
+  val TG = "ui-map-lines"
 
   private val ctx = app.applicationContext
 
@@ -63,48 +65,44 @@ class MapLines(private val app: AnyplaceApp,
    * Initialize maps of POIs and connections
    */
   fun loadFromCache() {
-    LOG.W(TAG, METHOD)
-    if(app.space == null) {
-      LOG.E(TAG, "$METHOD: empty space!")
-      app.snackbarLongDEV(scope, "Empty space ($METHOD)")
-      return
-    }
+    val MT = ::loadFromCache.name
+    LOG.W(TG, MT)
 
-    val space = app.space!!
-    if(!hasConnectionsAndPoisCached(space)) {
-      LOG.E(TAG, "$METHOD: empty Connections or POIS!")
-      return
-    }
+    scope.launch(Dispatchers.IO) {
+      while(app.space==null || !hasConnectionsAndPoisCached(app.space!!)) {
+        LOG.E(TG, "$MT: waiting for space+pois")
+        delay(100)
+      }
 
-    LOG.D2(TAG, "$METHOD: reading POIs..")
+      val space = app.space!!
 
-    // add in two maps
-    val pois= cache.readSpacePOIs(space)!!
-    pois.objs.forEach { poi->
+      // add in two map data structures
+      val pois= cache.readSpacePOIs(space)!!
+      pois.objs.forEach { poi->
 
-      poiCoords[poi.puid]=LatLng(poi.coordinatesLat.toDouble(), poi.coordinatesLon.toDouble())
+        poiCoords[poi.puid]=LatLng(poi.coordinatesLat.toDouble(), poi.coordinatesLon.toDouble())
 
-      val level = poi.levelNumber.toInt()
-      if (floorPOIs[level]==null) floorPOIs[level]= mutableListOf()
-      floorPOIs[level]?.add(poi)
-    }
+        val level = poi.levelNumber.toInt()
+        if (floorPOIs[level]==null) floorPOIs[level]= mutableListOf()
+        floorPOIs[level]?.add(poi)
+      }
 
-    LOG.D2(TAG, "$METHOD: reading connections..")
-    val connections = cache.readSpaceConnections(space)!!
-    connections.objs.forEach { connection ->
-      val level = connection.floorA.toInt()
+      LOG.D2(TG, "$MT: reading connections..")
+      val connections = cache.readSpaceConnections(space)!!
+      connections.objs.forEach { connection ->
+        val level = connection.floorA.toInt()
 
-      if (floorConn[level]==null) floorConn[level]= mutableListOf()
-      floorConn[level]?.add(connection)
+        if (floorConn[level]==null) floorConn[level]= mutableListOf()
+        floorConn[level]?.add(connection)
 
-      val from = poiCoords[connection.poisA]
-      val to = poiCoords[connection.poisB]
+        val from = poiCoords[connection.poisA]
+        val to = poiCoords[connection.poisB]
 
-      val polyopt=PolylineOptions().add(from).add(to)
-                      .color(utlColor.PrimaryDark50())
+        val polyopt=PolylineOptions().add(from).add(to).color(utlColor.PrimaryDark50())
 
-      if (floorPolyopt[level]==null) floorPolyopt[level]= mutableListOf()
-      floorPolyopt[level]?.add(polyopt)
+        if (floorPolyopt[level]==null) floorPolyopt[level]= mutableListOf()
+        floorPolyopt[level]?.add(polyopt)
+      }
     }
   }
 
@@ -112,12 +110,13 @@ class MapLines(private val app: AnyplaceApp,
     return floorConn.isNotEmpty() && floorPOIs.isNotEmpty()
   }
 
-  suspend fun loadPolylines(floor: Int) {
+  fun loadPolylines(floor: Int) {
+    val MT = ::loadPolylines.name
 
-    LOG.D2(TAG, "rendering polylines of floor $floor")
+    LOG.D2(TG, "$MT: rendering polylines of floor $floor")
 
     if (!isInited())  {
-      LOG.W(TAG, "$METHOD: initing POIs/connections")
+      LOG.W(TG, "$MT: initing POIs/connections")
       loadFromCache()
     }
 
@@ -125,7 +124,7 @@ class MapLines(private val app: AnyplaceApp,
 
     val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {
-      LOG.E(TAG, "$METHOD: Must download POIs/Connections first. restart app..")
+      LOG.E(TG, "$MT: Must download POIs/Connections first. restart app..")
     }
 
     // renderPolylines(floor) BUGGY
@@ -135,11 +134,12 @@ class MapLines(private val app: AnyplaceApp,
    * Not rendering the polylines...
    */
   private fun renderPolylines(floor: Int) {
+    val MT = ::renderPolylines.name
     clearPolylines()
 
     val polyOpts = floorPolyopt[floor]
     if (polyOpts.isNullOrEmpty())  {
-      LOG.W(TAG, "$METHOD: no connections in current floor.")
+      LOG.W(TG, "$MT: no connections in current floor.")
       return
     }
 
@@ -152,7 +152,7 @@ class MapLines(private val app: AnyplaceApp,
   }
 
   fun clearPolylines() {
-    LOG.W(TAG, "clearing polylines")
+    LOG.W(TG, "clearing polylines")
     VM.viewModelScope.launch(Dispatchers.Main) {
       polylines.forEach { it.remove() }
     }

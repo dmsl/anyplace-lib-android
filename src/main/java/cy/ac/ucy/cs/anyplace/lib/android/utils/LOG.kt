@@ -16,9 +16,7 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val CTR = true // STABLE
-
-    const val SLR = true
+    const val SLR = false
     const val WAI = true
 
     const val CVM = true
