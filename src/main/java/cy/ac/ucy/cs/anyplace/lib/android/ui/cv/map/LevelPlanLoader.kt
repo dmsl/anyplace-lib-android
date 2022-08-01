@@ -11,33 +11,24 @@ import kotlinx.coroutines.flow.update
 
 // TODO:PMX MERGE
 class LevelPlanLoader {
-
-  val tag = "LevelPlanLoader"
+  private val TG = "LevelPlanLoader"
 
   /**
    * Reads a floorplan image form the devices cache
    */
   fun readFromCache(VM: CvViewModel, FW: LevelWrapper) {
-    val method = ::readFromCache.name
-    LOG.E(tag, "$method: BUG")
-    LOG.E(tag, "$method: BUG")
-    LOG.E(tag, "$method: ${FW.prettyFloorName()}")
-
-    LOG.E(tag, "$method: space: ${FW.wSpace.obj.name}")
-    LOG.E(tag, "$method: space: ${FW.wSpace.obj.buid}")
-    LOG.E(tag, "$method: floornum: ${FW.obj.number}")
-    LOG.E(tag, "$method: level: buid: ${FW.obj.buid}")
-    LOG.E(tag, "$method: level: name: ${FW.obj.name}")
+    val MT = ::readFromCache.name
+    LOG.V(TG, "$MT: ${FW.prettyFloorName()}")
 
     val localResult =
             when (val bitmap = FW.loadFromCache()) {
               null -> {
                 val msg ="Failed to load from local cache"
-                LOG.W(tag, "$method: msg")
+                LOG.W(TG, "$MT: msg")
                 NetworkResult.Error(msg)
               }
               else -> {
-                LOG.D2(tag, "$method: success.")
+                LOG.D2(TG, "$MT: success.")
                 NetworkResult.Success(bitmap)
               }
             }
@@ -46,8 +37,8 @@ class LevelPlanLoader {
 
   fun render(overlays: Overlays, gmap: GoogleMap, bitmap: Bitmap?, LW: LevelWrapper) {
     val method = ::render.name
-    LOG.E(tag, method)
-    LOG.E(tag, "$method: ${LW.wSpace.obj.name}: ${LW.wSpace.obj.buid}")
+    LOG.E(TG, method)
+    LOG.E(TG, "$method: ${LW.wSpace.obj.name}: ${LW.wSpace.obj.buid}")
     overlays.drawFloorplan(bitmap, gmap, LW.bounds())
   }
 }

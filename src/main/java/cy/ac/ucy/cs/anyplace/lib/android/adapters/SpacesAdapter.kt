@@ -95,11 +95,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.VM.dbqSpaces.runnedInitialQuery=false
           app.backToSpaceSelectorFromOtherActivities=true
 
-
-
-
           downloadSpaceResources(prefsCv)
-
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)

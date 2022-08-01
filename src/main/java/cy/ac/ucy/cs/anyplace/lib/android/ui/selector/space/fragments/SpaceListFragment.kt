@@ -177,15 +177,22 @@ class SpaceListFragment : Fragment() {
       VM.dbqSpaces.spaceFilter.firstOrNull { query ->
         VM.dbqSpaces.saveQueryTypeTemp(query)
         VM.dbqSpaces.tryInitialQuery()
+        val emptyDB = !app.repoAP.local.hasSpaces()
 
         LOG.E("$MT: must load spaces: ${!VM.dbqSpaces.loaded}. Back from bsheet: ${args.backFromBottomSheet}")
 
-        if (app.backToSpaceSelectorFromOtherActivities) { // workaround..
+        if (emptyDB) { // workaround: emptydb
+          LOG.E(TG, "$MT: db was empty. reloading from remote..")
+          reloadSpacesFromRemote()
+          collectSpaces()
+          VM.dbqSpaces.runnedInitialQuery=false
+          VM.dbqSpaces.tryInitialQuery()
+          loadSpacesQuery()
+        } else if (app.backToSpaceSelectorFromOtherActivities) { // workaround: force run query again
           app.backToSpaceSelectorFromOtherActivities=false
           VM.dbqSpaces.runnedInitialQuery=false
           VM.dbqSpaces.tryInitialQuery()
           loadSpacesQuery()
-
           // if we are back from bottom sheet we must reload
         } else if (!VM.dbqSpaces.loaded || args.backFromBottomSheet) {
           if (args.backFromBottomSheet) {

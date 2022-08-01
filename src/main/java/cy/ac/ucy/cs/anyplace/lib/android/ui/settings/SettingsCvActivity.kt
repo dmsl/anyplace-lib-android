@@ -252,47 +252,6 @@ class SettingsCvActivity: SettingsActivity() {
       }
     }
 
-    /**
-     * CLR:PM
-     * Clears the selected space.
-     * The user will have to select a different one from the SpaceSelector
-     */
-    // private fun clearSelectedSpace() {
-    //   val pref = findPreference<Preference>(getString(R.string.pref_selected_space))
-    //   if (!DBG.SLR) { pref?.isVisible = false; return }
-    //
-    //   lifecycleScope.launch(Dispatchers.IO) {
-    //     lifecycleScope.launch(Dispatchers.Main) {
-    //       pref?.summary = getSelectedSpaceSummary(ds.read.first().selectedSpace)
-    //     }
-    //   }
-    //
-    //   // set initial value and update on new values
-    //   pref?.setOnPreferenceChangeListener { it, value ->
-    //     it.summary=getSelectedSpaceSummary(value.toString())
-    //     true
-    //   }
-    //
-    //   pref?.setOnPreferenceClickListener {
-    //     LOG.W(TAG, "$METHOD: setting up")
-    //     val mgr = requireActivity().supportFragmentManager
-    //     ConfirmActionDialog.SHOW(mgr, "App will close!",
-    //             "If you clear the space, the app will close.\n"+
-    //                     "Once you re-open, you can choose a new space.",
-    //             cancellable = true, isImportant = true) { // on confirmed
-    //
-    //       lifecycleScope.launch(Dispatchers.IO) {
-    //         ds.clearSelectedSpace()
-    //         app.showToast(lifecycleScope, "Please select another space.")
-    //         app.mustSelectSpaceForCvMap=true
-    //         requireActivity().finishAndRemoveTask()
-    //       }
-    //     }
-    //     true
-    //   }
-    // }
-
-
     private fun clearAvailableSpaces(app: AnyplaceApp, VM: CvViewModel, VMap: AnyplaceViewModel) {
       val pref = findPreference<Preference>(getString(R.string.pref_clear_available_spaces))
 
@@ -304,7 +263,8 @@ class SettingsCvActivity: SettingsActivity() {
         ConfirmActionDialog.SHOW(mgr, "Clear available spaces",
                 "Space Selector will fetch them again from remote,\n"+
                         "the next time you clear the selected space\n"+
-                        "Use this if the remote spaces had changes.\n",
+                        "Use this if the remote spaces had changes.\n"+
+                        "NOTE: a manual app restart might be necessary.",
                 cancellable = true, isImportant = true) { // on confirmed
 
           lifecycleScope.launch(Dispatchers.IO) {

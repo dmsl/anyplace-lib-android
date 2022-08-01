@@ -159,7 +159,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
-        // checkIfSpaceRemoved(prefs)
         LOG.E(TG, "$method: SELECTED SPACE ID: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
@@ -169,17 +168,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-  // private fun checkIfSpaceRemoved(prefs: CvMapPrefs) {
-  //   if (DBG.SLR) {
-  //     if (prefs.selectedSpace.isEmpty() || app.mustSelectSpaceForCvMap) {
-  //       app.mustSelectSpaceForCvMap=false // handled below
-  //       val intent = Intent(app.applicationContext, SelectSpaceActivity::class.java)
-  //       intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-  //       startActivity(intent)
-  //       finishAndRemoveTask()
-  //     }
-  //   }
-  // }
 
   // CHECK: is this needed
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {

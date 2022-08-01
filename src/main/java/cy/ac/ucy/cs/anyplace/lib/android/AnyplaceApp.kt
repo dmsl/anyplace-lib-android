@@ -125,8 +125,6 @@ abstract class AnyplaceApp : Application() {
     return locationSmas.value is LocalizationResult.Success
   }
 
-  // var mustSelectSpaceForCvMap = false
-
   /**
    * Set the main view (root view) of the current [Activity],
    * so we can use app [Snackbar] accross different activities
