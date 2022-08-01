@@ -48,8 +48,9 @@ class SmasMainViewModel @Inject constructor(
         RHsmas: RetrofitHolderSmas,
         RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
-
-  private val C by lazy { SMAS(app.applicationContext) }
+  private val TG = "vm-cv-smas"
+  val ctx by lazy { app.applicationContext }
+  override val C by lazy { SMAS(ctx) }
 
   // PREFERENCES
   val prefsChat = dsChat.read
@@ -102,7 +103,7 @@ class SmasMainViewModel @Inject constructor(
   }
 
   fun hasNewMsgs(localTs: Long?, remoteTs: Long?) : Boolean {
-    LOG.V2(TAG, "$METHOD: local: $localTs remote: $remoteTs")
+    LOG.V2(TG, "$METHOD: local: $localTs remote: $remoteTs")
 
     return when {
       // there is no remote timestamp

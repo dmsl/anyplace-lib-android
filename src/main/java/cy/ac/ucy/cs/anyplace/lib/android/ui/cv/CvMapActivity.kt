@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -16,13 +15,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
@@ -320,17 +317,17 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   var firstLevelLoaded = false
 
   open fun onFirstLevelLoaded() {
-    LOG.D2(TG, "First floor loaded: ${app.wLevel?.floorNumber()}")
+    LOG.D2(TG, "First floor loaded: ${app.wLevel?.levelNumber()}")
   }
 
   open fun onLevelLoaded() {
-    LOG.D2(TG, "Floor loaded: ${app.wLevel?.floorNumber()}")
+    LOG.D2(TG, "Floor loaded: ${app.wLevel?.levelNumber()}")
     lifecycleScope.launch(Dispatchers.IO) {
       if (app.wLevel != null) {
         VM.waitForUi()
 
         // val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
-        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wLevel!!.floorNumber())
+        VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wLevel!!.levelNumber())
         loadPOIsAndConnections()
       }
 
@@ -354,7 +351,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         VM.nwPOIs.callBlocking(app.space!!.buid)
         VM.nwConnections.callBlocking(app.space!!.buid)
       }
-      VM.ui.map.lines.loadPolylines(app.wLevel!!.floorNumber())
+      VM.ui.map.lines.loadPolylines(app.wLevel!!.levelNumber())
   }
 
   var observingLevels = false
@@ -419,7 +416,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           val coord = result.coord!!
           val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
           LOG.E(TG, msg)
-          val curFloor = app.wLevel?.floorNumber()
+          val curFloor = app.wLevel?.levelNumber()
           if (coord.level != curFloor) {
             LOG.W(TG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
             // app.showToast(lifecycleScope, )

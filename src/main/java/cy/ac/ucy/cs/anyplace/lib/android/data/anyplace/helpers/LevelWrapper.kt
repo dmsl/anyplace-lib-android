@@ -1,19 +1,13 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
-import android.util.Base64
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import okhttp3.ResponseBody
-import retrofit2.Response
 
 /**
  * Extra functionality on top of the [Level] data class.
@@ -32,16 +26,16 @@ class LevelWrapper(val obj: Level,
 
   private val cache by lazy { Cache(wSpace.ctx) }
 
-  fun floorNumber() : Int = obj.number.toInt()
-  fun prettyFloorplanNumber() = "${wSpace.prettyFloorplan}${obj.number}"
-  fun prettyFloorNumber() = "${wSpace.prettyLevel}${obj.name}"
-  fun prettyFloorName() = "${wSpace.prettyLevel} ${obj.name}"
+  fun levelNumber() : Int = obj.number.toInt()
+  fun prettyLevelplanNumber() = "${wSpace.prettyLevelplan}${obj.number}"
+  fun prettyLevelNumber() = "${wSpace.prettyLevel}${obj.name}"
+  fun prettyLevelName() = "${wSpace.prettyLevel} ${obj.name}"
 
   val prettyFloorCapitalize : String get() = prettyFloor.replaceFirstChar(Char::uppercase)
   val prettyFloor : String get() = wSpace.prettyLevel
   val prettyFloors : String get() = wSpace.prettyFloors
-  val prettyFloorPlan : String get() = wSpace.prettyFloorplan
-  val prettyFloorPlans : String get() = wSpace.prettyFloorplans
+  val prettyFloorPlan : String get() = wSpace.prettyLevelplan
+  val prettyFloorPlans : String get() = wSpace.prettyLevelplans
 
   fun northEast() : LatLng {
     val latNE = obj.topRightLat.toDouble()
@@ -59,41 +53,23 @@ class LevelWrapper(val obj: Level,
     return LatLngBounds(southWest(), northEast())
   }
 
-  fun hasFloorplanCached(): Boolean { return cache.hasFloorplan(obj) }
+  fun hasLevelplanCached(): Boolean { return cache.hasFloorplan(obj) }
 
-  fun loadFromCache() : Bitmap? {
-    val method = ::loadFromCache.name
+  fun loadLevelplanFromCache() : Bitmap? {
+    val method = ::loadLevelplanFromCache.name
     LOG.E(tag, "$method: ${obj.number} ${obj.name} ${obj.buid}")
     return cache.readLevelplan(obj)
   }
 
-  fun clearCacheFloorplan() { cache.deleteFloorplan(obj) }
+  fun clearCacheLevelplan() { cache.deleteFloorplan(obj) }
   // fun clearCacheCvMap() { cache.deleteFloorCvMap(floor) }
   /** Deletes the cvmap folder that might contain several CvMaps
    * created with different [DetectionModel]s */
   fun clearCache() {
-    clearCacheFloorplan()
+    clearCacheLevelplan()
     // Other cache?
   }
-  fun cacheFloorplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(obj, bitmap) } }
+  fun cacheLevelplan(bitmap: Bitmap?) { bitmap.let { cache.saveFloorplan(obj, bitmap) } }
 
-  /**
-   * Request and cache a [Bitmap]
-   */
-  suspend fun requestRemoteFloorplan() : Bitmap? {
-    LOG.D3(TAG,"$METHOD: ${obj.buid}: ${obj.number}")
-    val response = wSpace.repo.remote.getFloorplanBase64(obj.buid, obj.number)
-    return handleResponse(response)
-  }
 
-  private fun handleResponse(response: Response<ResponseBody>): Bitmap? {
-    if (response.errorBody() != null) {
-      LOG.E("Response: ErrorBody: ${response.errorBody().toString()}")
-      return null
-    }
-    val base64 = response.body()?.string()
-    val byteArray = Base64.decode(base64, Base64.DEFAULT)
-
-    return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-  }
 }

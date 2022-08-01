@@ -67,7 +67,7 @@ class IMU(
         val lastPos =LatLng(lastCoord.lat, lastCoord.lon)
 
         val tmp = findNewPosition(lastPos, azimuth)
-        val floorNum = app.wLevel?.floorNumber()!!
+        val floorNum = app.wLevel?.levelNumber()!!
         val polyOpts = map.lines.getPolyopts(floorNum)
         if (polyOpts == null) {
           LOG.W(TAG, "OBSERVE: ret: null polyopts")

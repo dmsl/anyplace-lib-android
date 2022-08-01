@@ -80,7 +80,7 @@ class UiLocalization(
       val lr = app.locationSmas.value
       if (lr is LocalizationResult.Success) {
         val coord = lr.coord!!
-        val curFloor = app.wLevel?.floorNumber()
+        val curFloor = app.wLevel?.levelNumber()
 
         if (coord.level != curFloor) {
           app.wLevels.moveToFloor(VM, coord.level)

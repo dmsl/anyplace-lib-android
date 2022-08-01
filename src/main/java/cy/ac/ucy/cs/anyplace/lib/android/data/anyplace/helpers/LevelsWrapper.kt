@@ -24,7 +24,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
     fun parse(str: String): Levels = Gson().fromJson(str, Levels::class.java)
   }
 
-  private val obj: List<Level> = (unsortedObj.levels.sortedBy { floor ->
+  val obj: List<Level> = (unsortedObj.levels.sortedBy { floor ->
     floor.number.toInt()
   })
 
@@ -50,7 +50,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   }
 
   /** Deletes all cached floorplans */
-  fun clearCacheFloorplans() = clearCache("floorplans") { clearCacheFloorplan() }
+  fun clearCacheFloorplans() = clearCache("floorplans") { clearCacheLevelplan() }
 
   /** Deletes all the cache related to a floor */
   fun clearCaches() = clearCache("all") { clearCache() }
@@ -59,46 +59,7 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
     obj.forEach { floor ->
       val FW = LevelWrapper(floor, spaceH)
       FW.method()
-      LOG.D5(TAG, "clearCache:$msg: ${FW.prettyFloorplanNumber()}.")
-    }
-  }
-
-  /**
-   * TODO: this must be called from a "Select Space" activity
-   * (not on the logging/nav. in a earlier activity).
-   */
-  var showedMsgDownloading=false
-  var showedMsgDone=true
-  suspend fun fetchAllFloorplans(VM: CvViewModel) {
-    var alreadyCached=""
-    val app = VM.app
-    obj.forEach { floor ->
-      val FW = LevelWrapper(floor, spaceH)
-      if (!FW.hasFloorplanCached()) {
-        // at least one floor needs to be downloaded:
-        // show notification now (and when done [showedMsgDone]
-        if (!showedMsgDownloading) {
-          app.snackbarLong(VM.viewModelScope, "Downloading all ${FW.prettyFloors} ..\n(keep app open)")
-          showedMsgDownloading=true
-          showedMsgDone=false // show another msg at the end
-        }
-        val bitmap = FW.requestRemoteFloorplan()
-        if (bitmap != null) {
-          FW.cacheFloorplan(bitmap)
-          LOG.V2("Downloaded: ${FW.prettyFloorplanNumber()}.")
-        }
-      } else {
-        alreadyCached+="${FW.obj.number}, "
-      }
-    }
-
-    if (!showedMsgDone) {
-      showedMsgDone=true
-      app.snackbarShort(VM.viewModelScope, "All ${app.wLevels.size} ${app.wSpace.prettyFloors} downloaded!")
-    }
-
-    if (alreadyCached.isNotEmpty()) {
-      LOG.V3(TAG_METHOD, "already cached ${spaceH.prettyFloorplans}: ${alreadyCached.dropLast(2)}")
+      LOG.D5(TAG, "clearCache:$msg: ${FW.prettyLevelplanNumber()}.")
     }
   }
 

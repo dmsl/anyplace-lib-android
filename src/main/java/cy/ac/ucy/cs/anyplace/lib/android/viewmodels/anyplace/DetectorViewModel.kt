@@ -41,7 +41,7 @@ open class DetectorViewModel @Inject constructor(
         val dsCvMap: CvMapDataStore,
 ) : AndroidViewModel(application) {
 
-  protected val assetReader by lazy { AssetReader(app) }
+  val assetReader by lazy { AssetReader(app) }
 
   lateinit var detector: Classifier
   lateinit var tracker: MultiBoxTracker

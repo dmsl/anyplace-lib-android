@@ -183,12 +183,10 @@ class GmapWrapper(
    * - setting up zoom preferences
    */
   fun onFirstLevelLoaded() {
-    val method = ::onFirstLevelLoaded.name
-    LOG.E(tag, METHOD)
+    val MT = ::onFirstLevelLoaded.name
+    LOG.E(tag, MT)
 
-    // CHECK:PM TODO:PM this must be moved to earlier activity ??
-    // along with Space/Floors loading (that also needs implementation).
-    scope.launch(Dispatchers.IO) { app.wLevels.fetchAllFloorplans(VM) }
+    scope.launch(Dispatchers.IO) { VM.nwLevelPlan.downloadAll() }
 
     scope.launch(Dispatchers.Main) {
       val maxZoomLevel = obj.maxZoomLevel // may differ per device
@@ -202,9 +200,9 @@ class GmapWrapper(
         return@launch
       }
 
-      LOG.E(tag, "$method: SPACE: ${app.wSpace.obj.name}")
-      LOG.E(tag, "$method: FLOOR: ${app.wLevel?.prettyFloorNumber()}")
-      LOG.E(tag, "$method: MOVING TO CENTER")
+      LOG.E(tag, "$MT: SPACE: ${app.wSpace.obj.name}")
+      LOG.E(tag, "$MT: FLOOR: ${app.wLevel?.prettyLevelNumber()}")
+      LOG.E(tag, "$MT: MOVING TO CENTER")
       VM.ui.map.moveToBounds(app.wLevel!!.bounds())
 
       // delay(500) // CHECK is ths a bugfix? CHECK: if OK: CLR:PM ?

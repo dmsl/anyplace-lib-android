@@ -12,7 +12,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
@@ -59,6 +58,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
     }
 
     private fun setupBtnSelectSpace(space: Space, act: SelectSpaceActivity) {
+      val MT = ::setupBtnSelectSpace.name
+
       binding.btnSelectSpace.setOnClickListener {
         val activeTag = "downloading-button"
         val btn = binding.btnSelectSpace
@@ -72,7 +73,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         }
         app.spaceSelectionInProgress=true
 
-        LOG.W(TG, "selecting Space: ${space.name} ${space.buid}")
+        LOG.D2(TG, "$MT: selecting Space: ${space.name} ${space.buid}")
 
         scope.launch(Dispatchers.IO) {
           app.dsCvMap.setSelectedSpace(space.buid) // store the sapce
@@ -81,13 +82,14 @@ class SpacesAdapter(private val app: AnyplaceApp,
           // if these json resources exists, then most likely the remaining components would exist also
           val showNotif = app.cache.hasSpaceAndFloor(prefsCv.selectedSpace)
           if (!showNotif) {
-            val msg = "Downloading resources of ${space.name.take(20)}.."
+            val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
+            val msg = "Downloading resources of $shortName"
             app.snackbarLong(scope, msg)
           }
 
-          act.utlUi.flashingLoop(btn)
           act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
           act.utlUi.changeBackgroundMaterial(btn, R.color.green)
+          act.utlUi.flashingLoop(btn)
           btn.tag=activeTag
 
           // Reset some VM state
@@ -104,9 +106,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
             act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
             btn.tag=null
 
-            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
-            LOG.E(TG, "ADAPTER SELECTED SPACE: '${prefsCv.selectedSpace}' ")
+            LOG.D2(TG, "$MT: selected space: '${prefsCv.selectedSpace}' ")
 
             val userAP = app.dsUserAP.read.first()
             StartActivity.openActivity(prefsCv, userAP, act)
@@ -156,8 +156,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
     }
 
     private suspend fun downloadFloorplans() {
-      app.wLevels.showedMsgDownloading=true
-      app.wLevels.fetchAllFloorplans(act.VMcv)
+      act.VMcv.nwLevelPlan.showedMsgDownloading=true
+      act.VMcv.nwLevelPlan.downloadAll()
     }
 
     private suspend fun downloadConnectionsAndPois() {
@@ -194,7 +194,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
    *    - updates the whole RV.
    */
   fun setData(newSpaces: Spaces) {
-    LOG.V5(TG, "setData: ${newSpaces.spaces.size}")
+    val MT = ::setData.name
+    LOG.V5(TG, "$MT: ${newSpaces.spaces.size}")
 
     try {
       val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
@@ -204,7 +205,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
       }
     } catch (e: Exception) {
-      LOG.E(TG, "setData: EXCEPTION: ${e.message}")
+      LOG.E(TG, "$MT: error: ${e.message}")
     }
   }
 

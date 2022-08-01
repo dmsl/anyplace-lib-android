@@ -26,7 +26,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
@@ -53,7 +52,7 @@ enum class MapBounds {
  *  - the FileCache
  */
 abstract class AnyplaceApp : Application() {
-  private val tag = "app"
+  private val TG = "app"
 
   var spaceSelectionInProgress: Boolean = false
   @Inject lateinit var RH: RetrofitHolderAP
@@ -165,7 +164,7 @@ abstract class AnyplaceApp : Application() {
     if (userHasLocation()) {  // there was a previous user location
       val coord = locationSmas.value.coord!!
       val lastLevel = coord.level
-      val selectedLevel = wLevel?.floorNumber() // this is a UI selection
+      val selectedLevel = wLevel?.levelNumber() // this is a UI selection
       return lastLevel != selectedLevel
     }
     return false
@@ -226,8 +225,8 @@ abstract class AnyplaceApp : Application() {
    *   - or the last selected level of that space
    */
   fun initializeSpace(scope: CoroutineScope, newSpace: Space?, newLevels: Levels?): Boolean {
-    val method = ::initializeSpace.name
-    LOG.E(tag, method)
+    val MT = ::initializeSpace.name
+    LOG.E(TG, MT)
 
     // Initialize space
     this.space = newSpace
@@ -249,10 +248,10 @@ abstract class AnyplaceApp : Application() {
     val prettySpace = wSpace.prettyTypeCapitalize
     val prettyFloors= wSpace.prettyFloors
 
-    LOG.W(TAG, "$METHOD: loaded: $prettySpace: ${space!!.name} " +
+    LOG.W(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
             "(has ${levels!!.levels.size} $prettyFloors)")
 
-    LOG.W(TAG, "$METHOD: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
+    LOG.W(TG, "$MT: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
 
     return true
   }

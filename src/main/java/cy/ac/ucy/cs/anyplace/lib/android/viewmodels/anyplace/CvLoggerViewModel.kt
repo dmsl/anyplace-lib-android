@@ -53,8 +53,7 @@ class CvLoggerViewModel @Inject constructor(
         RHap: RetrofitHolderAP,
         RHsmas: RetrofitHolderSmas):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
-
-  private val C by lazy { SMAS(app.applicationContext) }
+  private val TG = "vm-cv-logger"
 
   val utlUi by lazy { UtilUI(application, viewModelScope) }
   val utlColor by lazy { UtilColor(app.applicationContext) }
@@ -99,7 +98,7 @@ class CvLoggerViewModel @Inject constructor(
    */
   override fun processDetections(recognitions: List<Classifier.Recognition>,
                                  activity: DetectorActivityBase) {
-    LOG.V2(TAG, "VM: CvLogger: $METHOD: ${recognitions.size}")
+    LOG.V2(TG, "VM: CvLogger: $METHOD: ${recognitions.size}")
     super.processDetections(recognitions, activity)
 
     when (statusLogging.value) {
@@ -107,7 +106,7 @@ class CvLoggerViewModel @Inject constructor(
         updateDetectionsLogging(recognitions)
       }
       else -> {
-        LOG.V2(TAG, "$METHOD: (ignoring objects)")
+        LOG.V2(TG, "$METHOD: (ignoring objects)")
       }
     }
   }
@@ -116,13 +115,13 @@ class CvLoggerViewModel @Inject constructor(
    * Update detections that concern only the logging phase.
    */
   private fun updateDetectionsLogging(recognitions: List<Classifier.Recognition>) {
-    LOG.D3(TAG, "$METHOD: ${statusLogging.value}")
+    LOG.D3(TG, "$METHOD: ${statusLogging.value}")
     currentTime = System.currentTimeMillis()
 
     val appendedDetections = objWindowLOG.value.orEmpty() + recognitions
     statObjWindowAll.postValue(appendedDetections.size)
 
-    LOG.V3(TAG, "$METHOD: appended detections: ${objWindowLOG.value?.size} (in mem)")
+    LOG.V3(TG, "$METHOD: appended detections: ${objWindowLOG.value?.size} (in mem)")
 
     if (windowStart==0L) windowStart=currentTime
 
@@ -131,7 +130,7 @@ class CvLoggerViewModel @Inject constructor(
       currentTime-windowStart > prefWindowLoggingMs() -> {
         windowStart=0L // resetting window
 
-        LOG.D2(TAG, "WINDOW FINISHED")
+        LOG.D2(TG, "WINDOW FINISHED")
 
         if (appendedDetections.isEmpty()) {
           app.snackbarShort(viewModelScope, "No detections.")
@@ -141,14 +140,14 @@ class CvLoggerViewModel @Inject constructor(
           val detectionsDedup = appendedDetections
           // val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
 
-          LOG.W(TAG, "$METHOD: detections to store: dedup: ${detectionsDedup.size}")
+          LOG.W(TG, "$METHOD: detections to store: dedup: ${detectionsDedup.size}")
 
           objWindowLOG.postValue(detectionsDedup)
 
           statObjWindowUNQ = detectionsDedup.size
           statObjTotal += statObjWindowUNQ
 
-          LOG.E(TAG, "$METHOD: detections unique: $statObjWindowUNQ")
+          LOG.E(TG, "$METHOD: detections unique: $statObjWindowUNQ")
 
           viewModelScope.launch(Dispatchers.IO) {
             delay(50) // workaround:
@@ -167,7 +166,7 @@ class CvLoggerViewModel @Inject constructor(
 
 
   private fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
-    LOG.E(TAG,"$METHOD: CvModel: detections: ${recognitions.size}")
+    LOG.E(TG,"$METHOD: CvModel: detections: ${recognitions.size}")
 
     viewModelScope.launch(Dispatchers.IO) {
       app.cvUtils.initConversionTables(model.idSmas)
@@ -215,7 +214,7 @@ class CvLoggerViewModel @Inject constructor(
     super.onLocalizationStarted()
     if (!DBG.LCLG) return // PMX: LCLG
 
-    LOG.W(TAG, "LOCALIZE: RUNNING")
+    LOG.W(TG, "LOCALIZE: RUNNING")
     // hide all logging UI when localizing
 
     uiLog.bottom.logging.uploadWasVisible = uiLog.groupUpload.isVisible

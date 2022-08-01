@@ -255,6 +255,9 @@ open class Cache(val ctx: Context) {
     }
   }
 
+  /**
+   *
+   */
   fun readLevelplan(level: Level): Bitmap? {
     val method = ::readLevelplan.name
 

@@ -35,7 +35,6 @@ open class LevelOverlaysWrapper(
         protected val overlays: Overlays
 ) {
 
-  private val fpLoader by lazy { LevelPlanLoader() }
   private val app = VM.app
 
   val tag = "wr-lvl-overlays"
@@ -55,12 +54,12 @@ open class LevelOverlaysWrapper(
     collectingLevelplanChanges=true
 
     scope.launch(Dispatchers.IO) {
-      VM.levelplanImg.collect { response ->
+      VM.nwLevelPlan.bitmap.collect { response ->
 
         LOG.E(tag, "$method: floorplan updated..")
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W(tag, "$method: will load ${app.wSpace.prettyFloorplan}..")
+            LOG.W(tag, "$method: will load ${app.wSpace.prettyLevelplan}..")
           }
           is NetworkResult.Error -> {
             val msg = ": Failed to fetch ${app.wSpace.prettyType}: ${app.space?.name}: [${response.message}]"
@@ -74,7 +73,7 @@ open class LevelOverlaysWrapper(
               app.snackbarShort(scope, msg)
             } else {
               LOG.E(tag, "$method: success: rendering img")
-              fpLoader.render(overlays, gmap, response.data, app.wLevel!!)
+              VM.nwLevelPlan.render(response.data, app.wLevel!!)
               loadHeatmap(gmap)
             }
           }

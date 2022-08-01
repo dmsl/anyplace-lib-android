@@ -191,7 +191,7 @@ class LocationGetNW(
      alertingUser.value = null
     }
 
-    LOG.D3(TAG, "UserLocations: current floor: ${FW.prettyFloorName()}")
+    LOG.D3(TAG, "UserLocations: current floor: ${FW.prettyLevelName()}")
     // val dataset = MutableList<>(); // TODO: scalability?
     gmap.renderUserLocations(sameFloorUsers)
 

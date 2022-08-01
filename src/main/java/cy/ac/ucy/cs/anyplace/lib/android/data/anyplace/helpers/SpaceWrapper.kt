@@ -85,8 +85,8 @@ class SpaceWrapper(val ctx: Context,
     }
 
   val prettyFloors : String get() = "${prettyLevel}s"
-  val prettyFloorplan : String get() = "${prettyLevel}plan"
-  val prettyFloorplans : String get() = "${prettyFloorplan}s"
+  val prettyLevelplan : String get() = "${prettyLevel}plan"
+  val prettyLevelplans : String get() = "${prettyLevelplan}s"
 
   fun isBuilding() : Boolean = obj.type == TP_BUILDING
   fun isVessel() : Boolean = obj.type == TP_VESSEL

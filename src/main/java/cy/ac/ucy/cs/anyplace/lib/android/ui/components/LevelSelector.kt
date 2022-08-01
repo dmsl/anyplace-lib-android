@@ -10,7 +10,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.LevelPlanLoader
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -46,8 +45,6 @@ class LevelSelector(
   }
 
   private val utlUi by lazy { UtilUI(ctx, scope) }
-
-  private val loaderLvlplan by lazy { LevelPlanLoader() }
   var callback : Callback ?= null
 
   fun show() = utlUi.fadeIn(group)
@@ -147,7 +144,7 @@ class LevelSelector(
 
     scope.launch(Dispatchers.IO) {
       if (!isLazilyChangingLevel) {
-        LOG.D4(TAG_METHOD, "Might change to level: ${app.wLevel!!.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Might change to level: ${app.wLevel!!.prettyLevelName()}")
         isLazilyChangingLevel = true
         do {
           val curTime = System.currentTimeMillis()
@@ -156,14 +153,14 @@ class LevelSelector(
           delay(200)
         } while(diff < DELAY_LEVEL_CHANGE)
 
-        LOG.V2(tag, "lazilyChangeFloor: to level: ${app.wLevel!!.prettyFloorName()} (after delay)")
+        LOG.V2(tag, "lazilyChangeFloor: to level: ${app.wLevel!!.prettyLevelName()} (after delay)")
 
         isLazilyChangingLevel = false
 
         // BUG: VM or FH has the wrong floor number?
         loadLevel(VM, scope)
       } else {
-        LOG.D4(TAG_METHOD, "Skipping level: ${app.wLevel!!.prettyFloorName()}")
+        LOG.D4(TAG_METHOD, "Skipping level: ${app.wLevel!!.prettyLevelName()}")
       }
     }
   }
@@ -190,19 +187,18 @@ class LevelSelector(
     }
 
     val WF = app.wLevel!!
-    LOG.E(tag, "$method: app space: ${app.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyFloorName()}")
-    LOG.E(tag, "$method: ${WF.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyFloorName()}")
+    LOG.E(tag, "$method: app space: ${app.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
+    LOG.E(tag, "$method: ${WF.wSpace.obj.name} level: ${WF.obj.number} ${WF.prettyLevelName()}")
 
     scope.launch(Dispatchers.IO) {
-      if (WF.hasFloorplanCached()) {
+      if (WF.hasLevelplanCached()) {
         LOG.E(tag, "$method: local")
-        loaderLvlplan.readFromCache(VM, WF)
+        VM.nwLevelPlan.readFromCache(VM, WF)
       } else {
         LOG.E(tag, "$method: remote")
-        VM.getFloorplanFromRemote(WF)
+        VM.nwLevelPlan.getLevelplan(WF)
       }
     }
-    
     callback?.after()
   }
 

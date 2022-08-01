@@ -81,9 +81,9 @@ open class CvViewModel @Inject constructor(
   /** Make sure to initialize this one */
   private lateinit var attachedActivityId: String
   val app : AnyplaceApp = application as AnyplaceApp
-  val TG = "vm-cv"
+  private val TG = "vm-cv"
 
-  private val C by lazy { CONST(app) }
+  open val C by lazy { CONST(app) }
   private val utlUi by lazy { UtilUI(app.applicationContext, viewModelScope) }
   /** Updated on changes */
   lateinit var prefsCvMap: CvMapPrefs
@@ -116,6 +116,7 @@ open class CvViewModel @Inject constructor(
   val nwCvMapGet by lazy { CvMapGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwLevelPlan by lazy { LevelPlanNW(app as SmasApp, this, RHsmas, repoSmas) }
 
   /** Controlling localization mode */
   val statusLocalization = MutableStateFlow(LocalizationStatus.stopped)
@@ -127,8 +128,6 @@ open class CvViewModel @Inject constructor(
    * Currently not much use (for a field var), but if we have multiple
    * lastVals for space then it would make sense. */
   var lastValSpaces: LastValSpaces = LastValSpaces()
-  /** the [Bitmap] of the current level (floorplan, or deckplan) */
-  val levelplanImg: MutableStateFlow<NetworkResult<Bitmap>> = MutableStateFlow(NetworkResult.Loading())
 
   /** workaround. no the best one */
   @Deprecated("this may be an ugly hack")
@@ -141,43 +140,6 @@ open class CvViewModel @Inject constructor(
             ui.map.gmapWrLoaded &&
             uiBottomInited &&
             (!DBG.WAI || ui.localization.btnWhereAmISetup)
-  }
-
-  // FLOOR PLANS
-  fun getFloorplanFromRemote(fw: LevelWrapper) = viewModelScope.launch { getFloorplanSafeCall(fw) }
-  private fun loadFloorplanFromAsset() {
-    LOG.W(TG, "loading from asset file")
-    val base64 = assetReader.getFloorplan64Str()
-    val bitmap = base64?.let { utlImg.decodeBase64(it) }
-    levelplanImg.value =
-            when (bitmap) {
-              null -> NetworkResult.Error("Cant read asset deckplan.")
-              else -> NetworkResult.Success(bitmap)
-            }
-  }
-
-  /**
-   * Requests a floorplan from remote and publishes outcome to [levelplanImg].
-   * TODO:PMX put in LevelplanNW
-   *
-   */
-  private suspend fun getFloorplanSafeCall(FH: LevelWrapper) {
-    val MT = ::getFloorplanSafeCall.name
-    LOG.E(TG, "$MT: remote")
-    levelplanImg.update { NetworkResult.Loading() }
-
-    if (app.hasInternet()) {
-      val bitmap = FH.requestRemoteFloorplan()
-      if (bitmap != null) {
-        levelplanImg.value = NetworkResult.Success(bitmap)
-        FH.cacheFloorplan(bitmap)
-      } else {
-        val msg ="getFloorplanSafeCall: bitmap was null. Failed to get ${FH.wSpace.prettyFloorplan}. Base URL: ${RH.retrofit.baseUrl()}"
-        levelplanImg.update { NetworkResult.Error(msg) }
-      }
-    } else {
-      levelplanImg.value = NetworkResult.Error(C.ERR_MSG_NO_INTERNET)
-    }
   }
 
   /**

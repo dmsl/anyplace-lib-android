@@ -187,7 +187,7 @@ class MapMarkers(private val app: AnyplaceApp,
         map.obj.addMarker(marker)?.let {
           userLocations.add(it)
 
-          val currentFloor = app.wLevel?.floorNumber()!!
+          val currentFloor = app.wLevel?.levelNumber()!!
           val otherUserCoords = Coord(latLng.latitude, latLng.longitude, currentFloor)
           it.tag = UserInfoMetadata(UserInfoType.OtherUser,
                   LocalizationMethod.NA,

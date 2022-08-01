@@ -161,7 +161,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TAG, "forcing location: $forcedLocation")
     app.snackbarShort(lifecycleScope, "Location set manually (long-clicked)")
 
-    val floorNum = app.wLevel!!.floorNumber()
+    val floorNum = app.wLevel!!.levelNumber()
     val loc = forcedLocation.toCoord(floorNum)
     app.locationSmas.update { LocalizationResult.Success(loc, LocalizationResult.MANUAL) }
   }
@@ -373,7 +373,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
               alertingUser.y,
               alertingUser.deck)
 
-      val curFloor = app.wLevel?.floorNumber()
+      val curFloor = app.wLevel?.levelNumber()
       if (alertingUser.deck != curFloor) {
         app.wLevels.moveToFloor(VM, alertingUser.deck)
       }
@@ -486,7 +486,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           VM.ui.map.markers.clearAllInfoWindow()
 
           lifecycleScope.launch(Dispatchers.IO) {
-            val curFloor = app.wLevel?.floorNumber()
+            val curFloor = app.wLevel?.levelNumber()
             if (level != curFloor) {
               app.wLevels.moveToFloor(VM, level)
               LOG.E(TAG," will clear all info (from actForResult)")
