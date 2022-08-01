@@ -37,9 +37,10 @@ class CvLocalizeNW(
         private val repo: RepoSmas) {
 
   companion object {
+    private const val TG = "nw-cv-loc"
+    
     const val CV_LOG_ALGO_GLOBAL = 3
     const val CV_LOG_ALGO_NEW = 4
-    const val tag = "nw-cv-loc"
   }
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
@@ -55,6 +56,8 @@ class CvLocalizeNW(
   suspend fun safeCall(buid: String,
                        detections: List<CvObjectReq>,
                        model: DetectionModel) {
+    val MT = ::safeCall.name
+
     user = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Unset()
@@ -71,7 +74,6 @@ class CvLocalizeNW(
         val prevCoord  = app.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
 
-
         val req =  if (prevCoord!=null) {
           CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, prevCoord)
         } else {
@@ -83,13 +85,13 @@ class CvLocalizeNW(
         // detections.forEach { strInfo+= "${it.oid} " }
         app.snackbarShortDEV(VM.viewModelScope, strInfo)
 
-        LOG.V2(TAG, "$tag: ${req.time}: #: ${detections.size}")
-        LOG.W(TAG, "$tag: calling remote endpoint..")
+        LOG.V2(TG, "$MT: ${req.time}: #: ${detections.size}")
+        LOG.W(TG, "$MT: calling remote endpoint..")
         val response = repo.remote.cvLocalization(req)
-        LOG.W(TAG, "$tag: Resp: ${response.message()}" )
+        LOG.W(TG, "$MT: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(e: Exception) {
-        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(msg)
       }
     } else {
@@ -111,7 +113,7 @@ class CvLocalizeNW(
   }
 
   private fun handleResponse(resp: Response<CvLocalizeResp>): NetworkResult<CvLocalizeResp> {
-    LOG.D3(TAG, "$tag: handleResponse")
+    LOG.D3(TG, "$TG: handleResponse")
     if(resp.isSuccessful) {
       when {
         resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
@@ -130,35 +132,35 @@ class CvLocalizeNW(
   }
 
   fun collect() {
+    val MT = ::collect.name
     VM.viewModelScope.launch(Dispatchers.IO) {
       resp.collect {
         when (it)  {
           is NetworkResult.Success -> {
             if (it.data==null || it.data!!.rows.isEmpty()) {
               val msg = "Unable to localize.\nPlease collect more fingerprints with Logger\nor set manually (long-press)"
-              LOG.E(TAG, "$tag: $msg")
+              LOG.E(TG, "$MT: $msg")
               app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_LONG)
               app.locationSmas.value = LocalizationResult.Unset()
-              LOG.E(TAG, "$tag: Failed to get location: ${it.message.toString()}")
+              LOG.E(TG, "$MT: Failed to get location: ${it.message.toString()}")
             } else {
               val cvLoc = it.data!!.rows[0]
-              val msg = "$tag: REMOTE: $cvLoc"
-              LOG.W(TAG, msg)
+              val msg = "$MT: REMOTE: $cvLoc"
+              LOG.W(TG, msg)
 
               // Propagating the result
-              val coord = Coord(cvLoc.x, cvLoc.y, cvLoc.deck)
+              val coord = Coord(cvLoc.x, cvLoc.y, cvLoc.level)
               app.locationSmas.value = LocalizationResult.Success(coord, it.data!!.status)
             }
           }
           is NetworkResult.Error -> {
             val msg = it.message ?: "unspecified error"
-            LOG.E(TAG, "$tag: $msg")
-            app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
+            LOG.E(TG, "$MT: $msg")
+            app.snackbarLong(VM.viewModelScope, msg)
           }
           else -> {}
         }
       }
     }
   }
-
 }

@@ -163,7 +163,7 @@ class LocationGetNW(
     val FW = LevelWrapper(app.level.value!!, app.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
       userLocation.buid == FW.wSpace.obj.buid &&  // same space
-              userLocation.deck == FW.obj.number.toInt() && // same deck
+              userLocation.level == FW.obj.number.toInt() && // same deck
               userLocation.uid != smasUser.uid // not current user
     }
 
@@ -197,7 +197,7 @@ class LocationGetNW(
 
     if (DBG.D2) {
       sameFloorUsers.forEach {
-        LOG.D4(TAG, "User: ${it.uid} on floor: ${it.deck}")
+        LOG.D4(TAG, "User: ${it.uid} on floor: ${it.level}")
       }
     }
   }

@@ -224,7 +224,7 @@ fun MessageCard(
                   }
                   // When the message is either a location or an alert..
                   if (message.mtype == 3 || message.mtype == 4) {
-                    val deckInfo = "${app.wSpace.prettyLevel} ${message.deck}"
+                    val deckInfo = "${app.wSpace.prettyLevel} ${message.level}"
                     Column {
                       Text(
                               text = when (message.mtype) {
@@ -249,7 +249,7 @@ fun MessageCard(
                       )
                       IconButton(
                               onClick = {
-                                returnCoords(message.x, message.y, message.deck)
+                                returnCoords(message.x, message.y, message.level)
                               },
                               modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
                       ) {

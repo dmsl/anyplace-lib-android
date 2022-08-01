@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 import android.widget.Toast.*
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
@@ -11,7 +10,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -111,7 +109,7 @@ class CvFingerprintSendNW(
 
     try {
       val req= FingerprintSendReq(smasUser, entry)
-      val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
+      val coordStr="l:${req.level}: x:${req.x} y:${req.y}"
       LOG.D3(TG, "$MT: ${req.time}: #: ${entry.cvDetections.size} coords: $coordStr")
       val response = repo.remote.cvFingerprintSend(req)
       LOG.D3(TG, "$MT: Resp: ${response.message()}" )
@@ -149,7 +147,7 @@ class CvFingerprintSendNW(
       try {
         val req= FingerprintSendReq(smasUser, userCoords, utlTime.epoch().toString(),
                 detectionsReq, model.idSmas)
-        val coordStr="l:${req.deck}: x:${req.x} y:${req.y}"
+        val coordStr="l:${req.level}: x:${req.x} y:${req.y}"
         LOG.W(TG, "$MT: ${req.time}: #: ${detectionsReq.size} coords: $coordStr")
         val response = repo.remote.cvFingerprintSend(req)
         LOG.W(TG, "$MT: resp: ${response.message()}" )

@@ -87,7 +87,7 @@ class LevelPlanNW(
     var alreadyCached=""
     val app = VM.app
     app.wLevels.obj.forEach { level ->
-      LOG.E(TG, "$MT: level: ${level.name}")
+      LOG.W(TG, "$MT: level: ${level.name}")
       val LW = LevelWrapper(level, app.wSpace)
       if (!LW.hasLevelplanCached()) {
         // at least one floor needs to be downloaded:

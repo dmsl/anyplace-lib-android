@@ -143,11 +143,11 @@ class SmasChatViewModel @Inject constructor(
 
   data class ClipboardLocation(
           val uid: String,
-          val deck: Int,
+          val level: Int,
           val lat: Double,
           val lon: Double,
           ) {
-    override fun toString() = "$uid,$deck,$lat,$lon"
+    override fun toString() = "$uid,$level,$lat,$lon"
     companion object {
       fun fromString(str: String?) : ClipboardLocation? {
         if (str==null) return null
@@ -194,7 +194,7 @@ class SmasChatViewModel @Inject constructor(
 
           // share location
           val otherUserCoords = UserCoordinates(app.space!!.buid,
-                  pastedLocation.deck,
+                  pastedLocation.level,
                   pastedLocation.lat,
                   pastedLocation.lon)
 

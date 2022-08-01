@@ -23,7 +23,7 @@ class ConverterDB {
               content,
               msg.mexten,
               msg.time, msg.timestr,
-              msg.x, msg.y, msg.buid, msg.deck)
+              msg.x, msg.y, msg.buid, msg.level)
     }
 
 
@@ -75,7 +75,7 @@ class ConverterDB {
       return CvMapRowEntity(
               c.foid, c.flid, c.uid,
               c.time,  c.timestr,
-              c.buid,  c.x, c.y, c.deck,
+              c.buid,  c.x, c.y, c.level,
               c.modelid,
               c.flid1,
               c.oid,

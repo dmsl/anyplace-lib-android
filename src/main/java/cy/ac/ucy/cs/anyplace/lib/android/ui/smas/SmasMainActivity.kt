@@ -371,11 +371,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
       val alertingUserCoords = Coord(alertingUser.x,
               alertingUser.y,
-              alertingUser.deck)
+              alertingUser.level)
 
       val curFloor = app.wLevel?.levelNumber()
-      if (alertingUser.deck != curFloor) {
-        app.wLevels.moveToFloor(VM, alertingUser.deck)
+      if (alertingUser.level != curFloor) {
+        app.wLevels.moveToFloor(VM, alertingUser.level)
       }
 
       VM.ui.map.moveToLocation(alertingUserCoords.toLatLng())

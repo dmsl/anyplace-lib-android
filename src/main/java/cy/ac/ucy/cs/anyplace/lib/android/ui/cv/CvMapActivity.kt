@@ -29,7 +29,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.SensorsViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -140,8 +139,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   private fun continueWithPrefs() {
     lifecycleScope.launch(Dispatchers.IO) {
-      val method = METHOD
-      LOG.W(TG, method)
+      val MT = ::continueWithPrefs.name
+      LOG.W(TG, MT)
 
       dsCv.read.first { prefs ->
         VM.prefsCv= prefs
@@ -150,13 +149,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       }
 
       if (!DBG.SLR) {
-        LOG.E(TG, "$method: Forcing space: $BUID_HARDCODED")
+        LOG.E(TG, "$MT: Forcing space: $BUID_HARDCODED")
         dsCvMap.setSelectedSpace(BUID_HARDCODED)
       }
 
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
-        LOG.E(TG, "$method: SELECTED SPACE ID: '${prefs.selectedSpace}'")
+        LOG.E(TG, "$MT: SELECTED SPACE ID: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
       }
@@ -165,22 +164,21 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
   }
 
-
-  // CHECK: is this needed
   private fun onLoadedPrefsCvEngine(cvEnginePrefs: CvEnginePrefs) {
+    val MT = ::onLoadedPrefsCvEngine.name
     if (cvEnginePrefs.reloadCvMaps) {
-      LOG.W(TAG_METHOD, "Reloading CvMaps and caches.")
+      LOG.W(TG, "$MT: Reloading CvMaps and caches.")
       // might need to reload headmap
       // loadHeatmap() on the floor
       // dsCv.setReloadCvMaps(false)
     } else {
-      LOG.D(TAG_METHOD, "not reloading (fingerprint or caches)")
+      LOG.D(TG, "$MT: not reloading (fingerprint or caches)")
     }
   }
 
   var cvMapPrefsLoaded = false
   private fun onLoadedPrefsCvMap() {
-    LOG.W()
+    LOG.V2(TG, "onLoadedPrefsCvMap")
     cvMapPrefsLoaded=true
     setupUi()
   }
@@ -229,7 +227,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     /** Updates on the wMap after a floor has changed */
     val fsCallback = object: LevelSelector.Callback() {
       override fun before() {
-        LOG.D4(TAG_METHOD, "remove user locations")
+        LOG.D4(TG, "remove user locations")
         // clear any overlays
         VM.ui.removeHeatmap()
         VM.ui.map.removeUserLocations()
@@ -245,32 +243,28 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   var initedGmap = false
   private fun setupUiGmap() {
-    LOG.E(TG, "Setup CommonUI & GMap")
+    val MT = ::setupUiGmap.name
     if (initedGmap) return
-
-    LOG.W(TG, "SETUP CommonUI & GMAP: ACTUAL INIT")
     initedGmap=true
 
-    VM.ui = CvUI(
-            app, this@CvMapActivity, VM, lifecycleScope,
+    LOG.W(TG, MT)
+
+    VM.ui = CvUI(app, this@CvMapActivity, VM, lifecycleScope,
             supportFragmentManager,
             VM.levelSelector,
             id_btn_localization,
-            id_btn_whereami,
-    )
+            id_btn_whereami)
 
-    LOG.W(TG, "$METHOD: ui (component) is now loaded.")
+    LOG.W(TG, "$MT: ui (component) is now loaded.")
     VM.ui.map.attach(VM, this, R.id.mapView)
     VM.mu = IMU(this,VM, VM.ui.map)
     VM.uiComponentInited=true
   }
 
-
-
   private fun setMapOpacity() {
     val view = findViewById<View>(id_gmap)
     val value =VM.prefsCvMap.mapAlpha.toInt()
-    LOG.E(TG, "$METHOD: setting opacity: $value")
+    LOG.E(TG, "setting opacity: $value")
     view.alpha=value/100f
   }
 
@@ -278,7 +272,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * - TODO finalize floorplans
    */
   override fun onMapReady(googleMap: GoogleMap) {
-    LOG.I(TG, "onMapReadyCallback: [CvMap]")
+    val MT = ::onMapReady.name
+    LOG.I(TG, "$MT")
 
     VM.ui.map.setup(googleMap, this)
     lifecycleScope.launch(Dispatchers.Main) {
@@ -311,22 +306,22 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         }
       }
     }
-    // detectionsLocalization.call
   }
 
   var firstLevelLoaded = false
 
   open fun onFirstLevelLoaded() {
-    LOG.D2(TG, "First floor loaded: ${app.wLevel?.levelNumber()}")
+    val MT = ::onFirstLevelLoaded.name
+    LOG.D2(TG, "$MT: ${app.wLevel?.levelNumber()}")
   }
 
   open fun onLevelLoaded() {
-    LOG.D2(TG, "Floor loaded: ${app.wLevel?.levelNumber()}")
+    val MT = ::onLevelLoaded.name
+    LOG.D2(TG, "$MT: : ${app.wLevel?.levelNumber()}")
     lifecycleScope.launch(Dispatchers.IO) {
       if (app.wLevel != null) {
         VM.waitForUi()
 
-        // val usedMethod = LocalizationResult.getUsedMethod(app.locationSmas.value)
         VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wLevel!!.levelNumber())
         loadPOIsAndConnections()
       }
@@ -344,10 +339,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   suspend fun loadPOIsAndConnections() {
+    val MT = ::loadPOIsAndConnections.name
       if (!DBG.uim) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
-        LOG.D2(TG, "Fetching POIs and Connections..")
+        LOG.D2(TG, "$MT: Fetching POIs and Connections..")
         VM.nwPOIs.callBlocking(app.space!!.buid)
         VM.nwConnections.callBlocking(app.space!!.buid)
       }
@@ -359,18 +355,19 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    * Observes when the initial floor will be loaded, and runs a method
    */
   fun observeLevels() {
+    val MT = ::observeLevels.name
+
     if (observingLevels) return
     observingLevels=true
 
-    val method = METHOD
     lifecycleScope.launch(Dispatchers.IO) {
       VM.waitForUi()
 
       app.level.collect { level ->
         if (level == null) return@collect
 
-        LOG.W(TG, "$method: collected level: ${level.buid}")
-        LOG.W(TG, "$method: collected level: ${level.number}")
+        LOG.W(TG, "$MT: collected level: ${level.buid}")
+        LOG.W(TG, "$MT: collected level: ${level.number}")
 
         // update FloorWrapper & FloorSelector
         app.wLevel = LevelWrapper(level, app.wSpace)
@@ -382,10 +379,10 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           onFirstLevelLoaded()
         }
 
-        LOG.V3(TG, "$METHOD: -> level: ${level.number}")
-        LOG.V2(TG, "$METHOD: -> updating cache: level: ${app.level.value?.number}")
+        LOG.V3(TG, "$MT: -> level: ${level.number}")
+        LOG.V2(TG, "$MT: -> updating cache: level: ${app.level.value?.number}")
         VM.ui.map.fHandler.cacheLastLevel(app.level.value)
-        LOG.V2(TG, "$METHOD: -> loadFloor: ${level.number}")
+        LOG.V2(TG, "$MT: -> loadFloor: ${level.number}")
         VM.ui.levelSelector.lazilyChangeLevel(VM, lifecycleScope)
 
         onLevelLoaded()
@@ -414,7 +411,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           LOG.W(TG, "Collected: method: $usedMethod")
           result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
           val coord = result.coord!!
-          val msg = "${CvLocalizeNW.tag}: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
+          val msg = "$TG: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
           LOG.E(TG, msg)
           val curFloor = app.wLevel?.levelNumber()
           if (coord.level != curFloor) {
@@ -431,16 +428,16 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   /**
    * TODO: for this (and any similar code that loops+delay):
-   * - create a variable and observe it (a Flow or something observable/collactable)
+   * - create a variable and observe it (a Flow or something observable)
    */
   fun updateModelName() {
-    val method = METHOD
-    LOG.W(TG, method)
+    val MT = ::updateModelName.name
+    LOG.W(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
       while (!VM.detectorLoaded) delay(100)
 
       val modelInfo = "$actName | ${VM.model.modelName}"
-      LOG.W(TG, "$method: $modelInfo")
+      LOG.W(TG, "$MT: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
     }
   }

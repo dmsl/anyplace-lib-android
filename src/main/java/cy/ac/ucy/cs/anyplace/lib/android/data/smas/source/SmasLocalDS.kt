@@ -27,7 +27,7 @@ import javax.inject.Inject
  * Smas Local DataStore (uses SQLite)
  */
 class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
-  val tag = "ds-local-smas"
+  private val TG = "ds-local-smas"
 
   fun readMsgs(): Flow<List<ChatMsgEntity>> {
     return DAO.readMsgs()
@@ -39,7 +39,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun dropMsgs() {
-    LOG.D2(TAG, "deleting all msgs")
+    LOG.D2(TG, "deleting all msgs")
     DAO.dropMsgs()
   }
 
@@ -56,7 +56,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   suspend fun insertCvModelClass(o: CvModelClass) {
-    LOG.D4(tag, "DB: insert: CvModelClass: ${o.cid}: ${o.name}")
+    LOG.D4(TG, "DB: insert: CvModelClass: ${o.cid}: ${o.name}")
     DAO.insertCvModelClass(cvModelClassToEntity(o))
   }
 
@@ -70,7 +70,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun dropCvModelClasses() {
-    LOG.D2(TAG, "deleting all Cv Models")
+    LOG.D2(TG, "deleting all Cv Models")
     DAO.dropCvModelClasses()
   }
 
@@ -87,11 +87,12 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun dropCvMap() {
-    LOG.D2(TAG, "deleting CvMap")
+    LOG.D2(TG, "deleting CvMap")
     DAO.dropCvMap()
   }
 
   suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUserAP: UserAP) {
+    val MT = ::localize.name
     // Preparation: fill tmp array with scans
     DAO.dropLocalizeFpTemp()
     detectionsReq.forEach {
@@ -105,7 +106,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     var msg =""
     if (res3.isNotEmpty()) {
       val loc3 = res3[0]
-      LOG.W(TAG, "${CvLocalizeNW.tag}: ALGO3: $loc3")
+      LOG.W(TG, "$MT: ALGO3: $loc3")
       VM.nwCvLocalize.postOfflineResult(convertToGeneric(loc3))
     } else {
       msg+="Offline algorithm returned no results"
