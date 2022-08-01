@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
-import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -57,9 +56,9 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
 
   private fun clearCache(msg: String, method: LevelWrapper.() -> Unit) {
     obj.forEach { floor ->
-      val FW = LevelWrapper(floor, spaceH)
-      FW.method()
-      LOG.D5(TAG, "clearCache:$msg: ${FW.prettyLevelplanNumber()}.")
+      val LW = LevelWrapper(floor, spaceH)
+      LW.method()
+      LOG.D5(TAG, "clearCache:$msg: ${LW.prettyLevelplanNumber()}.")
     }
   }
 

@@ -56,14 +56,9 @@ enum class LocalizationStatus {
   stopped,
 }
 
-/** CvMapViewModel is used by:
- *  - Logger TODO
- *  - Navigator TODO <- DOING
- *  - SMAS TODO
- *
- *  Other notes:
- *    - floorplan fetching
- *    - gmap markers
+/** CvMapViewModel is used as a base by:
+ *  - Logger
+ *  - SMAS
  */
 @HiltViewModel
 open class CvViewModel @Inject constructor(
@@ -75,7 +70,7 @@ open class CvViewModel @Inject constructor(
         dsCvMap: CvMapDataStore,
         val repo: RepoAP,
         val RH: RetrofitHolderAP,
-        val repoSmas: RepoSmas,   // MERGE: rename all repoChat to repoSmas
+        val repoSmas: RepoSmas,
         val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
   /** Make sure to initialize this one */
@@ -185,7 +180,6 @@ open class CvViewModel @Inject constructor(
           // deduplicate detections (as we are scanning things in a window of a few seconds)
           val detectionsDedup = detectionsLOC.value
           // val detectionsDedup = YoloV4Classifier.NMS(detectionsLOC.value, detector.labels)
-
           LOG.W(TG, "$MT: stop: objects: ${detectionsDedup.size} (dedup)")
 
           // POINT OF LOCALIZING:
@@ -230,7 +224,6 @@ open class CvViewModel @Inject constructor(
         // REMOTE: ALGO
         nwCvLocalize.safeCall(app.wSpace.obj.buid, detectionsReq, model)
       }
-
     }
   }
 
@@ -250,7 +243,7 @@ open class CvViewModel @Inject constructor(
    * Otherwise:
    * - it picks `0` if exists
    * - else the smallest level
-   * Selects the first available floor, or the last floor that was picked
+   * Selects the first available level, or the last level that was picked
    * for a particular space.
    */
   fun selectInitialLevel() {
@@ -258,23 +251,17 @@ open class CvViewModel @Inject constructor(
     LOG.V2()
     LOG.E(TG,"$MT: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
 
-    if (!app.wLevels.hasLevels()) {  // space has no floors
+    if (!app.wLevels.hasLevels()) {
       val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
       LOG.W(TG, "$MT: msg")
       app.snackbarWarning(viewModelScope, msg)
       app.level.update { null }
     }
 
-    LOG.E(TG, "$MT: XXX: app.space: ${app.space?.buid}")
-    LOG.E(TG, "$MT: XXX: app.wSpace: ${app.wSpace.obj.buid}")
-    LOG.E(TG, "$MT: XXX: app.level: ${app.level.value?.buid}")
-    LOG.E(TG, "$MT: XXX: app.wLevel.wSpace: ${app.wLevel?.wSpace?.obj?.buid}")
-    LOG.E(TG, "$MT: XXX: app.wLevel.: ${app.wLevel?.obj?.buid}")
-
     if (app.wSpace.hasLastValuesCached()) {
       LOG.E(TG, "$MT: HAS last values cached")
       val lastVal = app.wSpace.loadLastValues()
-      LOG.E(TG, "$MT: Space: ${app.wSpace.obj.name} has last floor: ${lastVal.lastFloor}")
+      LOG.E(TG, "$MT: Space: ${app.wSpace.obj.name} has last level: ${lastVal.lastFloor}")
       if (lastVal.lastFloor != null) {
         LOG.E(TG, "$MT: lastVal cache: ${app.wSpace.prettyLevel}${lastVal.lastFloor}.")
         val lastLevel = app.wLevels.getLevel(lastVal.lastFloor!!)!!
@@ -283,7 +270,7 @@ open class CvViewModel @Inject constructor(
       }
       lastValSpaces = lastVal
     } else {
-      // try to get level 0. if not exists, get 1st available floor
+      // try to get level 0. if not exists, get 1st available level
       // e.g. 1. a building might have just floors 3, and 4. it will pick 3
       // e.g. 1. a building might have floors -3 to 3. it will pick 0
       LOG.E(TG, "$MT: WILL load first level")

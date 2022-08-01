@@ -36,13 +36,13 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
   private val validKeys = setOf(
           C.PREF_MODEL_NAME,
           C.PREF_RELOAD_CVMAPS,
-          C.PREF_RELOAD_FLOORPLAN,
+          C.PREF_RELOAD_LEVELPLAN,
   )
 
   private class Keys(c: CONST) {
     val modelName= stringPreferencesKey(c.PREF_MODEL_NAME)
     val reloadCvMaps = booleanPreferencesKey(c.PREF_RELOAD_CVMAPS)
-    val reloadFloorplans = booleanPreferencesKey(c.PREF_RELOAD_FLOORPLAN)
+    val reloadFloorplans = booleanPreferencesKey(c.PREF_RELOAD_LEVELPLAN)
   }
   private val KEY = Keys(C)
 
@@ -60,7 +60,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
       datastore.edit {
         when (key) {
           C.PREF_RELOAD_CVMAPS-> it[KEY.reloadCvMaps] = value
-          C.PREF_RELOAD_FLOORPLAN-> it[KEY.reloadFloorplans] = value
+          C.PREF_RELOAD_LEVELPLAN-> it[KEY.reloadFloorplans] = value
         }
       }
     }
@@ -84,7 +84,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_RELOAD_CVMAPS -> prefs.reloadCvMaps
-        C.PREF_RELOAD_FLOORPLAN -> prefs.reloadFloorplan
+        C.PREF_RELOAD_LEVELPLAN -> prefs.reloadFloorplan
         else -> false
       }
     }
@@ -103,7 +103,7 @@ class CvDataStore @Inject constructor(@ApplicationContext private val ctx: Conte
 
   fun setModelName(value: String) { putString(C.PREF_MODEL_NAME, value) }
   fun setReloadCvMaps(value: Boolean) = putBoolean(C.PREF_RELOAD_CVMAPS, value)
-  fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_FLOORPLAN, value)
+  fun setReloadFloorplan(value: Boolean) = putBoolean(C.PREF_RELOAD_LEVELPLAN, value)
 
   val read: Flow<CvEnginePrefs> = ctx.dataStoreCv.data
           .catch { exception ->

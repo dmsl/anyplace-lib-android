@@ -84,7 +84,7 @@ class MapLines(private val app: AnyplaceApp,
 
       poiCoords[poi.puid]=LatLng(poi.coordinatesLat.toDouble(), poi.coordinatesLon.toDouble())
 
-      val level = poi.floorNumber.toInt()
+      val level = poi.levelNumber.toInt()
       if (floorPOIs[level]==null) floorPOIs[level]= mutableListOf()
       floorPOIs[level]?.add(poi)
     }

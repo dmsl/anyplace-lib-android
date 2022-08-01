@@ -88,25 +88,25 @@
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="38dp"
-        app:layout_constraintBottom_toTopOf="@id/button_floorUp"
-        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
-        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
+        app:layout_constraintBottom_toTopOf="@id/button_levelUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
+        app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
         />
 
     <!--    START OF FLOOR SELECTOR-->
     <androidx.constraintlayout.widget.Group
-        android:id="@+id/group_floorSelector"
+        android:id="@+id/group_levelSelector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="invisible"
         tools:visibility="visible"
-        app:constraint_referenced_ids="button_floorUp,button_floorDown,button_selectedFloor,textView_titleFloor" />
+        app:constraint_referenced_ids="button_levelUp,button_levelDown,button_selectedLevel,textView_titleLevel" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_floorUp"
+        android:id="@+id/button_levelUp"
         android:background="@drawable/button_round_top"
         app:icon="@drawable/ic_arrow_up_disabled"
-        app:layout_constraintBottom_toTopOf="@+id/button_selectedFloor"
+        app:layout_constraintBottom_toTopOf="@+id/button_selectedLevel"
         app:layout_constraintEnd_toEndOf="parent"
         style="@style/MaterialButtonIcon"
         android:translationY="20dp"
@@ -118,7 +118,7 @@
         />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_floorDown"
+        android:id="@+id/button_levelDown"
         style="@style/MaterialButtonIcon"
         android:text=""
         android:rotation="180"
@@ -135,7 +135,7 @@
         />
 
     <Button
-        android:id="@+id/button_selectedFloor"
+        android:id="@+id/button_selectedLevel"
         style="@style/MaterialButtonIcon"
         android:layout_width="48dp"
         android:layout_height="22dp"
@@ -146,16 +146,16 @@
         android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/button_floorDown"
+        app:layout_constraintBottom_toTopOf="@id/button_levelDown"
         />
 
     <!-- TODO:PM IMPLEMENT-->
     <!-- FLOOR SELECTOR: START-->
     <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
-        android:id="@+id/textView_titleFloor"
-        app:layout_constraintStart_toStartOf="@id/button_floorDown"
-        app:layout_constraintEnd_toEndOf="@id/button_floorDown"
-        app:layout_constraintTop_toBottomOf="@id/button_floorDown"
+        android:id="@+id/textView_titleLevel"
+        app:layout_constraintStart_toStartOf="@id/button_levelDown"
+        app:layout_constraintEnd_toEndOf="@id/button_levelDown"
+        app:layout_constraintTop_toBottomOf="@id/button_levelDown"
         android:elevation="40dp"
         android:fontFamily="sans-serif-black"
         android:layout_width="wrap_content"

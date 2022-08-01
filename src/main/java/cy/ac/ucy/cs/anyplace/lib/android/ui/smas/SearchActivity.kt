@@ -29,11 +29,11 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
   override val actName: String = "act-cv-search"
   override val id_btn_settings: Int get() = R.id.button_settings
   ////// FLOOR SELECTOR
-  override val id_group_floorSelector : Int get() = R.id.group_floorSelector
-  override val id_tvTitleFloor: Int get() = R.id.textView_titleFloor
-  override val id_btnSelectedFloor: Int get() = R.id.button_selectedFloor
-  override val id_btnFloorUp: Int get() = R.id.button_floorUp
-  override val id_btnFloorDown: Int get() = R.id.button_floorDown
+  override val id_group_levelSelector : Int get() = R.id.group_levelSelector
+  override val id_tvTitleFloor: Int get() = R.id.textView_titleLevel
+  override val id_btnSelectedFloor: Int get() = R.id.button_selectedLevel
+  override val id_btnFloorUp: Int get() = R.id.button_levelUp
+  override val id_btnFloorDown: Int get() = R.id.button_levelDown
   ////// UI-LOCALIZATION
   override val id_btn_localization: Int get() = R.id.btn_localization
   override val id_btn_whereami: Int get() = R.id.btn_whereami

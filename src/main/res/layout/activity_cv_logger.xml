@@ -178,11 +178,11 @@ NOTE:
     <!-- 6. FLOOR SELECTOR -->
     <!-- FLOORSELECTOR: GROUP -->
     <androidx.constraintlayout.widget.Group
-        android:id="@+id/group_floorSelector"
+        android:id="@+id/group_levelSelector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="invisible"
-        app:constraint_referenced_ids="button_floorUp,button_floorDown,button_selectedFloor,textView_titleFloor"
+        app:constraint_referenced_ids="button_levelUp,button_levelDown,button_selectedLevel,textView_titleLevel"
         tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
@@ -204,14 +204,14 @@ NOTE:
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="38dp"
-        app:layout_constraintBottom_toTopOf="@id/button_floorUp"
-        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
-        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
+        app:layout_constraintBottom_toTopOf="@id/button_levelUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
+        app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
         tools:visibility="visible" />
 
     <!--  FLOORSELECTOR: UP -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_floorUp"
+        android:id="@+id/button_levelUp"
         style="@style/MaterialButtonIcon"
         android:background="@drawable/button_round_top"
         android:text=""
@@ -221,12 +221,12 @@ NOTE:
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="38dp"
-        app:layout_constraintBottom_toTopOf="@+id/button_selectedFloor"
+        app:layout_constraintBottom_toTopOf="@+id/button_selectedLevel"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!--  FLOORSELECTOR: SELECTED LEVEL -->
     <Button
-        android:id="@+id/button_selectedFloor"
+        android:id="@+id/button_selectedLevel"
         style="@style/MaterialButtonIcon"
         android:layout_width="48dp"
         android:layout_height="22dp"
@@ -234,13 +234,13 @@ NOTE:
         android:textColor="@color/white"
         android:textSize="12sp"
         android:translationY="10dp"
-        app:layout_constraintBottom_toTopOf="@id/button_floorDown"
+        app:layout_constraintBottom_toTopOf="@id/button_levelDown"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="5" />
 
     <!--  FLOORSELECTOR: DOWN -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_floorDown"
+        android:id="@+id/button_levelDown"
         style="@style/MaterialButtonIcon"
         android:layout_marginTop="0dp"
         android:background="@drawable/button_round_top"
@@ -257,7 +257,7 @@ NOTE:
 
     <!--  FLOORSELECTOR: LEVEL TYPE (floor/deck) -->
     <TextView
-        android:id="@+id/textView_titleFloor"
+        android:id="@+id/textView_titleLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -269,9 +269,9 @@ NOTE:
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
         android:translationY="-5dp"
-        app:layout_constraintEnd_toEndOf="@id/button_floorDown"
-        app:layout_constraintStart_toStartOf="@id/button_floorDown"
-        app:layout_constraintTop_toBottomOf="@id/button_floorDown" />
+        app:layout_constraintEnd_toEndOf="@id/button_levelDown"
+        app:layout_constraintStart_toStartOf="@id/button_levelDown"
+        app:layout_constraintTop_toBottomOf="@id/button_levelDown" />
     <!-- END: FLOOR SELECTOR (6) -->
 
     <!-- 7. DEMO NAVIGATION BTN -->
@@ -287,9 +287,9 @@ NOTE:
         app:iconPadding="0dp"
         app:iconSize="38dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="@id/button_selectedFloor"
-        app:layout_constraintRight_toRightOf="@id/button_selectedFloor"
-        app:layout_constraintTop_toBottomOf="@id/button_floorDown"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
+        app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
+        app:layout_constraintTop_toBottomOf="@id/button_levelDown"
         app:layout_constraintVertical_bias="0.22" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>

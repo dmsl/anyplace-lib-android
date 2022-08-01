@@ -58,7 +58,7 @@ open class CONST(ctx: Context) {
   val PREF_CV = "pref_cv"
   val PREF_MODEL_NAME = "pref_cv_model_name"
   val PREF_RELOAD_CVMAPS = "pref_cv_reload_cvmaps"
-  val PREF_RELOAD_FLOORPLAN = "pref_cv_reload_floorplans"  // TODO
+  val PREF_RELOAD_LEVELPLAN = "pref_cv_reload_levelplans"  // TODO
 
   val DEFAULT_PREF_MODEL_NAME = DetectionModel.LASHCO.modelName
 

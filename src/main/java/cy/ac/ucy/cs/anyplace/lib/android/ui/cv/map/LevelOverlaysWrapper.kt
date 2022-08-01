@@ -56,7 +56,7 @@ open class LevelOverlaysWrapper(
     scope.launch(Dispatchers.IO) {
       VM.nwLevelPlan.bitmap.collect { response ->
 
-        LOG.E(tag, "$method: floorplan updated..")
+        LOG.E(tag, "$method: levelplan updated..")
         when (response) {
           is NetworkResult.Loading -> {
             LOG.W(tag, "$method: will load ${app.wSpace.prettyLevelplan}..")

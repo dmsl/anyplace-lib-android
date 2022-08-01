@@ -64,7 +64,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected abstract val id_gmap: Int
   protected abstract val id_btn_settings: Int
   ////// FLOOR SELECTOR
-  protected abstract val id_group_floorSelector: Int
+  protected abstract val id_group_levelSelector: Int
   protected abstract val id_tvTitleFloor: Int
   protected abstract val id_btnSelectedFloor: Int
   protected abstract val id_btnFloorUp: Int
@@ -220,7 +220,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     VM.levelSelector = LevelSelector(applicationContext,
             lifecycleScope,
-            findViewById(id_group_floorSelector),
+            findViewById(id_group_levelSelector),
             findViewById(id_tvTitleFloor),
             findViewById(id_btnSelectedFloor),
             findViewById(id_btnFloorUp),
