@@ -4,8 +4,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -155,8 +153,6 @@ class MapMarkers(private val app: AnyplaceApp,
   }
 
   fun addUserMarker(latLng: LatLng, uid: String, alert: Int, time: Long) {
-    scope.launch(Dispatchers.IO) {
-
       val secondsElapsed = utlTime.secondsElapsed(time)
       val detailedMsg = getActiveInfo(secondsElapsed)
 
@@ -193,7 +189,6 @@ class MapMarkers(private val app: AnyplaceApp,
           }
         }
       }
-    }
   }
 
   /**
@@ -236,22 +231,18 @@ class MapMarkers(private val app: AnyplaceApp,
     val MT = ::clearAllInfoWindow.name
     LOG.I(TG, "$MT: clearing all markers")
     // clear last selected user
-    scope.launch(Dispatchers.Main) {
-      userLocations.forEach {
-        it.hideInfoWindow()
-        val metadata = it.tag as UserInfoMetadata?
-        if (metadata != null) {
-          if (!lastSelectedUser.isNullOrEmpty() && lastSelectedUser == metadata.uid) {
-            lastSelectedUser=null
-          }
+    userLocations.forEach {
+      it.hideInfoWindow()
+      val metadata = it.tag as UserInfoMetadata?
+      if (metadata != null) {
+        if (!lastSelectedUser.isNullOrEmpty() && lastSelectedUser == metadata.uid) {
+          lastSelectedUser=null
         }
       }
     }
 
     if (lastOwnLocation != null) {
-      scope.launch(Dispatchers.Main) {
-        lastOwnLocation?.hideInfoWindow()
-      }
+      lastOwnLocation?.hideInfoWindow()
     }
   }
 

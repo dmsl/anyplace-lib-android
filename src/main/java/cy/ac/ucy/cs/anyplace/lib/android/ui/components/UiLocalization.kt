@@ -187,7 +187,7 @@ class UiLocalization(
     val MT = ::setupButtonWhereAmI.name
     LOG.E(TG, "$MT")
     btnWhereAmI.setOnClickListener {
-      scope.launch(Dispatchers.IO) {
+      scope.launch {
         if (!DBG.WAI) return@launch
 
         val showTutorial = app.dsMisc.showTutorialNavWhereAmI()
