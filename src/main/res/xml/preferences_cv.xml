@@ -6,16 +6,10 @@
       app:title="@string/prefs_header_computer_vision"
       app:icon="@drawable/ic_aperture">
 
-    <EditTextPreference
-        app:key="@string/pref_cv_localization_ms"
-        app:title="Localization Window (ms)"
-        app:summary="@string/summary_logging_window"
-        />
-
-    <EditTextPreference
-        app:key="@string/pref_cv_logging_ms"
-        app:title="Logging Window (ms)"
-        app:summary="@string/summary_logging_window"
+    <DropDownPreference
+        app:key="@string/pref_cv_model"
+        app:title="Change Detection Model"
+        app:summary="Pick different Object Detection model"
         />
 
     <EditTextPreference
@@ -24,15 +18,62 @@
         app:summary="@string/summary_cv_scan_delay"
         />
 
-    <DropDownPreference
-        app:key="@string/pref_cv_model"
-        app:title="Change Detection Model"
-        app:summary="Pick different Object Detection model"
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      app:title="@string/prefs_header_logging"
+      app:icon="@drawable/ic_map">
+
+    <EditTextPreference
+        app:key="@string/pref_cv_logging_ms"
+        app:title="Logging Window (ms)"
+        app:summary="@string/summary_logging_window"
         />
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="@string/prefs_header_user_locations"
+  <PreferenceCategory
+      app:title="@string/prefs_header_localization"
       app:icon="@drawable/ic_location_found">
+
+    <EditTextPreference
+        app:key="@string/pref_cv_localization_ms"
+        app:title="Localization Window (ms)"
+        app:summary="@string/summary_logging_window"
+        />
+
+    <EditTextPreference
+        app:key="@string/pref_cv_tracking_delay"
+        app:title="Tracking frequency (ms)"
+        app:summary="@string/summary_tracking_delay"
+        />
+
+    <EditTextPreference
+        app:key="@string/pref_cv_tracking_auto_disable"
+        app:title="Tracking Auto-Disable"
+        app:summary="@string/summary_tracking_auto_disable"
+        />
+
+    <ListPreference
+        app:key="@string/pref_cv_loc_algorithm"
+        app:defaultValue="3"
+        app:entries="@array/cv_localization_entries"
+        app:entryValues="@array/cv_localization_values"
+        app:title="@string/title_cv_localization_algorithm"
+        app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
+        app:key="@string/pref_cv_loc_algo_execution"
+        app:defaultValue="@string/cv_loc_exec_auto"
+        app:entries="@array/cv_loc_exec_entries"
+        app:entryValues="@array/cv_loc_exec_values"
+        app:title="@string/title_cv_loc_algo_execution"
+        app:useSimpleSummaryProvider="true" />
+
+
+  </PreferenceCategory>
+
+  <PreferenceCategory app:title="@string/prefs_header_user_locations"
+      app:icon="@drawable/ic_user_location">
 
     <EditTextPreference
         app:key="@string/pref_smas_location_refresh"
@@ -56,7 +97,7 @@
 
   </PreferenceCategory>
 
-  <PreferenceCategory app:title="@string/prefs_header_cache"
+  <PreferenceCategory app:title="@string/prefs_header_data"
       app:icon="@drawable/ic_folder">
 
     <Preference
@@ -74,23 +115,16 @@
 
     <!-- Updates the CV map.-->
     <Preference
-        android:title="Download CvMap"
+        android:title="Download CV-Fingerprints"
         android:key="@string/pref_loc_cv_map"
-        android:summary="Fetch the latest CV fingerprints from the backend"
+        android:summary="Get the latest logging data from backend"
         />
 
-<!--    CLR:PM -->
-<!--    <Preference-->
-<!--        android:title="Clear selected space"-->
-<!--        android:key="@string/pref_selected_space"-->
-<!--        app:summary="[selected spacd]"-->
-<!--        />-->
-
     <Preference
-        android:title="Clear available spaces"
+        android:title="Clear spaces list"
         android:key="@string/pref_clear_available_spaces"
         app:summary="Space Selector will download spaces again."
-    />
+        />
 
     <Preference
         android:title="Clear floorplans"
@@ -122,6 +156,7 @@
 
     <Preference
         android:title="Anyplace Settings"
+        app:icon="@drawable/ic_anyplace"
         android:key="@string/pref_anyplace_server"
         android:summary="Options related to the Anyplace Server."
         />

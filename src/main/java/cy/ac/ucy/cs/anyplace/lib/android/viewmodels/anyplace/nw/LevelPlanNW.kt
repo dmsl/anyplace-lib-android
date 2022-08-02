@@ -30,6 +30,7 @@ class LevelPlanNW(
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
   val TG = "nw-levelplan"
+  val notify = app.notify
 
   val scope = VM.viewModelScope
 
@@ -93,7 +94,7 @@ class LevelPlanNW(
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          app.snackbarLong(VM.viewModelScope, "Downloading all ${LW.prettyFloors} ..\n(keep app open)")
+          notify.long(VM.viewModelScope, "Downloading all ${LW.prettyFloors} ..\n(keep app open)")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }
@@ -109,7 +110,7 @@ class LevelPlanNW(
 
     if (!showedMsgDone) {
       showedMsgDone=true
-      app.snackbarShort(VM.viewModelScope, "All ${app.wLevels.size} ${app.wSpace.prettyFloors} downloaded!")
+      notify.short(VM.viewModelScope, "All ${app.wLevels.size} ${app.wSpace.prettyFloors} downloaded!")
     }
 
     if (alreadyCached.isNotEmpty()) {

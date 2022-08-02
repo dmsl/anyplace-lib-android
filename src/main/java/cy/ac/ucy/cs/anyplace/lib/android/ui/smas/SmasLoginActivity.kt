@@ -58,7 +58,6 @@ class SmasLoginActivity : BaseActivity() {
     setContentView(binding.root)
 
     app.setMainView(binding.root)
-    // app.snackbarLong(lifecycleScope, "Please login to SMAS!")
 
     val username = binding.username
     val password = binding.password

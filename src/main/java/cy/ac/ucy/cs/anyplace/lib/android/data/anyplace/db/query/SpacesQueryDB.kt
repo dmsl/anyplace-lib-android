@@ -6,7 +6,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilter
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class SpacesQueryDB(
-        VM: AnyplaceViewModel,
-        private val repo: RepoAP,
-        private val dsMisc: SpaceFilterDS,
+  VM: AnyplaceViewModel,
+  private val repo: RepoAP,
+  private val dsMisc: MiscDS,
         ) {
   val TG = "dbq-spaces"
 
@@ -67,7 +67,7 @@ class SpacesQueryDB(
   var spacesQuery: Flow<List<SpaceEntity>> = MutableStateFlow(emptyList())
 
   /** Storing the predicates for this query */
-  var spaceFilter = dsMisc.readSpaceFilterFilter
+  var spaceFilter = dsMisc.spaceFilter
 
   var runnedInitialQuery = false
   /**

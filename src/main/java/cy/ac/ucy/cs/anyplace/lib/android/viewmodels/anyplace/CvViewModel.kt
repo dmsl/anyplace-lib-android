@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
@@ -69,7 +70,7 @@ open class CvViewModel @Inject constructor(
         [AnyplaceApp] can be used within the class as app through an Extension function */
         application: Application,
         dsCv: CvDataStore,
-        private val dsMisc: SpaceFilterDS,
+        private val dsMisc: MiscDS,
         dsCvMap: CvMapDataStore,
         val repo: RepoAP,
         val RH: RetrofitHolderAP,
@@ -127,7 +128,7 @@ open class CvViewModel @Inject constructor(
   val detectionsTracking = MutableStateFlow(DetTrack(1, 0))
   /** Auto-stopping tracking mode if many empty windows found */
   var trackingEmptyWindowsConsecutive = 0
-  val TRACKING_MAX_EMPTY_WINDOWS=5
+  val TRACKING_MAX_EMPTY_WINDOWS=20
 
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
@@ -251,7 +252,7 @@ open class CvViewModel @Inject constructor(
   suspend fun localizeOffline(detectionsReq: List<CvObjectReq>) {
     if (!repoSmas.local.hasCvMap()) {
       val msg = "Cannot localize offline: No CvMap.\nUse settings to download the latest one."
-      app.snackbarInf(viewModelScope, msg)
+      notify.WARN(viewModelScope, msg)
       return
     }
 
@@ -275,7 +276,7 @@ open class CvViewModel @Inject constructor(
     if (!app.wLevels.hasLevels()) {
       val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
       LOG.W(TG, "$MT: msg")
-      app.snackbarWarning(viewModelScope, msg)
+      notify.warn(viewModelScope, msg)
       app.level.update { null }
     }
 
@@ -309,9 +310,9 @@ open class CvViewModel @Inject constructor(
   var backOnline = false
 
   // TODO:PM: bind this when connectivity status changes
-  var readBackOnline = dsMisc.readBackOnline.asLiveData()
+  var readBackOnline = dsMisc.backOnline.asLiveData()
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
-  var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()
+  var readBackFromSettings= dsMisc.backFromSettings.asLiveData()
 
   // TODO:PMX IST
   fun showNetworkStatus() {
@@ -389,7 +390,7 @@ open class CvViewModel @Inject constructor(
               // if (dsCvMap.read.first().autoSetInitialLocation) {
               //   // msg="Previous location expired.\nPlease localize or set it manually"
               // }
-              // app.snackbarLong(viewModelScope, msg)
+              // notify.long(viewModelScope, msg)
             }
           }
         }

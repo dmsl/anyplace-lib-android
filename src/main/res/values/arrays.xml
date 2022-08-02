@@ -9,4 +9,31 @@
     <item>https</item>
     <item>http</item>
   </string-array>
+
+  <string-array name="cv_localization_entries">
+    <item>Surface Local</item>
+    <item>Surface Global</item>
+  </string-array>
+
+  <string-array name="cv_localization_values">
+    <item>3</item>
+    <item>4</item>
+  </string-array>
+
+  <string-array name="cv_loc_exec_entries">
+    <item>Auto (based on connectivity)</item>
+    <item>Always Locally (Offline)</item>
+    <item>Always Remotely (Needs internet)</item>
+  </string-array>
+
+  <string-array name="cv_loc_exec_values">
+    <item>@string/cv_loc_exec_auto</item>
+    <item>@string/cv_loc_exec_local</item>
+    <item>@string/cv_loc_exec_remote</item>
+  </string-array>
+
+
+  <string name="cv_loc_exec_auto">cv.loc.auto</string>
+  <string name="cv_loc_exec_local">cv.loc.local</string>
+  <string name="cv_loc_exec_remote">cv.loc.remote</string>
 </resources>

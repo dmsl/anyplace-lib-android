@@ -3,12 +3,16 @@
 ## Logging conventions:
 - Use `TG` for tag name, and `MT` for a method's name
 - see `TG` examples in different classes to figure out the value to assign
+  - if there is a `companion object`, place `MT` in there
+  - make it private (use on in relevant class)
 - To asign value to `MT`use `::methodName.name` to get the name
 - why?
   - because it is resolved at compile time (does not take runtime)
   - refactoring the method name changes this name automatically
 - what about `overloaded` methods?
   - doesn't work unfortunately. just make a string of that method name
+- you can use macros to easily create the `MT` variable
+  - TODO:TUT: youtube video
 
 
 

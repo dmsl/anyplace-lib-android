@@ -39,7 +39,8 @@ class UiLocalization(
         private val wMap: GmapWrapper,
         private val button_id_localization: Int,
         private val button_id_whereami: Int) {
-  val TG = "ui-cv-localization"
+  private val TG = "ui-cv-localization"
+  private val notify = app.notify
 
   private val ctx = act.applicationContext
   private val C by lazy { CONST(ctx) }
@@ -77,9 +78,9 @@ class UiLocalization(
 
         if (isDisabled()) {
           if (disabledUserAction) {
-            app.snackbarInf(scope, disabledCause)
+            notify.INF(scope, disabledCause)
           } else {
-            app.snackbarShort(scope, disabledCause)
+            notify.short(scope, disabledCause)
           }
           if (disabledAttentionViews.isNotEmpty()) {
             disabledAttentionViews.forEach { utlUi.attentionZoom(it) }
@@ -151,7 +152,7 @@ class UiLocalization(
           VM.trackingEmptyWindowsConsecutive++
           LOG.W(TG, "$MT: ${VM.trackingEmptyWindowsConsecutive} consecutive empty windows")
           if (VM.trackingEmptyWindowsConsecutive > VM.TRACKING_MAX_EMPTY_WINDOWS) {
-            app.snackbarWarning(scope, "Tracking auto-disabled.\n"+
+            notify.WARN(scope, "Tracking auto-disabled.\n"+
                     "Reason: ${VM.TRACKING_MAX_EMPTY_WINDOWS} consecutive empty scans.")
             endTrackingLoop(tv)
           }
@@ -210,7 +211,7 @@ class UiLocalization(
         VM.ui.map.moveToLocation(coord.toLatLng())
       } else {
         val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
-        app.snackbarInf(VM.viewModelScope, msg)
+        notify.INF(VM.viewModelScope, msg)
         utlUi.attentionZoom(VM.ui.localization.btn)
 
         VM.ui.map.moveToLocation(app.wLevel!!.bounds().center)
@@ -238,7 +239,7 @@ class UiLocalization(
             VM.onLocalizationStarted()
 
             if (!app.cvUtils.isModelInited()) {
-              app.snackbarLong(scope, C.ERR_NO_CV_CLASSES)
+              notify.long(scope, C.ERR_NO_CV_CLASSES)
               return@collect
             }
 
@@ -361,12 +362,12 @@ class UiLocalization(
 
         when {
           !act.initedGmap -> {
-            app.snackbarShort(scope, "Cannot start IMU: map not ready yet")
+            notify.long(scope, "Cannot start IMU: map not ready yet")
             imuDisable()
           }
 
           app.locationSmas.value.coord == null -> {
-            app.snackbarShort(scope, "IMU needs an initial location.")
+            notify.shortDEV(scope, "IMU needs an initial location.")
             imuDisable()
           }
 
@@ -384,7 +385,7 @@ class UiLocalization(
     utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
     utlUi.flashingLoop(btnImu)
     VM.imuEnabled=true
-    app.snackbarWarning(scope, "IMU mode ON! [experimental]")
+    notify.warn(scope, "IMU mode ON! [experimental]")
   }
 
   fun imuDisable() {

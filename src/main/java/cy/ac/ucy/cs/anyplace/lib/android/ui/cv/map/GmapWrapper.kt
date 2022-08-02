@@ -41,6 +41,7 @@ class GmapWrapper(
   }
 
   private val ctx: Context = app.applicationContext
+  private val notify = app.notify
   lateinit var obj: GoogleMap
   lateinit var VM: CvViewModel
 
@@ -157,9 +158,9 @@ class GmapWrapper(
               val ownUid = app.dsUserSmas.read.first().uid
               if (UserInfoWindowAdapter.isUserLocation(metadata.type)) {
                 if (ownUid == uid) {
-                  app.snackbarShort(scope, "Copied own location to clipboard")
+                  notify.short(scope, "Copied own location to clipboard")
                 } else {
-                  app.snackbarShort(scope, "Copied ${metadata.uid}'s location to clipboard")
+                  notify.short(scope, "Copied ${metadata.uid}'s location to clipboard")
                 }
               }
             }
@@ -195,7 +196,7 @@ class GmapWrapper(
 
       if (app.wLevel == null) {
         val msg = "Cannot locate floor ($TG)"
-        app.snackbarLongDEV(scope, msg)
+        notify.longDEV(scope, msg)
         LOG.E(TG, msg)
         return@launch
       }
@@ -330,17 +331,6 @@ class GmapWrapper(
       obj.animateCamera(CameraUpdateFactory.newCameraPosition(newPos))
     }
   }
-
-  // private fun showError(space: Space?, levels: Levels?, level: Level? = null, floorNum: Int = 0) {
-  //   var msg = ""
-  //   when {
-  //     space == null -> msg = "No space selected."
-  //     levels == null -> msg = "Failed to get ${app.wSpace.prettyFloors}."
-  //     level == null -> msg = "Failed to get ${app.wSpace.prettyLevel} $floorNum."
-  //   }
-  //   LOG.E(tag, msg)
-  //   app.snackbarShort(scope, msg)
-  // }
 
   fun removeUserLocations() {
     scope.launch(Dispatchers.Main) { hideUserMarkers() }

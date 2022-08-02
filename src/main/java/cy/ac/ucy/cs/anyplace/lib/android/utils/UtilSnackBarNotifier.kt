@@ -21,12 +21,47 @@ enum class SnackType {
   DEV
 }
 
-class UtilSnackBar(val app: AnyplaceApp) {
+/**
+ * Utility methods around [Snackbar] to provide notifications
+ *
+ * It supports:
+ * - dev mode notifications
+ * - info notifications
+ * - warning
+ * - long, short, infinity notifications, requiring using user ACK
+ *
+ * Convention:
+ * - when capital: it's [Snackbar.LENGTH_INDEFINITE]
+ */
+class UtilSnackBarNotifier(val app: AnyplaceApp) {
   var snackbarForChat = false
   lateinit var rootView: View
 
-  fun showDEV(scope: CoroutineScope, msg: String,
-                      duration: Int = Snackbar.LENGTH_SHORT) {
+  /** Short notification */
+  fun short(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_SHORT)
+  /** Long notification */
+  fun long(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_LONG)
+  /** Indefinite notification */
+  fun INF(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_INDEFINITE)
+  /** Long Warning notification */
+  fun warn(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_LONG, SnackType.WARNING)
+  /** Indefinite Warning notification */
+  fun WARN(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.WARNING)
+  /** Long Info notification */
+  fun info(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_LONG, SnackType.INFO)
+  /** Indefinite Info notification */
+  fun INFO(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.INFO)
+
+  /** Short Dev notification */
+  fun shortDEV(scope: CoroutineScope, msg: String) = showDEV(scope, msg, Snackbar.LENGTH_SHORT)
+  /** Long Dev notification */
+  fun longDEV(scope: CoroutineScope, msg: String) = showDEV(scope, msg, Snackbar.LENGTH_LONG)
+  /** Indefinite Dev notification */
+  fun DEV(scope: CoroutineScope, msg: String) = showDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
+
+  fun showDEV(scope: CoroutineScope,
+              msg: String,
+              duration: Int = Snackbar.LENGTH_SHORT) {
     if (!DBG.DVO) {
       app.showToast(scope, msg, Toast.LENGTH_SHORT)
       return

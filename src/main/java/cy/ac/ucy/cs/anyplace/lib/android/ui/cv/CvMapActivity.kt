@@ -290,7 +290,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   protected fun checkInternet() {
     if (!app.hasInternet()) {
-      app.snackbarLong(lifecycleScope, C.ERR_MSG_NO_INTERNET)
+      notify.long(lifecycleScope, C.ERR_MSG_NO_INTERNET)
     }
   }
 

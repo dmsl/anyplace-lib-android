@@ -12,6 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
@@ -43,7 +44,7 @@ class CvLoggerViewModel @Inject constructor(
         application: Application,
         dsCv: CvDataStore,
         dsCvMap: CvMapDataStore,
-        dsMisc: SpaceFilterDS,
+        dsMisc: MiscDS,
         // dsCvLog: CvLoggerDataStore,
         repoAP: RepoAP,
         repoSmas: RepoSmas,
@@ -71,8 +72,7 @@ class CvLoggerViewModel @Inject constructor(
   var statObjTotal = 0
 
   override fun prefWindowLocalizationMs(): Int {
-    // modify properly for Smas?
-    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS.toInt()
+    return C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS.toInt()
   }
 
   fun canStoreDetections() : Boolean {
@@ -93,7 +93,7 @@ class CvLoggerViewModel @Inject constructor(
   override fun processDetections(recognitions: List<Classifier.Recognition>,
                                  activity: DetectorActivityBase) {
     val MT = ::processDetections.name
-    LOG.V2(TG, "VM: CvLogger: $MT: ${recognitions.size}")
+    LOG.V2(TG, "$MT: ${recognitions.size}")
     super.processDetections(recognitions, activity)
 
     when (statusLogging.value) {
@@ -129,12 +129,14 @@ class CvLoggerViewModel @Inject constructor(
         LOG.D2(TG, "WINDOW FINISHED")
 
         if (appendedDetections.isEmpty()) {
-          app.snackbarShort(viewModelScope, "No detections.")
+          if (trackingMode.value != TrackingMode.on) {
+            notify.short(viewModelScope, "No detections.")
+          }
           statusLogging.update { LoggingMode.stopped }
         } else {
-          LOG.D3("updateDetectionsLogging: status: objects: ${appendedDetections.size}")
-          val detectionsDedup = appendedDetections
-          // val detectionsDedup = YoloV4Classifier.NMS(appendedDetections, detector.labels)
+          LOG.D3(TG, "$MT: status: objects: ${appendedDetections.size}")
+          // not running nms
+          val detectionsDedup = appendedDetections // YoloV4Classifier.NMS(appendedDetections, detector.labels)
 
           LOG.W(TG, "$MT: detections to store: dedup: ${detectionsDedup.size}")
 
@@ -149,7 +151,6 @@ class CvLoggerViewModel @Inject constructor(
             delay(50) // workaround:
             // little bit of delay before updating status,
             // so the [objWindowLOG] gets fully propagated
-
             statusLogging.update { LoggingMode.mustStore }
           }
         }

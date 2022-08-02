@@ -23,7 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.SnackType
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
-import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBar
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBarNotifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
@@ -65,7 +65,7 @@ abstract class AnyplaceApp : Application() {
   @Inject lateinit var dsUserSmas: SmasUserDataStore
 
   /** Miscellaneous settings */
-  @Inject lateinit var dsSpaceSelector: SpaceFilterDS
+  @Inject lateinit var dsMisc: MiscDS
   // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
@@ -81,7 +81,8 @@ abstract class AnyplaceApp : Application() {
   // or even better, pass it to methods through extension functoins..
   val cache by lazy { Cache(applicationContext) }
 
-  val utlSnackbar by lazy { UtilSnackBar(this) }
+  /** [Snackbar] for notification */
+  val notify by lazy { UtilSnackBarNotifier(this) }
 
   /** Root [View] of an activity ([SmasMainActivity], or [CvLoggerActivity]). Used for [SnackBar] */
   lateinit var cvUtils: CvUtils
@@ -129,8 +130,8 @@ abstract class AnyplaceApp : Application() {
    * so we can use app [Snackbar] accross different activities
    */
   fun setMainView(root_view: View, placeOnActionbar: Boolean=false) {
-    utlSnackbar.rootView=root_view
-    utlSnackbar.snackbarForChat=placeOnActionbar
+    notify.rootView=root_view
+    notify.snackbarForChat=placeOnActionbar
   }
 
   override fun onCreate() {
@@ -173,6 +174,7 @@ abstract class AnyplaceApp : Application() {
   fun userHasLocation() = locationSmas.value is LocalizationResult.Success
 
   private var toast: Toast ?= null
+  @Deprecated("use app.notify (or at least a toast in that util class)")
   fun showToast(scope: CoroutineScope, msg: String, duration: Int = Toast.LENGTH_SHORT) {
     scope.launch(Dispatchers.Main) {
       if (toast != null) toast!!.cancel()
@@ -181,27 +183,14 @@ abstract class AnyplaceApp : Application() {
     }
   }
 
+  @Deprecated("use app.notify (or at least a toast in that util class)")
   fun showToastDEV(scope: CoroutineScope, msg: String, len: Int = Toast.LENGTH_SHORT) {
     val devMode = true
     if (devMode) { showToast(scope, msg, len) }
   }
 
-  fun snackbarShort(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_SHORT)
-  fun snackbarLong(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG)
-  fun snackbarWarning(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.WARNING)
-  fun snackbarWarningInf(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.WARNING)
-  fun snackbarInfo(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_LONG, SnackType.INFO)
-
-  /** Stays on until user acts on it */
-  fun snackbarInf(scope: CoroutineScope, msg: String) = utlSnackbar.show(scope, msg, Snackbar.LENGTH_INDEFINITE)
-
-  fun snackbarShortDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_SHORT)
-  fun snackbarLongDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_LONG)
-  fun snackbarInfDEV(scope: CoroutineScope, msg: String) = utlSnackbar.showDEV(scope, msg, Snackbar.LENGTH_INDEFINITE)
-
+  /** Whether the user has Developer Mode (devMode) enabled */
   suspend fun hasDevMode() = dsCvMap.read.first().devMode
-
-
 
   //// MISC
   fun hasInternet(): Boolean {
@@ -241,17 +230,17 @@ abstract class AnyplaceApp : Application() {
     this.wLevel = null
 
     if (newSpace == null || newLevels == null) {
-      snackbarWarning(scope, "Cannot load building data.\nSpace or Level were empty.")
+      notify.warn(scope, "Cannot load space:\nSpace or Level were empty.")
       return false
     }
 
     val prettySpace = wSpace.prettyTypeCapitalize
     val prettyFloors= wSpace.prettyFloors
 
-    LOG.W(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
+    LOG.D2(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
             "(has ${levels!!.levels.size} $prettyFloors)")
 
-    LOG.W(TG, "$MT: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
+    LOG.D2(TG, "$MT: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
 
     return true
   }

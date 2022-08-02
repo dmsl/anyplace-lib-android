@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,9 @@ class CvMapGetNW(
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
 
-  val tag = "nw-cv-map"
+  private val tag = "nw-cv-map"
+  private val utlErr by lazy { UtilErr() }
+
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
@@ -70,14 +72,8 @@ class CvMapGetNW(
         } else {
           persistToDB(cvMap)
         }
-        // CLR:PM
-      // } catch(ce: ConnectException) {
-      //   val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
-      //   handleException(msg, ce)
       } catch(e: Exception) {
-        // val msg = "$tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-        // handleException(msg, e)
-        val errMsg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        val errMsg = utlErr.handle(app, RH, VM.viewModelScope, e, tag)
         resp.value = NetworkResult.Error(errMsg)
       }
     } else {

@@ -1,6 +1,5 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
-import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -12,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.OfflineLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
@@ -24,7 +23,6 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -37,6 +35,8 @@ class CvLocalizeNW(
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
+  private val notify = app.notify
+  private val utlErr by lazy { UtilErr() }
 
   companion object {
     private const val TG = "nw-cv-loc"
@@ -66,7 +66,7 @@ class CvLocalizeNW(
 
     val tracking = VM.trackingMode.first() == TrackingMode.on
     if (detections.isEmpty() && !tracking) {
-      app.snackbarShortDEV(VM.viewModelScope, "No objects detected.")
+      notify.shortDEV(VM.viewModelScope, "No objects detected.")
       return
     }
 
@@ -89,7 +89,7 @@ class CvLocalizeNW(
 
         val trackingOn = VM.trackingMode.first() == TrackingMode.on
         if (!trackingOn) {
-          app.snackbarShortDEV(VM.viewModelScope, strInfo)
+          notify.shortDEV(VM.viewModelScope, strInfo)
         }
 
         LOG.V2(TG, "$MT: ${req.time}: #: ${detections.size}")
@@ -98,7 +98,7 @@ class CvLocalizeNW(
         LOG.W(TG, "$MT: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(e: Exception) {
-        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
+        val msg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(msg)
       }
     } else {
@@ -147,7 +147,7 @@ class CvLocalizeNW(
             if (it.data==null || it.data!!.rows.isEmpty()) {
               val msg = "Unable to localize.\nPlease collect more fingerprints with Logger\nor set manually (long-press)"
               LOG.E(TG, "$MT: $msg")
-              app.snackbarLong(VM.viewModelScope, msg)
+              notify.WARN(VM.viewModelScope, msg)
               app.locationSmas.value = LocalizationResult.Unset()
               LOG.E(TG, "$MT: Failed to get location: ${it.message.toString()}")
             } else {
@@ -163,7 +163,7 @@ class CvLocalizeNW(
           is NetworkResult.Error -> {
             val msg = it.message ?: "unspecified error"
             LOG.E(TG, "$MT: $msg")
-            app.snackbarLong(VM.viewModelScope, msg)
+            notify.warn(VM.viewModelScope, msg)
           }
           else -> {}
         }

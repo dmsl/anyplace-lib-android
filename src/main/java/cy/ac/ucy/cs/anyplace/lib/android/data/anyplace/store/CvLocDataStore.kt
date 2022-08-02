@@ -92,7 +92,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         when (key) {
           C.PREF_CV_START_ACT-> it[KEY.startActivity] = value ?: C.DEFAULT_PREF_CVMAP_START_ACT
 
-          C.PREF_CV_WINDOW_LOCALIZATION_MS-> it[KEY.windowLocalizationMs] = value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
+          C.PREF_CV_WINDOW_LOCALIZATION_MS-> it[KEY.windowLocalizationMs] = value ?: C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS
 
           C.PREF_CV_WINDOW_LOGGING_MS-> it[KEY.windowLoggingMs] = value ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS
 
@@ -148,7 +148,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           }
           .map { preferences ->
             val startAct = preferences[KEY.startActivity] ?: C.DEFAULT_PREF_CVMAP_START_ACT
-            val windowLocalizationMs = preferences[KEY.windowLocalizationMs] ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS
+            val windowLocalizationMs = preferences[KEY.windowLocalizationMs] ?: C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS
             val windowLoggingMs= preferences[KEY.windowLoggingMs] ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVMAP_ALPHA
             val scanDelay= preferences[KEY.scanDelay] ?: C.DEFAULT_PREF_CV_SCAN_DELAY

@@ -33,12 +33,13 @@ class UiLoggingBtn(
         private val ui: CvUI,
         private val uiLog: CvLoggerUI,
         private val button_id: Int) {
-  val TG = "ui-cv-logging"
+  private val TG = "ui-cv-logging"
+  private val app = act.app
+  private val notify = app.notify
 
   val btn: AppCompatButton by lazy { act.findViewById(button_id) }
 
   private val utlUi by lazy { UtilUI(act, scope) }
-  private val app = act.app
   private val ctx = act.applicationContext
   private val C by lazy { CONST(ctx) }
 
@@ -64,12 +65,12 @@ class UiLoggingBtn(
         LoggingMode.running -> { resetLogging() }
 
         LoggingMode.mustStore -> {
-          app.snackbarLong(scope, "Long-click on map to store detections")
+          notify.long(scope, "Long-click on map to store detections")
         }
 
         LoggingMode.stopped -> {
           if (!VM.canRecognizeObjects()) {
-            app.snackbarInf(scope, C.ERR_NO_CV_CLASSES)
+            notify.INF(scope, C.ERR_NO_CV_CLASSES)
             return@setOnClickListener
           }
 

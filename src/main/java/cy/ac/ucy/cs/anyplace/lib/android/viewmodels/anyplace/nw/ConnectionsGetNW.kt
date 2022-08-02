@@ -9,7 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.ConnectionsResp
 import retrofit2.Response
@@ -26,17 +26,20 @@ class ConnectionsGetNW(
 
   private val C by lazy { CONST(app.applicationContext) }
   private val cache by lazy { Cache(app.applicationContext) }
-  val tag = "nw-ap-conn"
+  private val TG = "nw-ap-conn"
+  private val utlErr by lazy { UtilErr() }
+
 
   suspend fun callBlocking(buid: String) : Boolean {
-    LOG.W(TAG, "$tag: safecall")
+    val MT = ::callBlocking.name
+    LOG.W(TG, MT)
 
     if (app.space!=null && cache.hasSpaceConnections(app.space!!)) return true
 
     if (app.hasInternet()) {
       try {
         val response = repo.remote.getSpaceConnectionsAll(buid)
-        LOG.D4(TAG, "$tag: ${response.message()}" )
+        LOG.D4(TG, "$MT: ${response.message()}" )
 
         when (val resp = handleResponse(response)) {
           is NetworkResult.Success -> {
@@ -45,12 +48,12 @@ class ConnectionsGetNW(
             return true
           }
           else -> {
-            handleError("$tag: something went wrong: ${resp.message}")
+            handleError("$MT: something went wrong: ${resp.message}")
           }
         }
       } catch(e: Exception) {
         // ignoring the msg resp..
-        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        val msg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
       }
     } else {
       handleError(C.ERR_MSG_NO_INTERNET)
@@ -59,7 +62,8 @@ class ConnectionsGetNW(
   }
 
   private fun handleResponse(resp: Response<ConnectionsResp>): NetworkResult<ConnectionsResp> {
-    LOG.D3(TAG)
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
@@ -70,14 +74,15 @@ class ConnectionsGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TAG, "$tag: handleResponse: unsuccessful")
+      LOG.E(TG, "$MT: handleResponse: unsuccessful")
     }
 
-    return NetworkResult.Error("$TAG: $tag: ${resp.message()}")
+    return NetworkResult.Error("$TG: $MT: ${resp.message()}")
   }
 
   private fun handleError(msg:String, e: Exception?=null) {
-    if (e != null) LOG.E(TAG, "$tag: $msg", e)
-    else LOG.E(TAG, "$tag: $msg")
+    val MT = ::handleError.name
+    if (e != null) LOG.E(TG, "$MT: $msg", e)
+    else LOG.E(TG, "$MT: $msg")
   }
 }

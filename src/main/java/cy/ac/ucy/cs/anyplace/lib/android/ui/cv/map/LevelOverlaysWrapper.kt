@@ -36,6 +36,7 @@ open class LevelOverlaysWrapper(
 ) {
 
   private val app = VM.app
+  private val notify = app.notify
 
   val tag = "wr-lvl-overlays"
 
@@ -64,13 +65,13 @@ open class LevelOverlaysWrapper(
           is NetworkResult.Error -> {
             val msg = ": Failed to fetch ${app.wSpace.prettyType}: ${app.space?.name}: [${response.message}]"
             LOG.E(tag, "Error: $method: $msg")
-            app.snackbarShort(scope, msg)
+            notify.short(scope, msg)
           }
           is NetworkResult.Success -> {
             if (app.wLevel == null) {
               val msg = "No floor/deck selected."
               LOG.W(msg)
-              app.snackbarShort(scope, msg)
+              notify.short(scope, msg)
             } else {
               LOG.E(tag, "$method: success: rendering img")
               VM.nwLevelPlan.render(response.data, app.wLevel!!)

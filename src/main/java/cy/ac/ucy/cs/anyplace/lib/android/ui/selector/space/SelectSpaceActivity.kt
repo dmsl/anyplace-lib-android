@@ -16,6 +16,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
@@ -103,11 +104,10 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
         return@setOnClickListener
       }
 
-      // TODO: move this to app?
       if(VM.dbqSpaces.loaded) {
         navController.navigate(R.id.action_spacesListFragment_to_spaceFilterBottomSheet)
       } else {
-        app.snackbarWarning(lifecycleScope, "No spaces loaded")
+        notify.warn(lifecycleScope, "No spaces loaded")
       }
     }
   }

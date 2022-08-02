@@ -11,7 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
@@ -35,7 +35,9 @@ class CvFingerprintSendNW(
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
-  val TG = "nw-fp-send"
+  private val TG = "nw-fp-send"
+  private val notify = app.notify
+  private val utlErr by lazy { UtilErr() }
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
 
@@ -53,7 +55,7 @@ class CvFingerprintSendNW(
     val msg = C.ERR_MSG_NO_INTERNET
 
     if (!app.hasInternet()) {
-      app.snackbarLong(VM.viewModelScope, msg)
+      notify.long(VM.viewModelScope, msg)
       uiLog.bottom.logging.showUploadBtn()
       return
     }
@@ -67,7 +69,7 @@ class CvFingerprintSendNW(
       val entry = VM.cache.topFingerprintsEntry()
 
       if (!app.hasInternet()) {
-        app.snackbarLong(VM.viewModelScope, "$msg (dropped)")
+        notify.long(VM.viewModelScope, "$msg (dropped)")
         uiLog.bottom.logging.showUploadBtn()
         break
       }
@@ -80,7 +82,7 @@ class CvFingerprintSendNW(
           uploadOK++
           totalObjects+=entry.cvDetections.size
         } else {
-          app.snackbarLong(VM.viewModelScope, "Something went error during upload!")
+          notify.warn(VM.viewModelScope, "Something went wrong during upload!")
           break
         }
       }
@@ -95,13 +97,11 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
-    app.snackbarLong(VM.viewModelScope, reportMsg)
+    notify.info(VM.viewModelScope, reportMsg)
   }
 
   /**
    * Uploads a single entry
-   *
-   * TODO:PMX OFL Implement this for offline
    */
   private suspend fun uploadEntry(smasUser: SmasUser, entry: FingerprintScan): Boolean {
     val MT = ::uploadEntry.name
@@ -118,7 +118,6 @@ class CvFingerprintSendNW(
         is NetworkResult.Success -> {
           val msg = "Uploaded objects: ${resp.data?.rows}"
           LOG.W(TG, "$MT: $msg")
-          // app.showSnackbarShortDEV(VM.viewModelScope, msg)
           true
         }
         else -> {
@@ -126,7 +125,7 @@ class CvFingerprintSendNW(
         }
       }
     } catch(e: Exception) {
-      val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
+      val msg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
       resp.value = NetworkResult.Error(msg)
     }
     return false
@@ -153,7 +152,7 @@ class CvFingerprintSendNW(
         LOG.W(TG, "$MT: resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(e: Exception) {
-        val msg = utlException.handleException(app, RH, VM.viewModelScope, e, TG)
+        val msg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(msg)
       }
     } else {
@@ -165,17 +164,17 @@ class CvFingerprintSendNW(
     val MT = ::handleResponse.name
     LOG.D3(TG, MT)
     if(resp.isSuccessful) {
-      when {
+      return when {
         resp.errorBody() != null -> {
-          return NetworkResult.Error(resp.body().toString())
+          NetworkResult.Error(resp.body().toString())
         }
-        resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
+        resp.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
         resp.isSuccessful -> {
           // SMAS special handling (errors should not be 200/OK)
           val r = resp.body()!!
-          return if (r.status == "err") NetworkResult.Error(r.descr) else NetworkResult.Success(r)
+          if (r.status == "err") NetworkResult.Error(r.descr) else NetworkResult.Success(r)
         } // can be nullable
-        else -> return NetworkResult.Error(resp.message())
+        else -> NetworkResult.Error(resp.message())
       }
     }
     return NetworkResult.Error("$TG: ${resp.message()}")
@@ -189,12 +188,12 @@ class CvFingerprintSendNW(
           is NetworkResult.Success -> {
             val msg = "Uploaded Fingerprints (${it.data?.rows})"
             LOG.W(TG, "$MT: $msg")
-            app.showToast(VM.viewModelScope, msg, LENGTH_SHORT)
+            notify.shortDEV(VM.viewModelScope, msg)
           }
           is NetworkResult.Error -> {
             if (!err.handle(app, it.message, TG)) {
               val msg = it.message ?: "unspecified error"
-              app.snackbarInf(VM.viewModelScope, msg)
+              notify.INF(VM.viewModelScope, msg)
             }
           }
           else -> {}

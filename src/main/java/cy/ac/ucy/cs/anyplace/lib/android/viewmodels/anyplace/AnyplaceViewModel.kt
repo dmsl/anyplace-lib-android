@@ -8,7 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.query.SpacesQueryDB
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.AnyplaceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
@@ -33,7 +33,7 @@ class AnyplaceViewModel @Inject constructor(
         private val RH: RetrofitHolderAP,
         dsAnyplace: AnyplaceDataStore,
         dsUserAP: ApUserDataStore,
-        private val dsMisc: SpaceFilterDS,
+        private val dsMisc: MiscDS,
   ): AndroidViewModel(application) {
 
   private val app = application as AnyplaceApp
@@ -52,11 +52,11 @@ class AnyplaceViewModel @Inject constructor(
   /** normal var, filled by the observer (SelectSpaceActivity) */
   var backOnline = false
   // TODO:PM: bind this when connectivity status changes
-  var readBackOnline = dsMisc.readBackOnline.asLiveData()
+  var readBackOnline = dsMisc.backOnline.asLiveData()
   var readUserLoggedIn = dsUserAP.read.asLiveData()
 
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
-  var readBackFromSettings= dsMisc.readBackFromSettings.asLiveData()
+  var readBackFromSettings= dsMisc.backFromSettings.asLiveData()
 
   fun showNetworkStatus() {
     if (!networkStatus) {

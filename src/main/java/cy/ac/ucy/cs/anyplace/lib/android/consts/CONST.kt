@@ -25,7 +25,6 @@ open class CONST(ctx: Context) {
 
   }
 
-  val MAX_ERR_MSGS: Int = 5
   val DB_NAME = "anyplace_db"
 
   val STATUS_OK = 200
@@ -84,7 +83,7 @@ open class CONST(ctx: Context) {
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
   //// LOCALIZATION
-  val DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS = "3000"
+  val DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS = "3000"
 
   //// Settings for Cv Navigator/Localization apps
   val PREF_CVMAP = ctx.getString(R.string.pref_cvmap)
@@ -101,11 +100,18 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS= "1000"
 
   //// MISC
-  val PREF_MISC_NAME = "pref_misc"
-  val PREF_MISC_BACK_ONLINE = "pref_misc_backOnline"
-  val PREF_MISC_BACK_FROM_SETTINGS = "pref_misc_backFromSettings"
+  val PREF_MISC_NAME = ctx.getString(R.string.pref_misc)
+  val PREF_MISC_BACK_ONLINE = ctx.getString(R.string.pref_misc_backOnline)
+  val PREF_MISC_BACK_FROM_SETTINGS = ctx.getString(R.string.pref_misc_backFromSettings)
 
-  //// Anyplace USER (NOT SMAS user
+  // TUTORIAL PREFS
+  /** Long-press tutorial for Logger (LOG) */
+  val PREF_MISC_TUT_LOG_LONG_PRESS = ctx.getString(R.string.pref_misc_tutLoggerLongPress)
+  /** Long-press tutorial for Localization (NAV; SMAS/Navigator) */
+  val PREF_MISC_TUT_NAV_LONG_PRESS = ctx.getString(R.string.pref_misc_tutNavLongPress)
+
+  //// Anyplace USER (NOT SMAS user)
+  // TODO create ctx.getString for these also (like above)
   val PREF_AP_USER = "pref_user"
   val PREF_AP_USER_ACCESS_TOKEN = "pref_user_access_token"
   val PREF_AP_USER_NAME = "pref_user_name"

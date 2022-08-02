@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -29,6 +28,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
                     private val scope: CoroutineScope,
                     ):
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
+  private val notify = app.notify
 
   companion object {
     private const val TG = "adapter-spaces"
@@ -50,6 +50,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
           private val scope: CoroutineScope,
   ):
           RecyclerView.ViewHolder(binding.root) {
+    private val TG = SpacesAdapter.TG+"-"+MyViewHolder::class.java.simpleName
+    private val notify = app.notify
 
     fun bind(space: Space, act: SelectSpaceActivity) {
       binding.space = space
@@ -84,7 +86,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
           if (!showNotif) {
             val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
             val msg = "Downloading resources of $shortName"
-            app.snackbarLong(scope, msg)
+            notify.long(scope, msg)
           }
 
           act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
@@ -136,11 +138,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
      *  Download JSON objects for the Space and all the Floors
      */
     private suspend fun downloadSpaceAndLevels(prefsCv: CvMapPrefs) {
+      val MT = ::downloadSpaceAndLevels.name
       val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
       val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
 
       if (!gotSpace || !gotFloors) {
-        app.snackbarWarningInf(scope, "Failed to download spaces. Restart app.")
+        notify.WARN(scope, "Failed to download spaces. Restart app.")
         app.spaceSelectionInProgress=false
         act.finishAndRemoveTask()
       }
@@ -161,8 +164,9 @@ class SpacesAdapter(private val app: AnyplaceApp,
     }
 
     private suspend fun downloadConnectionsAndPois() {
+      val MT = ::downloadConnectionsAndPois.name
       if (app.space!=null && !act.VMcv.cache.hasSpaceConnectionsAndPois(app.space!!)) {
-        LOG.D2(TAG, "Fetching POIs and Connections..")
+        LOG.D2(TG, "$MT: Fetching POIs and Connections..")
         act.VMcv.nwPOIs.callBlocking(app.space!!.buid)
         act.VMcv.nwConnections.callBlocking(app.space!!.buid)
       }
@@ -174,7 +178,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
   }
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-    val MT = "onBindViewHolder"
+    val MT = "onBindViewHolder" // overload resolution ambiguity
     LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
     if (spaces.isNotEmpty()) {
       val currentSpace = spaces[position]

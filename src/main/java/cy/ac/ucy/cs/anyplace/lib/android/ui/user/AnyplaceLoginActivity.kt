@@ -29,6 +29,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
@@ -65,7 +66,7 @@ class AnyplaceLoginActivity : BaseActivity() {
     setContentView(binding.root)
 
     app.setMainView(binding.root)
-    app.snackbarLong(lifecycleScope, "Please login to Anyplace also!")
+    notify.INF(lifecycleScope, "You must also login to Anyplace!")
 
     val username = binding.username
     val password = binding.password

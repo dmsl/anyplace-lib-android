@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +36,8 @@ class CvModelsGetNW(
 
   private val tag = "nw-cv-models"
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
+  private val utlErr by lazy { UtilErr() }
+
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<CvModelsResp>> = MutableStateFlow(NetworkResult.Unset())
@@ -78,14 +80,8 @@ class CvModelsGetNW(
           persistToDB(cvModels)
 
         }
-        // CLR:PM
-      // } catch(ce: ConnectException) {
-      //   val msg = "$tag: Connection failed:\n${RH.retrofit.baseUrl()}"
-      //   handleException(msg, ce)
       } catch(e: Exception) {
-        // val msg = "$TAG: $tag: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
-        // handleException(msg, e)
-        val errMsg = utlException.handleException(app, RH, VM.viewModelScope, e, tag)
+        val errMsg = utlErr.handle(app, RH, VM.viewModelScope, e, tag)
         resp.value = NetworkResult.Error(errMsg)
       }
     } else {

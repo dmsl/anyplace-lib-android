@@ -14,6 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.LocationSendResp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -29,8 +30,11 @@ class LocationSendNW(
         private val VM: SmasMainViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
+  private val scope by lazy { VM.viewModelScope }
+  private val utlErr by lazy { UtilErr() }
 
   companion object {
+    private val TG = "nw-location-send"
     val TEST_COORDS = LatLng(57.69579631991111, 11.913666007922222)
   }
 
@@ -39,9 +43,9 @@ class LocationSendNW(
     alert,
   }
 
-  val tag = "nw-location-send"
+  val notify = app.notify
 
-  private val err by lazy { SmasErrors(app, VM.viewModelScope) }
+  private val err by lazy { SmasErrors(app, scope) }
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<LocationSendResp>> = MutableStateFlow(NetworkResult.Unset())
@@ -63,25 +67,26 @@ class LocationSendNW(
 
   /** Send the [Chatuser]'s location (safecall) */
   suspend fun safeCall(userCoords: UserCoordinates) {
+    val MT = ::safeCall.name
     smasUser = app.dsUserSmas.read.first()
 
-    LOG.D4(TAG, "Session: ${smasUser.uid} ${smasUser.sessionkey}")
+    LOG.D4(TG, "$MT Session: ${smasUser.uid} ${smasUser.sessionkey}")
 
     resp.value = NetworkResult.Unset()
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        LOG.V3(TAG, "LOC SEND")
+        LOG.V3(TG, MT)
         val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
-        LOG.V2(TAG, "LocSend: ${req.time}: tp: ${mode.value} deck: ${req.level}: x:${req.x} y:${req.y}")
+        LOG.V2(TG, "$MT  ${req.time}: tp: ${mode.value} deck: ${req.level}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)
-        LOG.D2(TAG, "LocationSend: Resp: ${response.message()}" )
+        LOG.D2(TG, "$MT: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        val msg = "$TG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
     } else {
@@ -90,7 +95,9 @@ class LocationSendNW(
   }
 
   private fun handleResponse(resp: Response<LocationSendResp>): NetworkResult<LocationSendResp> {
-    LOG.D2(TAG, "handleResponse")
+    val MT = ::handleResponse.name
+
+    LOG.D2(TG, MT)
     if(resp.isSuccessful) {
       when {
         resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
@@ -98,7 +105,7 @@ class LocationSendNW(
           // SMAS special handling (errors should not be 200/OK)
           val r = resp.body()!!
           if (r.status == "err")  {
-            LOG.E(TAG, "Error: ${r.descr}")
+            LOG.E(TG, "Error: ${r.descr}")
             return NetworkResult.Error(r.descr)
           }
           return NetworkResult.Success(r)
@@ -110,38 +117,26 @@ class LocationSendNW(
   }
 
   private fun handleException(msg: String, e: Exception) {
-    LOG.W(TAG, "Handle Exception")
+    val MT = ::handleException.name
     resp.value = NetworkResult.Error(msg)
-    LOG.E(TAG, "ERROR HERE")
-    LOG.E(TAG, msg)
-    LOG.E(TAG, e)
+    LOG.E(TG, "$MT: msg")
+    LOG.E(TG, MT, e)
   }
 
-  var errCnt = 0
-  var errNoInternetShown = false
+  // var errCnt = 0
+  // var errNoInternetShown = false
   suspend fun collect() {
+    val MT = ::collect.name
+
     resp.collect {
       when (it)  {
         is NetworkResult.Success -> {
-          LOG.D4(TAG, "LocationSend: ${it.data?.status}")
+          LOG.D4(TG, "$MT: LocationSend: ${it.data?.status}")
         }
         is NetworkResult.Error -> {
           if (!err.handle(app, it.message, "loc-send")) {
             val msg = it.message ?: "unspecified error"
-
-            // show just one internet related msg
-            if (msg != C.MSG_ERR_ILLEGAL_STATE) errNoInternetShown=true
-            errCnt+=1
-            if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
-                      || !errNoInternetShown ) {
-
-              app.snackbarShort(VM.viewModelScope, msg)
-              LOG.W(TAG, "$tag: $msg")
-            } else {
-              LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")
-              LOG.E(TAG, "$tag: $msg")
-            }
-
+            utlErr.handlePollingRequest(app, scope, msg)
           }
         }
         else -> {}

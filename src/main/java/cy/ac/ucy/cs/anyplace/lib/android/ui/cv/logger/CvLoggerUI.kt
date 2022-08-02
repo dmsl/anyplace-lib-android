@@ -27,11 +27,13 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
                       private val scope: CoroutineScope,
                       private val VM: CvLoggerViewModel,
                       private val ui: CvUI) {
-
+  private val TG = "ui-cv-logger"
   private val app = act.app
+  private val notify = app.notify
 
   fun onInferenceRan() {
-    LOG.V2(TAG, "$METHOD: CvLoggerUI")
+    val MT = ::onInferenceRan.name
+    LOG.V2(TG, MT)
     bottom.timer.render()
     ui.onInferenceRan()
   }
@@ -59,21 +61,30 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * Stores some detections (if not empty) to local cache.
    */
   fun setupOnMapLongClick() {
-    val method = METHOD
-    val tag = TAG
-    LOG.E(tag, "$method: setup: (long-click)")
+    val MT = ::setupOnMapLongClick.name
+    LOG.E(TG, "$MT: setup: (long-click)")
 
     scope.launch(Dispatchers.IO) {
       delay(200) // why is this? workaround for getting last objects filled in?
       scope.launch(Dispatchers.Main) {
         ui.map.obj.setOnMapLongClickListener { location ->
-          LOG.W(tag, "$method: storing detections (long-click)")
-          if (VM.canStoreDetections()) {
-            LOG.V3(tag, "clicked at: $location")
-            handleStoreDetections(location)
-          } else {
-            app.snackbarLong(scope, "Scan some objects first!")
-            utlUi.attentionZoom(bottom.logging.btn)
+
+          scope.launch(Dispatchers.IO) {
+            LOG.I(TG, "$MT: storing detections (long-click)")
+            if (VM.canStoreDetections()) {
+              LOG.V3(TG, "clicked at: $location")
+              handleStoreDetections(location)
+            } else {
+
+              val msg = "Scan some objects first!"
+              if (app.dsMisc.showTutorialLoggerLongPress()) {
+                val msgTut= "Long-press in logger is used only to assign objects on the map\n$msg"
+                notify.INF(scope, msgTut)
+              } else {
+                notify.long(scope, msg)
+              }
+              utlUi.attentionZoom(bottom.logging.btn)
+            }
           }
         }
       }
@@ -88,9 +99,10 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * probably this logic needs to be reworked..
    */
   fun showLocalizationButton(hasFingerprints: Boolean = false)  {
-    LOG.D2(TAG,"$METHOD:")
+    val MT = ::showLocalizationButton.name
+    LOG.D2(TG,"$MT:")
     if (!hasFingerprints && canPerformLocalization()) {
-      LOG.W(TAG,"$METHOD: showing!")
+      LOG.W(TG,"$MT: showing!")
      ui.localization.show()
     }
   }
@@ -101,7 +113,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
           // groupUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
 
   fun setupButtonSettings() {
-    LOG.D2()
+    val MT = ::setupButtonSettings.name
+    LOG.D2(TG, MT)
     btnSettings.setOnClickListener {
       val versionStr = BuildConfig.VERSION_CODE
       MainSettingsDialog.SHOW(act.supportFragmentManager,
@@ -117,7 +130,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * - it updates the weighted heatmap
    */
   fun handleStoreDetections(location: LatLng) {
-    LOG.E(TAG, "$METHOD")
+    val MT = ::handleStoreDetections.name
+    LOG.E(TG, "$MT")
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
 
@@ -127,12 +141,12 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
       return
     }
 
-    val FW = app.wLevel!!
-    val SW = FW.wSpace
+    val LW = app.wLevel!!
+    val SW = LW.wSpace
 
     // find the floor
     val userCoord = UserCoordinates(SW.obj.buid,
-            FW.obj.number.toInt(),
+            LW.obj.number.toInt(),
             location.latitude, location.longitude)
 
     VM.cacheDetectionsLocally(userCoord, location)
@@ -143,7 +157,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Scan: $curPoint"
-    val snippet="Objects: $windowDetections\n${FW.prettyFloorCapitalize}: ${FW.obj.number}"
+    val snippet="Objects: $windowDetections\n${LW.prettyFloorCapitalize}: ${LW.obj.number}"
     val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
     ui.map.markers.addScanMarker(coord, msg, snippet)
     ui.map.moveIfOutOufBounds(location)
@@ -151,12 +165,12 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     resetLogging()
   }
 
-
   fun resetLogging() {
+    val MT = ::resetLogging.name
+    LOG.D(TG, MT)
     VM.resetLoggingWindow()
     bottom.timer.reset()
   }
-
 
   /**
    * Updates UI according to the offline cache
@@ -169,6 +183,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * - hides upload button
    */
   fun checkForUploadCache(clearMarkers: Boolean=false) {
+    val MT = ::checkForUploadCache.name
     scope.launch(Dispatchers.IO) {
       if (VM.cache.hasFingerprints()) {
         // wait for the bottom sheet to be initialized
@@ -183,7 +198,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         // only when required (as markers are lazily initialized)
         if(clearMarkers) ui.map.markers.hideScanMarkers()
 
-        LOG.E(TAG, "call: showLocalizationButton checkForUploadCache..")
+        LOG.E(TG, "call: showLocalizationButton checkForUploadCache..")
         showLocalizationButton()  // show again localization button
       }
     }
@@ -191,13 +206,14 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   var uploadButtonInit = false
   fun setupUploadBtn() {
+    val MT = ::setupUploadBtn.name
     uploadButtonInit = true
 
     if (!DBG.UPL) return
 
-    LOG.E(TAG, "$METHOD: setup upload button")
+    LOG.E(TG, "$MT: setup upload button")
     btnUpload.setOnClickListener {
-      LOG.E(TAG, "$METHOD: clicked upload")
+      LOG.E(TG, "$MT: clicked upload")
       scope.launch(Dispatchers.IO) { // TODO:PMX UPL OK?
         utlUi.disable(groupUpload)
         utlUi.disable(btnUpload)

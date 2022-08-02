@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
@@ -50,7 +50,7 @@ class SmasChatViewModel @Inject constructor(
         private val RFH: RetrofitHolderSmas,
         private val dsChat: SmasDataStore,
         dsCvMap: CvMapDataStore,
-        private val dsMisc: SpaceFilterDS,
+        private val dsMisc: MiscDS,
 ) : AndroidViewModel(_application) {
 
   val tag = "vm-smas-chat"

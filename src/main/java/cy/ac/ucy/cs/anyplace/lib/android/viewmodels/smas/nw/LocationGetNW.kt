@@ -1,8 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import androidx.lifecycle.viewModelScope
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
@@ -15,8 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.smas.models.UserLocations
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
+import cy.ac.ucy.cs.anyplace.lib.android.utils.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
@@ -44,13 +41,15 @@ class LocationGetNW(
         private val VM: SmasMainViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
+  private val TG = "nw-location-get"
+  private val notify = app.notify
+  private val scope = VM.viewModelScope
+  private val utlErr by lazy { UtilErr() }
 
   /** Another user in alert mode */
   val alertingUser: MutableStateFlow<UserLocation?> = MutableStateFlow(null)
 
-  val tag = "nw-location-get"
-
-  private val err by lazy { SmasErrors(app, VM.viewModelScope) }
+  private val err by lazy { SmasErrors(app, scope) }
 
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<UserLocations>> = MutableStateFlow(NetworkResult.Unset())
@@ -60,20 +59,21 @@ class LocationGetNW(
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
-    LOG.D3(TAG, "LocationGet")
+    val MT = ::safeCall.name
+    LOG.D3(TG, MT)
     smasUser = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
         val response = repo.remote.locationGet(ChatUserAuth(smasUser))
-        LOG.D4(TAG, "LocationGet: ${response.message()}" )
+        LOG.D4(TG, "$MT: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch(e: Exception) {
-        val msg = "$TAG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
+        val msg = "$TG: Not Found." + "\nURL: ${RH.retrofit.baseUrl()}"
         handleException(msg, e)
       }
     } else {
@@ -82,7 +82,8 @@ class LocationGetNW(
   }
 
   private fun handleResponse(resp: Response<UserLocations>): NetworkResult<UserLocations> {
-    LOG.D3(TAG)
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
@@ -97,53 +98,41 @@ class LocationGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TAG, "handleResponse: unsuccessful")
+      LOG.E(TG, "$MT: unsuccessful")
     }
-
     return NetworkResult.Error("$TAG: ${resp.message()}")
   }
 
   private fun handleException(msg:String, e: Exception) {
+    val MT = ::handleException.name
     resp.value = NetworkResult.Error(msg)
-    LOG.E(TAG, msg)
-    LOG.E(TAG, e)
+    LOG.E(TG, "$MT: msg")
+    LOG.E(TG, MT, e)
   }
 
-  var errCnt = 0
-  var errNoInternetShown = false
   suspend fun collect(VMchat: SmasChatViewModel, gmap: GmapWrapper) {
-    LOG.D3()
+    val MT = ::collect.name
+    LOG.D3(TG, MT)
 
     resp.collect {
       when (it)  {
         is NetworkResult.Success -> {
           val locations = it.data
-          LOG.D4(TAG, "Got user locations: ${locations?.rows?.size}")
+          LOG.D4(TG, "$MT: Got user locations: ${locations?.rows?.size}")
           processUserLocations(VMchat, locations, gmap)
         }
         is NetworkResult.Error -> {
-          LOG.D3(TAG, "Error: msg: ${it.message}")
+          LOG.D3(TG, "$MT: Error: msg: ${it.message}")
           if (!err.handle(app, it.message, "loc-get")) {
             val msg = it.message ?: "unspecified error"
-            // dont flood user with messages
-
-            // show just one internet related msg
-            if (msg != C.MSG_ERR_ILLEGAL_STATE) errNoInternetShown=true
-            errCnt+=1
-            if((errCnt < C.MAX_ERR_MSGS && msg != C.ERR_MSG_NO_INTERNET)
-                    || !errNoInternetShown ) {
-              app.snackbarShort(VM.viewModelScope, msg)
-              LOG.W(TAG, "$tag: $msg")
-            } else {
-              LOG.E(TAG, "$tag: [SUPPRESSING ERR MSGS]")
-              LOG.E(TAG, "$tag: $msg")
-            }
+            utlErr.handlePollingRequest(app, scope, msg)
           }
         }
         else -> {}
       }
     }
   }
+
 
   /**
    * Processes the received locations:
@@ -157,13 +146,15 @@ class LocationGetNW(
    */
   private fun processUserLocations(
           VMchat: SmasChatViewModel, locations: UserLocations?, gmap: GmapWrapper) {
-    LOG.D3(TAG_METHOD)
+    val MT = ::processUserLocations.name
+
+    LOG.D3(TG, MT)
     if (locations == null) return
 
-    val FW = LevelWrapper(app.level.value!!, app.wSpace)
+    val LW = LevelWrapper(app.level.value!!, app.wSpace)
     val sameFloorUsers = locations.rows.filter { userLocation ->
-      userLocation.buid == FW.wSpace.obj.buid &&  // same space
-              userLocation.level == FW.obj.number.toInt() && // same deck
+      userLocation.buid == LW.wSpace.obj.buid &&  // same space
+              userLocation.level == LW.obj.number.toInt() && // same deck
               userLocation.uid != smasUser.uid // not current user
     }
 
@@ -184,20 +175,19 @@ class LocationGetNW(
     }
 
     // pick the first alerting user
-    // CHECK edge case: more than one?
     if (alertingUsers.isNotEmpty()) {
       alertingUser.value = alertingUsers[0]
     } else {
      alertingUser.value = null
     }
 
-    LOG.D3(TAG, "UserLocations: current floor: ${FW.prettyLevelName()}")
+    LOG.D3(TG, "$MT: : current floor: ${LW.prettyLevelName()}")
     // val dataset = MutableList<>(); // TODO: scalability?
     gmap.renderUserLocations(sameFloorUsers)
 
     if (DBG.D2) {
       sameFloorUsers.forEach {
-        LOG.D4(TAG, "User: ${it.uid} on floor: ${it.level}")
+        LOG.D4(TG, "$MT: User: ${it.uid} on floor: ${it.level}")
       }
     }
   }
@@ -209,9 +199,10 @@ class LocationGetNW(
    */
   var triedAutosettingLocation = false
   private fun autoSetInitialLocation(ownLocation: UserLocation) {
+    val MT = ::autoSetInitialLocation.name
     if (triedAutosettingLocation) return
 
-    VM.viewModelScope.launch(Dispatchers.IO) {
+    scope.launch(Dispatchers.IO) {
       val prefsCvMap = app.dsCvMap.read.first()
       if (prefsCvMap.autoSetInitialLocation && !app.hasLastLocation() ) {
         triedAutosettingLocation=true
@@ -219,10 +210,10 @@ class LocationGetNW(
         if (utlTime.isWithinMinutes(ownLocation.time, 10)) {
           app.locationSmas.update {
             val coord = ownLocation.toCoord()
-            LOG.E(TAG, "RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
+            LOG.E(TG, "$MT RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
-          app.snackbarShort(VM.viewModelScope, "Restored last location.")
+          notify.short(scope, "Restored last location.")
           delay(500)
 
           VM.ui.map.moveToLocation(ownLocation.toCoord().toLatLng())
@@ -231,17 +222,17 @@ class LocationGetNW(
     }
   }
 
-
   /**
    * Getting the locations includes [lastMsgsTs].
    * If it's newer than the previos one (ion [repo.local]), then we fetch the messages again
    */
   private fun checkForNewMsgs(VMchat: SmasChatViewModel, lastMsgTs: Long) {
+    val MT = ::checkForNewMsgs.name
     val localTs = repo.local.getLastMsgTimestamp()
-    LOG.V2(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}")
+    LOG.V2(TG, "$MT: ${VM.hasNewMsgs(localTs, lastMsgTs)}")
 
     if (VM.hasNewMsgs(localTs, lastMsgTs)) {
-      LOG.V2(TAG, "$METHOD: ${VM.hasNewMsgs(localTs, lastMsgTs)}: pulling msgs..")
+      LOG.V2(TG, "$MT: ${VM.hasNewMsgs(localTs, lastMsgTs)}: pulling msgs..")
       VMchat.nwPullMessages()
     }
   }

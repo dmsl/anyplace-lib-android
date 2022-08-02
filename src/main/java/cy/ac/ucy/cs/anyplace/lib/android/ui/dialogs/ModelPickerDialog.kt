@@ -14,8 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -23,12 +21,12 @@ import java.lang.IllegalStateException
 
 class ModelPickerDialog(private val dsCv: CvDataStore):
         DialogFragment() {
+  val TG = "dialog-model-picker"
 
   companion object {
     /** Creating the dialog. */
     fun SHOW(fragmentManager: FragmentManager,
-             dsCv: CvDataStore
-    ) {
+             dsCv: CvDataStore) {
       val args = Bundle()
 
       val dialog = ModelPickerDialog(dsCv)
@@ -43,7 +41,6 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     return activity?.let {
       _binding = DialogPickModelBinding.inflate(layoutInflater)
-      // _binding = DialogPickModelBinding.inflate(LayoutInflater.from(context)) // CLR:PM
       val builder= AlertDialog.Builder(it)
 
       // isCancelable = true
@@ -55,7 +52,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       setupButtonConfirm(dialog)
 
       return dialog
-    }?: throw IllegalStateException("$TAG activity is null.")
+    }?: throw IllegalStateException("$TG activity is null.")
   }
 
   /**
@@ -65,7 +62,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
     val rbGroup = binding.radioGroupOptions
     lifecycleScope.launch {
       val selectedModel = dsCv.read.first().modelName
-      LOG.D2(TAG, "setupRadioButtons: selected model: $selectedModel")
+      LOG.D2(TG, "setupRadioButtons: selected model: $selectedModel")
 
       DetectionModel.list.forEach {
         val rb = RadioButton(context)
@@ -88,7 +85,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
       val rbSelectedId = rbGroup.checkedRadioButtonId
       val rb = binding.radioGroupOptions.findViewById<RadioButton>(rbSelectedId)
       val selectedModel = rb.tag.toString().lowercase()
-      LOG.W(TAG, "Selected new DNN Model: $selectedModel")
+      LOG.W(TG, "Selected new DNN Model: $selectedModel")
       dsCv.setModelName(selectedModel)
       dialog.dismiss()
     }

@@ -13,6 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.enti
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.localizationFingerprintTempToEntity
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
@@ -36,12 +37,14 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   suspend fun insertMsg(msg: ChatMsg) {
-    LOG.D4("DB: insert: ${msg.mid}: ${ChatMsgHelper.content(msg)}")
+    val MT = ::insertMsg.name
+    LOG.D4("$MT: DB: insert: ${msg.mid}: ${ChatMsgHelper.content(msg)}")
     DAO.insertChatMsg(chatMsgtoEntity(msg))
   }
 
   fun dropMsgs() {
-    LOG.D2(TG, "deleting all msgs")
+    val MT = ::dropMsgs.name
+    LOG.D2(TG, "$MT: deleting all msgs")
     DAO.dropMsgs()
   }
 
@@ -58,7 +61,8 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   suspend fun insertCvModelClass(o: CvModelClass) {
-    LOG.D4(TG, "DB: insert: CvModelClass: ${o.cid}: ${o.name}")
+    val MT = ::insertCvModelClass.name
+    LOG.D4(TG, "$MT DB: insert: CvModelClass: ${o.cid}: ${o.name}")
     DAO.insertCvModelClass(cvModelClassToEntity(o))
   }
 
@@ -72,14 +76,16 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun dropCvModelClasses() {
-    LOG.D2(TG, "deleting all Cv Models")
+    val MT = ::dropCvModelClasses.name
+    LOG.D2(TG, "$MT: deleting all Cv Models")
     DAO.dropCvModelClasses()
   }
 
   fun getCvModelIds() : List<Int> = DAO.getModelIds()
 
   suspend fun insertCvMapRow(o: CvMapRow) {
-    LOG.D2("DB: insert: CvModelClass: ${o.flid}: ${o.buid}")
+    val MT = ::insertCvMapRow.name
+    LOG.D2("$MT: DB: insert: CvModelClass: ${o.flid}: ${o.buid}")
     DAO.insertCvMapRow(cvMapRowToEntity(o))
   }
 
@@ -89,7 +95,8 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun dropCvMap() {
-    LOG.D2(TG, "deleting CvMap")
+    val MT = ::dropCvMap.name
+    LOG.D2(TG, "$MT: deleting CvMap")
     DAO.dropCvMap()
   }
 
@@ -117,9 +124,9 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     val tracking = VM.trackingMode.first() == TrackingMode.on
     if ((VM.app.hasDevMode() && !tracking) || msg.isNotEmpty()) {
       val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
-      VM.app.snackbarLongDEV(VM.viewModelScope, devMsg)
+      VM.notify.longDEV(VM.viewModelScope, devMsg)
     } else if (msg.isNotEmpty()) {
-      VM.app.snackbarLong(VM.viewModelScope, msg)
+      VM.notify.long(VM.viewModelScope, msg)
     }
   }
 }

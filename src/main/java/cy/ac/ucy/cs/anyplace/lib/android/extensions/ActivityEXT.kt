@@ -11,6 +11,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBarNotifier
 
 fun ComponentActivity.registerForActivityResult(
         callback: ActivityResultCallback<ActivityResult>):ActivityResultLauncher<Intent> {
@@ -19,16 +20,23 @@ fun ComponentActivity.registerForActivityResult(
 }
 
 // EXTENSION FUNCTIONS
-val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
 val Activity.dsAnyplace: AnyplaceDataStore get() = this.app.dsAnyplace
 val Activity.dsCv: CvDataStore get() = this.app.dsCv
 val Activity.dsCvMap: CvMapDataStore get() = this.app.dsCvMap
-val Activity.dsMisc: SpaceFilterDS get() = this.app.dsSpaceSelector
+val Activity.dsMisc: MiscDS get() = this.app.dsMisc
 val Activity.dsUserAP: ApUserDataStore get() = this.app.dsUserAP
 
-val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
+val Activity.app: AnyplaceApp get() = this.application as AnyplaceApp
+/** Snackbar for notifications (from [AnyplaceApp.notify]) */
+val Activity.notify: UtilSnackBarNotifier get() = app.notify
 
+/** Snackbar for notifications (from [AnyplaceApp.notify]) */
+val DialogFragment.app: AnyplaceApp get() = requireActivity().application as AnyplaceApp
+val DialogFragment.notify: UtilSnackBarNotifier get() = app.notify
+
+/** Snackbar for notifications (from [AnyplaceApp.notify]) */
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
+val AndroidViewModel.notify: UtilSnackBarNotifier get() = app.notify
 
 const val TAG_ANYPLACE = "anyplace"
 

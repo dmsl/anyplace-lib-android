@@ -155,6 +155,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     VM.ui.map.obj.setOnMapLongClickListener {
       LOG.W(TG, "$MT: long click")
       lifecycleScope.launch(Dispatchers.IO) {
+        // tutNavLongPress
+
         if (VM.trackingMode.first() != TrackingMode.off
                 && VM.localizationMode.first() != LocalizationMode.stopped) {
           LOG.W(TG, "$MT: ignoring long-click (localization / tracking)")
@@ -166,10 +168,16 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  private fun forceUserLocation(forcedLocation: LatLng) {
+  private suspend fun forceUserLocation(forcedLocation: LatLng) {
     val MT = ::forceUserLocation.name
     LOG.W(TG, "$MT: $forcedLocation")
-    app.snackbarShort(lifecycleScope, "Location set manually (long-clicked)")
+    val msg = "Location set manually (long-clicked)"
+
+    if (app.dsMisc.showTutorialNavLongPress()) {
+      notify.INFO(lifecycleScope, "Long-press in $actName sets manually\n the user location on the map.\nDONE: $msg")
+    } else {
+      notify.short(lifecycleScope, msg)
+    }
 
     val floorNum = app.wLevel!!.levelNumber()
     val loc = forcedLocation.toCoord(floorNum)
@@ -394,12 +402,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   private fun setupButtonAlert() {
     btnAlert = findViewById(R.id.btnAlert)
     btnAlert.setOnClickListener {
-      app.snackbarShort(lifecycleScope, "Long-press to toggle alert")
+      notify.short(lifecycleScope, "Long-press to toggle alert")
     }
 
     btnAlert.setOnLongClickListener {
       if (app.locationSmas.value is LocalizationResult.Unset) {
-        app.snackbarLong(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
+        notify.long(lifecycleScope, "Please find location first,\nor set it manually (map long-press)")
         return@setOnLongClickListener true
       }
 
@@ -523,7 +531,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!app.hasLastLocation()) {
           val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
-          app.snackbarInf(lifecycleScope, msg)
+          notify.INF(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
           return@launch
         }

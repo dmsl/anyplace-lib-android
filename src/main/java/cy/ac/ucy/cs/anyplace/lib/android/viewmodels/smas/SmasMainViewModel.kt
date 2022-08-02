@@ -11,12 +11,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.SpaceFilterDS
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
@@ -44,7 +43,7 @@ class SmasMainViewModel @Inject constructor(
         val dsChat: SmasDataStore,
         dsCv: CvDataStore,
         dsCvMap: CvMapDataStore,
-        dsMisc: SpaceFilterDS,
+        dsMisc: MiscDS,
         RHsmas: RetrofitHolderSmas,
         RHap: RetrofitHolderAP):
         CvViewModel(application, dsCv, dsMisc, dsCvMap, repoAP, RHap, repoSmas, RHsmas) {
@@ -57,7 +56,7 @@ class SmasMainViewModel @Inject constructor(
 
   override fun prefWindowLocalizationMs(): Int {
     // modify properly for Smas?
-    return C.DEFAULT_PREF_CVLOG_WINDOW_LOCALIZATION_MS.toInt()
+    return C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS.toInt()
   }
 
   //// RETROFIT UTILS:
