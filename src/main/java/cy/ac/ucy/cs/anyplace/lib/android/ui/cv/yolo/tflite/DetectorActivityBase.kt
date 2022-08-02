@@ -9,7 +9,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
@@ -156,6 +158,7 @@ abstract class DetectorActivityBase : CameraActivity(),
     }
   }
 
+
   suspend fun setupDetector(): Boolean {
     val MT = ::setupDetector.name
     LOG.W(TG, "$MT: setting up detector..")
@@ -166,12 +169,20 @@ abstract class DetectorActivityBase : CameraActivity(),
       val prefsCvMap = VMD.dsCvMap.read.first()
       scanDelay = prefsCvMap.scanDelay.toLong()
 
+      val cache = Cache(applicationContext)
+      val filenameWeights=DetectionModel.filenameWeights(VMD.model, cache)
+      val filenameLabels=DetectionModel.filenameLabels(VMD.model, cache)
+
+      LOG.W(TG, "$MT: weights: $filenameWeights")
+      LOG.W(TG, "$MT:  labels: $filenameLabels")
+
       VMD.detector = YoloV4Classifier.create(
               applicationContext,
               assets,
-              VMD.model.filename,
-              VMD.model.labelFilePath,
+              filenameWeights,
+              filenameLabels,
               VMD.model.isQuantized)
+
       VMD.setDetectorLoaded()
     } catch (e: IOException) {
       val msg = "Cant initialize classifier"

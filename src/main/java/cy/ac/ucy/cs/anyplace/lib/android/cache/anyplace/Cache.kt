@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
@@ -21,9 +22,8 @@ import java.nio.file.Paths
  *
  */
 open class Cache(val ctx: Context) {
-  val tag = "cache"
-
   companion object {
+    private const val TG = "cache"
     // FILES
     //// Space
     const val JS_SPACE="space.json"
@@ -34,17 +34,20 @@ open class Cache(val ctx: Context) {
     const val JS_SPACE_POIS="s.pois.json"
     //// Space/Floor
     const val PNG_FLOORPLAN = "f.png"
+
+    const val FILE_MODEL_WEIGHTS="model.tflite"
+    const val FILE_MODEL_LABELS="obj.names"
   }
 
   private val gson : Gson by lazy { GsonBuilder().create() }
 
   val baseDir get() = "${ctx.filesDir}"
 
+  val modelsDir get() = "$baseDir/models"
   val spacesDir get() = "$baseDir/spaces"
   val fingerprintsFilename get() = "$baseDir/cv-fingerprints.jsonl"
 
   // SPACES
-
   fun dirSpace(buid: String) : String {  return "$spacesDir/$buid"  }
   fun dirSpace(space: Space) : String {  return "$spacesDir/${space.buid}"  }
   fun dirSpace(level: Level) : String {  return "$spacesDir/${level.buid}" }
@@ -56,12 +59,12 @@ open class Cache(val ctx: Context) {
 
   fun readJsonSpace(buid: String): Space? {
     val filename = jsonSpace(buid)
-    LOG.V4(tag, "$METHOD: file: $filename")
+    LOG.V4(TG, "$METHOD: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, Space::class.java)
     } catch (e: Exception) {
-      LOG.E(tag, "$METHOD: $filename: ${e.message}")
+      LOG.E(TG, "$METHOD: $filename: ${e.message}")
     }
     return null
   }
@@ -73,10 +76,10 @@ open class Cache(val ctx: Context) {
       val fw = FileWriter(File(filename))
       Gson().toJson(space, fw)
       fw.close()
-      LOG.V3(tag, "$METHOD: $filename")
+      LOG.V3(TG, "$METHOD: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$METHOD: $filename: ${e.message}")
+      LOG.E(TG, "$METHOD: $filename: ${e.message}")
       false
     }
   }
@@ -96,14 +99,14 @@ open class Cache(val ctx: Context) {
       val fw= FileWriter(File(filename))
       Gson().toJson(lastVal, fw)
       fw.close()
-      LOG.V3(tag, "$method: $lastVal")
-      LOG.V3(tag, "$method: $filename")
+      LOG.V3(TG, "$method: $lastVal")
+      LOG.V3(TG, "$method: $filename")
 
-      LOG.W(tag, "$method: CACHED: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
+      LOG.W(TG, "$method: CACHED: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
 
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
       false
     }
   }
@@ -112,14 +115,14 @@ open class Cache(val ctx: Context) {
     val method = ::readSpaceLastValues.name
 
     val filename = jsonSpaceLastValues(space)
-    LOG.V4(tag, "$method: file: $filename")
+    LOG.V4(TG, "$method: file: $filename")
     try {
       val json = File(filename).readText()
 
-      LOG.W(tag, "$method: CLOAD: lastval from: ($filename(") // CLR:PM
+      LOG.W(TG, "$method: CLOAD: lastval from: ($filename(") // CLR:PM
       return Gson().fromJson(json, LastValSpaces::class.java)
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -138,7 +141,7 @@ open class Cache(val ctx: Context) {
       fw.close()
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
       false
     }
   }
@@ -146,12 +149,12 @@ open class Cache(val ctx: Context) {
   fun readSpaceConnections(space: Space): ConnectionsResp? {
     val method = ::readSpaceConnections.name
     val filename = jsonSpaceConnections(space)
-    LOG.V4(tag, "$method: file: $filename")
+    LOG.V4(TG, "$method: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, ConnectionsResp::class.java)
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -170,7 +173,7 @@ open class Cache(val ctx: Context) {
       fw.close()
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
       false
     }
   }
@@ -178,12 +181,12 @@ open class Cache(val ctx: Context) {
   fun readSpacePOIs(space: Space): POIsResp? {
     val method = ::readSpacePOIs.name
     val filename = jsonSpacePOIs(space)
-    LOG.V4(tag, "$method: file: $filename")
+    LOG.V4(TG, "$method: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, POIsResp::class.java)
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -200,12 +203,12 @@ open class Cache(val ctx: Context) {
   fun readJsonFloors(buid: String): Levels? {
     val method = ::readJsonFloors.name
     val filename = jsonFloors(buid)
-    LOG.V4(tag, "$method: file: $filename")
+    LOG.V4(TG, "$method: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, Levels::class.java)
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
     }
     return null
   }
@@ -218,10 +221,10 @@ open class Cache(val ctx: Context) {
       val fw = FileWriter(File(filename))
       Gson().toJson(levels, fw)
       fw.close()
-      LOG.V3(tag, "$method: $filename")
+      LOG.V3(TG, "$method: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$method: $filename: ${e.message}")
       false
     }
   }
@@ -250,7 +253,7 @@ open class Cache(val ctx: Context) {
       ostream.close()
       true
     } catch (e: Exception) {
-      LOG.E(tag, "$method: Failed: ${floorplan(level)}: ${e.message}")
+      LOG.E(TG, "$method: Failed: ${floorplan(level)}: ${e.message}")
       false
     }
   }
@@ -260,10 +263,10 @@ open class Cache(val ctx: Context) {
    */
   fun readLevelplan(level: Level): Bitmap? {
     val method = ::readLevelplan.name
-    LOG.D2(tag, "$method: level: buid: ${level.buid}: name: ${level.name}")
+    LOG.D2(TG, "$method: level: buid: ${level.buid}: name: ${level.name}")
 
     val filename=floorplan(level)
-    LOG.V3(tag, "$method: file: $filename")
+    LOG.V3(TG, "$method: file: $filename")
     return BitmapFactory.decodeFile(filename)
   }
 
@@ -271,14 +274,14 @@ open class Cache(val ctx: Context) {
 
   fun storeFingerprints(userCoords: UserCoordinates, detectionsReq: List<CvObjectReq>, model: DetectionModel) {
     val method = ::storeFingerprints.name
-    LOG.D(tag, "$method: to local cache")
+    LOG.D(TG, "$method: to local cache")
     val time = utlTime.epoch().toString()
     val entry = FingerprintScan(userCoords, time, detectionsReq, model.idSmas)
 
     // val gson: Gson = GsonBuilder().create()
     val fw= FileWriter(File(fingerprintsFilename), true)
     val lineEntry = gson.toJson(entry)
-    LOG.D2(tag, "$method: ENTRY: $lineEntry")
+    LOG.D2(TG, "$method: ENTRY: $lineEntry")
     fw.write(lineEntry + "\n")
     fw.close()
   }
@@ -297,7 +300,7 @@ open class Cache(val ctx: Context) {
       var lines = 0
       for (line in Files.readAllLines(Paths.get(fingerprintsFilename))) {
         if (line != null && line.trim { it <= ' ' }.isNotEmpty()) {
-          lines ++
+          lines++
         }
       }
       lines
@@ -351,6 +354,69 @@ open class Cache(val ctx: Context) {
 
   fun hasSpaceAndFloor(buid: String): Boolean {
     return hasJsonSpace(buid) && hasJsonFloors(buid)
+  }
+
+  fun dirModel(modelid: String) : String {  return "$modelsDir/$modelid"  }
+  fun fileModelWeights(modelid: String) : String {  return "${dirModel(modelid)}/$FILE_MODEL_WEIGHTS"  }
+  fun fileModelLabels(modelid: String) : String {  return "${dirModel(modelid)}/$FILE_MODEL_LABELS"  }
+  fun hasCvModelFilesDownloaded(id: Int): Boolean {
+    val mid = id.toString()
+    if (!File(modelsDir).exists()) File(modelsDir).mkdirs()
+    return File(dirModel(dirModel(mid))).exists()
+            && File(fileModelWeights(mid)).exists()
+            && File(fileModelLabels(mid)).exists()
+  }
+
+  fun deleteCvModelFiles(): Boolean {
+    val MT = ::deleteCvModelFiles.name
+    return try {
+      File(modelsDir).deleteRecursively()
+      true
+    } catch (e: Exception) {
+      LOG.E(TG, MT, e)
+      false
+    }
+  }
+
+  fun storeModelFileLabels(modelid: Int, classes: String): Boolean {
+    val MT = ::storeModelFileLabels.name
+
+    LOG.W(TG, MT)
+    val mid = modelid.toString()
+    return try {
+      val dir = dirModel(mid)
+      if (!File(dir).exists()) File(dir).mkdirs()
+
+      File(fileModelLabels(mid)).writeText(classes)
+      true
+    } catch (e: Exception) {
+      LOG.E(TG, "$MT: ${e.message}/${e.javaClass}")
+      File(fileModelLabels(mid)).delete()
+      false
+    }
+  }
+
+  fun storeModelFileWeights(modelid: Int, dataBase64: String): Boolean {
+    val MT = ::storeModelFileLabels.name
+    LOG.W(TG, MT)
+    val mid = modelid.toString()
+    return try {
+      val dir = dirModel(mid)
+      if (!File(dir).exists()) File(dir).mkdirs()
+
+      val binaryData = utlImg.base64toBytes(dataBase64)
+      if (binaryData==null) {
+        LOG.E(TG, "$MT: failed to decode base 64")
+        return false
+      }
+
+      File(fileModelWeights(mid)).writeBytes(binaryData)
+      true
+    } catch (e: Exception) {
+      LOG.E(TG, "$MT: ${e.message}/${e.javaClass}")
+      File(fileModelWeights(mid)).delete()
+      false
+    }
   }
 
 }

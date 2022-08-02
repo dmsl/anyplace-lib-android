@@ -42,6 +42,9 @@ class SmasRemoteDS @Inject constructor(
   suspend fun messagesSend(r: MsgSendReq) : Response<MsgSendResp> = RH.api.messageSend(RH.path, r)
 
   suspend fun cvModelsGet(r: ChatUserAuth) : Response<CvModelsResp> = RH.api.cvModelsGet(RH.path, r)
+
+  suspend fun cvModelFilesGet(r: CvModelFilesReq) : Response<CvModelFilesResp> = RH.api.cvModelFilesGet(RH.path, r)
+
   suspend fun cvFingerprintSend(r: FingerprintSendReq) : Response<FingerprintSendResp>
           = RH.api.cvFingerprintSend(RH.path, r)
 

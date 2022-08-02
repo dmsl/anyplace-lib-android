@@ -1,12 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace
 
+import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.INPUT_SIZE
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.OUTPUT_WIDTH_TINY
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 
 /**
  * Enum which describes tflite models used by Detector.
- *
- * TODO:PM download online.
  */
 enum class DetectionModel(
         /** model's name */
@@ -48,7 +48,7 @@ enum class DetectionModel(
   );
 
   companion object {
-     val list = listOf(LASHCO.modelName, UCYCO.modelName, COCO.modelName)
+     val list = listOf(LASHCO, UCYCO, COCO)
 
     fun getModelAndDescription(modelName: String) : String {
       return "${modelName.uppercase()}: ${getDescription(modelName)}"
@@ -63,5 +63,18 @@ enum class DetectionModel(
       }
       return detModel?.desc.toString()
     }
+
+    /** Return the label files (classes / obj.names) */
+    fun filenameLabels(model: DetectionModel, cache: Cache) : String {
+      return if (DBG.USE_ASSETS) model.labelFilePath
+      else cache.fileModelLabels(model.idSmas.toString())
+    }
+
+    /** Return the weights (tflite)  */
+    fun filenameWeights(model: DetectionModel, cache: Cache) : String {
+      return if (DBG.USE_ASSETS) model.filename
+      else cache.fileModelWeights(model.idSmas.toString())
+    }
+
   }
 }

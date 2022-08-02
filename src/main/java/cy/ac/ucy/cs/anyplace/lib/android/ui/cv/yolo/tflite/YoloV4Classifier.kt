@@ -20,9 +20,11 @@ import android.content.res.AssetManager
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.env.Utils
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.nnapi.NnApiDelegate
 import org.tensorflow.lite.gpu.GpuDelegate
+import java.io.File
 import java.io.IOException
 import java.lang.Exception
 import java.lang.RuntimeException
@@ -44,6 +46,7 @@ import kotlin.math.sqrt
 open class YoloV4Classifier private constructor()
   : Classifier {
   companion object {
+    private const val TG = "yolo-classifier"
 
     /**
      * Initializes a native TensorFlow session for classifying images.
@@ -62,14 +65,19 @@ open class YoloV4Classifier private constructor()
             isQuantized: Boolean
     ): Classifier {
       val d = YoloV4Classifier()
-      
       d.ctx=ctx
 
-      val labelsFilename = labelFilename
-              .split("file:///android_asset/")
-              .toTypedArray()[1]
-      d.labels = assetManager.open(labelsFilename)
-              .use { it.readBytes() }
+      val inputSteam = if (DBG.USE_ASSETS) {
+        val labelsFilename = labelFilename
+                .split("file:///android_asset/")
+                .toTypedArray()[1]
+        assetManager.open(labelsFilename)
+      } else {
+        File(labelFilename).inputStream()
+      }
+
+      d.labels =
+              inputSteam.use { it.readBytes() }
               .decodeToString()
               .trim()
               .split("\n")
@@ -323,55 +331,61 @@ open class YoloV4Classifier private constructor()
   }
 
   private fun getDetectionsForTiny(byteBuffer: ByteBuffer, bitmap: Bitmap): ArrayList<Recognition> {
+    val MT = ::getDetectionsForTiny.name
     val detections = ArrayList<Recognition>()
-    val outputMap: MutableMap<Int, Any> = HashMap()
-    outputMap[0] = Array(1) {
-      Array(OUTPUT_WIDTH_TINY[0]) {
-        FloatArray(
-          4
-        )
-      }
-    }
-    outputMap[1] = Array(1) {
-      Array(OUTPUT_WIDTH_TINY[1]) {
-        FloatArray(
-          labels.size
-        )
-      }
-    }
-    val inputArray = arrayOf<Any>(byteBuffer)
-    tfLite!!.runForMultipleInputsOutputs(inputArray, outputMap)
-    val gridWidth = OUTPUT_WIDTH_TINY[0]
-    val bboxes = outputMap[0] as Array<Array<FloatArray>>
-    val out_score = outputMap[1] as Array<Array<FloatArray>>
-    for (i in 0 until gridWidth) {
-      var maxClass = 0f
-      var detectedClass = -1
-      val classes = FloatArray(labels.size)
-      for (c in labels.indices) {
-        classes[c] = out_score!![0][i][c]
-      }
-      for (c in labels.indices) {
-        if (classes[c] > maxClass) {
-          detectedClass = c
-          maxClass = classes[c]
+    try {
+      val outputMap: MutableMap<Int, Any> = HashMap()
+      outputMap[0] = Array(1) {
+        Array(OUTPUT_WIDTH_TINY[0]) {
+          FloatArray(
+                  4
+          )
         }
       }
-      val score = maxClass
-      if (score > objThresh) {
-        val xPos = bboxes!![0][i][0]
-        val yPos = bboxes[0][i][1]
-        val w = bboxes[0][i][2]
-        val h = bboxes[0][i][3]
-        val rectF = RectF(
-          Math.max(0f, xPos - w / 2),
-          Math.max(0f, yPos - h / 2),
-          Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
-          Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
-        )
-
-        detections.add(Recognition(ctx, bitmap,"" + i, labels[detectedClass], score, rectF, detectedClass))
+      outputMap[1] = Array(1) {
+        Array(OUTPUT_WIDTH_TINY[1]) {
+          FloatArray(
+                  labels.size
+          )
+        }
       }
+      val inputArray = arrayOf<Any>(byteBuffer)
+      tfLite!!.runForMultipleInputsOutputs(inputArray, outputMap)
+      val gridWidth = OUTPUT_WIDTH_TINY[0]
+      val bboxes = outputMap[0] as Array<Array<FloatArray>>
+      val out_score = outputMap[1] as Array<Array<FloatArray>>
+      for (i in 0 until gridWidth) {
+        var maxClass = 0f
+        var detectedClass = -1
+        val classes = FloatArray(labels.size)
+        for (c in labels.indices) {
+          classes[c] = out_score!![0][i][c]
+        }
+        for (c in labels.indices) {
+          if (classes[c] > maxClass) {
+            detectedClass = c
+            maxClass = classes[c]
+          }
+        }
+        val score = maxClass
+        if (score > objThresh) {
+          val xPos = bboxes!![0][i][0]
+          val yPos = bboxes[0][i][1]
+          val w = bboxes[0][i][2]
+          val h = bboxes[0][i][3]
+          val rectF = RectF(
+                  Math.max(0f, xPos - w / 2),
+                  Math.max(0f, yPos - h / 2),
+                  Math.min((bitmap.width - 1).toFloat(), xPos + w / 2),
+                  Math.min((bitmap.height - 1).toFloat(), yPos + h / 2)
+          )
+
+          detections.add(Recognition(ctx, bitmap,"" + i, labels[detectedClass], score, rectF, detectedClass))
+        }
+      }
+    } catch(e: Exception) {
+      LOG.E(TG,"$MT: yolo crash: ${e.javaClass} ${e.message}")
+      e.printStackTrace()
     }
     return detections
   }

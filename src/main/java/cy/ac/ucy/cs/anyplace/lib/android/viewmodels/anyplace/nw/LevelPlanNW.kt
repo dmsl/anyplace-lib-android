@@ -69,7 +69,7 @@ class LevelPlanNW(
   fun loadFromAssets() {
     LOG.W(TG, "loading from asset file")
     val base64 = VM.assetReader.getFloorplan64Str()
-    val bitmap = base64?.let { utlImg.decodeBase64(it) }
+    val bitmap = base64?.let { utlImg.base64toBitmap(it) }
     this.bitmap.value =
             when (bitmap) {
               null -> NetworkResult.Error("Cant read asset deckplan.")

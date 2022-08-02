@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.net.Uri
 import android.util.Base64
 import android.webkit.MimeTypeMap
@@ -14,6 +13,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 object utlImg {
+  val TG = "utl-img"
 
   private fun returnRotatedBm(imageUri: Uri?, img: Bitmap, context: Context) : Bitmap {
     if (imageUri != null) {
@@ -53,20 +53,24 @@ object utlImg {
   }
 
   /**
-   * Decoding a base64 to a bitmap
-   * CLR:PM if this is OK. remove it.
+   * Decoding a base64 to a string
    */
-  private fun decodeBase64V2(encodedBase64: String): Bitmap? {
-    var bytes = ByteArray(0)
-    try {
-      bytes = Base64.decode(encodedBase64, Base64.DEFAULT)
+  fun base64toBytes(encodedBase64: String): ByteArray? {
+    val MT = ::base64toBytes.name
+    return try {
+      return Base64.decode(encodedBase64, Base64.DEFAULT)
+      // example: encodes then decodes
+      // val encodedString = Base64.getEncoder().withoutPadding().encodeToString(oriString.toByteArray())
+      // println(encodedString)
+      // val decodedBytes = Base64.getDecoder().decode(encodedString)
+      // String(bytes)
     } catch (e: IllegalArgumentException) {
-      LOG.E("Image cannot be displayed.")
+      LOG.E(TG, MT, e)
+      null
     }
-    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
   }
 
-  fun decodeBase64(base64: String): Bitmap? {
+  fun base64toBitmap(base64: String): Bitmap? {
     val byteArray = Base64.decode(base64, Base64.DEFAULT)
     return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
   }

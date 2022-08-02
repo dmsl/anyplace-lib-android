@@ -67,7 +67,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
 
       DetectionModel.list.forEach {
         val rb = RadioButton(context)
-        rb.tag = it.lowercase()
+        rb.tag = it.modelName.lowercase()
         rb.text = DetectionModel.getModelAndDescription(rb.tag.toString())
         rbGroup.addView(rb)
       }

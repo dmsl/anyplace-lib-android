@@ -124,13 +124,6 @@ class UiLocalization(
 
     val txt="Location Tracking"
     scope.launch(Dispatchers.IO) {
-
-      if (app.dsMisc.showTutorialNavTracking()) {
-        val msg ="TRACKING: repeatedly performing localization\nLong-press again to disable" +
-                "It automatically stops if many scan windows are empty."
-        notify.TUTORIAL(scope, msg)
-      }
-
       VM.detectionsTracking.collect {
         val detections = it.det
         LOG.E(TG, "$MT: detections: $detections")
@@ -170,6 +163,13 @@ class UiLocalization(
       utlUi.flashingLoop(btn)
       utlUi.visible(tv)
       utlUi.flashingLoop(tv)
+
+      if (app.dsMisc.showTutorialNavTracking()) {
+        val msg ="TRACKING:\nRepeatedly performing localization.\n" +
+                "It automatically stops if many scan windows are empty.\n" +
+                "Toggled with long-press"
+        notify.TUTORIAL(scope, msg)
+      }
 
       val localizationWindow=app.dsCvMap.read.first().windowLocalizationMs
       val totalDelay=TRACKING_DELAY_MS+localizationWindow.toLong()
@@ -403,7 +403,7 @@ class UiLocalization(
       utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
       utlUi.flashingLoop(btnImu)
       VM.imuEnabled=true
-      notify.short(scope, "IMU enabled [experimental]")
+      // notify.short(scope, "IMU enabled [experimental]")
     }
   }
 

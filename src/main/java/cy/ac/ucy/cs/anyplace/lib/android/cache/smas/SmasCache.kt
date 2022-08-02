@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.resize
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
@@ -17,6 +15,10 @@ import java.io.FileOutputStream
  * File Cache for SMAS (extending anyplace-lib [Cache])
  */
 class SmasCache(ctx: Context): Cache(ctx) {
+  companion object {
+    private val TG = "cache-smass"
+  }
+
   private val chatDir get() = "$baseDir/chat"
 
   //Images from the chat
@@ -45,6 +47,7 @@ class SmasCache(ctx: Context): Cache(ctx) {
   }
 
   fun saveImg(message: ChatMsg): Boolean {
+    val MT = ::saveImg.name
     if (!dirChatImgExists())
       File(dirChatImg()).mkdirs()
 
@@ -56,7 +59,7 @@ class SmasCache(ctx: Context): Cache(ctx) {
       val fileTiny = File(imgPathTiny)
       try {
         val out = FileOutputStream(file)
-        bitmap = message.msg?.let { utlImg.decodeBase64(it) }
+        bitmap = message.msg?.let { utlImg.base64toBitmap(it) }
         bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, out)
         out.flush()
         out.close()
@@ -67,7 +70,7 @@ class SmasCache(ctx: Context): Cache(ctx) {
         outTiny.flush()
         outTiny.close()
       } catch (e: Exception) {
-        LOG.E(TAG, "saveImage: $file: ${e.message}")
+        LOG.E(TG, "$MT: $file: ${e.message}")
         return false
       }
     }
@@ -76,13 +79,14 @@ class SmasCache(ctx: Context): Cache(ctx) {
   }
 
   fun readBitmap(message: ChatMsg): Bitmap? {
+    val MT = ::readBitmap.name
     var bitmap: Bitmap? = null
     if (imgExists(message.mid, message.mexten)) {
       val file = File(imgPath(message.mid, message.mexten))
       val bmOptions = BitmapFactory.Options()
       bitmap = BitmapFactory.decodeFile(file.absolutePath, bmOptions)
     }else{
-      LOG.D(TAG,"Image with id ${message.mid} was not found")
+      LOG.D(TG,"$MT: Image with id ${message.mid} was not found")
     }
     return bitmap
   }
@@ -94,7 +98,7 @@ class SmasCache(ctx: Context): Cache(ctx) {
        val bmOptions = BitmapFactory.Options()
        bitmap = BitmapFactory.decodeFile(fileTiny.absolutePath, bmOptions)
      } else {
-       LOG.D(TAG,"Tiny img with id ${message.mid} was not found")
+       LOG.D(TG,"Tiny img with id ${message.mid} was not found")
      }
     return bitmap
   }
@@ -102,7 +106,8 @@ class SmasCache(ctx: Context): Cache(ctx) {
   fun hasImgCache() = File(dirChatImg()).exists()
 
   fun clearImgCache() {
-    LOG.W(TAG, "$METHOD: Clearing all image cache..")
+    val MT = ::clearImgCache.name
+    LOG.W(TG, "$MT: Clearing all image cache..")
     File(dirChatImg()).deleteRecursively()
   }
 }

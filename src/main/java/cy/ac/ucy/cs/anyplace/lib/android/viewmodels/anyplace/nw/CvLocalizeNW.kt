@@ -145,9 +145,9 @@ class CvLocalizeNW(
         when (it)  {
           is NetworkResult.Success -> {
             if (it.data==null || it.data!!.rows.isEmpty()) {
-              val msg = "Unable to localize.\nPlease collect more fingerprints with Logger\nor set manually (long-press)"
+              val msg = "Unable to localize. Consider logging more fingerprints."
               LOG.E(TG, "$MT: $msg")
-              notify.WARN(VM.viewModelScope, msg)
+              notify.warn(VM.viewModelScope, msg)
               app.locationSmas.value = LocalizationResult.Unset()
               LOG.E(TG, "$MT: Failed to get location: ${it.message.toString()}")
             } else {

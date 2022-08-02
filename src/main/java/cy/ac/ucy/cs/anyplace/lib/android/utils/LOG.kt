@@ -8,6 +8,8 @@ class DBG {
 
     const val LEVEL = 2
     const val notificationsDisabled = true // TODO:PMX
+    /** load models from assets or from remote */
+    const val USE_ASSETS = false
 
     const val D1 = LEVEL >= 1
     const val D2 = LEVEL >= 2

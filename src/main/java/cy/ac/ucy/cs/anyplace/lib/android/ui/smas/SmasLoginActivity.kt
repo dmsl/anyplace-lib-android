@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -23,7 +24,9 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +48,7 @@ class SmasLoginActivity : BaseActivity() {
   val TG = "act-login-smas"
 
   private lateinit var VM: SmasLoginViewModel
+  private lateinit var VMcv: CvViewModel
   private var _binding: ActivitySmasLoginBinding?= null
   private val binding get() = _binding!!
 
@@ -63,6 +67,7 @@ class SmasLoginActivity : BaseActivity() {
     val password = binding.password
 
     VM= ViewModelProvider(this)[SmasLoginViewModel::class.java]
+    VMcv= ViewModelProvider(this)[CvViewModel::class.java]
     VM.loginFormState.observe(this@SmasLoginActivity, Observer {
       if (it == null) return@Observer
       val loginState = it
@@ -173,12 +178,19 @@ class SmasLoginActivity : BaseActivity() {
             binding.imageViewError.visibility = View.INVISIBLE
             binding.textViewError.visibility = View.INVISIBLE
 
-            // Store user in datastore
-            val user = response.data
-            user?.let {
-              app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
-              openLoggedInActivity()
+            lifecycleScope.launch(Dispatchers.IO) {
+              // Store user in datastore
+              val user = response.data
+              user?.let {
+                app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
+                if (!DBG.SLR) {
+                  notify.INFO(lifecycleScope, "Downloading CvModels..\nPlease wait.")
+                  VMcv.nwCvModelFilesGet.downloadAllModels()
+                }
+                openLoggedInActivity()
+              }
             }
+
           }
           is NetworkResult.Error -> {
             binding.textViewError.text = response.message
@@ -196,6 +208,7 @@ class SmasLoginActivity : BaseActivity() {
       }
     } // coroutine
   }
+
 
   private fun openLoggedInActivity() {
     lifecycleScope.launch (Dispatchers.Main) {

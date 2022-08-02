@@ -72,8 +72,8 @@ open class CvViewModel @Inject constructor(
         dsCv: CvDataStore,
         private val dsMisc: MiscDS,
         dsCvMap: CvMapDataStore,
-        val repo: RepoAP,
-        val RH: RetrofitHolderAP,
+        val repoAP: RepoAP,
+        val RHap: RetrofitHolderAP,
         val repoSmas: RepoSmas,
         val RHsmas: RetrofitHolderSmas, ): DetectorViewModel(application, dsCv, dsCvMap) {
 
@@ -108,10 +108,11 @@ open class CvViewModel @Inject constructor(
   var currentTime : Long = 0
   var windowStart : Long = 0
 
-  val nwConnections by lazy { ConnectionsGetNW(app, this, RH, repo) }
-  val nwPOIs by lazy { POIsGetNW(app, this, RH, repo) }
+  val nwConnections by lazy { ConnectionsGetNW(app, this, RHap, repoAP) }
+  val nwPOIs by lazy { POIsGetNW(app, this, RHap, repoAP) }
 
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvModelFilesGet by lazy { CvModelFilesGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvMapGet by lazy { CvMapGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }

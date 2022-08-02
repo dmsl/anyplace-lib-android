@@ -33,8 +33,7 @@ class CvModelsGetNW(
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
-
-  private val tag = "nw-cv-models"
+  private val TG = "nw-cv-models"
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
   private val utlErr by lazy { UtilErr() }
 
@@ -48,13 +47,13 @@ class CvModelsGetNW(
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
-    LOG.D2(TAG, "$METHOD: $tag")
+    val MT = ::safeCall.name
+    LOG.D2(TG, MT)
     smasUser = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Loading()
-
     if (repo.local.hasCvModelClassesDownloaded()) {
-      LOG.W(TAG, "$tag: already in DB")
+      LOG.W(TG, "$TG: already in DB")
       resp.value = NetworkResult.Unset(NetworkResult.DB_LOADED)
 
       // cache (once) the model ids for faster conversion
@@ -65,23 +64,23 @@ class CvModelsGetNW(
     if (app.hasInternet()) {
       try {
         val response = repo.remote.cvModelsGet(ChatUserAuth(smasUser))
-        LOG.D4(TAG, "$tag: ${response.message()}" )
+        LOG.D4(TG, "$TG: ${response.message()}" )
         resp.value = handleResponse(response)
 
         val cvModels = resp.value.data?.rows
         if (cvModels == null) {
-          val msg = "Downloading $tag: no classes fetched"
+          val msg = "Downloading $TG: no classes fetched"
 
-          LOG.W(TAG, msg)
+          LOG.W(TG, msg)
         } else {
           cvModels.forEach {
-            LOG.V3(TAG, "CvModel: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
+            LOG.V3(TG, "$MT: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
           }
           persistToDB(cvModels)
 
         }
       } catch(e: Exception) {
-        val errMsg = utlErr.handle(app, RH, VM.viewModelScope, e, tag)
+        val errMsg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(errMsg)
       }
     } else {
@@ -104,7 +103,7 @@ class CvModelsGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TAG, "handleResponse: unsuccessful")
+      LOG.E(TG, "handleResponse: unsuccessful")
     }
 
     return NetworkResult.Error("$TAG: ${resp.message()}")
@@ -112,7 +111,7 @@ class CvModelsGetNW(
 
   var collectingCvModels = false
   suspend fun collect() {
-    LOG.D2(TAG, "$METHOD: $tag")
+    LOG.D2(TG, "$METHOD: $TG")
 
     if (collectingCvModels) return
 
@@ -122,10 +121,10 @@ class CvModelsGetNW(
       when (it)  {
         is NetworkResult.Success -> {
           val cvModels = it.data
-          LOG.D2(TAG, "$tag: received: ${cvModels?.rows?.size} classes")
+          LOG.D2(TG, "$TG: received: ${cvModels?.rows?.size} classes")
         }
         is NetworkResult.Error -> {
-          LOG.D3(TAG, "Error: msg: ${it.message}")
+          LOG.D3(TG, "Error: msg: ${it.message}")
           if (!err.handle(app, it.message, "loc-get")) {
             val msg = it.message ?: "unspecified error"
             app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
@@ -144,7 +143,7 @@ class CvModelsGetNW(
    * Those will be stored in [SmasCache] (file cache)
    */
   private fun persistToDB(obj: List<CvModelClass>) {
-    LOG.W(TAG, "$METHOD: storing: ${obj.size} $tag classes")
+    LOG.W(TG, "$METHOD: storing: ${obj.size} $TG classes")
     VM.viewModelScope.launch(Dispatchers.IO) {
       obj.forEach {
         repo.local.insertCvModelClass(it)
