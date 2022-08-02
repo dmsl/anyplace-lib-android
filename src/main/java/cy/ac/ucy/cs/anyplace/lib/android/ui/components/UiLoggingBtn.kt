@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
 // import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +33,7 @@ class UiLoggingBtn(
         private val ui: CvUI,
         private val uiLog: CvLoggerUI,
         private val button_id: Int) {
+  val TG = "ui-cv-logging"
 
   val btn: AppCompatButton by lazy { act.findViewById(button_id) }
 
@@ -49,40 +50,41 @@ class UiLoggingBtn(
    */
   var btnInit = false
   fun setupClick() {
+    val MT = ::setupClick.name
     if (btnInit) return
     btnInit = true
 
-    LOG.E(TAG, "$METHOD: setup logging button")
+    LOG.E(TG, "$MT: setup logging button")
 
     btn.setOnClickListener {
-      LOG.D2(TAG, "loggingBtn: clicked: ${VM.statusLogging}")
+      LOG.D2(TG, "loggingBtn: clicked: ${VM.statusLogging}")
       when (VM.statusLogging.value) {
 
-        LoggingStatus.recognizeOnly -> { endRecognitionDemo() }
-        LoggingStatus.running -> { resetLogging() }
+        LoggingMode.recognizeOnly -> { endRecognitionDemo() }
+        LoggingMode.running -> { resetLogging() }
 
-        LoggingStatus.mustStore -> {
+        LoggingMode.mustStore -> {
           app.snackbarLong(scope, "Long-click on map to store detections")
         }
 
-        LoggingStatus.stopped -> {
+        LoggingMode.stopped -> {
           if (!VM.canRecognizeObjects()) {
             app.snackbarInf(scope, C.ERR_NO_CV_CLASSES)
             return@setOnClickListener
           }
 
-          VM.statusLogging.update { LoggingStatus.running }
+          VM.statusLogging.update { LoggingMode.running }
         }
-        else ->  { LOG.D2(TAG, "$METHOD: ignoring click..") }
+        else ->  { LOG.D2(TG, "$MT: ignoring click..") }
       }
     }
 
     btn.setOnLongClickListener {
       when (VM.statusLogging.value)  {
-        LoggingStatus.stopped -> {
-          VM.statusLogging.update { LoggingStatus.recognizeOnly }
+        LoggingMode.stopped -> {
+          VM.statusLogging.update { LoggingMode.recognizeOnly }
         }
-        LoggingStatus.recognizeOnly -> { endRecognitionDemo() }
+        LoggingMode.recognizeOnly -> { endRecognitionDemo() }
         else -> {}
       }
       true
@@ -108,13 +110,14 @@ class UiLoggingBtn(
   }
 
   private suspend fun collectLoggingStatus() {
+    val MT = ::collectLoggingStatus.name
     VM.statusLogging.collect { status ->
-      LOG.D2(TAG, "logging status: $status")
+      LOG.D2(TG, "$MT: $status")
       when(status) {
-        LoggingStatus.recognizeOnly -> { startRecognitionDemo() }
-        LoggingStatus.running -> {  startLogging()  }
-        LoggingStatus.stopped -> {  stopLogging() }
-        LoggingStatus.mustStore -> {  handleMustStore() }
+        LoggingMode.recognizeOnly -> { startRecognitionDemo() }
+        LoggingMode.running -> {  startLogging()  }
+        LoggingMode.stopped -> {  stopLogging() }
+        LoggingMode.mustStore -> {  handleMustStore() }
       }
     }
   }
@@ -122,7 +125,7 @@ class UiLoggingBtn(
   fun handleMustStore() {
     VM.disableCvDetection()
 
-    LOG.D(TAG, "$METHOD: stopped must store: visible")
+    LOG.D(TG, "$METHOD: stopped must store: visible")
     uiLog.bottom.timer.resetBtnClearObjects()
     utlUi.animateAlpha(ui.map.mapView, alphaMax, ANIMATION_DELAY)
     // CHECK THIS.....
@@ -135,7 +138,7 @@ class UiLoggingBtn(
 
   var uploadWasVisible=false
   fun startLogging() {
-    LOG.W(TAG, "$METHOD")
+    LOG.W(TG, "$METHOD")
 
     uploadWasVisible = uiLog.groupUpload.isVisible
     if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
@@ -166,7 +169,7 @@ class UiLoggingBtn(
     utlUi.enable(act.btnSettings)
     uiLog.bottom.showBottomSheet()
 
-    LOG.W(TAG, "$METHOD: logging")
+    LOG.W(TG, "$METHOD: logging")
     VM.disableCvDetection()
     ui.map.mapView.alpha = alphaMax
 
@@ -182,7 +185,7 @@ class UiLoggingBtn(
   }
 
   fun startRecognitionDemo() {
-    LOG.W(TAG, "$METHOD: Not logging. Only obj-rec.")
+    LOG.W(TG, "$METHOD: Not logging. Only obj-rec.")
     uploadWasVisible = uiLog.groupUpload.isVisible
     if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
 
@@ -206,8 +209,8 @@ class UiLoggingBtn(
 
 
   fun endRecognitionDemo() {
-    LOG.D3(TAG, "$METHOD: stopping demo")
-    VM.statusLogging.update { LoggingStatus.stopped }
+    LOG.D3(TG, "$METHOD: stopping demo")
+    VM.statusLogging.update { LoggingMode.stopped }
     uiLog.bottom.showBottomSheet()
     utlUi.enable(uiLog.btnSettings)
     ui.levelSelector.show()

@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingStatus
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingMode
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import kotlinx.coroutines.CoroutineScope
@@ -97,7 +97,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
 
   // CHECK: PMX: UPL: in future: shouldn't be invisible?
   fun canPerformLocalization() =
-          VM.statusLogging.value == LoggingStatus.stopped
+          VM.statusLogging.value == LoggingMode.stopped
           // groupUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
 
   fun setupButtonSettings() {

@@ -14,6 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.loca
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
@@ -21,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.CvMapRow
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 /**
@@ -112,7 +114,8 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
       msg+="Offline algorithm returned no results"
     }
 
-    if (VM.app.hasDevMode()) {
+    val tracking = VM.trackingMode.first() == TrackingMode.on
+    if ((VM.app.hasDevMode() && !tracking) || msg.isNotEmpty()) {
       val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
       VM.app.snackbarLongDEV(VM.viewModelScope, devMsg)
     } else if (msg.isNotEmpty()) {

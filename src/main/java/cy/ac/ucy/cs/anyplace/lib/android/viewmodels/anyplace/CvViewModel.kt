@@ -1,7 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace
 
 import android.app.Application
-import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -14,7 +13,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
@@ -26,10 +24,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
-import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.*
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -51,9 +48,15 @@ import javax.inject.Inject
  * and store detection lists in 'scanning windows'.
  * Therefore we need the below states.
  */
-enum class LocalizationStatus {
-  running,
-  stopped,
+enum class LocalizationMode {
+  running, // Running normal localization
+  runningForTracking, // running localization, through the [TrackingMode]
+  stopped, // not running anything
+}
+
+enum class TrackingMode {
+  on,
+  off,
 }
 
 /** CvMapViewModel is used as a base by:
@@ -114,7 +117,17 @@ open class CvViewModel @Inject constructor(
   val nwLevelPlan by lazy { LevelPlanNW(app as SmasApp, this, RHsmas, repoSmas) }
 
   /** Controlling localization mode */
-  val statusLocalization = MutableStateFlow(LocalizationStatus.stopped)
+  val localizationMode = MutableStateFlow(LocalizationMode.stopped)
+  /** Controlling tracking mode (of localization) */
+  val trackingMode = MutableStateFlow(TrackingMode.off)
+
+  /** workaround. should have used a different flow that allows duplicats */
+  data class DetTrack(val det: Int, val ts: Long)
+  /** Keep a counter of the detections for the tracking window */
+  val detectionsTracking = MutableStateFlow(DetTrack(1, 0))
+  /** Auto-stopping tracking mode if many empty windows found */
+  var trackingEmptyWindowsConsecutive = 0
+  val TRACKING_MAX_EMPTY_WINDOWS=5
 
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
@@ -155,8 +168,9 @@ open class CvViewModel @Inject constructor(
                              activity: DetectorActivityBase) {
     val MT = ::processDetections.name
     LOG.V2(TG, "$MT: ${recognitions.size}")
-    when(statusLocalization.value) {
-      LocalizationStatus.running -> {
+    when(localizationMode.value) {
+      LocalizationMode.runningForTracking,
+      LocalizationMode.running -> {
         updateDetectionsLocalization(recognitions)
       }
       else -> {}
@@ -168,13 +182,14 @@ open class CvViewModel @Inject constructor(
    */
   protected fun updateDetectionsLocalization(detections: List<Classifier.Recognition>) {
     val MT = :: updateDetectionsLocalization.name
-    LOG.W(TG, "$MT: updating for localization..")
+    LOG.I(TG, "$MT: for localization..")
     currentTime = System.currentTimeMillis()
     val appendedDetections = detectionsLOC.value + detections
 
     when {
       currentTime-windowStart > prefWindowLocalizationMs() -> { // window finished
-        statusLocalization.tryEmit(LocalizationStatus.stopped)
+        localizationMode.tryEmit(LocalizationMode.stopped)
+
         if (appendedDetections.isNotEmpty()) {
           LOG.W(TG, "$MT: stop: objects: ${appendedDetections.size}")
           // deduplicate detections (as we are scanning things in a window of a few seconds)
@@ -188,11 +203,13 @@ open class CvViewModel @Inject constructor(
             return
           }
 
-          localizeCvMap(detectionsLOC.value)
+          detectionsTracking.update { DetTrack(detectionsLOC.value.size, utlTime.millis()) }
+          performLocalization(detectionsLOC.value)
 
           detectionsLOC.value = emptyList()
         } else {
           LOG.W(TG, "$MT: stopped. no detections..")
+          detectionsTracking.update { DetTrack(0, utlTime.millis()) }
         }
       } else -> {  // Within a window
       detectionsLOC.value = appendedDetections as MutableList<Classifier.Recognition>
@@ -202,8 +219,12 @@ open class CvViewModel @Inject constructor(
   }
 
   var collectingCvLocalization = false
-  fun localizeCvMap(recognitions: List<Classifier.Recognition>) {
-    val MT = ::localizeCvMap.name
+
+  /**
+   * Perform localiation
+   */
+  fun performLocalization(recognitions: List<Classifier.Recognition>) {
+    val MT = ::performLocalization.name
     LOG.D2(TG, "$MT: performing remote localization")
 
     // TODO convert detections
@@ -311,9 +332,11 @@ open class CvViewModel @Inject constructor(
   private fun saveBackFromSettings(value: Boolean) =
           viewModelScope.launch(Dispatchers.IO) {  dsMisc.saveBackFromSettings(value) }
 
+  /** Allows the logger to get a callback and specialize */
   open fun onLocalizationStarted() {
   }
 
+  /** Allows the logger to get a callback and specialize */
   open fun onLocalizationEnded() {
   }
 

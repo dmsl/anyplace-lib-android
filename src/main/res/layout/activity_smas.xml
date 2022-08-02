@@ -253,6 +253,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         />
 
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/location_tracking"
+        android:paddingLeft="7dp"
+        android:paddingRight="7dp"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        android:textSize="18sp"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/yellow"
+        android:background="@drawable/bg_round_black_70"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
     <!--    START OF FLOOR SELECTOR-->
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_levelSelector"
@@ -314,7 +334,7 @@
 
     <!--    FLOOR SELECTOR: START-->
     <TextView
-        android:background="@drawable/bg_round_white_50"
+        android:background="@drawable/bg_round_white_70"
         android:layout_marginTop="10dp"
         android:paddingLeft="3dp"
         android:paddingRight="3dp"

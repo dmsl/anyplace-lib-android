@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
+  private var TG = "act-cv-smas"
 
   //// PROVIDE TO BASE CLASS ([CvMapActivity]), which will provide to its base class
   override val layout_activity: Int get() = R.layout.activity_cv_logger
@@ -103,7 +104,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    *   This is because the logging UI is part of the BottomSheet.
    */
   override fun setupUiAfterGmap() {
-    LOG.D(TAG, "$tag $METHOD: init logging click")
+    LOG.D(TG, "$tag $METHOD: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
     // bsheet is always visible as we show the tutorial
@@ -177,7 +178,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
-    LOG.E(TAG, "$tag: onMapReady [callback]")
+    LOG.E(TG, "$tag: onMapReady [callback]")
     VM.uiLog.setupOnMapLongClick()
   }
 
@@ -189,11 +190,11 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // override fun onFloorLoaded() { super.onFloorLoaded()  }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.V2(TAG, "$METHOD: CvLoggerActivity")
+    LOG.V2(TG, "$METHOD: CvLoggerActivity")
     VM.uiLog.onInferenceRan()
 
     if (detections.isNotEmpty()) {
-      LOG.V2(TAG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
+      LOG.V2(TG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
     }
     VM.processDetections(detections, this@CvLoggerActivity)
   }

@@ -260,5 +260,6 @@
   <string name="filter">Filter</string>
   <string name="no_results">No results.</string>
   <string name="change_space">Change space</string>
+  <string name="location_tracking">Location Tracking</string>
 
 </resources>

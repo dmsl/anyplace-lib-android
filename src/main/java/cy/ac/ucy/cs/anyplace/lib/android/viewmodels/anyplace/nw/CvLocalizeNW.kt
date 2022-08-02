@@ -14,6 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.OfflineLocalizati
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlException
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult.Companion.ENGINE_QUERY_OFFLINE
@@ -23,6 +24,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -62,8 +64,9 @@ class CvLocalizeNW(
 
     resp.value = NetworkResult.Unset()
 
-    if (detections.isEmpty()) {
-      app.showToast(VM.viewModelScope, "No objects detected.")
+    val tracking = VM.trackingMode.first() == TrackingMode.on
+    if (detections.isEmpty() && !tracking) {
+      app.snackbarShortDEV(VM.viewModelScope, "No objects detected.")
       return
     }
 
@@ -83,7 +86,11 @@ class CvLocalizeNW(
 
         val strInfo = "Recognitions: ${detections.size}. Algo: Online: $algo"
         // detections.forEach { strInfo+= "${it.oid} " }
-        app.snackbarShortDEV(VM.viewModelScope, strInfo)
+
+        val trackingOn = VM.trackingMode.first() == TrackingMode.on
+        if (!trackingOn) {
+          app.snackbarShortDEV(VM.viewModelScope, strInfo)
+        }
 
         LOG.V2(TG, "$MT: ${req.time}: #: ${detections.size}")
         LOG.W(TG, "$MT: calling remote endpoint..")
@@ -140,7 +147,7 @@ class CvLocalizeNW(
             if (it.data==null || it.data!!.rows.isEmpty()) {
               val msg = "Unable to localize.\nPlease collect more fingerprints with Logger\nor set manually (long-press)"
               LOG.E(TG, "$MT: $msg")
-              app.showToastDEV(VM.viewModelScope, msg, Toast.LENGTH_LONG)
+              app.snackbarLong(VM.viewModelScope, msg)
               app.locationSmas.value = LocalizationResult.Unset()
               LOG.E(TG, "$MT: Failed to get location: ${it.message.toString()}")
             } else {

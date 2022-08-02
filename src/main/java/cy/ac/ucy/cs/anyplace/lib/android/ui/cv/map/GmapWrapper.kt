@@ -36,10 +36,10 @@ class GmapWrapper(
         private val UI: CvUI) {
 
   companion object {
+    private val TG = "wr-map"
     const val ZOOM_LEVEL_DEF = 19f
   }
 
-  val tag = "wr-gmap"
   private val ctx: Context = app.applicationContext
   lateinit var obj: GoogleMap
   lateinit var VM: CvViewModel
@@ -74,7 +74,7 @@ class GmapWrapper(
   @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap, act: CvMapActivity) {
     val method = ::setup.name
-    LOG.D(tag, method)
+    LOG.D(TG, method)
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
@@ -136,13 +136,13 @@ class GmapWrapper(
         val metadata = it.tag as UserInfoMetadata?
         if (metadata != null) {
           if(metadata.type == UserInfoType.SharedLocation) {
-            LOG.W(tag, "$method: clearing chat location marker")
+            LOG.W(TG, "$method: clearing chat location marker")
             markers.clearChatLocationMarker()
             return@setOnInfoWindowClickListener
           }
 
-          LOG.E(tag, "$method: USER: ${metadata.uid}")
-          LOG.E(tag, "$method: LOCATION: ${metadata.coord}")
+          LOG.E(TG, "$method: USER: ${metadata.uid}")
+          LOG.E(TG, "$method: LOCATION: ${metadata.coord}")
 
           val uid = metadata.uid
           val deck = metadata.coord.level
@@ -184,34 +184,28 @@ class GmapWrapper(
    */
   fun onFirstLevelLoaded() {
     val MT = ::onFirstLevelLoaded.name
-    LOG.E(tag, MT)
+    LOG.W(TG, MT)
 
     scope.launch(Dispatchers.IO) { VM.nwLevelPlan.downloadAll() }
 
     scope.launch(Dispatchers.Main) {
       val maxZoomLevel = obj.maxZoomLevel // may differ per device
       obj.setMinZoomPreference(maxZoomLevel-4)
-      LOG.E(tag, "MAX ZOOM: $maxZoomLevel (restriction)")
+      LOG.E(TG, "MAX ZOOM: $maxZoomLevel (restriction)")
 
       if (app.wLevel == null) {
-        val msg = "Cannot locate floor ($TAG)"
+        val msg = "Cannot locate floor ($TG)"
         app.snackbarLongDEV(scope, msg)
-        LOG.E(tag, msg)
+        LOG.E(TG, msg)
         return@launch
       }
 
-      LOG.E(tag, "$MT: SPACE: ${app.wSpace.obj.name}")
-      LOG.E(tag, "$MT: FLOOR: ${app.wLevel?.prettyLevelNumber()}")
-      LOG.E(tag, "$MT: MOVING TO CENTER")
+      LOG.I(TG, "$MT: SPACE: ${app.wSpace.obj.name}")
+      LOG.I(TG, "$MT: FLOOR: ${app.wLevel?.prettyLevelNumber()}")
+      LOG.I(TG, "$MT: MOVING TO CENTER")
       VM.ui.map.moveToBounds(app.wLevel!!.bounds())
-
-      // delay(500) // CHECK is ths a bugfix? CHECK: if OK: CLR:PM ?
-
     }
   }
-
-  // protected fun onMapReadySpecialize() {
-  // }
 
   /**
    * Loads some necessary json objects for:
@@ -244,7 +238,7 @@ class GmapWrapper(
    */
   private fun loadSpaceFromCache(selectedSpace: String): Boolean {
     val method = ::loadSpaceFromCache.name
-    LOG.E(tag, "$method: $selectedSpace (DYNAMICALLY)")
+    LOG.E(TG, "$method: $selectedSpace (DYNAMICALLY)")
     return app.initializeSpace(scope,
             VM.cache.readJsonSpace(selectedSpace),
             VM.cache.readJsonFloors(selectedSpace))
@@ -253,12 +247,12 @@ class GmapWrapper(
 
   @Deprecated("for testing")
   private fun loadSpaceFromAssets() : Boolean {
-    LOG.W()
+    val MT = ::loadSpaceFromAssets.name
+    LOG.W(TG, MT)
     return app.initializeSpace(scope,
             assetReader.getSpace(),
             assetReader.getFloors())
   }
-
 
   var setUserPannedOutOfBounds = false
   /**
@@ -273,7 +267,7 @@ class GmapWrapper(
       obj.setOnCameraIdleListener {
         val zoomLevel = obj.cameraPosition.zoom
         var boundsState = MapBounds.notLocalizedYet
-        LOG.W(tag, "$method: map idle: zoom: $zoomLevel") // CLR:PM D3
+        LOG.V3(TG, "$method: map idle: zoom: $zoomLevel") // CLR:PM D3
         val lr = app.locationSmas.value
         if (lr is LocalizationResult.Success) {  // there was a user location
           // NOTE: on floor changing the [app.userOutOfBounds] might also get updated,
@@ -316,7 +310,7 @@ class GmapWrapper(
   fun moveToLocation(latLng: LatLng, changeZoomLevel: Boolean = false) {
     val method = ::moveToLocation.name
     scope.launch(Dispatchers.Main) {
-      LOG.E(tag, "$method: zoom: ${obj.cameraPosition.zoom}")
+      LOG.D2(TG, "$method: zoom: ${obj.cameraPosition.zoom}")
 
       val zoomLevel = if (changeZoomLevel) ZOOM_LEVEL_DEF else obj.cameraPosition.zoom
 
@@ -376,7 +370,7 @@ class GmapWrapper(
    */
   fun setUserLocation(coord: Coord, locMethod: LocalizationMethod) {
     val method = ::setUserLocation.name
-    LOG.D(tag, method)
+    LOG.D(TG, method)
     markers.setOwnLocationMarker(coord, locMethod, app.alerting)
   }
 

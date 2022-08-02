@@ -183,7 +183,7 @@ class MapMarkers(private val app: AnyplaceApp,
 
           // reopen the last selected user
           if (userWasLastSelected(uid)) {
-            LOG.E(TG,"FOUND LAST USER: $uid (opening)")
+            LOG.V2(TG,"found last-opened user: $uid (opening)")
             it.showInfoWindow()
             // also follow the user on map
             if (app.dsCvMap.read.first().followSelectedUser) {
@@ -224,7 +224,7 @@ class MapMarkers(private val app: AnyplaceApp,
       val metadata = marker.tag as UserInfoMetadata?
       if (metadata!=null) {
         lastSelectedUser = metadata.uid
-        LOG.E(TG, "STORE LAST: ${metadata.uid}")
+        LOG.V3(TG, "store last opened user: ${metadata.uid}")
       }
     }
   }

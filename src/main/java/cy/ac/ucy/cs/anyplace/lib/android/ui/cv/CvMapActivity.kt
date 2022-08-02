@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
-  private val TG = "ACT-CVM"
+  private var TG = "act-cv"
 
   // ALL THESE COMPONENTS MUST BE PROVIDED TO ANY CLASS THAT INHERITS [CvMapActivity]
   //// PROVIDE TO BASE CLASS [CameraActivity]:

@@ -70,6 +70,7 @@ object utlTime {
   fun getPrettyEpochCY(epoch: Long) = getPrettyEpoch(epoch, TIMEZONE_CY)
 
   fun epoch(): Long = System.currentTimeMillis()/1000
+  fun millis(): Long = System.currentTimeMillis()
 
   fun secondsElapsed(time: Long) : Long {
     return epoch() - time

@@ -1,24 +1,29 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
+import android.annotation.SuppressLint
 import android.view.View
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationStatus
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationMode
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -34,6 +39,7 @@ class UiLocalization(
         private val wMap: GmapWrapper,
         private val button_id_localization: Int,
         private val button_id_whereami: Int) {
+  val TG = "ui-cv-localization"
 
   private val ctx = act.applicationContext
   private val C by lazy { CONST(ctx) }
@@ -48,26 +54,139 @@ class UiLocalization(
     setupButtonWhereAmI()
   }
 
-  var btnLocalizationBtnSetup= false
+  var btnLocalizationBtnSetup = false
   fun setupBtnLocalization() {
+    val MT = ::setupBtnLocalization.name
+
     if (btnLocalizationBtnSetup) return
     btnLocalizationBtnSetup = true
-    btn.setOnClickListener {
+    setupLocalizationMode()
+    setupTrackingMode()
+  }
 
-      if (isDisabled()) {
-        if (disabledUserAction) {
-          app.snackbarInf(scope, disabledCause)
+  private fun setupLocalizationMode() {
+    val MT = ::setupLocalizationMode.name
+
+    btn.setOnClickListener{
+      scope.launch(Dispatchers.IO) {
+        if (VM.localizationMode.first() == LocalizationMode.running ||
+                VM.trackingMode.first() == TrackingMode.on) {
+          LOG.E(TG, "$MT: ignoring.. (localizing or tracking already..)")
+          return@launch
+        }
+
+        if (isDisabled()) {
+          if (disabledUserAction) {
+            app.snackbarInf(scope, disabledCause)
+          } else {
+            app.snackbarShort(scope, disabledCause)
+          }
+          if (disabledAttentionViews.isNotEmpty()) {
+            disabledAttentionViews.forEach { utlUi.attentionZoom(it) }
+          }
         } else {
-          app.snackbarShort(scope, disabledCause)
+          VM.localizationMode.update { LocalizationMode.running }
         }
+      }
+    }
+  }
 
-        if (disabledAttentionViews.isNotEmpty()) {
-          disabledAttentionViews.forEach { utlUi.attentionZoom(it) }
+  /**
+   * Tracking mode.
+   * - only available in SMAS (not in logger)
+   */
+  private fun setupTrackingMode() {
+    val MT = ::setupTrackingMode.name
+
+    when (act) {
+      is SmasMainActivity -> {
+        LOG.E(TG, "$MT: LONG CLICK will setup")
+
+        val tvSubtitle: TextView = act.findViewById(R.id.tvSubtitle)
+        collectTrackingDetections(tvSubtitle)
+
+        btn.setOnLongClickListener {
+          scope.launch(Dispatchers.IO) {
+
+            // when tracking mode is on, or localization mode is on (but not through tracking),
+            // ignore it
+            if (VM.localizationMode.first() == LocalizationMode.running) {
+              LOG.E(TG, "$MT: ignoring (already logging..)")
+              return@launch
+            }
+            toggleTracking(VM.trackingMode.first(), tvSubtitle)
+          }
+          true
         }
+      }
+    }
+  }
 
+  private fun toggleTracking(mode: TrackingMode, tv: TextView) {
+    val MT = ::toggleTracking.name
+    LOG.E(TG, "$MT: mode: $mode")
+    when (mode) {
+      TrackingMode.off -> { startTrackingLoop(tv) }
+      TrackingMode.on -> { endTrackingLoop(tv) }
+    }
+  }
 
-      } else {
-        VM.statusLocalization.update { LocalizationStatus.running }
+  var collectingTrackingDetections=false
+  @SuppressLint("SetTextI18n")
+  private fun collectTrackingDetections(tv: TextView) {
+    val MT = ::collectTrackingDetections.name
+    if (collectingTrackingDetections) return
+    collectingTrackingDetections=true
+
+    val txt="Location Tracking"
+    scope.launch(Dispatchers.IO) {
+      VM.detectionsTracking.collect {
+        val detections = it.det
+        LOG.E(TG, "$MT: detections: $detections")
+        if (detections > 0) {
+          utlUi.text(tv, "$txt ($detections)")
+          VM.trackingEmptyWindowsConsecutive=0
+        } else {
+          utlUi.text(tv, txt)
+          VM.trackingEmptyWindowsConsecutive++
+          LOG.W(TG, "$MT: ${VM.trackingEmptyWindowsConsecutive} consecutive empty windows")
+          if (VM.trackingEmptyWindowsConsecutive > VM.TRACKING_MAX_EMPTY_WINDOWS) {
+            app.snackbarWarning(scope, "Tracking auto-disabled.\n"+
+                    "Reason: ${VM.TRACKING_MAX_EMPTY_WINDOWS} consecutive empty scans.")
+            endTrackingLoop(tv)
+          }
+        }
+      }
+    }
+  }
+
+  private fun endTrackingLoop(tv: TextView) {
+    val MT = ::endTrackingLoop.name
+    utlUi.clearAnimation(btn)
+    utlUi.clearAnimation(tv)
+    utlUi.invisible(tv)
+    VM.trackingMode.update { TrackingMode.off }
+    VM.localizationMode.update { LocalizationMode.stopped }
+  }
+
+  private val TRACKING_DELAY_MS = 5000L
+  fun startTrackingLoop(tv: TextView) {
+    val MT = ::startTrackingLoop.name
+    VM.trackingEmptyWindowsConsecutive=0
+    VM.trackingMode.update { TrackingMode.on }
+
+    scope.launch(Dispatchers.IO) {
+      utlUi.flashingLoop(btn)
+      utlUi.visible(tv)
+      utlUi.flashingLoop(tv)
+
+      val localizationWindow=app.dsCvMap.read.first().windowLocalizationMs
+      val totalDelay=TRACKING_DELAY_MS+localizationWindow.toLong()
+
+      while (VM.trackingMode.first() == TrackingMode.on)  {
+        LOG.W(TG, "tracking loop..")
+        VM.localizationMode.update { LocalizationMode.runningForTracking }
+        delay(totalDelay)
       }
     }
   }
@@ -86,7 +205,7 @@ class UiLocalization(
           app.wLevels.moveToFloor(VM, coord.level)
         }
 
-        LOG.E(TAG, "whereami click")
+        LOG.E(TG, "whereami click")
         VM.ui.map.markers.clearAllInfoWindow()
         VM.ui.map.moveToLocation(coord.toLatLng())
       } else {
@@ -101,40 +220,47 @@ class UiLocalization(
   }
 
   var collecting = false
+
+  /**
+   * Collect localization status
+   */
   fun collectStatus() {
+    val MT = ::collectStatus.name
     if (collecting) return
     collecting =true
 
     scope.launch{
-    VM.statusLocalization.collect { status ->
-      LOG.W(TAG_METHOD, "status: $status")
-      when(status) {
-        LocalizationStatus.running -> {
-          VM.onLocalizationStarted()
+      VM.localizationMode.collect { status ->
+        LOG.W(TG, "$MT: status: $status")
+        when(status) {
+          LocalizationMode.runningForTracking,
+          LocalizationMode.running -> {
+            VM.onLocalizationStarted()
 
-          if (!app.cvUtils.isModelInited()) {
-            app.showToast(scope, C.ERR_NO_CV_CLASSES)
-            return@collect
+            if (!app.cvUtils.isModelInited()) {
+              app.snackbarLong(scope, C.ERR_NO_CV_CLASSES)
+              return@collect
+            }
+
+            startLocalization()
           }
-
-          startLocalization()
+          LocalizationMode.stopped -> {
+            VM.onLocalizationEnded()
+            endLocalization()
+          }
+          else ->  {}
         }
-        LocalizationStatus.stopped -> {
-          VM.onLocalizationEnded()
-          endLocalization()
-        }
-        else ->  {}
       }
-    }
     }
   }
 
   fun endLocalization() {
+    val MT = ::endLocalization.name
     VM.disableCvDetection()
-    LOG.D2(TAG, "$METHOD")
-    btn.isEnabled = true
+    LOG.D2(TG, MT)
+    utlUi.changeBackgroundMaterial(btn, R.color.gray)
     wMap.mapView.alpha = 1f
-    VM.statusLocalization.tryEmit(LocalizationStatus.stopped)
+    VM.localizationMode.tryEmit(LocalizationMode.stopped)
 
     if (whereAmIWasVisible) {
       utlUi.fadeIn(btnWhereAmI)
@@ -150,24 +276,33 @@ class UiLocalization(
 
   var whereAmIWasVisible=false
   fun startLocalization() {
-    VM.enableCvDetection()
-    LOG.D2(TAG, "$METHOD")
-    btn.isEnabled=false
-    VM.currentTime = System.currentTimeMillis()
-    VM.windowStart = VM.currentTime
-    VM.statusLocalization.value = LocalizationStatus.running
-    btn.visibility = View.VISIBLE
-    val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
-    wMap.mapView.alpha = mapAlpha
+    val MT = ::startLocalization.name
 
+    LOG.D2(TG, MT)
+    scope.launch(Dispatchers.IO) {
+      VM.enableCvDetection()
 
-    // TODO: PMX: CHECK IN LOGGER
-    if (btnWhereAmI.isVisible) {
-      whereAmIWasVisible=true
-      utlUi.fadeOut(btnWhereAmI)
+      val tracking = VM.trackingMode.first() == TrackingMode.on
+      VM.currentTime = System.currentTimeMillis()
+      VM.windowStart = VM.currentTime
+      VM.localizationMode.update {
+        if (tracking) LocalizationMode.runningForTracking else LocalizationMode.running
+      }
+      utlUi.visible(btn)
+      utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+
+      if (!tracking) {
+        val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
+        utlUi.alpha(wMap.mapView, mapAlpha)
+      }
+
+      if (btnWhereAmI.isVisible) {
+        whereAmIWasVisible=true
+        utlUi.fadeOut(btnWhereAmI)
+      }
+      utlUi.disable(act.btnSettings)
+      act.uiBottom.hideBottomSheet()
     }
-    utlUi.disable(act.btnSettings)
-    act.uiBottom.hideBottomSheet()
   }
 
 
@@ -203,7 +338,8 @@ class UiLocalization(
   var imuButtonInited = false
   lateinit var btnImu : MaterialButton
   fun setupButtonImu(btnImu: MaterialButton) {
-   if (imuButtonInited) return
+    val MT = ::setupButtonImu.name
+    if (imuButtonInited) return
     if (!DBG.uim) return
 
     this.btnImu=btnImu
@@ -213,7 +349,7 @@ class UiLocalization(
         return@launch
       }
 
-      LOG.W(TAG, METHOD)
+      LOG.W(TG, MT)
       imuButtonInited=true
 
       utlUi.visible(btnImu)
@@ -233,6 +369,7 @@ class UiLocalization(
             app.snackbarShort(scope, "IMU needs an initial location.")
             imuDisable()
           }
+
           VM.imuEnabled -> { VM.mu.start() }
         }
       }

@@ -36,6 +36,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.SmasChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizationMode
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -70,6 +72,7 @@ import kotlinx.coroutines.flow.update
  */
 @AndroidEntryPoint
 class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
+  private var TG = "act-cv-smas"
 
   //// PROVIDE TO BASE CLASS ([CvMapActivity]), which will provide to its base class
   override val layout_activity: Int get() = R.layout.activity_smas
@@ -112,11 +115,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   /** whether this activity is active or not */
   private var isActive = false
 
-  private var tag = "SmasACT"
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    LOG.D2(TAG, "$tag: $METHOD")
+    LOG.D2(TG, "onCreate")
     app.dsCvMap.setMainActivity(CONST.START_ACT_SMAS)
   }
 
@@ -125,7 +126,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    */
   override fun setupUi() {
     super.setupUi()
-    LOG.D2()
+    val MT = ::setupUi.name
+    LOG.D2(TG, MT)
 
     setupButtonSettings()
     // setupButtonSwitch()
@@ -139,9 +141,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
-
-    // LMN1
-    // val googleMap : GoogleMap = null!!; googleMap.projection
     setupMapLongClick()
   }
 
@@ -150,15 +149,26 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     if (handlingGmapLongClick) return
     handlingGmapLongClick=true
 
+    val MT = ::setupMapLongClick.name
+
     // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
     VM.ui.map.obj.setOnMapLongClickListener {
-      LOG.W(TAG, "$tag: long click")
-      forceUserLocation(it)
+      LOG.W(TG, "$MT: long click")
+      lifecycleScope.launch(Dispatchers.IO) {
+        if (VM.trackingMode.first() != TrackingMode.off
+                && VM.localizationMode.first() != LocalizationMode.stopped) {
+          LOG.W(TG, "$MT: ignoring long-click (localization / tracking)")
+          return@launch
+        }
+
+        forceUserLocation(it)
+      }
     }
   }
 
   private fun forceUserLocation(forcedLocation: LatLng) {
-    LOG.W(TAG, "forcing location: $forcedLocation")
+    val MT = ::forceUserLocation.name
+    LOG.W(TG, "$MT: $forcedLocation")
     app.snackbarShort(lifecycleScope, "Location set manually (long-clicked)")
 
     val floorNum = app.wLevel!!.levelNumber()
@@ -171,7 +181,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    */
   override fun postResume() {
     super.postResume()
-    LOG.D2(TAG, "$tag: $METHOD")
+    val MT = ::postResume.name
+    LOG.D2(TG, MT)
+
     VM = _vm as SmasMainViewModel
     app.setMainView(findViewById(R.id.layout_root), false)
 
@@ -186,7 +198,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Runs only once, when any of the floors is loaded for the first time.
    */
   override fun onFirstLevelLoaded() {
-    LOG.I(TAG, "$tag: $METHOD: Floor: ${app.level.value?.number}")
+    val MT = ::onFirstLevelLoaded.name
+    LOG.I(TG, "$MT: Floor: ${app.level.value?.number}")
 
     super.onFirstLevelLoaded()
 
@@ -207,14 +220,11 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       // workaround: wait for UI to be ready (not the best one)
       VM.waitForUi()
-
       VM.ui.map.markers.clearChatLocationMarker()
     }
   }
 
-
-
-  /**
+  /*
    * In a loop:
    * - conditionally send own location
    * - get other users locations
@@ -225,7 +235,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     updatingLocationsLoop=true
 
     lifecycleScope.launch(Dispatchers.IO) {
-
       while (true) {
         var msg = "pull"
         if (isActive && app.hasLastLocation()) {
@@ -246,7 +255,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           VM.nwLocationGet.safeCall()
         }
 
-        LOG.V2(TAG, "loop-location: main: $msg")
+        LOG.V2(TG, "loop-location: main: $msg")
 
         delay(VM.prefsCvMap.locationRefreshMs.toLong())
       }
@@ -257,7 +266,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.W(TAG, "$tag: $METHOD")
+    val MT = ::onResume.name
+    LOG.W(TG, MT)
     isActive = true
     if (DBG.uim) VMsensor.registerListeners()
   }
@@ -269,7 +279,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onPause() {
     super.onPause()
-    LOG.W(TAG, "$tag: $METHOD")
+    val MT = ::onPause.name
+    LOG.W(TG, "$TG: $MT")
     isActive = false
 
     if (DBG.uim) VMsensor.unregisterListener()
@@ -279,7 +290,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    * Async Collection of remotely fetched data
    */
   private fun setupCollectors() {
-    LOG.D()
+    val MT = ::setupCollectors.name
+    LOG.D(TG, MT)
 
     collectLoggedInUser()
     observeLevels()
@@ -292,7 +304,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.Main) {
       VM.readHasNewMessages.observeForever { hasNewMsgs ->
         val btn = btnChat as MaterialButton
-        LOG.W(TAG,"NEW-MSGS: $hasNewMsgs")
+        LOG.W(TG,"NEW-MSGS: $hasNewMsgs")
 
         if (hasNewMsgs) {
           utlUi.changeBackgroundMaterial(btn, R.color.redDark)
@@ -368,10 +380,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     btnAlertOngoing.setOnClickListener {
       val alertingUser = VM.alertingUser.value ?: return@setOnClickListener
-
-      val alertingUserCoords = Coord(alertingUser.x,
-              alertingUser.y,
-              alertingUser.level)
+      val alertingUserCoords = Coord(alertingUser.x, alertingUser.y, alertingUser.level)
 
       val curFloor = app.wLevel?.levelNumber()
       if (alertingUser.level != curFloor) {
@@ -448,19 +457,19 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     val FLIR_PKG = "com.flir.myflir.s62"
 
     btnFlir.setOnClickListener {
-      LOG.E(TAG_METHOD, "on click")
+      LOG.E(TG, "on click")
       lifecycleScope.launch {
         var intent = packageManager.getLaunchIntentForPackage(FLIR_PKG)
         if (intent == null) {
           intent = try {
-            LOG.E(TAG_METHOD, "intent is null")
+            LOG.E(TG, "intent is null")
             Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$FLIR_PKG"))
           } catch (e: Exception) {
-            LOG.E(TAG_METHOD, "" + e.message)
+            LOG.E(TG, "" + e.message)
             Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$FLIR_PKG"))
           }
         }
-        LOG.E(TAG_METHOD, "launching activity")
+        LOG.E(TG, "launching activity")
         startActivity(intent)
       }
     }
@@ -479,7 +488,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         val level = intent.getIntExtra("level", Int.MIN_VALUE)
 
         if (level != Int.MIN_VALUE) {
-          LOG.E(TAG, "VALID LOC from chat: $lat $lon $level")
+          LOG.E(TG, "VALID LOC from chat: $lat $lon $level")
 
           // clear any previous markers
           VM.ui.map.markers.clearAllInfoWindow()
@@ -488,7 +497,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
             val curFloor = app.wLevel?.levelNumber()
             if (level != curFloor) {
               app.wLevels.moveToFloor(VM, level)
-              LOG.E(TAG," will clear all info (from actForResult)")
+              LOG.E(TG," will clear all info (from actForResult)")
 
               // add some delay, so any markers can be rendered
               // before rendering the chat shared-location marker
@@ -519,13 +528,12 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           return@launch
         }
 
-        LOG.W(TAG, "Clearing markers before opening chat..")
+        LOG.W(TG, "Clearing markers before opening chat..")
         VM.ui.map.markers.clearChatLocationMarker()
         startForResult.launch(Intent(applicationContext, SmasChatActivity::class.java))
       }
     }
   }
-
 
   var collectorMsgsEnabled = false  // BUGFIX: setting up multiple collectors
   /**
@@ -540,10 +548,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-
-  // TODO:PMX FR ?
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.D3(TAG, "$METHOD: SmasMainActivity")
+    val MT = ::onInferenceRan.name
+    LOG.D3(TG, "$MT")
     VM.ui.onInferenceRan()
     VM.processDetections(detections, this@SmasMainActivity)
   }
