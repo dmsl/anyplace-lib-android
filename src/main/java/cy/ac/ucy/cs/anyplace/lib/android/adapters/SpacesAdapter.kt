@@ -153,7 +153,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
      * 2. Load the downloaded objects
      */
     private fun loadSpaceAndLevels(prefsCv: CvMapPrefs) {
-      app.initializeSpace(scope,
+      app.loadSpace(scope,
               app.cache.readJsonSpace(prefsCv.selectedSpace),
               app.cache.readJsonFloors(prefsCv.selectedSpace))
     }

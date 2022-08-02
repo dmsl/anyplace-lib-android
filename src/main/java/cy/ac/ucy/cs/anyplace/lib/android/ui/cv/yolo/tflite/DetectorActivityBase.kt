@@ -52,6 +52,8 @@ abstract class DetectorActivityBase : CameraActivity(),
     const val TEXT_SIZE_DIP = 10f
   }
 
+  protected var scope = lifecycleScope
+
   private lateinit var rgbFrameBitmap: Bitmap
   private lateinit var croppedBitmap: Bitmap
   private lateinit var frameToCropTransform: Matrix
@@ -80,9 +82,10 @@ abstract class DetectorActivityBase : CameraActivity(),
     lifecycleScope.launch {
       if (!setupDetector()) {
         // You have to put models in the assets before building the app (see README)
-        Toast.makeText(applicationContext, "Can't set up detector.\nAre yolo models app's assets?", Toast.LENGTH_LONG).show()
+        app.notify.WARN(lifecycleScope, "Can't set up detector.\nIs there a TFlite model on device?")
         finish()
       }
+
       val textSizePx = TypedValue.applyDimension(
               TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP,
               app.resources.displayMetrics)

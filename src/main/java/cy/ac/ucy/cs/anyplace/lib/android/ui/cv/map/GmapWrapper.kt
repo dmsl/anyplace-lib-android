@@ -48,7 +48,7 @@ class GmapWrapper(
   private val assetReader by lazy { AssetReader(ctx) }
   /** Overlays on top of the map, like Heatmaps */
   val overlays by lazy { Overlays(ctx, scope) }
-  val fHandler by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI, overlays) }
+  val wrOverlays by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI, overlays) }
 
   lateinit var mapView : MapView
 
@@ -71,11 +71,11 @@ class GmapWrapper(
   lateinit var markers : MapMarkers
   lateinit var lines : MapLines
 
-  var gmapWrLoaded = false
+  var initedGmap = false
   @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap, act: CvMapActivity) {
-    val method = ::setup.name
-    LOG.D(TG, method)
+    val MT = ::setup.name
+    LOG.E(TG, MT)
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
@@ -106,7 +106,7 @@ class GmapWrapper(
       // async continues by [onFloorLoaded] CLR?
       // onMapReadySpecialize()
       setupObserverUserBounds()
-      gmapWrLoaded = true
+      initedGmap = true
     }
   }
 
@@ -185,7 +185,7 @@ class GmapWrapper(
    */
   fun onFirstLevelLoaded() {
     val MT = ::onFirstLevelLoaded.name
-    LOG.W(TG, MT)
+    LOG.E(TG, MT)
 
     scope.launch(Dispatchers.IO) { VM.nwLevelPlan.downloadAll() }
 
@@ -217,20 +217,17 @@ class GmapWrapper(
    * - dynamically (from cache, given they were already downloaded)
    * - of from assets (used for development/debugging)
    */
-  fun loadSpace() {
-    LOG.V2()
-
-    scope.launch(Dispatchers.IO) {
-      if (!DBG.SLR) {
-        if(!loadSpaceFromAssets()) return@launch
-      } else {
-        val prefs = VM.dsCvMap.read.first()
-        loadSpaceFromCache(prefs.selectedSpace)
-      }
-
-      VM.selectInitialLevel()
-      fHandler.observeLevelplanImage(obj)
+  suspend fun loadSpace() {
+    LOG.E()
+    if (!DBG.SLR) {
+      if(!loadSpaceFromAssets()) return
+    } else {
+      val prefs = VM.dsCvMap.read.first()
+      loadSpaceFromCache(prefs.selectedSpace)
     }
+
+    VM.selectInitialLevel()
+    wrOverlays.observeLevelplanImage(obj)
   }
 
   /**
@@ -239,8 +236,8 @@ class GmapWrapper(
    */
   private fun loadSpaceFromCache(selectedSpace: String): Boolean {
     val method = ::loadSpaceFromCache.name
-    LOG.E(TG, "$method: $selectedSpace (DYNAMICALLY)")
-    return app.initializeSpace(scope,
+    LOG.W(TG, "$method: $selectedSpace (DYNAMICALLY)")
+    return app.loadSpace(scope,
             VM.cache.readJsonSpace(selectedSpace),
             VM.cache.readJsonFloors(selectedSpace))
   }
@@ -249,8 +246,8 @@ class GmapWrapper(
   @Deprecated("for testing")
   private fun loadSpaceFromAssets() : Boolean {
     val MT = ::loadSpaceFromAssets.name
-    LOG.W(TG, MT)
-    return app.initializeSpace(scope,
+    LOG.E(TG, MT)
+    return app.loadSpace(scope,
             assetReader.getSpace(),
             assetReader.getFloors())
   }

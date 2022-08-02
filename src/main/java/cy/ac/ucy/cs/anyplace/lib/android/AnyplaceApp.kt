@@ -21,7 +21,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.SnackType
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBarNotifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
@@ -213,8 +212,8 @@ abstract class AnyplaceApp : Application() {
    *   - the first available level of that space
    *   - or the last selected level of that space
    */
-  fun initializeSpace(scope: CoroutineScope, newSpace: Space?, newLevels: Levels?): Boolean {
-    val MT = ::initializeSpace.name
+  fun loadSpace(scope: CoroutineScope, newSpace: Space?, newLevels: Levels?): Boolean {
+    val MT = ::loadSpace.name
     LOG.E(TG, MT)
 
     // Initialize space
@@ -230,17 +229,15 @@ abstract class AnyplaceApp : Application() {
     this.wLevel = null
 
     if (newSpace == null || newLevels == null) {
-      notify.warn(scope, "Cannot load space:\nSpace or Level were empty.")
+      notify.WARN(scope, "Cannot load space:\nSpace or Level were empty.")
       return false
     }
 
     val prettySpace = wSpace.prettyTypeCapitalize
     val prettyFloors= wSpace.prettyFloors
 
-    LOG.D2(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
+    LOG.E(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
             "(has ${levels!!.levels.size} $prettyFloors)")
-
-    LOG.D2(TG, "$MT: pretty: ${wSpace.prettyType} ${wSpace.prettyLevel}")
 
     return true
   }

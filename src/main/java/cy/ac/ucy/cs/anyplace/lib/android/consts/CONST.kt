@@ -109,6 +109,10 @@ open class CONST(ctx: Context) {
   val PREF_MISC_TUT_LOG_LONG_PRESS = ctx.getString(R.string.pref_misc_tutLoggerLongPress)
   /** Long-press tutorial for Localization (NAV; SMAS/Navigator) */
   val PREF_MISC_TUT_NAV_LONG_PRESS = ctx.getString(R.string.pref_misc_tutNavLongPress)
+  val PREF_MISC_TUT_NAV_LOCALIZE= ctx.getString(R.string.pref_misc_tutNavLocalize)
+  val PREF_MISC_TUT_NAV_TRACKING= ctx.getString(R.string.pref_misc_tutNavTracking)
+  val PREF_MISC_TUT_NAV_IMU= ctx.getString(R.string.pref_misc_tutNavImu)
+  val PREF_MISC_TUT_NAV_WHEREAMI= ctx.getString(R.string.pref_misc_tutNavWhereAmI)
 
   //// Anyplace USER (NOT SMAS user)
   // TODO create ctx.getString for these also (like above)

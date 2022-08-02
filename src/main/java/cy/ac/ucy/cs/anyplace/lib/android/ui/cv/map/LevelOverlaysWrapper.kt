@@ -34,11 +34,10 @@ open class LevelOverlaysWrapper(
         /** [GoogleMap] overlays */
         protected val overlays: Overlays
 ) {
-
+  private val TG = "wr-lvl-overlays"
   private val app = VM.app
   private val notify = app.notify
 
-  val tag = "wr-lvl-overlays"
 
   var collectingLevelplanChanges = false
   /**
@@ -48,23 +47,23 @@ open class LevelOverlaysWrapper(
    * This has to be separate.
    */
   fun observeLevelplanImage(gmap: GoogleMap) {
-    val method = ::observeLevelplanImage.name
+    val MT = ::observeLevelplanImage.name
 
     if (collectingLevelplanChanges) return
-    LOG.V2(tag, "$method: setup")
     collectingLevelplanChanges=true
+    LOG.E(TG, "$MT: setup")
 
     scope.launch(Dispatchers.IO) {
       VM.nwLevelPlan.bitmap.collect { response ->
 
-        LOG.D2(tag, "$method: levelplan updated..")
+        LOG.W(TG, "$MT: levelplan updated..")
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W(tag, "$method: will load ${app.wSpace.prettyLevelplan}..")
+            LOG.W(TG, "$MT: will load ${app.wSpace.prettyLevelplan}..")
           }
           is NetworkResult.Error -> {
             val msg = ": Failed to fetch ${app.wSpace.prettyType}: ${app.space?.name}: [${response.message}]"
-            LOG.E(tag, "Error: $method: $msg")
+            LOG.E(TG, "Error: $MT: $msg")
             notify.short(scope, msg)
           }
           is NetworkResult.Success -> {
@@ -73,7 +72,7 @@ open class LevelOverlaysWrapper(
               LOG.W(msg)
               notify.short(scope, msg)
             } else {
-              LOG.E(tag, "$method: success: rendering img")
+              LOG.E(TG, "$MT: success: rendering img")
               VM.nwLevelPlan.render(response.data, app.wLevel!!)
               loadHeatmap(gmap)
             }
@@ -85,61 +84,17 @@ open class LevelOverlaysWrapper(
     }
   }
 
-  // fun showToast(msg: String, len: Int) {
-  //   VM.viewModelScope.launch(Dispatchers.Main) {
-  //     Toast.makeText(ctx, msg, len).show()
-  //   }
-  // }
-
-
-  // CLR:PM
-  /** loading the very first floor */
-  // var isFirstFloor = true
-  /**
-   * Observe when [VMB.floor] changes and react accordingly:
-   * - update [floorSelector] UI (the up/down buttons)
-   * - store the last floor selection (for the relevant [Space])
-   * - loads the floor
-   */
-  // fun observeFloorChangesDELETE(map: GmapWrapper) {
-  //   LOG.D3()
-  //   scope.launch{
-  //     app.floor.collect { selectedFloor ->
-  //
-  //       // update FloorHelper & FloorSelector
-  //       // val tmpFloor = FloorWrapper(selectedFloor, app.wSpace)
-  //       // UI.floorSelector.updateFloorSelector(selectedFloor, app.wFloors)
-  //
-  //       // if (isFirstFloor) {
-  //       //   isFirstFloor = false
-  //       //
-  //       //   map.onInitialFloorLoaded()
-  //       //
-  //       //   LOG.E(tag, "MOVING TO CENTER")
-  //       //   map.moveToLocation(app.wFloor!!.bounds().center)
-  //       // }
-  //
-  //       // LOG.V3(tag, "$METHOD: -> floor: ${selectedFloor.floorNumber}")
-  //       // LOG.V2(tag, "$METHOD: -> updating cache: floor: ${app.floor.value?.floorNumber}")
-  //       // updateAndCacheLastFloor(app.floor.value)
-  //       // LOG.V2(tag, "$METHOD: -> loadFloor: ${selectedFloor.floorNumber}")
-  //       // UI.floorSelector.lazilyChangeFloor(VM, scope)
-  //     }
-  //   }
-  // }
-
   /**
    * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
    */
   fun cacheLastLevel(level: Level?) {
-    val method = ::cacheLastLevel.name
-    LOG.V2(tag, "$method: ${level?.number.toString()}")
+    val MT = ::cacheLastLevel.name
+    LOG.W(TG, "$MT: ${level?.number.toString()}")
     if (level != null) {
       VM.lastValSpaces.lastFloor=level.number
       app.wSpace.cacheLastValues(VM.lastValSpaces)
     }
   }
-
 
   /**
    * TODO: must be done for FINGERPRINT (SMAS type..)
@@ -153,22 +108,16 @@ open class LevelOverlaysWrapper(
    * - load heatmap of cur floor
    */
   suspend fun loadHeatmap(gmap: GoogleMap) {
-    LOG.D2()
+    val MT = ::loadHeatmap.name
+    LOG.D2(TG, MT)
 
-    // TODO: make this in VM
-    // BUGFIX: artificial delay workaround; could implement this better)
-    VM.waitForDetector()
+    VM.waitForDetector()  // workaround
 
     // TODO: load fingerprint points..
     val model = VM.model
     if (app.wLevel==null) return
-    val FW = app.wLevel!!
     UI.removeHeatmap()
-    when {
-      false -> { LOG.V3(tag, "No local CvMap") } // case that has no fingerprints for floor..
-      else -> { // all is good, render.
-        UI.renderHeatmap(gmap, null)
-      }
-    }
+    // all is good, render.
+    UI.renderHeatmap(gmap, null)
   }
 }

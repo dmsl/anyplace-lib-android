@@ -173,10 +173,15 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TG, "$MT: $forcedLocation")
     val msg = "Location set manually (long-clicked)"
 
-    if (app.dsMisc.showTutorialNavLongPress()) {
-      notify.INFO(lifecycleScope, "Long-press in $actName sets manually\n the user location on the map.\nDONE: $msg")
+    if (app.dsMisc.showTutorialNavMapLongPress()) {
+      notify.TUTORIAL(lifecycleScope, "$actName LONG-PRESS:\nsets manually the user's location.\nResult: $msg")
     } else {
       notify.short(lifecycleScope, msg)
+    }
+
+    if (app.wLevel==null) {
+      notify.warn(lifecycleScope, "Cannot load space.")
+      return
     }
 
     val floorNum = app.wLevel!!.levelNumber()
@@ -531,7 +536,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         if (!app.hasLastLocation()) {
           val msg = "To open chat, you must localize\n" +
                     "or set location manually with a long-press."
-          notify.INF(lifecycleScope, msg)
+          notify.WARN(lifecycleScope, msg)
           utlUi.attentionZoom(VM.ui.localization.btn)
           return@launch
         }

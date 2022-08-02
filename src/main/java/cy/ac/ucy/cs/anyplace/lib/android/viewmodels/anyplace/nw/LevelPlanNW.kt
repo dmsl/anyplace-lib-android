@@ -94,7 +94,7 @@ class LevelPlanNW(
         // at least one floor needs to be downloaded:
         // show notification now (and when done [showedMsgDone]
         if (!showedMsgDownloading) {
-          notify.long(VM.viewModelScope, "Downloading all ${LW.prettyFloors} ..\n(keep app open)")
+          notify.long(VM.viewModelScope, "Downloading all ${LW.prettyFloors} ..\nKeep app open..")
           showedMsgDownloading=true
           showedMsgDone=false // show another msg at the end
         }

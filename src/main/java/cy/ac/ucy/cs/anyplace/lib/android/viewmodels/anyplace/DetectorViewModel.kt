@@ -5,14 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.customview.OverlayView
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.tracking.MultiBoxTracker
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +37,7 @@ open class DetectorViewModel @Inject constructor(
         val dsCv: CvDataStore,
         val dsCvMap: CvMapDataStore,
 ) : AndroidViewModel(application) {
-
+  private val TG = "vm-detector"
   val assetReader by lazy { AssetReader(app) }
 
   lateinit var detector: Classifier
@@ -48,20 +45,23 @@ open class DetectorViewModel @Inject constructor(
   lateinit var trackingOverlay: OverlayView
 
   private val status = MutableStateFlow(DetectorStatus.disabled)
-  var detectorLoaded = false
+  var initedDetector = false
   lateinit var model: DetectionModel
 
   fun setModelName(modelName: String) {
     model = getModel(modelName)
   }
 
-  fun setDetectorLoaded() { detectorLoaded = true }
-  fun unsetDetectorLoaded() { detectorLoaded = false }
+  fun setDetectorLoaded() { initedDetector = true }
+  fun unsetDetectorLoaded() { initedDetector = false }
 
   @Deprecated("Is there a better way for this?")
   suspend fun waitForDetector() {
-    LOG.D2(TAG, "$METHOD..")
-    while (!detectorLoaded) delay(200)
+    val MT = ::waitForDetector.name
+    while (!initedDetector) {
+      LOG.V(TG, "$MT..")
+      delay(200)
+    }
   }
 
   private fun getModel(modelName: String) : DetectionModel {

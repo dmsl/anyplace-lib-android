@@ -34,10 +34,11 @@ import kotlinx.coroutines.launch
  *
  */
 class MapLines(private val app: AnyplaceApp,
-                private val scope: CoroutineScope,
-                private val VM: CvViewModel,
-                private val map: GmapWrapper) {
-  val TG = "ui-map-lines"
+               private val scope: CoroutineScope,
+               private val VM: CvViewModel,
+               private val map: GmapWrapper) {
+  private val TG = "ui-map-lines"
+  private val notify = app.notify
 
   private val ctx = app.applicationContext
 
@@ -58,7 +59,7 @@ class MapLines(private val app: AnyplaceApp,
   private val poiCoords: HashMap<String, LatLng> = HashMap ()
 
   fun hasConnectionsAndPoisCached(space: Space) : Boolean {
-    return cache.hasSpaceConnections(space) && cache.hasSpacePOIs(space)
+    return !VM.downloadingPoisAndConnections && cache.hasSpaceConnections(space) && cache.hasSpacePOIs(space)
   }
 
   /**
@@ -70,14 +71,19 @@ class MapLines(private val app: AnyplaceApp,
 
     scope.launch(Dispatchers.IO) {
       while(app.space==null || !hasConnectionsAndPoisCached(app.space!!)) {
-        LOG.E(TG, "$MT: waiting for space+pois")
+        LOG.D(TG, "$MT: waiting for space+pois")
         delay(100)
       }
 
       val space = app.space!!
 
       // add in two map data structures
-      val pois= cache.readSpacePOIs(space)!!
+      val pois=cache.readSpacePOIs(space)
+      if (pois == null) {
+        notify.DEV(scope, "Empty POIs ($TG/$MT)")
+        return@launch
+      }
+
       pois.objs.forEach { poi->
 
         poiCoords[poi.puid]=LatLng(poi.coordinatesLat.toDouble(), poi.coordinatesLon.toDouble())
@@ -88,7 +94,12 @@ class MapLines(private val app: AnyplaceApp,
       }
 
       LOG.D2(TG, "$MT: reading connections..")
-      val connections = cache.readSpaceConnections(space)!!
+      val connections = cache.readSpaceConnections(space)
+      if (connections == null) {
+        notify.DEV(scope, "Empty space connections ($TG/$MT)")
+        return@launch
+      }
+
       connections.objs.forEach { connection ->
         val level = connection.floorA.toInt()
 
@@ -112,7 +123,6 @@ class MapLines(private val app: AnyplaceApp,
 
   fun loadPolylines(floor: Int) {
     val MT = ::loadPolylines.name
-
     LOG.D2(TG, "$MT: rendering polylines of floor $floor")
 
     if (!isInited())  {
@@ -120,7 +130,7 @@ class MapLines(private val app: AnyplaceApp,
       loadFromCache()
     }
 
-    if (!DBG.uim) return
+    // if (!DBG.uim) return CHECK:PM ?!
 
     val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {

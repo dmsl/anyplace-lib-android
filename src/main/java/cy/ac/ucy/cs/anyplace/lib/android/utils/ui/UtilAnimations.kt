@@ -40,7 +40,10 @@ open class UtilAnimations(
           = scope.launch(Dispatchers.Main) { v.flashView(delay) }
 
   fun attentionZoom(v: View)
-          = scope.launch(Dispatchers.Main) { v.attentionZoom() }
+          = scope.launch(Dispatchers.Main) {
+            // XXX BUG
+    // v.attentionZoom()
+          }
 
   fun gone(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
   fun invisible(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.INVISIBLE }
@@ -49,15 +52,6 @@ open class UtilAnimations(
   fun alpha(v: View, a: Float) = scope.launch(Dispatchers.Main) { v.alpha=a }
   fun clearAnimation(v: View) = scope.launch(Dispatchers.Main) { v.clearAnimation() }
 }
-
-
-
-/////////
-// PRIVATE EXTENSION METHODS
-// Not exposed so they are not used directly.
-// Using them through [UtilView] (or it's child methods) ensures that they are on the main thread
-// TODO:PM CLR:PM cleanup comments in here
-/////////
 
 private fun View.attentionZoom() {
     visibility = View.VISIBLE
@@ -90,7 +84,6 @@ private fun View.fadeInAnyway() {
 
 /**
  * NEVER USE DIRECTLY.
- *
  * Use a wrapper like [UtilAnimations] or [UtilUI] that does the animation on the main thread
  */
 private fun View.fadeOut() {
@@ -102,27 +95,10 @@ private fun View.fadeOut() {
   }
 }
 
-// fun View.toggleAlpha(isShow: Boolean, delay: Long = 200, invisibleMode: Int = View.GONE) {
-//   val alpha = when (visibility) {
-//     View.GONE, View.INVISIBLE -> 0f
-//     View.VISIBLE -> 1f
-//     else -> 1f
-//   }
-//   if (isShow) animateAlpha(View.VISIBLE, alpha, delay) else animateAlpha(invisibleMode, alpha, delay)
-// }
-
-// visibility: Int,
 private fun View.animateAlpha(alpha: Float, delay: Long = 200) {
-  // if (visibility == View.VISIBLE) {
-  //   setVisibility(View.VISIBLE)
-  // }
-
   animate().apply {
     duration = delay
     alpha(alpha)
-    // withEndAction { CHECK
-    //   setVisibility(visibility)
-    // }
   }
 }
 
@@ -151,29 +127,4 @@ private fun View.flashView(delay: Long = 200) {
           .setDuration(delay)
           .setInterpolator(DecelerateInterpolator())
           .start()
-
-  // val fadeIn = AlphaAnimation(0f, 1f)
-  // fadeIn.interpolator = DecelerateInterpolator()
-  // fadeIn.duration = delay
-  //
-  // val fadeOut = AlphaAnimation(1f, 0f)
-  // fadeOut.interpolator = AccelerateInterpolator()
-  // fadeOut.startOffset = delay
-  // fadeOut.duration = delay
-  //
-  // val animation = AnimationSet(false) //change to false
-  // animation.addAnimation(fadeIn)
-  // animation.addAnimation(fadeOut)
-  // this.animation = animation
-
-  // animate().apply {
-  //   duration = delay
-  //   alpha(1f)
-  //   // withEndAction {
-  //   //   visibility = View.INVISIBLE
-  //   // }
-  // }.apply {
-  //   duration = delay
-  //   alpha(0f)
-  // }
 }

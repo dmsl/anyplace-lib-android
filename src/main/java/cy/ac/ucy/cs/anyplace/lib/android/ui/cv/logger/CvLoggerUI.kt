@@ -77,9 +77,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
             } else {
 
               val msg = "Scan some objects first!"
-              if (app.dsMisc.showTutorialLoggerLongPress()) {
-                val msgTut= "Long-press in logger is used only to assign objects on the map\n$msg"
-                notify.INF(scope, msgTut)
+              if (app.dsMisc.showTutorialLoggerMapLongPress()) {
+                val msgTut= "LOGGER LONG-PRESS:\nused only to assign objects on the map.\nResult: $msg"
+                notify.TUTORIAL(scope, msgTut)
               } else {
                 notify.long(scope, msg)
               }

@@ -203,7 +203,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         LOG.V4(TG, "reacting for BottomSheet")
         setupUiAfterGmap()
         uiBottom.setup()  // CHECK: this may have to change
-        VM.uiBottomInited=true
+        VM.initedBsheet=true
       }
     }
 
@@ -258,7 +258,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.W(TG, "$MT: ui (component) is now loaded.")
     VM.ui.map.attach(VM, this, R.id.mapView)
     VM.mu = IMU(this,VM, VM.ui.map)
-    VM.uiComponentInited=true
+    VM.initedUi=true
   }
 
   private fun setMapOpacity() {
@@ -273,7 +273,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   override fun onMapReady(googleMap: GoogleMap) {
     val MT = ::onMapReady.name
-    LOG.I(TG, "$MT")
+    LOG.I(TG, MT)
+
+    LOG.E(TG, "$MT: map ready")
 
     VM.ui.map.setup(googleMap, this)
     lifecycleScope.launch(Dispatchers.Main) {
@@ -299,7 +301,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     if (collectingDetections) return
     collectingDetections=true
 
-    lifecycleScope.launch {
+    lifecycleScope.launch(Dispatchers.IO) {
       VM.detectionsLOC.collectLatest {
         it.forEach { rec ->
           LOG.E(TG, "Detection: ${rec.id} ${rec.title}")
@@ -343,9 +345,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       if (!DBG.uim) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
+        VM.downloadingPoisAndConnections=true
         LOG.D2(TG, "$MT: Fetching POIs and Connections..")
         VM.nwPOIs.callBlocking(app.space!!.buid)
         VM.nwConnections.callBlocking(app.space!!.buid)
+        VM.downloadingPoisAndConnections=false
       }
       VM.ui.map.lines.loadPolylines(app.wLevel!!.levelNumber())
   }
@@ -366,8 +370,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       app.level.collect { level ->
         if (level == null) return@collect
 
-        LOG.W(TG, "$MT: collected level: ${level.buid}")
-        LOG.W(TG, "$MT: collected level: ${level.number}")
+        LOG.E(TG, "$MT: collected level: ${level.buid}/${level.number} ")
 
         // update FloorWrapper & FloorSelector
         app.wLevel = LevelWrapper(level, app.wSpace)
@@ -379,9 +382,9 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           onFirstLevelLoaded()
         }
 
-        LOG.V3(TG, "$MT: -> level: ${level.number}")
+        LOG.V2(TG, "$MT: -> level: ${level.number}")
         LOG.V2(TG, "$MT: -> updating cache: level: ${app.level.value?.number}")
-        VM.ui.map.fHandler.cacheLastLevel(app.level.value)
+        VM.ui.map.wrOverlays.cacheLastLevel(app.level.value)
         LOG.V2(TG, "$MT: -> loadFloor: ${level.number}")
         VM.ui.levelSelector.lazilyChangeLevel(VM, lifecycleScope)
 
@@ -434,7 +437,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     val MT = ::updateModelName.name
     LOG.W(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
-      while (!VM.detectorLoaded) delay(100)
+      while (!VM.initedDetector) delay(100)
 
       val modelInfo = "$actName | ${VM.model.modelName}"
       LOG.W(TG, "$MT: $modelInfo")

@@ -1,7 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.components
 
 import android.annotation.SuppressLint
-import android.view.View
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
@@ -47,47 +46,33 @@ class UiLocalization(
   private val utlUi by lazy { UtilUI(act, scope) }
   val btn: MaterialButton by lazy { act.findViewById(button_id_localization) }
   val btnWhereAmI: MaterialButton by lazy { act.findViewById(button_id_whereami) }
-
   val hasImuButton = false
 
+  var set = false
   fun setup() {
-    setupBtnLocalization()
-    setupButtonWhereAmI()
-  }
+    val MT = ::setup.name; if (set) return; set = true
+    LOG.W(TG, MT)
 
-  var btnLocalizationBtnSetup = false
-  fun setupBtnLocalization() {
-    val MT = ::setupBtnLocalization.name
-
-    if (btnLocalizationBtnSetup) return
-    btnLocalizationBtnSetup = true
     setupLocalizationMode()
     setupTrackingMode()
+    setupButtonWhereAmI()
   }
 
   private fun setupLocalizationMode() {
     val MT = ::setupLocalizationMode.name
-
     btn.setOnClickListener{
       scope.launch(Dispatchers.IO) {
         if (VM.localizationMode.first() == LocalizationMode.running ||
                 VM.trackingMode.first() == TrackingMode.on) {
-          LOG.E(TG, "$MT: ignoring.. (localizing or tracking already..)")
+          LOG.W(TG, "$MT: ignoring.. (localizing or tracking already..)")
           return@launch
         }
 
-        if (isDisabled()) {
-          if (disabledUserAction) {
-            notify.INF(scope, disabledCause)
-          } else {
-            notify.short(scope, disabledCause)
-          }
-          if (disabledAttentionViews.isNotEmpty()) {
-            disabledAttentionViews.forEach { utlUi.attentionZoom(it) }
-          }
-        } else {
-          VM.localizationMode.update { LocalizationMode.running }
+        VM.localizationMode.update { LocalizationMode.running }
+        if (app.dsMisc.showTutorialNavLocalize()) {
+         notify.TUTORIAL(scope, "LOCALIZATION: Camera opens to recognize objects and derive user location")
         }
+
       }
     }
   }
@@ -101,7 +86,7 @@ class UiLocalization(
 
     when (act) {
       is SmasMainActivity -> {
-        LOG.E(TG, "$MT: LONG CLICK will setup")
+        LOG.W(TG, "$MT: LONG CLICK will setup")
 
         val tvSubtitle: TextView = act.findViewById(R.id.tvSubtitle)
         collectTrackingDetections(tvSubtitle)
@@ -109,10 +94,9 @@ class UiLocalization(
         btn.setOnLongClickListener {
           scope.launch(Dispatchers.IO) {
 
-            // when tracking mode is on, or localization mode is on (but not through tracking),
-            // ignore it
+            // when tracking mode is on, or localization mode is on (but not through tracking), ignore it
             if (VM.localizationMode.first() == LocalizationMode.running) {
-              LOG.E(TG, "$MT: ignoring (already logging..)")
+              LOG.D(TG, "$MT: ignoring (already logging..)")
               return@launch
             }
             toggleTracking(VM.trackingMode.first(), tvSubtitle)
@@ -132,15 +116,21 @@ class UiLocalization(
     }
   }
 
-  var collectingTrackingDetections=false
+  var setTrckDets=false
   @SuppressLint("SetTextI18n")
   private fun collectTrackingDetections(tv: TextView) {
     val MT = ::collectTrackingDetections.name
-    if (collectingTrackingDetections) return
-    collectingTrackingDetections=true
+    if (setTrckDets) return; setTrckDets=true
 
     val txt="Location Tracking"
     scope.launch(Dispatchers.IO) {
+
+      if (app.dsMisc.showTutorialNavTracking()) {
+        val msg ="TRACKING: repeatedly performing localization\nLong-press again to disable" +
+                "It automatically stops if many scan windows are empty."
+        notify.TUTORIAL(scope, msg)
+      }
+
       VM.detectionsTracking.collect {
         val detections = it.det
         LOG.E(TG, "$MT: detections: $detections")
@@ -192,32 +182,49 @@ class UiLocalization(
     }
   }
 
-  var btnWhereAmISetup = false
+  var initedWhereAmI = false
   private fun setupButtonWhereAmI() {
+    val MT = ::setupButtonWhereAmI.name
+    LOG.E(TG, "$MT")
     btnWhereAmI.setOnClickListener {
-      if (!DBG.WAI) return@setOnClickListener
+      scope.launch(Dispatchers.IO) {
+        if (!DBG.WAI) return@launch
 
-      val lr = app.locationSmas.value
-      if (lr is LocalizationResult.Success) {
-        val coord = lr.coord!!
-        val curFloor = app.wLevel?.levelNumber()
+        val showTutorial = app.dsMisc.showTutorialNavWhereAmI()
+        val lr = app.locationSmas.value
+        var msg = ""
+        if (lr is LocalizationResult.Success) {
+          LOG.E(TG, "$MT: success")
+          val coord = lr.coord!!
+          val curFloor = app.wLevel?.levelNumber()
 
-        if (coord.level != curFloor) {
-          app.wLevels.moveToFloor(VM, coord.level)
+          if (coord.level != curFloor) {
+            app.wLevels.moveToFloor(VM, coord.level)
+          }
+
+          VM.ui.map.markers.clearAllInfoWindow()
+          VM.ui.map.moveToLocation(coord.toLatLng())
+        } else {
+          msg = "Localize or set location manually (long-press map)"
+          if (!showTutorial) {
+            notify.short(VM.viewModelScope, msg)
+          }
+
+          utlUi.attentionZoom(VM.ui.localization.btn)
+          VM.ui.map.moveToLocation(app.wLevel!!.bounds().center)
         }
 
-        LOG.E(TG, "whereami click")
-        VM.ui.map.markers.clearAllInfoWindow()
-        VM.ui.map.moveToLocation(coord.toLatLng())
-      } else {
-        val msg = "For Where-Am-I, localize first or\nset location manually (long-press map)"
-        notify.INF(VM.viewModelScope, msg)
-        utlUi.attentionZoom(VM.ui.localization.btn)
+        if (showTutorial) {
+          var tutMsg = "WHERE AM I:\ncenters map to your location.\n" +
+                  "If unknown, it centers on the ${app.wSpace.prettyLevel}."
+          if (msg.isNotEmpty()) tutMsg+="\nResult: $msg"
 
-        VM.ui.map.moveToLocation(app.wLevel!!.bounds().center)
+          notify.TUTORIAL(VM.viewModelScope, tutMsg)
+        }
+
       }
     }
-    btnWhereAmISetup=true
+      initedWhereAmI = true
   }
 
   var collecting = false
@@ -227,8 +234,7 @@ class UiLocalization(
    */
   fun collectStatus() {
     val MT = ::collectStatus.name
-    if (collecting) return
-    collecting =true
+    if (collecting) return; collecting =true
 
     scope.launch{
       VM.localizationMode.collect { status ->
@@ -249,7 +255,6 @@ class UiLocalization(
             VM.onLocalizationEnded()
             endLocalization()
           }
-          else ->  {}
         }
       }
     }
@@ -306,35 +311,33 @@ class UiLocalization(
     }
   }
 
-
   fun hide() = utlUi.fadeOut(btn)
   fun show() {
-    if (isDisabled()) {
-      enableLocalizationBtn()
-    } else {
-      utlUi.fadeIn(btn)
-    }
+    // CLR:PM in this file...
+    // if (isDisabled()) {
+    //   enableLocalizationBtn()
+    // } else {
+    // }
+    utlUi.fadeIn(btn)
   }
 
-  var disabledCause = ""
-  var disabledUserAction: Boolean = false
-  var disabledAttentionViews = mutableListOf<View>()
-  fun disableLocalizationBtn(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
-    disabledCause=cause
-    disabledUserAction=requireUserAction
-    disabledAttentionViews.clear()
-    disabledAttentionViews.addAll(attentionViews)
-    utlUi.animateAlpha(btn, 0.5f)
-  }
-
-  private fun enableLocalizationBtn() {
-    disabledCause=""
-    disabledUserAction=false
-    disabledAttentionViews.clear()
-    utlUi.animateAlpha(btn, 1f)
-  }
-
-  fun isDisabled() = disabledCause.isNotEmpty()
+  // var disabledCause = ""
+  // var disabledUserAction: Boolean = false
+  // var disabledAttentionViews = mutableListOf<View>()
+  // fun disableLocalizationBtn(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
+  //   disabledCause=cause
+  //   disabledUserAction=requireUserAction
+  //   disabledAttentionViews.clear()
+  //   disabledAttentionViews.addAll(attentionViews)
+  //   utlUi.animateAlpha(btn, 0.5f)
+  // // }
+  // private fun enableLocalizationBtn() {
+  //   disabledCause=""
+  //   disabledUserAction=false
+  //   disabledAttentionViews.clear()
+  //   utlUi.animateAlpha(btn, 1f)
+  // }
+  // fun isDisabled() = disabledCause.isNotEmpty()
 
   var imuButtonInited = false
   lateinit var btnImu : MaterialButton
@@ -345,53 +348,71 @@ class UiLocalization(
 
     this.btnImu=btnImu
     scope.launch(Dispatchers.IO) {
-      if (!app.hasDevMode()) {
-        utlUi.gone(btnImu)
-        return@launch
-      }
+      // if (!app.hasDevMode()) {  // ONLY DEV MODE?!
+      //   utlUi.gone(btnImu)
+      //   return@launch
+      // }
 
       LOG.W(TG, MT)
       imuButtonInited=true
 
       utlUi.visible(btnImu)
 
+
       btnImu.setOnClickListener {
-        VM.imuEnabled=!VM.imuEnabled
-
-        if (VM.imuEnabled) imuEnable() else imuDisable()
-
-        when {
-          !act.initedGmap -> {
-            notify.long(scope, "Cannot start IMU: map not ready yet")
-            imuDisable()
+        scope.launch(Dispatchers.IO) {
+          if (app.dsMisc.showTutorialNavImu()) {
+            notify.TUTORIAL(scope, "IMU Mode (experimental):\n"+
+                    "It uses the accelerometer and compass to navigate.\nToggled with a long-click")
+            return@launch
           }
-
-          app.locationSmas.value.coord == null -> {
-            notify.shortDEV(scope, "IMU needs an initial location.")
-            imuDisable()
-          }
-
-          VM.imuEnabled -> { VM.mu.start() }
         }
+      }
+
+      btnImu.setOnLongClickListener {
+        scope.launch(Dispatchers.Main) {
+          VM.imuEnabled=!VM.imuEnabled
+
+          if (VM.imuEnabled) imuEnable() else imuDisable()
+
+          when {
+            !act.initedGmap -> {
+              notify.long(scope, "Cannot start IMU: map not ready yet")
+              imuDisable()
+            }
+
+            app.locationSmas.value.coord == null -> {
+              notify.warn(scope, "IMU needs an initial location.")
+              imuDisable()
+            }
+
+            VM.imuEnabled -> { VM.mu.start() }
+          }
+        }
+        return@setOnLongClickListener true
       }
     }
   }
 
   /**
-   * IMU cannot be used (at least for now) in conjuction with localization.
+   * IMU cannot be used (at least for now) in conjunction with localization.
    * It is an experimental feature (proof of concept)
    */
   fun imuEnable() {
-    utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
-    utlUi.flashingLoop(btnImu)
-    VM.imuEnabled=true
-    notify.warn(scope, "IMU mode ON! [experimental]")
+    scope.launch(Dispatchers.IO) {
+      utlUi.changeBackgroundMaterial(btnImu, R.color.colorPrimary)
+      utlUi.flashingLoop(btnImu)
+      VM.imuEnabled=true
+      notify.short(scope, "IMU enabled [experimental]")
+    }
   }
 
   fun imuDisable() {
-    utlUi.changeBackgroundMaterial(btnImu, R.color.darkGray)
-    utlUi.clearAnimation(btnImu)
-    VM.imuEnabled=false
+    scope.launch(Dispatchers.IO) {
+      utlUi.changeBackgroundMaterial(btnImu, R.color.darkGray)
+      utlUi.clearAnimation(btnImu)
+      VM.imuEnabled=false
+    }
   }
 
 }

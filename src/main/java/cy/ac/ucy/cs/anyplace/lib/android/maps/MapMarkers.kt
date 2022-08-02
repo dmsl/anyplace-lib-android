@@ -236,18 +236,22 @@ class MapMarkers(private val app: AnyplaceApp,
     val MT = ::clearAllInfoWindow.name
     LOG.I(TG, "$MT: clearing all markers")
     // clear last selected user
-    userLocations.forEach {
-      it.hideInfoWindow()
-      val metadata = it.tag as UserInfoMetadata?
-      if (metadata != null) {
-        if (!lastSelectedUser.isNullOrEmpty() && lastSelectedUser == metadata.uid) {
-          lastSelectedUser=null
+    scope.launch(Dispatchers.Main) {
+      userLocations.forEach {
+        it.hideInfoWindow()
+        val metadata = it.tag as UserInfoMetadata?
+        if (metadata != null) {
+          if (!lastSelectedUser.isNullOrEmpty() && lastSelectedUser == metadata.uid) {
+            lastSelectedUser=null
+          }
         }
       }
     }
 
     if (lastOwnLocation != null) {
-      lastOwnLocation?.hideInfoWindow()
+      scope.launch(Dispatchers.Main) {
+        lastOwnLocation?.hideInfoWindow()
+      }
     }
   }
 

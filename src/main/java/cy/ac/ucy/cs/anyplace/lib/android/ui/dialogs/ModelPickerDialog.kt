@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogPickModelBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
@@ -60,7 +61,7 @@ class ModelPickerDialog(private val dsCv: CvDataStore):
   @SuppressLint("SetTextI18n")
   private fun setupRadioButtons() {
     val rbGroup = binding.radioGroupOptions
-    lifecycleScope.launch {
+    lifecycleScope.launch(Dispatchers.Main) {
       val selectedModel = dsCv.read.first().modelName
       LOG.D2(TG, "setupRadioButtons: selected model: $selectedModel")
 

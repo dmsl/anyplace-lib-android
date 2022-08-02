@@ -7,7 +7,6 @@ class DBG {
   companion object {
 
     const val LEVEL = 2
-
     const val notificationsDisabled = true // TODO:PMX
 
     const val D1 = LEVEL >= 1

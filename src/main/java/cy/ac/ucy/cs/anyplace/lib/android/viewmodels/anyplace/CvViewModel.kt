@@ -98,8 +98,8 @@ open class CvViewModel @Inject constructor(
   //// COMPONENTS
   lateinit var levelSelector: LevelSelector
   /** Initialized when [GoogleMap] is initialized (see [setupUiGmap]) */
-  var uiComponentInited = false
-  var uiBottomInited = false
+  var initedUi = false
+  var initedBsheet = false
   lateinit var ui: CvUI
 
   // CV WINDOW: on Localization/Logging the detections are grouped per scanning window,
@@ -116,6 +116,8 @@ open class CvViewModel @Inject constructor(
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwLevelPlan by lazy { LevelPlanNW(app as SmasApp, this, RHsmas, repoSmas) }
+
+  var downloadingPoisAndConnections = false
 
   /** Controlling localization mode */
   val localizationMode = MutableStateFlow(LocalizationMode.stopped)
@@ -141,14 +143,21 @@ open class CvViewModel @Inject constructor(
   /** workaround. no the best one */
   @Deprecated("this may be an ugly hack")
   suspend fun waitForUi() {
-    while(!uiLoaded()) delay(100)
+    val MT = ::waitForUi.name
+    while(!uiLoaded()) {
+      delay(100)
+      val details = "ui-comp:$initedUi gmap:${ui.map.initedGmap} " +
+       "BottomSheet:$initedBsheet WAI:${(!DBG.WAI || ui.localization.initedWhereAmI)}"
+      LOG.V(TG, "$MT: $details")
+    }
+
   }
 
   fun uiLoaded(): Boolean {
-    return uiComponentInited &&
-            ui.map.gmapWrLoaded &&
-            uiBottomInited &&
-            (!DBG.WAI || ui.localization.btnWhereAmISetup)
+    return initedUi &&
+            ui.map.initedGmap &&
+            initedBsheet &&
+            (!DBG.WAI || ui.localization.initedWhereAmI)
   }
 
   /**

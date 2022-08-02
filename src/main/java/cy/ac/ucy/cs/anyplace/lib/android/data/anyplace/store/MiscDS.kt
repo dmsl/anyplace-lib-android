@@ -37,24 +37,24 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
 
     // TUTORIALS (tutorial example)
     //// LOGGER: (just an example on how to do a tutorial. follow all variables related to this)
-    val tutLogLongPress = booleanPreferencesKey(c.PREF_MISC_TUT_LOG_LONG_PRESS)
-    val tutNavLongPress = booleanPreferencesKey(c.PREF_MISC_TUT_NAV_LONG_PRESS)
+    val tutLogMapLongPress=booleanPreferencesKey(c.PREF_MISC_TUT_LOG_LONG_PRESS)
+    val tutNavMapLongPress=booleanPreferencesKey(c.PREF_MISC_TUT_NAV_LONG_PRESS)
+    val tutNavLocalize=booleanPreferencesKey(c.PREF_MISC_TUT_NAV_LOCALIZE)
+    val tutNavTracking=booleanPreferencesKey(c.PREF_MISC_TUT_NAV_TRACKING)
+    val tutNavWhereAmI=booleanPreferencesKey(c.PREF_MISC_TUT_NAV_WHEREAMI)
+    val tutNavImu=booleanPreferencesKey(c.PREF_MISC_TUT_NAV_IMU)
   }
   private val KEY = Keys(C)
 
   suspend fun saveBackOnline(value: Boolean) = saveBoolean(KEY.backOnline, value)
   suspend fun saveBackFromSettings(value: Boolean) = saveBoolean(KEY.backOnline, value)
 
-  // suspend fun tutWatchedLogLongPress() = tutWatched(KEY.tutLogLongPress)
-  // suspend fun tutWatchedNavLongPress() = tutWatched(KEY.tutNavLongPress)
-
   /** assign a tutorial as watched (false: don't trigger it again) */
-  suspend fun tutorialWatched(key: Preferences.Key<Boolean>) = saveBoolean(key, false)
+  private suspend fun tutorialWatched(key: Preferences.Key<Boolean>) = saveBoolean(key, false)
 
   private suspend fun saveBoolean(key: Preferences.Key<Boolean>, value: Boolean) {
     ctx.dsMisc.edit { prefs -> prefs[key] = value }
   }
-
 
   /** TODO:PM make this app specific?!
    * see its usages
@@ -64,10 +64,13 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
   val backFromSettings = readBoolean(KEY.backFromSettings, false)
 
   /** whether the long-press tutorial of the logger was shown yet or not */
-  suspend fun showTutorialLoggerLongPress() = tutInternal(KEY.tutLogLongPress)
-
+  suspend fun showTutorialLoggerMapLongPress() = tutInternal(KEY.tutLogMapLongPress)
   /** whether the long-press tutorial of the navigator was shown yet or not */
-  suspend fun showTutorialNavLongPress() = tutInternal(KEY.tutNavLongPress)
+  suspend fun showTutorialNavMapLongPress() = tutInternal(KEY.tutNavMapLongPress)
+  suspend fun showTutorialNavLocalize() = tutInternal(KEY.tutNavLocalize)
+  suspend fun showTutorialNavTracking() = tutInternal(KEY.tutNavTracking)
+  suspend fun showTutorialNavWhereAmI() = tutInternal(KEY.tutNavWhereAmI)
+  suspend fun showTutorialNavImu() = tutInternal(KEY.tutNavImu)
 
   /**
    * Figures out if a tutorial must be shown, and returns that value.

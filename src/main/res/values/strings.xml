@@ -276,5 +276,9 @@
   <string name="pref_misc">pref_misc</string>
   <string name="pref_misc_backFromSettings">pref_misc_backFromSettings</string>
   <string name="pref_misc_tutNavLongPress">pref_misc_tutNavLongPress</string>
+  <string name="pref_misc_tutNavWhereAmI">pref_misc_tutNavWhereAmI</string>
+  <string name="pref_misc_tutNavLocalize">pref_misc_tutNavLocalize</string>
+  <string name="pref_misc_tutNavTracking">pref_misc_tutNavTracking</string>
+  <string name="pref_misc_tutNavImu">pref_misc_tutNavImu</string>
 
 </resources>

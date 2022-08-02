@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 enum class SnackType {
   NORMAL,
   INFO,
+  TUTORIAL,
   WARNING,
   DEV
 }
@@ -51,6 +52,8 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
   fun info(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_LONG, SnackType.INFO)
   /** Indefinite Info notification */
   fun INFO(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.INFO)
+  /** Indefinite Tutorial notification */
+  fun TUTORIAL(scope: CoroutineScope, msg: String) = show(scope, msg, Snackbar.LENGTH_INDEFINITE, SnackType.TUTORIAL)
 
   /** Short Dev notification */
   fun shortDEV(scope: CoroutineScope, msg: String) = showDEV(scope, msg, Snackbar.LENGTH_SHORT)
@@ -111,8 +114,7 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
         }
         SnackType.WARNING -> {
           sb.setBackground(R.drawable.bg_snackbar_warning)
-          sb.setActionTextColor(app.utlColor.Info())
-
+          sb.setActionTextColor(app.utlColor.White())
           if (duration == Snackbar.LENGTH_INDEFINITE) {
             sb.setDrawableLeft(R.drawable.ic_warning)
           } else {
@@ -120,9 +122,15 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
           }
         }
         SnackType.INFO -> {
+          sb.setActionTextColor(app.utlColor.White())
           sb.setBackground(R.drawable.bg_snackbar_info)
-          sb.setActionTextColor(app.utlColor.Info())
           sb.setDrawableLeft(R.drawable.ic_info)
+        }
+        SnackType.TUTORIAL -> {
+          sb.setActionTextColor(app.utlColor.White())
+          sb.setBackground(R.drawable.bg_snackbar_info)
+          sb.setDrawableLeft(R.drawable.ic_tutorial)
+          tv.maxLines=6
         }
         SnackType.NORMAL -> {
           sb.setBackground(R.drawable.bg_snackbar_normal)
