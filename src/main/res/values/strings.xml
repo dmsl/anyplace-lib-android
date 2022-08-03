@@ -150,7 +150,8 @@
   <string name="tutorial_cvscan_start">1. SCAN:</string>
   <string name="tutorial_cvscan_start_details">
 "   - the camera opens to identify objects.
-   - these objects belong to the same \"scan window\"."
+   - these objects belong to the same \"scan window\".
+   - \"Upload Scans\": stores fingerprints to the cloud."
   </string>
   <string name="tutorial_cvscan_store">2. LONG-CLICK ON MAP:</string>
   <string name="tutorial_cvscan_store_details">
@@ -160,11 +161,8 @@
    - Steps (1), (2) may repeated as necessary
   </string>
 
-  <!-- TODO:PMX: TUT -->
-  <!--  - \"Upload Scans\": updates the cloud fingerprints"-->
   <string name="tutorial_discard_obj_title">DISCARDING OBJECTS:</string>
   <!-- TUTORIALS -->
-<!--  - In settings: you can discard all local fingerprints. -->
   <string name="tutorial_discard_obj_desc">
 "   - While scanning: \"cancel\" discards current window
    - On window finish: can discard it using the UI"
@@ -280,5 +278,6 @@
   <string name="pref_misc_tutNavLocalize">pref_misc_tutNavLocalize</string>
   <string name="pref_misc_tutNavTracking">pref_misc_tutNavTracking</string>
   <string name="pref_misc_tutNavImu">pref_misc_tutNavImu</string>
+  <string name="pref_cv_fingerprints_auto_update">pref_cv_fingerprints_auto_update</string>
 
 </resources>

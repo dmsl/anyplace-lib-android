@@ -67,6 +67,7 @@ open class CONST(ctx: Context) {
   val PREF_CV_DEV_MODE = ctx.getString(R.string.pref_cv_dev_mode)
   val PREF_CV_AUTOSET_INITIAL_LOCATION= ctx.getString(R.string.pref_cv_autoset_initial_location)
   val PREF_CV_FOLLOW_SELECTED_USER = ctx.getString(R.string.pref_cv_follow_selected_user)
+  val PREF_CV_AUTO_UPDATE_FINGERPRINTS = ctx.getString(R.string.pref_cv_fingerprints_auto_update)
 
   //// Settings for Cv Logger
   val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
@@ -79,6 +80,7 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CV_DEV_MODE = true
   val DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION= true
   val DEFAULT_PREF_CV_FOLLOW_SELECTED_USER= true
+  val DEFAULT_PREF_CV_AUTO_UPDATE_FINGERPRINTS = true
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"

@@ -35,12 +35,21 @@ class CvModelFilesGetNW(
 
   /** Network Responses from API calls */
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var user : SmasUser
 
-  suspend fun downloadAllModels() {
-    val MT = ::downloadAllModels.name
+  fun mustDownloadCvModels(): Boolean {
+    val MT = ::mustDownloadCvModels.name
     DetectionModel.list.forEach { model ->
-      LOG.W(TG, "$MT: ${model.modelName}")
+      if(cache.hasCvModelFilesDownloaded(model.idSmas)) {
+        LOG.D2(TG, "$MT: cached: ${model.modelName}")
+      } else return true
+    }
+    return false
+  }
+
+  suspend fun downloadMissingModels() {
+    val MT = ::downloadMissingModels.name
+    DetectionModel.list.forEach { model ->
+      LOG.D(TG, "$MT: ${model.modelName}..")
       callBlocking(model.idSmas)
     }
   }
@@ -48,15 +57,15 @@ class CvModelFilesGetNW(
   /** Get [UserLocations] SafeCall */
   suspend fun callBlocking(modelId: Int) : Boolean {
     val MT = ::callBlocking.name
-    LOG.W(TG, "$MT: downloading: $modelId")
-    user = app.dsUserSmas.read.first()
+    LOG.D2(TG, "$MT: downloading: $modelId..")
 
     if (cache.hasCvModelFilesDownloaded(modelId)) {
-      LOG.W(TG, "$MT: model $modelId already cached..")
+      LOG.D(TG, "$MT: model $modelId already cached..")
       return true
     }
 
     if (app.hasInternet()) {
+      val user = app.dsUserSmas.read.first()
       return try {
         val response = repo.remote.cvModelFilesGet(CvModelFilesReq(user.uid, user.sessionkey, modelId))
         return handleResponse(response)
@@ -131,7 +140,4 @@ class CvModelFilesGetNW(
       return false
     }
   }
-
-
-
 }

@@ -26,40 +26,36 @@ import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
+class AnyplaceLoginViewModel @Inject constructor(
         application: Application,
-        private val repoAP: RepoAP,
-        private val retrofitHolderAP: RetrofitHolderAP) : AndroidViewModel(application) {
+        private val repoAP: RepoAP) : AndroidViewModel(application) {
+  private val TG = "vm-login"
 
   private val C by lazy { CONST(application.applicationContext) }
   private val _loginForm = MutableLiveData<LoginFormState>()
-  val loginFormState: LiveData<LoginFormState> = _loginForm // CHECK:PM
+  val loginFormState: LiveData<LoginFormState> = _loginForm
 
-  //// RETROFIT
-  ////// Mutable Data
   val userLoginResponse: MutableLiveData<NetworkResult<UserLoginResponse>> = MutableLiveData()
 
   fun loginUserLocal(obj: UserLoginLocalForm) =
-    viewModelScope.launch { loginLocalUserSafeCall(obj) }
+          viewModelScope.launch { loginLocalUserSafeCall(obj) }
 
   fun loginUserGoogle(obj: UserLoginGoogleData, photoUri: Uri?) =
-    viewModelScope.launch { loginGoogleUserSafeCall(obj, photoUri) }
+          viewModelScope.launch { loginGoogleUserSafeCall(obj, photoUri) }
 
   private suspend fun loginLocalUserSafeCall(userLoginLocalForm: UserLoginLocalForm) {
+    val MT = ::loginLocalUserSafeCall.name
+    LOG.E(TG, MT)
+
     userLoginResponse.value = NetworkResult.Loading() // TODO
     var exception : Exception? = null
-    // var userResponse : NetworkResult<UserResponse>? = null
-      if (app.hasInternet()) {
+    if (app.hasInternet()) {
       try {
         val response = repoAP.remote.userLoginLocal(userLoginLocalForm)
         userLoginResponse.value = handleUserLoginResponse(response, null)
 
         if (userLoginResponse.value is NetworkResult.Error) {
-         exception = Exception(userLoginResponse.value?.message)
-        // } else { // CLR? isnt this cached already?
-        //   // TODO:PM
-        //   LOG.W("TODO: cache logged in user")
-        //   LOG.W("$userLoginResponse.value.data")
+          exception = Exception(userLoginResponse.value?.message)
         }
       } catch(e: Exception) {
         exception = e
@@ -74,21 +70,21 @@ class LoginViewModel @Inject constructor(
             exception = Exception(C.MSG_ERR_NPE)
           }
         }
-        LOG.E(TAG, "Exception: ${exception!!.message}")
+        LOG.E(TG, "$MT: Exception: ${exception!!.message}")
       }
-      } else {
-        exception = Exception(C.ERR_MSG_NO_INTERNET)
-      }
+    } else {
+      exception = Exception(C.ERR_MSG_NO_INTERNET)
+    }
 
     exception?.let { it ->
       val msg = it.message.toString()
-      LOG.E(TAG, msg)
+      LOG.E(TG, msg)
       userLoginResponse.value = NetworkResult.Error(exception?.message)
     }
   }
 
-  // CHECK this is almost identical with: loginLocalUserSafeCall
   private suspend fun loginGoogleUserSafeCall(obj: UserLoginGoogleData, photoUri: Uri?) {
+    val MT = ::loginGoogleUserSafeCall.name
     userLoginResponse.value = NetworkResult.Loading()
     var exception : Exception? = null
     if (app.hasInternet()) {
@@ -104,15 +100,19 @@ class LoginViewModel @Inject constructor(
         val msg = "Google Login failed"
         handleSafecallError(msg, e)
         e.let {
-          if (e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true) {
-            exception = Exception(C.MSG_ERR_ONLY_SSL)
-          } else if (e.message?.contains(C.ERR_MSG_ILLEGAL_STATE) == true) {
-            exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
-          } else if (e.message?.contains(C.EXCEPTION_MSG_NPE) == true) {
-            exception = Exception(C.MSG_ERR_NPE)
+          when {
+            e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true -> {
+              exception = Exception(C.MSG_ERR_ONLY_SSL)
+            }
+            e.message?.contains(C.ERR_MSG_ILLEGAL_STATE) == true -> {
+              exception = Exception(C.MSG_ERR_ILLEGAL_STATE)
+            }
+            e.message?.contains(C.EXCEPTION_MSG_NPE) == true -> {
+              exception = Exception(C.MSG_ERR_NPE)
+            }
           }
         }
-        LOG.E(TAG, "Exception: ${exception!!.message}")
+        LOG.E(TG, "$MT: Exception: ${exception!!.message}")
       }
     } else {
       exception = Exception(C.ERR_MSG_NO_INTERNET)
@@ -120,22 +120,24 @@ class LoginViewModel @Inject constructor(
 
     exception?.let { it ->
       val msg = it.message.toString()
-      LOG.E(TAG, msg)
+      LOG.E(TG, msg)
       userLoginResponse.value = NetworkResult.Error(exception?.message)
     }
   }
 
   private fun handleSafecallError(msg: String, e: Exception) {
+    val MT = ::handleSafecallError.name
     if (e is IllegalStateException) {
       userLoginResponse.value = NetworkResult.Error(e.javaClass.name)
     } else {
       userLoginResponse.value = NetworkResult.Error(msg)
     }
-    LOG.E(msg)
-    LOG.E(TAG, e)
+    LOG.E(TG, "$MT: $msg")
+    LOG.E(TG, MT, e)
   }
 
   private fun handleUserLoginResponse(response: Response<UserLoginResponse>, photoUri: Uri?): NetworkResult<UserLoginResponse> {
+    val MT = ::handleUserLoginResponse.name
     return when {
       response.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
       !response.isSuccessful-> {

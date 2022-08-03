@@ -86,7 +86,6 @@ class SearchActivity : CvMapActivity(), OnMapReadyCallback {
   }
 
   override fun onFirstLevelLoaded() {
-    TODO("Not yet implemented")
   }
 
 }

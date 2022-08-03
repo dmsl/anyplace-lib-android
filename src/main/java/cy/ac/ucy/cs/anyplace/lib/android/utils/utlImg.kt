@@ -59,11 +59,6 @@ object utlImg {
     val MT = ::base64toBytes.name
     return try {
       return Base64.decode(encodedBase64, Base64.DEFAULT)
-      // example: encodes then decodes
-      // val encodedString = Base64.getEncoder().withoutPadding().encodeToString(oriString.toByteArray())
-      // println(encodedString)
-      // val decodedBytes = Base64.getDecoder().decode(encodedString)
-      // String(bytes)
     } catch (e: IllegalArgumentException) {
       LOG.E(TG, MT, e)
       null

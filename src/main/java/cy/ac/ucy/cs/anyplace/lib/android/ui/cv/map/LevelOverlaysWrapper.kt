@@ -51,15 +51,15 @@ open class LevelOverlaysWrapper(
 
     if (collectingLevelplanChanges) return
     collectingLevelplanChanges=true
-    LOG.E(TG, "$MT: setup")
+    LOG.V2(TG, "$MT: setup")
 
     scope.launch(Dispatchers.IO) {
       VM.nwLevelPlan.bitmap.collect { response ->
 
-        LOG.W(TG, "$MT: levelplan updated..")
+        LOG.V4(TG, "$MT: levelplan updated..")
         when (response) {
           is NetworkResult.Loading -> {
-            LOG.W(TG, "$MT: will load ${app.wSpace.prettyLevelplan}..")
+            LOG.V5(TG, "$MT: will load ${app.wSpace.prettyLevelplan}..")
           }
           is NetworkResult.Error -> {
             val msg = ": Failed to fetch ${app.wSpace.prettyType}: ${app.space?.name}: [${response.message}]"
@@ -69,10 +69,10 @@ open class LevelOverlaysWrapper(
           is NetworkResult.Success -> {
             if (app.wLevel == null) {
               val msg = "No floor/deck selected."
-              LOG.W(msg)
+              LOG.D2(msg)
               notify.short(scope, msg)
             } else {
-              LOG.E(TG, "$MT: success: rendering img")
+              LOG.D2(TG, "$MT: success: rendering img")
               VM.nwLevelPlan.render(response.data, app.wLevel!!)
               loadHeatmap(gmap)
             }

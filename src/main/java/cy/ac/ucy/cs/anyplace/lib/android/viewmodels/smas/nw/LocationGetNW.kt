@@ -210,10 +210,10 @@ class LocationGetNW(
         if (utlTime.isWithinMinutes(ownLocation.time, 10)) {
           app.locationSmas.update {
             val coord = ownLocation.toCoord()
-            LOG.E(TG, "$MT RECENT LOC: ${coord.lon}, ${coord.lon}, LVL: ${coord.level}")
+            LOG.V2(TG, "$MT: recent loc: ${coord.lon}, ${coord.lon}: lvl: ${coord.level}")
             LocalizationResult.Success(ownLocation.toCoord(), LocalizationResult.AUTOSET_RECENT)
           }
-          notify.short(scope, "Restored last location.")
+          // notify.short(scope, "Restored last location.")
           delay(500)
 
           VM.ui.map.moveToLocation(ownLocation.toCoord().toLatLng())

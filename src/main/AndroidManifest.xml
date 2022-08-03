@@ -30,8 +30,8 @@
         android:theme="@style/AppTheme.Compat.ObjectDetection" />
     <activity
         android:name=".android.ui.user.AnyplaceLoginActivity"
+        android:theme="@style/AppTheme.Compat.Fullscreen"
         android:exported="true"
-        android:theme="@style/AppTheme.Compat"
         android:screenOrientation="portrait"
         android:label="@string/title_activity_login" />
     <activity

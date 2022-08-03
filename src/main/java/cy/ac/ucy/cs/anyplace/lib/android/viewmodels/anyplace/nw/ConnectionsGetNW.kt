@@ -43,8 +43,7 @@ class ConnectionsGetNW(
 
         when (val resp = handleResponse(response)) {
           is NetworkResult.Success -> {
-            val wSpace = app.wSpace
-            wSpace.cacheConnections(resp.data!!)
+            cache.saveBuidConnections(buid, resp.data!!)
             return true
           }
           else -> {

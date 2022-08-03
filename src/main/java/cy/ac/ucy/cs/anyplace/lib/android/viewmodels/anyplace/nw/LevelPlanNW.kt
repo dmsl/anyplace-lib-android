@@ -88,7 +88,7 @@ class LevelPlanNW(
     var alreadyCached=""
     val app = VM.app
     app.wLevels.obj.forEach { level ->
-      LOG.W(TG, "$MT: level: ${level.name}")
+      LOG.V3(TG, "$MT: level: ${level.name}")
       val LW = LevelWrapper(level, app.wSpace)
       if (!LW.hasLevelplanCached()) {
         // at least one floor needs to be downloaded:
@@ -167,8 +167,7 @@ class LevelPlanNW(
    */
   fun render(bitmap: Bitmap?, LW: LevelWrapper) {
     val method = ::render.name
-    LOG.E(TG, method)
-    LOG.E(TG, "$method: ${LW.wSpace.obj.name}: ${LW.wSpace.obj.buid}")
+    LOG.V5(TG, "$method: ${LW.wSpace.obj.name}: ${LW.wSpace.obj.buid}")
 
     VM.ui.map.overlays.drawFloorplan(bitmap, VM.ui.map.obj, LW.bounds())
   }

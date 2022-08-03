@@ -43,6 +43,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_AUTOSET_INITIAL_LOCATION,
           C.PREF_CV_FOLLOW_SELECTED_USER,
           C.PREF_SELECTED_SPACE,
+          C.PREF_CV_AUTO_UPDATE_FINGERPRINTS,
   )
 
   private class Keys(c: CONST) {
@@ -56,6 +57,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     val autoSetInitialLocation = booleanPreferencesKey(c.PREF_CV_AUTOSET_INITIAL_LOCATION)
     val followSelectedUser = booleanPreferencesKey(c.PREF_CV_FOLLOW_SELECTED_USER)
     val selectedSpace = stringPreferencesKey(c.PREF_SELECTED_SPACE)
+    val autoUpdateCvFingerprints= booleanPreferencesKey(c.PREF_CV_AUTO_UPDATE_FINGERPRINTS)
   }
   private val KEY = Keys(C)
 
@@ -74,6 +76,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_DEV_MODE -> it[KEY.devMode] = value
           C.PREF_CV_AUTOSET_INITIAL_LOCATION-> it[KEY.autoSetInitialLocation] = value
           C.PREF_CV_FOLLOW_SELECTED_USER-> it[KEY.followSelectedUser] = value
+          C.PREF_CV_AUTO_UPDATE_FINGERPRINTS-> it[KEY.autoUpdateCvFingerprints] = value
         }
       }
     }
@@ -117,6 +120,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         C.PREF_CV_DEV_MODE -> prefs.devMode
         C.PREF_CV_AUTOSET_INITIAL_LOCATION-> prefs.autoSetInitialLocation
         C.PREF_CV_FOLLOW_SELECTED_USER-> prefs.followSelectedUser
+        C.PREF_CV_AUTO_UPDATE_FINGERPRINTS-> prefs.autoUpdateCvFingerprints
         else -> false
       }
     }
@@ -157,6 +161,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val autoSetInitialLocation = preferences[KEY.autoSetInitialLocation] ?: C.DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION
             val followSelectedUser = preferences[KEY.followSelectedUser] ?: C.DEFAULT_PREF_CV_FOLLOW_SELECTED_USER
             val selecteSpace = preferences[KEY.selectedSpace] ?: ""
+            val autoUpdateCvFingerprints = preferences[KEY.autoUpdateCvFingerprints] ?: C.DEFAULT_PREF_CV_AUTO_UPDATE_FINGERPRINTS
 
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
@@ -167,7 +172,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     locationRefresh,
                     autoSetInitialLocation,
                     followSelectedUser,
-                    selecteSpace)
+                    selecteSpace,
+                    autoUpdateCvFingerprints
+            )
             prefs
           }
 
@@ -190,4 +197,5 @@ data class CvMapPrefs(
         val autoSetInitialLocation: Boolean,
         val followSelectedUser: Boolean,
         val selectedSpace: String,
+        val autoUpdateCvFingerprints: Boolean,
 )

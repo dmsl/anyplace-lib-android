@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'  // for safeArgs between different fragments
 apply plugin: "androidx.navigation.safeargs.kotlin"  // id 'androidx.navigation.safeargs'
 apply plugin: 'dagger.hilt.android.plugin'
-apply plugin: 'maven-publish'  // CHECK needed for jitpack.io?
+apply plugin: 'maven-publish'  // needed for jitpack.io?
 apply plugin: 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin' // BuildConfig
 
 repositories {
@@ -30,16 +30,6 @@ android {
     consumerProguardFiles 'consumer-rules.pro'
 
     versionName "$VERSION_NAME"
-
-    // CLR
-//    // TODO use secrets-gradle-plugin (like w/ gmaps api)
-//    // INFO: read keys from secure.properties exports them into strings
-//    def secureProps = new Properties()
-//    if (file("../local.properties").exists()) {
-//      file("../local.properties")?.withInputStream { secureProps.load(it) }
-//    }
-//    resValue "string", "server_google_oauth_client_id", (
-//            secureProps.getProperty("SERVER_GOOGLE_OAUTH_CLIENT_ID") ?: "")
   }
 
   buildTypes {
@@ -136,9 +126,9 @@ dependencies {
   // GOOGLE SERVICES
 
   //// FusedLocation (coarse/fine grain)
-  implementation 'com.google.android.gms:play-services-location:19.0.1'
+  implementation 'com.google.android.gms:play-services-location:20.0.0'
   //// GOOGLE MAPS & UTILS
-  implementation 'com.google.android.gms:play-services-maps:18.0.2'
+  implementation 'com.google.android.gms:play-services-maps:18.1.0'
   implementation 'com.google.maps.android:android-maps-utils:2.3.0' // updated from 0.3 !
 
   // Material Components
@@ -208,7 +198,7 @@ dependencies {
   implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
   // Google Sign-In
-  implementation 'com.google.android.gms:play-services-auth:20.1.0'
+  implementation 'com.google.android.gms:play-services-auth:20.2.0'
 
   // AP-CV (Computer Vision)
   //// CameraV2
@@ -221,11 +211,7 @@ dependencies {
   implementation "androidx.camera:camera-view:1.0.0-alpha28"
 
   //// OCR
-//  implementation 'com.google.android.gms:play-services-vision:20.1.3'
-//  implementation 'com.google.mlkit:text-recognition:16.0.0-beta4'
-
   implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
-
 
   //// QR:
   //  implementation 'com.journeyapps:zxing-android-embedded:4.1.0'
@@ -233,10 +219,9 @@ dependencies {
   ////  Deep-Learning engine
   // NOTE: 2.3.0 is incompatible with [hunglc007](https://github.com/hunglc007/tensorflow-yolov4-tflite) code
   //// (some models fail)
-  //noinspection GradleDependency
   implementation 'org.tensorflow:tensorflow-lite:2.2.0'
-  //noinspection GradleDependency
   implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
+  //noinspection GradleDependency
 
   // UNIT TESTING
   testImplementation 'junit:junit:4.13.2'

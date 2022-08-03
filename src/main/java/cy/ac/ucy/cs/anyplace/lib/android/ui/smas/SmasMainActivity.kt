@@ -205,6 +205,21 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     VM.readBackendVersion()
     setupCollectors()
+    checkForFingerprintUpdates()
+  }
+
+  private fun checkForFingerprintUpdates() {
+    val MT = ::checkForFingerprintUpdates.name
+    lifecycleScope.launch(Dispatchers.IO) {
+      if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
+        VM.waitForDetector()
+        app.waitForSpace()
+        if (app.hasInternet()) {
+          LOG.E(TG, "$MT: checking..")
+          VM.nwCvFingerprintsGet.safeCall(false)
+        }
+      }
+    }
   }
 
   /**
@@ -306,7 +321,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     val MT = ::setupCollectors.name
     LOG.D(TG, MT)
 
-    collectLoggedInUser()
     observeLevels()
   }
 
@@ -331,29 +345,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  /**
-   * Reacts to updates on [ChatUser]'s login status:
-   * Only authenticated users are allowed to use this activity
-   */
-  var collectingUser = false
-  private fun collectLoggedInUser() {
-    if (collectingUser) return
-    collectingUser = true
 
-    // only logged in users are allowed on this activity:
-    lifecycleScope.launch(Dispatchers.IO) {
-
-      val user= appSmas.dsUserSmas.read.first()
-      if (user.sessionkey.isBlank()) {
-        finish()
-        startActivity(Intent(this@SmasMainActivity, SmasLoginActivity::class.java))
-      } else {
-        // lifecycleScope.launch(Dispatchers.Main) {
-        //   Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
-        // }
-      }
-    }
-  }
 
   /**
    * React when a user is in alert mode

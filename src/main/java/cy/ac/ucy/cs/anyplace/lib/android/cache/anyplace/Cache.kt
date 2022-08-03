@@ -127,15 +127,21 @@ open class Cache(val ctx: Context) {
     return null
   }
 
+  fun jsonSpaceConnections(buid: String) : String {  return "${dirSpace(buid)}/$JS_SPACE_CONNECTIONS" }
   fun jsonSpaceConnections(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_CONNECTIONS" }
   fun hasSpaceConnections(space: Space): Boolean { return File(jsonSpaceConnections(space)).exists() }
   fun deleteSpaceConnections(space: Space) {  File(jsonSpaceConnections(space)).delete()  }
 
+
   fun saveSpaceConnections(space: Space, connections: ConnectionsResp): Boolean {
+    return saveBuidConnections(space.buid, connections)
+  }
+
+  fun saveBuidConnections(buid: String, connections: ConnectionsResp): Boolean {
     val method = ::saveSpaceConnections.name
-    val filename = jsonSpaceConnections(space)
+    val filename = jsonSpaceConnections(buid)
     return try {
-      File(dirSpace(space)).mkdirs()
+      File(dirSpace(buid)).mkdirs()
       val fw= FileWriter(File(filename))
       Gson().toJson(connections, fw)
       fw.close()
@@ -159,15 +165,19 @@ open class Cache(val ctx: Context) {
     return null
   }
 
-
+  fun jsonSpacePOIs(buid: String) : String {  return "${dirSpace(buid)}/$JS_SPACE_POIS" }
   fun jsonSpacePOIs(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_POIS" }
   fun hasSpacePOIs(space: Space): Boolean { return File(jsonSpacePOIs(space)).exists() }
   fun deleteSpacePOIs(space: Space) {  File(jsonSpacePOIs(space)).delete()  }
+
   fun saveSpacePois(space: Space, pois: POIsResp) : Boolean {
-    val method = ::saveSpacePois.name
-    val filename = jsonSpacePOIs(space)
+    return saveBuidPois(space.buid, pois)
+  }
+  fun saveBuidPois(buid: String, pois: POIsResp) : Boolean {
+    val method = ::saveBuidPois.name
+    val filename = jsonSpacePOIs(buid)
     return try {
-      File(dirSpace(space)).mkdirs()
+      File(dirSpace(buid)).mkdirs()
       val fw= FileWriter(File(filename))
       Gson().toJson(pois, fw)
       fw.close()
@@ -362,7 +372,7 @@ open class Cache(val ctx: Context) {
   fun hasCvModelFilesDownloaded(id: Int): Boolean {
     val mid = id.toString()
     if (!File(modelsDir).exists()) File(modelsDir).mkdirs()
-    return File(dirModel(dirModel(mid))).exists()
+    return File(dirModel(mid)).exists()
             && File(fileModelWeights(mid)).exists()
             && File(fileModelLabels(mid)).exists()
   }

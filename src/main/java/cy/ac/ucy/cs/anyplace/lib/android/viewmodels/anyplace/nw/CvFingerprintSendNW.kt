@@ -45,11 +45,10 @@ class CvFingerprintSendNW(
   private val resp: MutableStateFlow<NetworkResult<FingerprintSendResp>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var smasUser : SmasUser
 
   suspend fun uploadFromCache(uiLog: CvLoggerUI) {
     val MT = ::uploadFromCache.name
-    smasUser = app.dsUserSmas.read.first()
+    val smasUser = app.dsUserSmas.read.first()
 
     LOG.W(TG, "$MT: upload from cache")
     val msg = C.ERR_MSG_NO_INTERNET
@@ -97,6 +96,11 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
+    val fetched = VM.nwCvFingerprintsGet.safeCall(false)
+    if (fetched>0) {
+      reportMsg+="\nFetched $fetched fingerprints."
+    }
+
     notify.info(VM.viewModelScope, reportMsg)
   }
 
@@ -136,7 +140,7 @@ class CvFingerprintSendNW(
   suspend fun safeCall(userCoords: UserCoordinates,
                        detectionsReq: List<CvObjectReq>, model: DetectionModel) {
     val MT = ::safeCall.name
-    smasUser = app.dsUserSmas.read.first()
+    val smasUser = app.dsUserSmas.read.first()
 
     LOG.D2(TG, "$MT: session: ${smasUser.uid} ${smasUser.sessionkey}")
 

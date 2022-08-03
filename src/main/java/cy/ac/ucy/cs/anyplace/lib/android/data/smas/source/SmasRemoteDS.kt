@@ -51,5 +51,5 @@ class SmasRemoteDS @Inject constructor(
   suspend fun cvLocalization(r: CvLocalizeReq) : Response<CvLocalizeResp>
           = RH.api.cvLocalization(RH.path, r)
 
-  suspend fun cvMapGet(r: ChatUserAuth) : Response<CvMapResp> = RH.api.cvFingerprintGet(RH.path, r)
+  suspend fun cvMapGet(r: CvMapReq) : Response<CvMapResp> = RH.api.cvFingerprintGet(RH.path, r)
 }

@@ -26,14 +26,13 @@ import com.google.android.gms.common.api.ApiException
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.SettingsCvActivity
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginLocalForm
@@ -54,7 +53,7 @@ import kotlinx.coroutines.launch
 class AnyplaceLoginActivity : BaseActivity() {
   val TG = "act-login-ap"
 
-  private lateinit var VMlogin: LoginViewModel
+  private lateinit var VMlogin: AnyplaceLoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
   private var _binding: ActivityAnyplaceLoginBinding ?= null
   private val binding get() = _binding!!
@@ -66,13 +65,13 @@ class AnyplaceLoginActivity : BaseActivity() {
     setContentView(binding.root)
 
     app.setMainView(binding.root)
-    notify.INF(lifecycleScope, "You must also login to Anyplace!")
+    app.showToast(lifecycleScope, "Please login to Anyplace also!")
 
     val username = binding.username
     val password = binding.password
     val localLogin = binding.buttonLoginLocal
 
-    VMlogin = ViewModelProvider(this)[LoginViewModel::class.java]
+    VMlogin = ViewModelProvider(this)[AnyplaceLoginViewModel::class.java]
     VMlogin.loginFormState.observe(this@AnyplaceLoginActivity, Observer {
       val loginState = it ?: return@Observer
 
@@ -94,57 +93,59 @@ class AnyplaceLoginActivity : BaseActivity() {
   }
 
   private inline fun ActivityResult.checkResultAndExecute(block: ActivityResult.() -> Unit) =
-    if (resultCode == Activity.RESULT_OK) runCatching(block)
-    else Result.failure(Exception("Something went wrong"))
+          if (resultCode == Activity.RESULT_OK) runCatching(block)
+          else Result.failure(Exception("Something went wrong"))
 
   private val googleRegisterResult =
-    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-      result.checkResultAndExecute {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        val account = task.getResult(ApiException::class.java)
+          registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val MT = "registerForActivityResult"
+            LOG.E(TG,"$MT: here...")
 
-        if (account.idToken != null && account.displayName != null) {
-          account.displayName?.let { name ->
-            LOG.E(TAG, "DIS NAME: " + account.displayName)
-            val googleData = UserLoginGoogleData("google", name, account.idToken)
-            VMlogin.loginUserGoogle(googleData, account.photoUrl)
-          } ?: run {
-            throw Exception("can't get user's name")
+            result.checkResultAndExecute {
+
+              LOG.E(TG,"$MT: t1")
+              val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+              val account = task.getResult(ApiException::class.java)
+              LOG.E(TG,"$MT: t2")
+
+              if (account.idToken != null && account.displayName != null) {
+
+                LOG.E(TG,"$MT: t4")
+                account.displayName?.let { name ->
+                  LOG.E(TG, "DIS NAME: " + account.displayName)
+                  val googleData = UserLoginGoogleData("google", name, account.idToken)
+                  VMlogin.loginUserGoogle(googleData, account.photoUrl)
+                } ?: run {
+                  throw Exception("can't get user's name")
+                }
+              } else {
+                val msg = "Failed to get Google OAuth Token."
+                LOG.E(msg)
+                app.showToast(lifecycleScope, msg)
+              }
+            }.onFailure { e ->
+              LOG.E(TG,"$MT: on failure")
+              e.printStackTrace()
+              LOG.E(TG, "$MT: MSG: ${e.localizedMessage}")
+              LOG.E(TG,"$MT: ${e.message}")
+              val msg = "Google login failed"
+              val errMsg = e.message?.take(200)
+              LOG.E(TG, "$MT: $msg: $errMsg")
+              Toast.makeText(applicationContext, msg , Toast.LENGTH_LONG).show()
+            }
           }
-        } else {
-          val msg = "Failed to get Google OAuth Token."
-          LOG.E(msg)
-          app.showToast(lifecycleScope, msg)
-        }
-      }.onFailure { e ->
-        val msg = "Google login failed"
-        val errMsg = e.message?.take(200)
-        LOG.E("$msg: $errMsg")
-        Toast.makeText(applicationContext, msg , Toast.LENGTH_LONG).show()
-      }
-    }
 
   private fun setupGoogleLogin() {
     binding.buttonLoginGoogle.setOnClickListener {
       // server_google_oauth_client_id is set by from local.properties (project root)
       // see lib-android's build.gradle
       val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-          .requestIdToken(BuildConfig.SERVER_GOOGLE_OAUTH_CLIENT_ID)
-          .requestProfile()
-          .requestEmail()
-          .build()
+              .requestIdToken(BuildConfig.SMAS_GOOGLE_OAUTH_CLIENT_ID)
+              // .requestProfile()
+              // .requestEmail()
+              .build()
 
       mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-
-      // TODO:
-      // 1: Implement the logout (for local user or other user..)
-      // 2. on logout, if google account, then replace with the below
-      // 3. on logged in, update the settings UI its load..
-      // 4. remove the logic of logout below (and in the StartActivity maybe..)
-      // 5. THINK about this: we could logout google user immediately.. but do we want this?
-      // on Settings Dialog: if from LoginActivity, send parameters..
-      // so if login pressed it will hide stuff..
-      // TODOs from previous times:
 
       val acct = GoogleSignIn.getLastSignedInAccount(this)
       if (acct != null) {
@@ -155,7 +156,7 @@ class AnyplaceLoginActivity : BaseActivity() {
     }
   }
 
-    /**
+  /**
    * Setup listeners for the username and password editext,
    * changes on the submitted text, enabling/disabling login button, etc
    */
@@ -198,12 +199,12 @@ class AnyplaceLoginActivity : BaseActivity() {
         // val DRAWABLE_BOTTOM = 3
 
         val eventOnRightDrawable =
-          event.rawX >= right - compoundDrawables[DRAWABLE_RIGHT].bounds.width()
+                event.rawX >= right - compoundDrawables[DRAWABLE_RIGHT].bounds.width()
         if (eventOnRightDrawable) {
           if (event.action == MotionEvent.ACTION_UP) {  // hide password
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
           } else if (event.action == MotionEvent.ACTION_DOWN) { // show password
-              inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
           }
           return@setOnTouchListener true
         }
@@ -232,7 +233,7 @@ class AnyplaceLoginActivity : BaseActivity() {
           lifecycleScope.launch {
             val user = response.data?.userAP
             user?.let {
-              LOG.W(TAG, "Logged in successfully: user.name. [storing user]")
+              LOG.W(TG, "Logged in successfully: user.name. [storing user]")
               app.dsUserAP.storeUser(user)
               signOutGoogleAuth(user) // for google logins
               openLoggedInActivity()
@@ -240,7 +241,7 @@ class AnyplaceLoginActivity : BaseActivity() {
           }
         }
         is NetworkResult.Error -> {
-          // LOG.D(TAG, "observeUserLoginResponse: err")
+          LOG.D(TG, "observeUserLoginResponse: err")
           binding.textViewError.text = response.message
           binding.loading.visibility = View.GONE
           binding.imageViewError.visibility = View.VISIBLE
@@ -269,7 +270,7 @@ class AnyplaceLoginActivity : BaseActivity() {
   private fun signOutGoogleAuth(userAP: UserAP) {
     if (userAP.account == "google") {
       mGoogleSignInClient.signOut().addOnCompleteListener {
-        LOG.D2(TAG, "Signed out Google oauth after successful Anyplace login.")
+        LOG.D2(TG, "Signed out Google oauth after successful Anyplace login.")
       }
     }
   }
@@ -279,17 +280,10 @@ class AnyplaceLoginActivity : BaseActivity() {
     finish()
   }
 
-  override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    menuInflater.inflate(R.menu.main_menu_settings, menu)
-    return super.onCreateOptionsMenu(menu)
-  }
-
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    val id = item.itemId
-    if(id == R.id.item_settings) {
+  fun setupSettings() {
+    binding.btnSettings.setOnClickListener {
       startActivity(Intent(this, SettingsCvActivity::class.java))
     }
-    return super.onOptionsItemSelected(item)
   }
 }
 

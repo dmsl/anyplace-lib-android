@@ -113,11 +113,18 @@
         android:summary="Deletes and downloads again the model classes."
         />
 
+    <SwitchPreferenceCompat
+        app:key="@string/pref_cv_fingerprints_auto_update"
+        android:defaultValue="true"
+        app:title="Auto-update fingerprints"
+        app:summary="Fetch latest patches when SMAS opens"
+    />
+
     <!-- Updates the CV map.-->
     <Preference
-        android:title="Download CV-Fingerprints"
+        android:title="Reload CV-Fingerprints"
         android:key="@string/pref_loc_cv_map"
-        android:summary="Get the latest logging data from backend"
+        android:summary="Drop and download them again"
         />
 
     <Preference

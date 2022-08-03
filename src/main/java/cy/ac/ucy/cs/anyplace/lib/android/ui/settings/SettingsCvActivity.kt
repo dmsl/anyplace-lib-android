@@ -155,6 +155,7 @@ class SettingsCvActivity: SettingsActivity() {
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
         setBooleanInput(R.string.pref_cv_follow_selected_user, prefs.followSelectedUser)
+        setBooleanInput(R.string.pref_cv_fingerprints_auto_update, prefs.autoUpdateCvFingerprints)
 
         setupChangeCvModel()
         setupButtonServerSettings()
@@ -236,8 +237,9 @@ class SettingsCvActivity: SettingsActivity() {
               return@launch
             }
 
-            VM.nwCvMapGet.safeCall()
-            VM.nwCvMapGet.collect()
+            VM.nwCvFingerprintsGet.dropFingerprints()
+            VM.nwCvFingerprintsGet.blockingCall(app.wSpace.obj.buid)
+            VM.nwCvFingerprintsGet.collect()
           }
         }
         true

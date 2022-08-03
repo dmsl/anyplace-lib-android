@@ -2,7 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.SmasDAO
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.ChatMsgEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.chatMsgtoEntity
@@ -16,14 +15,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw.CvLocalizeNW
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvMapRow
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 /**
@@ -53,9 +50,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     return cnt!=null && cnt>0
   }
 
-  /**
-   * Get last msg timestamp from local DB
-   */
+  /** Get last msg timestamp from local DB */
   fun getLastMsgTimestamp(): Long? {
     return DAO.lastMsgTimestamp()
   }
@@ -83,21 +78,26 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
 
   fun getCvModelIds() : List<Int> = DAO.getModelIds()
 
-  suspend fun insertCvMapRow(o: CvMapRow) {
-    val MT = ::insertCvMapRow.name
+  suspend fun insertCvFingerprintRow(o: CvMapRow) {
+    val MT = ::insertCvFingerprintRow.name
     LOG.D2("$MT: DB: insert: CvModelClass: ${o.flid}: ${o.buid}")
     DAO.insertCvMapRow(cvMapRowToEntity(o))
   }
 
-  fun hasCvMap() : Boolean {
+  fun hasCvFingerprints() : Boolean {
     val cnt = DAO.countCvMapRows()
     return cnt!=null && cnt>0
   }
 
-  fun dropCvMap() {
-    val MT = ::dropCvMap.name
+  fun dropCvFingerprints() {
+    val MT = ::dropCvFingerprints.name
     LOG.D2(TG, "$MT: deleting CvMap")
     DAO.dropCvMap()
+  }
+
+  /** Get last fingerprint timestamp from local DB */
+  fun getLastFingerprintTimestamp(): Long? {
+    return DAO.lastFingerprintTimestamp()
   }
 
   suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUserAP: UserAP) {

@@ -126,18 +126,15 @@ class MapLines(private val app: AnyplaceApp,
     LOG.D2(TG, "$MT: rendering polylines of floor $floor")
 
     if (!isInited())  {
-      LOG.W(TG, "$MT: initing POIs/connections")
+      LOG.D(TG, "$MT: initing POIs/connections")
       loadFromCache()
     }
-
-    // if (!DBG.uim) return CHECK:PM ?!
-
     val space = app.space!!
     if(!hasConnectionsAndPoisCached(space)) {
       LOG.E(TG, "$MT: Must download POIs/Connections first. restart app..")
     }
 
-    // renderPolylines(floor) BUGGY
+    // renderPolylines(floor) // BUGGY
   }
 
   /**

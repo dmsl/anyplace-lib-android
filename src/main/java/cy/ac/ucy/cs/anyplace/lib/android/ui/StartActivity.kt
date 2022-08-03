@@ -57,7 +57,7 @@ class StartActivity : BaseActivity() {
      */
     fun openActivity(prefsCv: CvMapPrefs, userAP: UserAP, act: Activity) {
       val MT = ::openActivity.name
-      LOG.W(TG, MT)
+      LOG.V2(TG, MT)
 
       // No space is selected
       val mustSelectSpace = prefsCv.selectedSpace.isEmpty()

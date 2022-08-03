@@ -41,15 +41,37 @@ class CvModelsGetNW(
   /** Network Responses from API calls */
   private val resp: MutableStateFlow<NetworkResult<CvModelsResp>> = MutableStateFlow(NetworkResult.Unset())
 
-
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var smasUser : SmasUser
+
+  /**
+   * Downloads only the recourses. no other processing yet
+   */
+  suspend fun blockingCall() {
+    val MT = ::blockingCall.name
+    val smasUser = app.dsUserSmas.read.first()
+    if (!repo.local.hasCvModelClassesDownloaded()) {
+      val response = repo.remote.cvModelsGet(ChatUserAuth(smasUser))
+      LOG.D4(TG, "$TG: ${response.message()}")
+      val resp = handleResponse(response)
+
+      val cvModels = resp.data?.rows
+      if (cvModels == null) {
+        val msg = "Downloading $TG: no classes fetched"
+        LOG.W(TG, msg)
+      } else {
+        cvModels.forEach {
+          LOG.V3(TG, "$MT: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
+        }
+        persistToDB(cvModels)
+      }
+    }
+  }
 
   /** Get [UserLocations] SafeCall */
   suspend fun safeCall() {
     val MT = ::safeCall.name
     LOG.D2(TG, MT)
-    smasUser = app.dsUserSmas.read.first()
+    val smasUser = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Loading()
     if (repo.local.hasCvModelClassesDownloaded()) {

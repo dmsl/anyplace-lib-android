@@ -100,7 +100,7 @@ NOTE:
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:alpha="0.3"
+        android:alpha="0.7"
         android:layout_marginTop="5dp"
         android:text="logger | model"
         android:textSize="18sp"

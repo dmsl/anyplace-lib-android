@@ -25,8 +25,7 @@ import kotlinx.coroutines.launch
  */
 class SpacesAdapter(private val app: AnyplaceApp,
                     private val act: SelectSpaceActivity,
-                    private val scope: CoroutineScope,
-                    ):
+                    private val scope: CoroutineScope):
         RecyclerView.Adapter<SpacesAdapter.MyViewHolder>() {
   private val notify = app.notify
 
@@ -82,11 +81,10 @@ class SpacesAdapter(private val app: AnyplaceApp,
           val prefsCv = app.dsCvMap.read.first()
 
           // if these json resources exists, then most likely the remaining components would exist also
-          val showNotif = app.cache.hasSpaceAndFloor(prefsCv.selectedSpace)
-          if (!showNotif) {
-            val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
-            val msg = "Downloading resources of $shortName"
-            notify.long(scope, msg)
+          val showNotification = !app.cache.hasSpaceAndFloor(prefsCv.selectedSpace)
+          if (showNotification) {
+            val msg = "Downloading resources.."
+            notify.INFO(scope, msg)
           }
 
           act.utlUi.changeMaterialIcon(btn, R.drawable.ic_downloading)
@@ -99,7 +97,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.VM.dbqSpaces.runnedInitialQuery=false
           app.backToSpaceSelectorFromOtherActivities=true
 
-          downloadSpaceResources(prefsCv)
+          downloadSpaceResources(space, prefsCv, showNotification)
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)
@@ -126,12 +124,35 @@ class SpacesAdapter(private val app: AnyplaceApp,
      * - Level plan (base64 bitmap of floorplans/deckplans)
      * - POIs, and Connections
      */
-    suspend fun downloadSpaceResources(prefsCv: CvMapPrefs) {
-      // must be in this order
-      downloadSpaceAndLevels(prefsCv) // needed first
+    suspend fun downloadSpaceResources(space: Space, prefsCv: CvMapPrefs, showNotif: Boolean) {
+      downloadCvModelFilesAndCvClasses()
+      downloadCvFingerprints(prefsCv.selectedSpace)
+
+      val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
+      if (showNotif) {
+        notify.INFO(scope, "Downloading resources of $shortName")
+      }
+      downloadSpaceAndLevels(prefsCv) // needed before loading space and levels
       loadSpaceAndLevels(prefsCv)
       downloadFloorplans()
       downloadConnectionsAndPois()
+    }
+
+    private suspend fun downloadCvModelFilesAndCvClasses() {
+      val MT = ::downloadCvModelFilesAndCvClasses.name
+      LOG.E(TG, MT)
+      if  (act.VMcv.nwCvModelFilesGet.mustDownloadCvModels()) {
+        notify.INFO(scope, "Downloading CvModels..")
+        act.VMcv.nwCvModelFilesGet.downloadMissingModels() // tflite/weights, and labels
+      }
+      act.VMcv.nwCvModelsGet.blockingCall() // labels, but in the SMAS sqlite format (containing OIDs, etc)
+    }
+
+    private suspend fun downloadCvFingerprints(buid: String) {
+      val MT = ::downloadCvFingerprints.name
+      LOG.E(TG, "$MT: $buid")
+      notify.INFO(scope, "Downloading new fingerprints..")
+      act.VMcv.nwCvFingerprintsGet.blockingCall(buid)
     }
 
     /**

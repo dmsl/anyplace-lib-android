@@ -30,10 +30,7 @@ open class AssetReader(val ctx: Context) {
     return null
   }
 
-
   fun getSpace(): Space? {
-    // TODO in endpoint result: /api/mapping/space/get: unwrap it:
-    // e.g.: { "space": {..space data..} -> {..space data..}
     val str = getSpaceStr()
     str.let {
       try {

@@ -44,8 +44,7 @@ class POIsGetNW(
 
         when (val resp = handleResponse(response)) {
           is NetworkResult.Success -> {
-            val wSpace = app.wSpace
-            wSpace.cachePois(resp.data!!)
+            cache.saveBuidPois(buid, resp.data!!)
             return true
           }
           else -> {

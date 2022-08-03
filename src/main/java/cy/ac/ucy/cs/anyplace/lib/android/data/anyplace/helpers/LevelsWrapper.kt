@@ -15,7 +15,7 @@ import java.lang.Exception
  * Extra functionality on top of the [Levels] data class.
  */
 class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
-  private val tag = "wr-levels"
+  private val TG = "wr-levels"
 
   /** Parses this sorted BUGFIX: wrapping on a new object */
   override fun toString(): String = Gson().toJson(Levels(obj), Levels::class.java)
@@ -34,10 +34,11 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
 
   fun getLevel(num: Int) = getLevel(num.toString())
   fun getLevel(str: String) : Level? {
+    val MT = "getLevel"
     obj.forEach { floor ->
       if (floor.number == str) return floor
     }
-    LOG.E(TAG, "${spaceH.prettyLevel} not found: $str")
+    LOG.E(TG, "$MT: ${spaceH.prettyLevel} not found: $str")
     return null
   }
 
@@ -55,17 +56,19 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   fun clearCaches() = clearCache("all") { clearCache() }
 
   private fun clearCache(msg: String, method: LevelWrapper.() -> Unit) {
+    val MT = ::clearCache.name
     obj.forEach { floor ->
       val LW = LevelWrapper(floor, spaceH)
       LW.method()
-      LOG.D5(TAG, "clearCache:$msg: ${LW.prettyLevelplanNumber()}.")
+      LOG.D5(TG, "$MT: $msg: ${LW.prettyLevelplanNumber()}.")
     }
   }
 
 
   /** Go one floor up */
   fun tryGoUp(VM: CvViewModel) {
-    LOG.V3()
+    val MT = ::tryGoUp.name
+    LOG.V3(TG, MT)
 
     try {
       val app = VM.app
@@ -78,11 +81,12 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
     } catch (e: Exception) {
     }
 
-    LOG.W(TAG_METHOD, "Cannot go further up.")
+    LOG.W(TG, "$MT: Cannot go further up.")
   }
 
   fun tryGoDown(VM: CvViewModel) {
-    LOG.V3()
+    val MT = ::tryGoDown.name
+    LOG.V3(TG, MT)
     try {
       val app = VM.app
       val floorNumStr = app.level.value?.number.toString()
@@ -94,18 +98,19 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
     } catch(e: Exception) {
     }
 
-    LOG.W(TAG_METHOD, "Cannot go further down.")
+    LOG.W(TG, "$MT: Cannot go further down.")
   }
 
   fun moveToFloorLvl(VM: CvViewModel, level: Level) {
-    val method = ::moveToFloorLvl.name
-    LOG.E(tag, "$method: ${level.number} ${level.buid}")
+    val MT = ::moveToFloorLvl.name
+    LOG.D3(TG, "$MT: ${level.number} ${level.buid}")
     val app = VM.app
     app.level.update { level }
   }
 
   fun moveToFloor(VM: CvViewModel, floorNum: Int) {
-    LOG.D2(TAG, "$METHOD: to: $floorNum")
+    val MT = ::moveToFloor.name
+    LOG.D2(TG, "$MT: to: $floorNum")
     val app = VM.app
     val floor = app.wLevels.getLevel(floorNum)!!
     moveToFloorLvl(VM, floor)
@@ -132,20 +137,15 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   }
 
   fun getFloorAbove(curFloorStr: String): Level? {
+    val MT = ::getFloorAbove.name
     val idx = getLevelIdx(curFloorStr) +1
-    LOG.D5(TAG_METHOD, "IDX: $idx")
+    LOG.D5(TG, "$MT: idx: $idx")
     return if (idx>=0 && idx<obj.size) obj[idx] else null
   }
-
-  private fun printFloors() {
-    for (i in obj.indices) {
-      LOG.D(TAG_METHOD, "floor: $i, ${obj[i].number}")
-    }
-  }
-
   fun getFloorBelow(curFloorStr: String): Level? {
+    val MT = ::getFloorBelow.name
     val idx = getLevelIdx(curFloorStr) + -1
-    LOG.D5(TAG_METHOD, "IDX: $idx")
+    LOG.D5(TG, "$MT: idx: $idx")
     return if (idx>=0 && idx<obj.size) obj[idx] else null
   }
 }

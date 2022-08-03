@@ -31,6 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -204,6 +205,7 @@ abstract class AnyplaceApp : Application() {
     }
   }
 
+  var initedSpace=false
   /**
    * Initialize the wrappers for the space (and all the levels)
    *
@@ -239,7 +241,17 @@ abstract class AnyplaceApp : Application() {
     LOG.E(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
             "(has ${levels!!.levels.size} $prettyFloors)")
 
+    initedSpace=true
     return true
+  }
+
+  @Deprecated("Is there a better way for this?")
+  suspend fun waitForSpace() {
+    val MT = ::waitForSpace.name
+    while (!initedSpace) {
+      LOG.V(TG, "$MT..")
+      delay(200)
+    }
   }
 
 

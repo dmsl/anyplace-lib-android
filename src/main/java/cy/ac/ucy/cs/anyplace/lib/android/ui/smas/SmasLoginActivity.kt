@@ -184,8 +184,8 @@ class SmasLoginActivity : BaseActivity() {
               user?.let {
                 app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
                 if (!DBG.SLR) {
-                  notify.INFO(lifecycleScope, "Downloading CvModels..\nPlease wait.")
-                  VMcv.nwCvModelFilesGet.downloadAllModels()
+                  notify.INFO(lifecycleScope, "Downloading CvModels..\nPlease wait...")
+                  VMcv.nwCvModelFilesGet.downloadMissingModels()
                 }
                 openLoggedInActivity()
               }

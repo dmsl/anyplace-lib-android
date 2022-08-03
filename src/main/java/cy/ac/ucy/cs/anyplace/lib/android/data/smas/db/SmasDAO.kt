@@ -48,6 +48,10 @@ interface SmasDAO {
   @Query("DELETE FROM ${SMAS.DB_FINGERPRINT}")
   fun dropCvMap()
 
+  /** Used to fetch only the newest fingerprints */
+  @Query("SELECT time FROM ${SMAS.DB_FINGERPRINT} ORDER BY time DESC LIMIT 1")
+  fun lastFingerprintTimestamp(): Long?
+
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertLocalizeTemp(tuple: FINGERPRINT_LOCALIZE_TEMP)
 

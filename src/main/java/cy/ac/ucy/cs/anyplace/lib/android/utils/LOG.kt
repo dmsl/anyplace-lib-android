@@ -17,7 +17,7 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val SLR = false
+    const val SLR = true
     const val WAI = true
 
     const val CVM = true

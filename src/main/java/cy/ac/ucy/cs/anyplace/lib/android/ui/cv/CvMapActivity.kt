@@ -1,5 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.cv
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -11,6 +12,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
+import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
@@ -20,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
@@ -109,6 +112,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     LOG.D(TG, MT)
 
     updateModelName()
+    collectLoggedInUser()
 
     lifecycleScope.launch(Dispatchers.IO) {
       LOG.D(TG, "CvMap: $MT: getting models.. CvModels")
@@ -126,11 +130,30 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   override fun onResume() {
     super.onResume()
-    LOG.E(TG, "onResume")
+    LOG.V2(TG, "onResume")
 
     continueWithPrefs()
   }
 
+  /**
+   * Reacts to updates on [ChatUser]'s login status:
+   * Only authenticated users are allowed to use this activity
+   */
+  var collectingUser = false
+  private fun collectLoggedInUser() {
+    if (collectingUser) return
+    collectingUser = true
+
+    // only logged in users are allowed on this activity:
+    lifecycleScope.launch(Dispatchers.IO) {
+      appSmas.dsUserSmas.read.collectLatest { user ->
+        if (user.sessionkey.isBlank()) {
+          finish()
+          startActivity(Intent(this@CvMapActivity, SmasLoginActivity::class.java))
+        }
+      }
+    }
+  }
 
   /**
    * Read preferences and continue setup:
@@ -370,7 +393,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       app.level.collect { level ->
         if (level == null) return@collect
 
-        LOG.E(TG, "$MT: collected level: ${level.buid}/${level.number} ")
+        LOG.V2(TG, "$MT: collected level: ${level.buid}/${level.number} ")
 
         // update FloorWrapper & FloorSelector
         app.wLevel = LevelWrapper(level, app.wSpace)
@@ -411,14 +434,14 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         }
         is LocalizationResult.Success -> {
           val usedMethod = LocalizationResult.getUsedMethod(result)
-          LOG.W(TG, "Collected: method: $usedMethod")
+          LOG.D(TG, "Collected: method: $usedMethod")
           result.coord?.let { VM.ui.map.setUserLocation(it, usedMethod) }
           val coord = result.coord!!
           val msg = "$TG: Smas location: ${coord.lat}, ${coord.lon} level: ${coord.level}"
-          LOG.E(TG, msg)
+          LOG.V2(TG, msg)
           val curFloor = app.wLevel?.levelNumber()
           if (coord.level != curFloor) {
-            LOG.W(TG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
+            LOG.D(TG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
             // app.showToast(lifecycleScope, )
           }
 
@@ -435,7 +458,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   fun updateModelName() {
     val MT = ::updateModelName.name
-    LOG.W(TG, MT)
+    LOG.D2(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
       while (!VM.initedDetector) delay(100)
 

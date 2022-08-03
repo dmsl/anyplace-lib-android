@@ -14,7 +14,7 @@ import java.net.ConnectException
 class UtilErr() {
   private val TG = "utl-exception"
   companion object {
-    private val MAX_CONSECUTIVE_SAME_ERRORS: Int = 5
+    private const val MAX_CONSECUTIVE_SAME_ERRORS: Int = 5
   }
 
   fun handle(
@@ -41,8 +41,8 @@ class UtilErr() {
       LOG.E(TG, e.stackTraceToString())
       resultMsg="$MT: $errorMsg" // augment msg with exception info
     }
-    app.notify.DEV(scope, "$MT: resultMsg")
-    LOG.E(TG, "$MT: resultMsg")
+    app.notify.DEV(scope, "$TG: $resultMsg")
+    LOG.E(TG, "$TG: $resultMsg")
 
     return resultMsg
   }

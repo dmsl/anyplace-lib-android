@@ -52,7 +52,6 @@ class CvLocalizeNW(
           = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
-  private lateinit var user : SmasUser
 
   /** Send the [SmasUser]'s location (safecall) */
   suspend fun safeCall(buid: String,
@@ -60,7 +59,7 @@ class CvLocalizeNW(
                        model: DetectionModel) {
     val MT = ::safeCall.name
 
-    user = app.dsUserSmas.read.first()
+    val user = app.dsUserSmas.read.first()
 
     resp.value = NetworkResult.Unset()
 

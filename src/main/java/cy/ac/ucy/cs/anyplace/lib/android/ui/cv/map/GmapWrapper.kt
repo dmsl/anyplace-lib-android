@@ -185,14 +185,14 @@ class GmapWrapper(
    */
   fun onFirstLevelLoaded() {
     val MT = ::onFirstLevelLoaded.name
-    LOG.E(TG, MT)
+    LOG.I(TG, MT)
 
     scope.launch(Dispatchers.IO) { VM.nwLevelPlan.downloadAll() }
 
     scope.launch(Dispatchers.Main) {
       val maxZoomLevel = obj.maxZoomLevel // may differ per device
       obj.setMinZoomPreference(maxZoomLevel-4)
-      LOG.E(TG, "MAX ZOOM: $maxZoomLevel (restriction)")
+      LOG.V2(TG, "MAX ZOOM: $maxZoomLevel (restriction)")
 
       if (app.wLevel == null) {
         val msg = "Cannot locate floor ($TG)"
@@ -201,9 +201,7 @@ class GmapWrapper(
         return@launch
       }
 
-      LOG.I(TG, "$MT: SPACE: ${app.wSpace.obj.name}")
-      LOG.I(TG, "$MT: FLOOR: ${app.wLevel?.prettyLevelNumber()}")
-      LOG.I(TG, "$MT: MOVING TO CENTER")
+      LOG.D3(TG, "$MT: SPACE: ${app.wSpace.obj.name} LVL: ${app.wLevel?.prettyLevelNumber()}")
       VM.ui.map.moveToBounds(app.wLevel!!.bounds())
     }
   }

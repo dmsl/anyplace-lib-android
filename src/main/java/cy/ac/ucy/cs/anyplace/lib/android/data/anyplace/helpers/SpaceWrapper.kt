@@ -26,6 +26,8 @@ class SpaceWrapper(val ctx: Context,
   override fun toString(): String = Gson().toJson(obj, Space::class.java)
 
   companion object {
+    private const val TG = "wr-space"
+
     const val TP_BUILDING = "building"
     const val TP_VESSEL = "vessel"
 
@@ -98,15 +100,17 @@ class SpaceWrapper(val ctx: Context,
   }
 
   fun cacheLastValues(lastValSpaces: LastValSpaces) {
-    LOG.E(TAG, "$METHOD: ${lastValSpaces.lastFloor}")
+    val MT = ::cacheLastValues.name
+    LOG.V2(TG, "$MT: ${lastValSpaces.lastFloor}")
     cache.saveSpaceLastValues(obj, lastValSpaces)
   }
 
   fun hasLastValuesCached() = cache.hasSpaceLastValues(obj)
   fun loadLastValues() : LastValSpaces {
+    val MT = ::loadLastValues.name
     val lastVal = cache.readSpaceLastValues(obj)
     return if (lastVal != null) {
-      LOG.D2(TAG_METHOD, "${prettyLevel}: ${lastVal.lastFloor}")
+      LOG.D2(TG, "$MT: ${prettyLevel}: ${lastVal.lastFloor}")
       lastVal
     } else {
       LastValSpaces()

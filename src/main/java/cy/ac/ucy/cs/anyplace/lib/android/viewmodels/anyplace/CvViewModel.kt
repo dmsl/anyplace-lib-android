@@ -110,10 +110,9 @@ open class CvViewModel @Inject constructor(
 
   val nwConnections by lazy { ConnectionsGetNW(app, this, RHap, repoAP) }
   val nwPOIs by lazy { POIsGetNW(app, this, RHap, repoAP) }
-
   val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvModelFilesGet by lazy { CvModelFilesGetNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvMapGet by lazy { CvMapGetNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvFingerprintsGet by lazy { CvFingerprintsGet(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
   val nwLevelPlan by lazy { LevelPlanNW(app as SmasApp, this, RHsmas, repoSmas) }
@@ -260,7 +259,7 @@ open class CvViewModel @Inject constructor(
   }
 
   suspend fun localizeOffline(detectionsReq: List<CvObjectReq>) {
-    if (!repoSmas.local.hasCvMap()) {
+    if (!repoSmas.local.hasCvFingerprints()) {
       val msg = "Cannot localize offline: No CvMap.\nUse settings to download the latest one."
       notify.WARN(viewModelScope, msg)
       return
@@ -280,8 +279,7 @@ open class CvViewModel @Inject constructor(
    */
   fun selectInitialLevel() {
     val MT = ::selectInitialLevel.name
-    LOG.V2()
-    LOG.E(TG,"$MT: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
+    LOG.V2(TG,"$MT: ${app.wSpace.prettyFloors}: ${app.wLevels.size}")
 
     if (!app.wLevels.hasLevels()) {
       val msg = "Selected ${app.wSpace.prettyTypeCapitalize} has no ${app.wSpace.prettyFloors}."
@@ -291,13 +289,10 @@ open class CvViewModel @Inject constructor(
     }
 
     if (app.wSpace.hasLastValuesCached()) {
-      LOG.E(TG, "$MT: HAS last values cached")
+      LOG.V2(TG, "$MT: has last values cached")
       val lastVal = app.wSpace.loadLastValues()
-      LOG.E(TG, "$MT: Space: ${app.wSpace.obj.name} has last level: ${lastVal.lastFloor}")
       if (lastVal.lastFloor != null) {
-        LOG.E(TG, "$MT: lastVal cache: ${app.wSpace.prettyLevel}${lastVal.lastFloor}.")
         val lastLevel = app.wLevels.getLevel(lastVal.lastFloor!!)!!
-        LOG.E(TG, "$MT: lastLevel: ${lastLevel.name} ${lastLevel.buid}")
         app.level.update { lastLevel }
       }
       lastValSpaces = lastVal
@@ -305,21 +300,17 @@ open class CvViewModel @Inject constructor(
       // try to get level 0. if not exists, get 1st available level
       // e.g. 1. a building might have just floors 3, and 4. it will pick 3
       // e.g. 1. a building might have floors -3 to 3. it will pick 0
-      LOG.E(TG, "$MT: WILL load first level")
       val pickedLevel = app.wLevels.getLevel(0) ?: app.wLevels.getFirstLevel()
       app.level.update { pickedLevel }
-      LOG.E(TG, "$MT: firstLevel: ${pickedLevel.name} ${pickedLevel.buid}")
+      LOG.V2(TG, "$MT: picked firstLevel: ${pickedLevel.name} ${pickedLevel.buid}")
     }
-
-    LOG.E(TG, "$MT: Selected ${app.wSpace.obj.buid}/${app.level.value?.buid} ${app.wSpace.prettyLevel}: ${app.level.value!!.number}")
   }
 
-  // TODO:PM network manager? ineternet connectiovity?
   var networkStatus = false
   /** normal var, filled by the observer (SelectSpaceActivity) */
   var backOnline = false
 
-  // TODO:PM: bind this when connectivity status changes
+  // TODO: bind this when connectivity status changes
   var readBackOnline = dsMisc.backOnline.asLiveData()
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dsMisc.backFromSettings.asLiveData()
