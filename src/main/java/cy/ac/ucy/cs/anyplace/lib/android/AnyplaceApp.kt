@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_LOGGER
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
@@ -125,6 +127,8 @@ abstract class AnyplaceApp : Application() {
     return locationSmas.value is LocalizationResult.Success
   }
 
+  suspend fun isLogger() = dsCvMap.read.first().startActivity == START_ACT_LOGGER
+
   /**
    * Set the main view (root view) of the current [Activity],
    * so we can use app [Snackbar] accross different activities
@@ -174,6 +178,8 @@ abstract class AnyplaceApp : Application() {
   fun userHasLocation() = locationSmas.value is LocalizationResult.Success
 
   private var toast: Toast ?= null
+
+  fun showToastLong(scope: CoroutineScope, msg: String) = showToast(scope, msg, Toast.LENGTH_LONG)
   @Deprecated("use app.notify (or at least a toast in that util class)")
   fun showToast(scope: CoroutineScope, msg: String, duration: Int = Toast.LENGTH_SHORT) {
     scope.launch(Dispatchers.Main) {
@@ -219,30 +225,35 @@ abstract class AnyplaceApp : Application() {
     LOG.E(TG, MT)
 
     // Initialize space
-    this.space = newSpace
-    wSpace = SpaceWrapper(applicationContext, repoAP, this.space!!)
-    // Initialize levels:
-    // - the available floors or decks of that space
-    this.levels = newLevels
-    wLevels = LevelsWrapper(this.levels!!, this.wSpace)
+    try {
+      this.space = newSpace
+      wSpace = SpaceWrapper(applicationContext, repoAP, this.space!!)
+      // Initialize levels:
+      // - the available floors or decks of that space
+      this.levels = newLevels
+      wLevels = LevelsWrapper(this.levels!!, this.wSpace)
 
-    // CLEAR any previous level selection
-    this.level.update { null }
-    this.wLevel = null
+      // CLEAR any previous level selection
+      this.level.update { null }
+      this.wLevel = null
 
-    if (newSpace == null || newLevels == null) {
-      notify.WARN(scope, "Cannot load space:\nSpace or Level were empty.")
+      if (newSpace == null || newLevels == null) {
+        notify.WARN(scope, "Cannot load space:\nSpace or Level were empty.")
+        return false
+      }
+
+      val prettySpace = wSpace.prettyTypeCapitalize
+      val prettyFloors= wSpace.prettyFloors
+
+      LOG.I(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
+              "(has ${levels!!.levels.size} $prettyFloors)")
+
+      initedSpace=true
+      return true
+
+    } catch(e: Exception) {
       return false
     }
-
-    val prettySpace = wSpace.prettyTypeCapitalize
-    val prettyFloors= wSpace.prettyFloors
-
-    LOG.I(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
-            "(has ${levels!!.levels.size} $prettyFloors)")
-
-    initedSpace=true
-    return true
   }
 
   @Deprecated("Is there a better way for this?")

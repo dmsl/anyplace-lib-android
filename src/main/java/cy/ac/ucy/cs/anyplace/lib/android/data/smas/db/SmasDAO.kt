@@ -82,7 +82,8 @@ interface SmasDAO {
   fun localizeAlgo1(modelid: Int, buid: String, uid: String): Flow<List<OfflineLocalizationAlgo1>>
 
   @RawQuery
-  fun runRawAlgo3(query: SupportSQLiteQuery): List<OfflineLocalizationAlgo3>
+  fun runRawAlgo(query: SupportSQLiteQuery): List<OfflineLocalizationAlgo3>
+
 }
 
 

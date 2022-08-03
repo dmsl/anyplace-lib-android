@@ -22,6 +22,7 @@
 
   <PreferenceCategory
       android:key="@string/prefcat_cv_logging"
+      app:isPreferenceVisible="false"
       app:title="@string/prefs_header_logging"
       app:icon="@drawable/ic_map">
 

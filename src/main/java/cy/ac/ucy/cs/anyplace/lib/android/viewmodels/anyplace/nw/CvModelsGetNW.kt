@@ -46,25 +46,32 @@ class CvModelsGetNW(
   /**
    * Downloads only the recourses. no other processing yet
    */
-  suspend fun blockingCall() {
-    val MT = ::blockingCall.name
+  suspend fun conditionalBlockingCall() : Boolean {
+    val MT = ::conditionalBlockingCall.name
     val smasUser = app.dsUserSmas.read.first()
     if (!repo.local.hasCvModelClassesDownloaded()) {
       val response = repo.remote.cvModelsGet(ChatUserAuth(smasUser))
       LOG.D4(TG, "$TG: ${response.message()}")
       val resp = handleResponse(response)
-
-      val cvModels = resp.data?.rows
-      if (cvModels == null) {
-        val msg = "Downloading $TG: no classes fetched"
-        LOG.W(TG, msg)
-      } else {
-        cvModels.forEach {
-          LOG.V3(TG, "$MT: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
+      try {
+        val cvModels = resp.data?.rows
+        if (cvModels == null) {
+          val msg = "Downloading $TG: no classes fetched"
+          LOG.W(TG, msg)
+          return false
+        } else {
+          cvModels.forEach {
+            LOG.V3(TG, "$MT: ${it.oid}: ${it.modeldescr}.${it.cid}| ${it.name}")
+          }
+          persistToDB(cvModels)
+          return true
         }
-        persistToDB(cvModels)
+      } catch(e: Exception) {
+        LOG.E(TG, "$MT: error: ${e.message}")
+        return false
       }
     }
+    return true
   }
 
   /** Get [UserLocations] SafeCall */

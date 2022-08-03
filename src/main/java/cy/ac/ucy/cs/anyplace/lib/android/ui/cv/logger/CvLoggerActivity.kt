@@ -47,7 +47,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
 
   val id_btn_logging: Int get() = R.id.button_logging
-  private val tag = "act-cvlog"
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -104,7 +103,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    *   This is because the logging UI is part of the BottomSheet.
    */
   override fun setupUiAfterGmap() {
-    LOG.D(TG, "$tag $METHOD: init logging click")
+    val MT = ::setupUiAfterGmap.name
+
+    LOG.D(TG, "$MT: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
     // bsheet is always visible as we show the tutorial
@@ -148,8 +149,10 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    */
   var collectorsSet=false
   private fun setupCollectors() {
+    val MT = ::setupCollectors.name
     if (collectorsSet) return
-    LOG.D(TAG_METHOD)
+
+    LOG.D(TG, MT)
     observeLevels()
     collectLoggedInChatUser()
     VM.nwCvFingerprintSend.collect()
@@ -178,7 +181,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
-    LOG.E(TG, "$tag: onMapReady [callback]")
+
+    val MT = ::onMapReady.name
+    LOG.E(TG, "$MT: [callback]")
     VM.uiLog.setupOnMapLongClick()
   }
 
@@ -190,11 +195,12 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   // override fun onFloorLoaded() { super.onFloorLoaded()  }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
-    LOG.V2(TG, "$METHOD: CvLoggerActivity")
+    val MT = ::onInferenceRan.name
+    LOG.V2(TG, "$MT: CvLoggerActivity")
     VM.uiLog.onInferenceRan()
 
     if (detections.isNotEmpty()) {
-      LOG.V2(TG, "$METHOD: detections: ${detections.size} (LOGGER OVERRIDE)")
+      LOG.V2(TG, "$MT: detections: ${detections.size} (LOGGER OVERRIDE)")
     }
     VM.processDetections(detections, this@CvLoggerActivity)
   }

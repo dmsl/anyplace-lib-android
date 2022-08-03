@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -14,6 +15,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
@@ -98,7 +101,14 @@ class GmapWrapper(
       // otherwise, we'll continue loading the space / level
       while(!act.cvMapPrefsLoaded) delay(100)
 
-      loadSpace()
+      if (!loadSpace()) {
+        var msg = "Cannot load space."
+        if (!app.hasInternet()) msg+="\nChoose a differrent one or connect to the internet."
+        app.showToastLong(scope, msg)
+        app.dsCvMap.clearSelectedSpace() // unselect it
+        act.startActivity(Intent(act, SelectSpaceActivity::class.java))
+        act.finish()
+      }
 
       setupOnMapAndMarkerClick()
       setupInfoWindowClick()
@@ -215,17 +225,22 @@ class GmapWrapper(
    * - dynamically (from cache, given they were already downloaded)
    * - of from assets (used for development/debugging)
    */
-  suspend fun loadSpace() {
-    LOG.E()
-    if (!DBG.SLR) {
-      if(!loadSpaceFromAssets()) return
-    } else {
-      val prefs = VM.dsCvMap.read.first()
-      loadSpaceFromCache(prefs.selectedSpace)
-    }
+  suspend fun loadSpace() : Boolean {
+    LOG.W()
+    try {
+      if (!DBG.SLR) {
+        if(!loadSpaceFromAssets()) return false
+      } else {
+        val prefs = VM.dsCvMap.read.first()
+        if(!loadSpaceFromCache(prefs.selectedSpace)) return false
+      }
 
-    VM.selectInitialLevel()
-    wrOverlays.observeLevelplanImage(obj)
+      VM.selectInitialLevel()
+      wrOverlays.observeLevelplanImage(obj)
+      return true
+    } catch (e: Exception) {
+      return false
+    }
   }
 
   /**

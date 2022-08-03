@@ -110,29 +110,32 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
     val uid = user.uid
 
     val prevCoord  = app.locationSmas.value.coord
-    val requestedAlgo = app.dsCvMap.read.first().cvAlgoChoice
-    var algoChosen = requestedAlgo
-    var requestedAlgoStr = requestedAlgo
+    val algoRequested = app.dsCvMap.read.first().cvAlgoChoice
+    var algoChosen = algoRequested
+    var algoRequestedPretty = algoRequested
 
-    if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO) requestedAlgoStr="auto"
-    /*
-     * Whether it's AUTO or LOCAL, if there is no prev record, then we have to do global
-     * Basically there is no AUTO in offline mode, as LOCAL requires a prev position
-     */
-    if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO || algoChosen == VM.C.CV_ALGO_EXEC_LOCAL) {
-      algoChosen = if (prevCoord != null) { // has prev coordinates: run local
-        VM.C.CV_ALGO_CHOICE_LOCAL
-      } else { // otherwise: global
-        VM.C.CV_ALGO_CHOICE_GLOBAL
-      }
+    if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO) algoRequestedPretty="auto"
+
+    // without prev coords we have to run GLOBAL (ALGO3)
+    if (prevCoord == null) {
+      algoChosen=VM.C.CV_ALGO_CHOICE_GLOBAL
+    // otherwise, and if it's auto, prefer the LOCAL (ALGO4)
+    } else if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO) {
+      algoChosen=VM.C.CV_ALGO_CHOICE_LOCAL
     }
+    // if it was LOCAL, it would have stayed LOCAL
+    // if it was GLOBAL, it would have stayed GLOBAL (given prevCoords not null)
 
-    val result = if (algoChosen == VM.C.CV_ALGO_CHOICE_LOCAL) { // run local
+    // RUN THE QUERY: ALGO3 or ALGO4
+    val result = if (algoChosen == VM.C.CV_ALGO_CHOICE_GLOBAL) {
       LOG.E(TG, "RUNNING ALGO 3")
-      DAO.runRawAlgo3(smasQueries.algo3(uid, modelid, buid))
+      DAO.runRawAlgo(smasQueries.global_algo3(uid, modelid, buid))
     } else { // run global
-      LOG.E(TG, "SHOULD RUN ALGO 4")
-      DAO.runRawAlgo3(smasQueries.algo3(uid, modelid, buid))
+      LOG.E(TG, "RUNNING ALGO 4")
+      val prev=prevCoord!!
+      DAO.runRawAlgo(smasQueries.local_algo4(
+              prev.lat, prev.lon, prev.level,
+              uid, modelid, buid))
     }
 
     var msg =""
@@ -146,7 +149,8 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
 
     if ((VM.app.hasDevMode() && !VM.isTracking()) || msg.isNotEmpty()) {
       var strInfo = "Recognitions: ${detectionsReq.size}. \nAlgo: Offline: "
-      strInfo+= "(requested ${requestedAlgoStr})"
+      strInfo+="$algoChosen "
+      if (algoChosen!=algoRequested) strInfo+= "(requested ${algoRequestedPretty})"
       val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
       VM.notify.longDEV(VM.viewModelScope, devMsg)
     } else if (msg.isNotEmpty()) {

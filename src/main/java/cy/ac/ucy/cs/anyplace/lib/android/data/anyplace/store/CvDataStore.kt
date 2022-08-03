@@ -15,8 +15,9 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 /**
+ * NOTE: this could be merged with [CvMapDataStore]
+ *
  * Computer Vision DataStore
  * Stores:
  * - deep-learning model

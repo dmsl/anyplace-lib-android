@@ -150,4 +150,8 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
     }
   }
 
+  fun toastLong(scope: CoroutineScope, s: String) {
+
+  }
+
 }

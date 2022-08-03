@@ -20,9 +20,7 @@ class SpaceGetNW(
         private val VMap: AnyplaceViewModel,
         private val RH: RetrofitHolderAP,
         private val repo: RepoAP) {
-
-
-  val tag = "nw-space-get"
+  val TG = "nw-space-get"
 
   /** Network Responses from API calls */
   // private val resp: MutableStateFlow<NetworkResult<UserLocations>> = MutableStateFlow(NetworkResult.Unset())
@@ -32,21 +30,21 @@ class SpaceGetNW(
 
   /** Get [Space] */
   suspend fun blockingCall(buid: String) : Boolean {
-    LOG.E(TAG, "$tag: blockingCall")
+    LOG.E(TG, "$TG: blockingCall")
 
     if (app.hasInternet()) {
-      try {
+      return try {
         val response = repo.remote.getSpace(buid)
-        LOG.D4(TAG, "$tag: ${response.message()}" )
-         return handleResponse(response)
+        LOG.D4(TG, "$TG: ${response.message()}" )
+        handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-        LOG.E(TAG, "$tag: $msg")
-        return false
+        LOG.E(TG, "$TG: $msg")
+        false
       } catch(e: Exception) {
-        LOG.E(TAG, "$tag: ${e.message}")
+        LOG.E(TG, "$TG: ${e.message}")
         e.printStackTrace()
-        return false
+        false
       }
     } else {
       return false
@@ -58,24 +56,24 @@ class SpaceGetNW(
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") ->  {
-            LOG.E(TAG, "$tag: Timeout")
+            LOG.E(TG, "$TG: Timeout")
             false
         }
         resp.isSuccessful -> {
           if (resp.body() == null) {
-            LOG.E(TAG, "$tag: null space")
+            LOG.E(TG, "$TG: null space")
             return false
           }
           VMap.cache.storeJsonSpace(resp.body()!!)
           true
         } // can be nullable
         else ->  {
-          LOG.E(TAG, "$tag: ${resp.message()}")
+          LOG.E(TG, "$TG: ${resp.message()}")
           false
         }
       }
     }
-    LOG.E(TAG, "$tag: ${resp.message()}")
+    LOG.E(TG, "$TG: ${resp.message()}")
     return false
   }
 

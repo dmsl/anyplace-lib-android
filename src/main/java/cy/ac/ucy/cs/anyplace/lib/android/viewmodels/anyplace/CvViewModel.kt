@@ -132,7 +132,7 @@ open class CvViewModel @Inject constructor(
   val detectionsTracking = MutableStateFlow(DetTrack(1, 0))
   /** Auto-stopping tracking mode if many empty windows found */
   var trackingEmptyWindowsConsecutive = 0
-  val TRACKING_MAX_EMPTY_WINDOWS=20
+  // val TRACKING_MAX_EMPTY_WINDOWS=20
 
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())

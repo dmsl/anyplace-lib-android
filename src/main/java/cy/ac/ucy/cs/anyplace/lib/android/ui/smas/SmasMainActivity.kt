@@ -141,22 +141,21 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   override fun onMapReady(googleMap: GoogleMap) {
     super.onMapReady(googleMap)
-    setupMapLongClick()
+    setupMapLongClick(googleMap)
   }
 
   var handlingGmapLongClick= false
-  private fun setupMapLongClick() {
-    if (handlingGmapLongClick) return
-    handlingGmapLongClick=true
+  private fun setupMapLongClick(googleMap: GoogleMap) {
+    if (handlingGmapLongClick) return; handlingGmapLongClick=true
 
     val MT = ::setupMapLongClick.name
 
     // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
-    VM.ui.map.obj.setOnMapLongClickListener {
-      LOG.W(TG, "$MT: long-clicked received")
-      lifecycleScope.launch(Dispatchers.IO) {
-        // tutNavLongPress
+    // VM.ui.map.obj: CHECK: not using the [VM.ui.map.obj].
+    googleMap.setOnMapLongClickListener {
 
+      LOG.W(TG, "$MT: long-click received")
+      lifecycleScope.launch(Dispatchers.IO) {
         if (VM.trackingMode.first() != TrackingMode.off
                 && VM.localizationMode.first() != LocalizationMode.stopped) {
           LOG.W(TG, "$MT: ignoring long-click (localization / tracking)")

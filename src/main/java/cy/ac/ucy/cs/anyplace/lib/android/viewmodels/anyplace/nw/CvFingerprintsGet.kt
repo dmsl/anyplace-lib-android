@@ -48,30 +48,35 @@ class CvFingerprintsGet(
   suspend fun blockingCall(buid: String, showNotif: Boolean=true) {
     val MT = ::blockingCall.name
     LOG.E(TG, MT)
-    val smasUser = app.dsUserSmas.read.first()
-    val from = getTimestamp()
-    DetectionModel.list.forEach { model->
-      val modelid = model.idSmas
-      val request = CvFingerprintReq(smasUser, modelid, buid, from)
 
-      LOG.E(TG, "$MT: downloading: ${model.modelName}: $buid $from")
-      val response = repo.remote.cvMapGet(request)
-      LOG.D2(TG, "$MT: ${response.message()}" )
-      val resp = handleResponse(response)
-      if (resp is NetworkResult.Success) {
-        val cvMap = resp.data?.rows
-        if (cvMap == null) {
-          val msg = "Downloading $TG: no classes fetched"
-          LOG.E(TG, msg)
-        } else {
-          if (cvMap.isNotEmpty()) {
-            val msg = "Fetched ${cvMap.size} new fingerprints"
-            if (showNotif) app.notify.shortDEV(scope, msg)
-            LOG.I(TG, "$MT: $msg")
+    try {
+      val smasUser = app.dsUserSmas.read.first()
+      val from = getTimestamp()
+      DetectionModel.list.forEach { model->
+        val modelid = model.idSmas
+        val request = CvFingerprintReq(smasUser, modelid, buid, from)
+
+        LOG.E(TG, "$MT: downloading: ${model.modelName}: $buid $from")
+        val response = repo.remote.cvMapGet(request)
+        LOG.D2(TG, "$MT: ${response.message()}" )
+        val resp = handleResponse(response)
+        if (resp is NetworkResult.Success) {
+          val cvMap = resp.data?.rows
+          if (cvMap == null) {
+            val msg = "Downloading $TG: no classes fetched"
+            LOG.E(TG, msg)
+          } else {
+            if (cvMap.isNotEmpty()) {
+              val msg = "Fetched ${cvMap.size} new fingerprints"
+              if (showNotif) app.notify.shortDEV(scope, msg)
+              LOG.I(TG, "$MT: $msg")
+            }
+            persistToDB(cvMap)
           }
-          persistToDB(cvMap)
         }
       }
+    } catch (e: Exception) {
+      LOG.E(TG, "$MT: error: ${e.message}")
     }
   }
 

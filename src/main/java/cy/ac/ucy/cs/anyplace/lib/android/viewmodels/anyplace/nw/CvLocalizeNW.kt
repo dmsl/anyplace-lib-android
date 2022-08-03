@@ -67,14 +67,15 @@ class CvLocalizeNW(
     if (app.hasInternet()) {
       try {
         // pick algorithm. on auto, don't request specifically from the server
-        var requestAlgo : Int? = app.dsCvMap.read.first().cvAlgoChoice.toInt()
-        if (requestAlgo == C.CV_ALGO_CHOICE_AUTO.toInt()) {
-          requestAlgo=null
+        var algoRequested : Int? = app.dsCvMap.read.first().cvAlgoChoice.toInt()
+        // 'auto' in a remote SMAS call means giving no algorithm to the backend
+        if (algoRequested == C.CV_ALGO_CHOICE_AUTO.toInt()) {
+          algoRequested=null
         }
 
         val prevCoord  = app.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
-        val req = CvLocalizeReq(user, epoch, buid, model.idSmas, detections, requestAlgo, prevCoord)
+        val req = CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algoRequested, prevCoord)
 
         LOG.W(TG, "$MT: ${req.time}: #: ${detections.size}")
         val response = repo.remote.cvLocalization(req)
@@ -82,11 +83,12 @@ class CvLocalizeNW(
         resp.value = handleResponse(response)
 
         if (!VM.isTracking()) {
-          val remoteAlgo = resp.value.data?.algorithm
+          val algoRunned = resp.value.data?.algorithm
           var strInfo = "Recognitions: ${detections.size}.\nAlgo: Online: "
-          if (remoteAlgo != null) strInfo+="$remoteAlgo "
-          val requestAlgoStr = requestAlgo ?: "auto"
-          strInfo+= "(requested ${requestAlgoStr})"
+          if (algoRunned != null) strInfo+="$algoRunned "
+          val algoRequestedPretty = algoRequested ?: "auto"
+          if (algoRunned == null || algoRunned != algoRequestedPretty)
+          strInfo+= "(requested ${algoRequestedPretty})"
 
           notify.longDEV(VM.viewModelScope, strInfo)
         }

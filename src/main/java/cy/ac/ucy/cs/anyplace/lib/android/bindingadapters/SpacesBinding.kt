@@ -21,16 +21,19 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 
 /**
- * Provides a binding between the XML of [row_space] and it's values.
- * These methods are essentially called in teh XML.
  *
- * What it matters is the name of the adapter (provided by [@BindingAdapter] annotation)
- * and the method's prototype (parameter list)
+ * Provides a binding between the XML of [row_space] and it's values.
+ * These methods are essentially called in the XML.
+ *
+ * Methods that bind code to XML entries.
+ * Search for their usages.
+ * The 'value' in the [@BindingAdapter]  annotation is what it matters.
+ * The method name (that happens to have the same name) only has to be unique.
+ *
  */
 object SpacesBinding {
 
   /**
-   * TODO add database here..
    * readRemoteResponse
    */
   @BindingAdapter("readSpacesResponse", requireAll = true)
@@ -74,7 +77,6 @@ object SpacesBinding {
       tv.text=default
     }
   }
-
 
   @BindingAdapter("readSpaceDrawable", requireAll = true)
   @JvmStatic

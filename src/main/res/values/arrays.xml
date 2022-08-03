@@ -12,14 +12,14 @@
 
   <string-array name="cv_localization_entries">
     <item>Auto</item>
-    <item>Surface Local  (4)</item>
     <item>Surface Global (3)</item>
+    <item>Surface Local (4)</item>
   </string-array>
 
   <string-array name="cv_localization_values">
     <item>@string/cv_algo_choice_auto</item>
-    <item>@string/cv_algo_choice_local</item>
     <item>@string/cv_algo_choice_global</item>
+    <item>@string/cv_algo_choice_local</item>
   </string-array>
 
   <string-array name="cv_loc_exec_entries">
@@ -35,8 +35,8 @@
   </string-array>
 
   <string name="cv_algo_choice_auto">0</string>
-  <string name="cv_algo_choice_local">4</string>
   <string name="cv_algo_choice_global">3</string>
+  <string name="cv_algo_choice_local">4</string>
 
   <string name="cv_algo_exec_auto">cv.loc.auto</string>
   <string name="cv_algo_exec_local">cv.loc.local</string>

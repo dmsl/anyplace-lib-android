@@ -28,23 +28,26 @@ class IMU(
         private val act: CvMapActivity,
         private val VM: CvViewModel,
         private val map: GmapWrapper) {
+  val TG = "utl-imu"
 
   private val app : AnyplaceApp = act.application as AnyplaceApp
 
   companion object{
     private const val earthRadius = 6371000
-    private const val stepSize = 0.37 //previously 0.74
+    private const val stepSize = 0.74  // previously 00.37
   }
 
 
   var started=false
   fun start(){
+    val MT = ::start.name
+
     if (started || !DBG.uim) return
     started=true
 
     checkPermission()
 
-    LOG.W(TAG, "Starting..")
+    LOG.W(TG, "$MT")
 
     var azimuth = 330.0
     act.VMsensor.azimuthRotationVector.observe(act) {
@@ -55,12 +58,12 @@ class IMU(
 
     act.VMsensor.stepsDetected.observe(act, Observer{ stepCount->
       // MODE 1
-      LOG.W(TAG, "Observing..: cnt: $stepCount")
+      LOG.W(TG, "$MT: observing..: cnt: $stepCount")
 
       if (VM.imuEnabled && DBG.uim) { // TODO:PMX: option in VM?
         val lastCoord= app.locationSmas.value.coord
         if (lastCoord == null) {
-          LOG.W(TAG, "OBSERVE: ret: no last coord")
+          LOG.W(TG, "$MT: OBSERVE: ret: no last coord")
           return@Observer
         }
 
@@ -70,13 +73,13 @@ class IMU(
         val floorNum = app.wLevel?.levelNumber()!!
         val polyOpts = map.lines.getPolyopts(floorNum)
         if (polyOpts == null) {
-          LOG.W(TAG, "OBSERVE: ret: null polyopts")
+          LOG.W(TG, "$MT observe: ret: null polyopts")
           return@Observer
         }
 
         val latLong = findClosestPoint(tmp, polyOpts)
 
-        LOG.E(TAG, "Found NEW MM point: $latLong")
+        LOG.E(TG, "$MT: Found new mm Point: $latLong")
         app.locationSmas.update { LocalizationResult.Success(latLong.toCoord(floorNum), ENGINE_IMU) }
       }
     })

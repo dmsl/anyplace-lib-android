@@ -1,12 +1,14 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
@@ -21,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.SettingsActivity
@@ -126,6 +129,8 @@ class SettingsCvActivity: SettingsActivity() {
       lifecycleScope.launch {
         val prefs = ds.read.first()
 
+        showLoggerPreferences()
+
         setPercentageInput(R.string.prev_cvmap_alpha,
                 R.string.summary_map_alpha, prefs.mapAlpha,
                 "Map is fully opaque", "Map is fully transparent")
@@ -142,6 +147,12 @@ class SettingsCvActivity: SettingsActivity() {
         setNumericInput(R.string.pref_smas_location_refresh,
                 R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
 
+        setNumericInput(R.string.pref_cv_tracking_delay,
+                R.string.summary_tracking_delay, prefs.cvTrackingDelay, 1000)
+
+        setNumericInput(R.string.pref_cv_tracking_auto_disable,
+                R.string.summary_tracking_auto_disable, prefs.cvTrackingAutoDisable, 5)
+
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
         setBooleanInput(R.string.pref_cv_follow_selected_user, prefs.followSelectedUser)
@@ -156,6 +167,16 @@ class SettingsCvActivity: SettingsActivity() {
 
         setupDownloadCvMap(app, VM)
         clearAvailableSpaces(app, VM, VMap)
+      }
+    }
+
+    private suspend fun showLoggerPreferences() {
+      val MT = ::showLoggerPreferences.name
+      LOG.W(TG, "$MT")
+      if (app.isLogger()) {
+        LOG.E(TG, "$MT: showing")
+        val pref = findPreference<PreferenceCategory>(getString(R.string.prefcat_cv_logging))
+        pref?.isVisible=true
       }
     }
 

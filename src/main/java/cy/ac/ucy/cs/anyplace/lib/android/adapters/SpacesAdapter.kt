@@ -20,8 +20,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Recycler View for rendering the [Spaces] the dynamic list
+ * Recycler View for rendering [Spaces] the dynamic list
  * - list of many [Space] objects
+ * - each adapter is responsible for one entry (one [Space]) in that list
+ *
+ * Before opening a [Space] we download several resources using [downloadSpaceResources].
+ *
+ *
  */
 class SpacesAdapter(private val app: AnyplaceApp,
                     private val act: SelectSpaceActivity,
@@ -42,12 +47,60 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
   private var spaces = emptyList<Space>()
 
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+    return from(parent, app, act, scope)
+  }
+
+  override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+    val MT = "onBindViewHolder" // overload resolution ambiguity
+    LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
+    if (spaces.isNotEmpty()) {
+      val currentSpace = spaces[position]
+      holder.bind(currentSpace, holder.act)
+    }
+  }
+
+  override fun getItemCount(): Int {
+    return spaces.size
+  }
+
+  /**
+   * [DiffUtil]: optimization: update only the changess
+   *
+   *  - notifyDataSetChanged():
+   *    - naive approach. overkill.
+   *    - updates the whole RV.
+   */
+  fun setData(newSpaces: Spaces) {
+    val MT = ::setData.name
+    LOG.V5(TG, "$MT: ${newSpaces.spaces.size}")
+
+    try {
+      val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
+      val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
+      spaces = newSpaces.spaces.toList()
+      scope.launch (Dispatchers.Main){
+        diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
+      }
+    } catch (e: Exception) {
+      LOG.E(TG, "$MT: error: ${e.message}")
+    }
+  }
+
+  fun clearData() {
+    val size = spaces.size
+    scope.launch(Dispatchers.IO) {
+      spaces = emptyList()
+      notifyItemRangeRemoved(0, size)
+    }
+  }
+
+
   class MyViewHolder(
           private val binding: RowSpaceBinding,
           private val app: AnyplaceApp,
           val act: SelectSpaceActivity,
-          private val scope: CoroutineScope,
-  ):
+          private val scope: CoroutineScope):
           RecyclerView.ViewHolder(binding.root) {
     private val TG = SpacesAdapter.TG+"-"+MyViewHolder::class.java.simpleName
     private val notify = app.notify
@@ -97,7 +150,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.VM.dbqSpaces.runnedInitialQuery=false
           app.backToSpaceSelectorFromOtherActivities=true
 
-          downloadSpaceResources(space, prefsCv, showNotification)
+          val downloadOK = downloadSpaceResources(space, prefsCv, showNotification)
 
           scope.launch(Dispatchers.Main) {
             act.utlUi.clearAnimation(btn)
@@ -107,6 +160,11 @@ class SpacesAdapter(private val app: AnyplaceApp,
             btn.tag=null
 
             LOG.D2(TG, "$MT: selected space: '${prefsCv.selectedSpace}' ")
+
+            // if (!downloadOK) {
+            //   app.showToast(scope, "Failed to download some resources")
+            //   act.finish()
+            // }
 
             val userAP = app.dsUserAP.read.first()
             StartActivity.openActivity(prefsCv, userAP, act)
@@ -124,53 +182,66 @@ class SpacesAdapter(private val app: AnyplaceApp,
      * - Level plan (base64 bitmap of floorplans/deckplans)
      * - POIs, and Connections
      */
-    suspend fun downloadSpaceResources(space: Space, prefsCv: CvMapPrefs, showNotif: Boolean) {
-      downloadCvModelFilesAndCvClasses()
-      downloadCvFingerprints(prefsCv.selectedSpace)
+    suspend fun downloadSpaceResources(space: Space, prefsCv: CvMapPrefs, showNotif: Boolean) : Boolean {
+      if(!downloadCvModelFilesAndCvClasses(prefsCv)) return false
+      downloadCvFingerprints(prefsCv)
 
       val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
       if (showNotif) {
         notify.INFO(scope, "Downloading resources of $shortName")
       }
-      downloadSpaceAndLevels(prefsCv) // needed before loading space and levels
+      if (!downloadSpaceAndLevels(prefsCv)) return false // needed before loading space and levels
       loadSpaceAndLevels(prefsCv)
       downloadFloorplans()
-      downloadConnectionsAndPois()
+      if (!downloadConnectionsAndPois()) return false
+
+      return true
     }
 
     /**
      * Download Cv Model files (classes/obj.names and weights/tflite)
      */
-    private suspend fun downloadCvModelFilesAndCvClasses() {
+    private suspend fun downloadCvModelFilesAndCvClasses(prefsCv: CvMapPrefs) : Boolean {
       val MT = ::downloadCvModelFilesAndCvClasses.name
       LOG.D(TG, MT)
       if  (act.VMcv.nwCvModelFilesGet.mustDownloadCvModels()) {
         notify.INFO(scope, "Downloading CvModels..")
-        act.VMcv.nwCvModelFilesGet.downloadMissingModels() // tflite/weights, and labels
+        if(!act.VMcv.nwCvModelFilesGet.downloadMissingModels()) { // tflite/weights, and labels
+          return false
+        }
       }
-      act.VMcv.nwCvModelsGet.blockingCall() // labels, but in the SMAS sqlite format (containing OIDs, etc)
+      if (!act.VMcv.nwCvModelsGet.conditionalBlockingCall()) { // labels, but in the SMAS sqlite format (containing OIDs, etc)
+        return false
+      }
+
+      return true
     }
 
-    private suspend fun downloadCvFingerprints(buid: String) {
+    private suspend fun downloadCvFingerprints(prefs: CvMapPrefs) {
       val MT = ::downloadCvFingerprints.name
-      LOG.E(TG, "$MT: $buid")
-      notify.INFO(scope, "Downloading new fingerprints..")
-      act.VMcv.nwCvFingerprintsGet.blockingCall(buid, false)
+      if (app.hasInternet() && prefs.autoUpdateCvFingerprints) {
+        LOG.E(TG, "$MT: ${prefs.selectedSpace}")
+        act.VMcv.nwCvFingerprintsGet.blockingCall(prefs.selectedSpace, false)
+      }
     }
 
     /**
      *  Download JSON objects for the Space and all the Floors
      */
-    private suspend fun downloadSpaceAndLevels(prefsCv: CvMapPrefs) {
+    private suspend fun downloadSpaceAndLevels(prefsCv: CvMapPrefs) : Boolean {
       val MT = ::downloadSpaceAndLevels.name
       val gotSpace = act.VM.nwSpaceGet.blockingCall(prefsCv.selectedSpace)
       val gotFloors = act.VM.nwFloorsGet.blockingCall(prefsCv.selectedSpace)
 
       if (!gotSpace || !gotFloors) {
-        notify.WARN(scope, "Failed to download spaces. Restart app.")
+        val msg ="Failed to download spaces. Restart app."
+        LOG.E(TG, "$MT: $msg")
+        notify.WARN(scope, msg)
         app.spaceSelectionInProgress=false
-        act.finishAndRemoveTask()
+        return false
       }
+
+      return true
     }
 
     /**
@@ -187,61 +258,14 @@ class SpacesAdapter(private val app: AnyplaceApp,
       act.VMcv.nwLevelPlan.downloadAll()
     }
 
-    private suspend fun downloadConnectionsAndPois() {
+    private suspend fun downloadConnectionsAndPois() : Boolean {
       val MT = ::downloadConnectionsAndPois.name
       if (app.space!=null && !act.VMcv.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         LOG.D2(TG, "$MT: Fetching POIs and Connections..")
-        act.VMcv.nwPOIs.callBlocking(app.space!!.buid)
-        act.VMcv.nwConnections.callBlocking(app.space!!.buid)
+        if (!act.VMcv.nwPOIs.callBlocking(app.space!!.buid)) return false
+        if (!act.VMcv.nwConnections.callBlocking(app.space!!.buid)) return false
       }
+      return true
     }
-  }
-
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-    return from(parent, app, act, scope)
-  }
-
-  override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-    val MT = "onBindViewHolder" // overload resolution ambiguity
-    LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
-    if (spaces.isNotEmpty()) {
-      val currentSpace = spaces[position]
-      holder.bind(currentSpace, holder.act)
-    }
-  }
-
-  override fun getItemCount(): Int {
-    return spaces.size
-  }
-
-  /**
-   * [DiffUtil]: optimization: update only the changess
-   *
-   *  - notifyDataSetChanged():
-   *    - naive approach. overkill.
-   *    - updates the whole RV.
-   */
-  fun setData(newSpaces: Spaces) {
-    val MT = ::setData.name
-    LOG.V5(TG, "$MT: ${newSpaces.spaces.size}")
-
-    try {
-      val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
-      val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
-      spaces = newSpaces.spaces.toList()
-      scope.launch (Dispatchers.Main){
-        diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
-      }
-    } catch (e: Exception) {
-      LOG.E(TG, "$MT: error: ${e.message}")
-    }
-  }
-
-  fun clearData() {
-    val size = spaces.size
-    scope.launch(Dispatchers.IO) {
-      spaces = emptyList()
-      notifyItemRangeRemoved(0, size)
-    }
-  }
+  } // END OF MyViewHolder
 }

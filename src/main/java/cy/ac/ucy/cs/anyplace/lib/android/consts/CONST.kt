@@ -75,6 +75,9 @@ open class CONST(ctx: Context) {
   //// Settings for Cv Logger
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
+  val PREF_CV_TRACKING_DELAY = ctx.getString(R.string.pref_cv_tracking_delay)
+  val PREF_CV_TRACKING_AUTO_DISABLE = ctx.getString(R.string.pref_cv_tracking_auto_disable)
+
   val PREF_SELECTED_SPACE=ctx.getString(R.string.pref_selected_space)
 
   // COMMON DEFAULTS
@@ -88,6 +91,9 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
   //// LOCALIZATION
   val DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS = "3000"
+
+  val DEFAULT_PREF_CV_TRACKING_DELAY = "3000"
+  val DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE = "10" // 10 empty windows
 
   val CV_ALGO_CHOICE_AUTO =ctx.getString(R.string.cv_algo_choice_auto)
   val CV_ALGO_CHOICE_LOCAL=ctx.getString(R.string.cv_algo_choice_local)

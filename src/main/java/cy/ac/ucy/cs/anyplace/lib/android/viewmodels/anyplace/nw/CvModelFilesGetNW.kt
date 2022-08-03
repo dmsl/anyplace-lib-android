@@ -46,12 +46,13 @@ class CvModelFilesGetNW(
     return false
   }
 
-  suspend fun downloadMissingModels() {
+  suspend fun downloadMissingModels() : Boolean {
     val MT = ::downloadMissingModels.name
     DetectionModel.list.forEach { model ->
       LOG.D(TG, "$MT: ${model.modelName}..")
-      callBlocking(model.idSmas)
+      if(!callBlocking(model.idSmas)) return false
     }
+    return true
   }
 
   /** Get [UserLocations] SafeCall */

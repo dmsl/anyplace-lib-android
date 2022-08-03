@@ -43,6 +43,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_AUTO_UPDATE_FINGERPRINTS,
           C.PREF_CV_LOC_ALGO_CHOICE,
           C.PREF_CV_LOC_ALGO_EXECUTION,
+          C.PREF_CV_TRACKING_DELAY,
+          C.PREF_CV_TRACKING_AUTO_DISABLE,
   )
 
   private class Keys(c: CONST) {
@@ -58,8 +60,11 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     val selectedSpace = stringPreferencesKey(c.PREF_SELECTED_SPACE)
     val autoUpdateCvFingerprints= booleanPreferencesKey(c.PREF_CV_AUTO_UPDATE_FINGERPRINTS)
 
-    val cvAlgoChoice= stringPreferencesKey(c.PREF_CV_LOC_ALGO_CHOICE)
-    val cvAlgoExec= stringPreferencesKey(c.PREF_CV_LOC_ALGO_EXECUTION)
+    val cvAlgoChoice=stringPreferencesKey(c.PREF_CV_LOC_ALGO_CHOICE)
+    val cvAlgoExec=stringPreferencesKey(c.PREF_CV_LOC_ALGO_EXECUTION)
+
+    val cvTrackingDelay=stringPreferencesKey(c.PREF_CV_TRACKING_DELAY)
+    val cvTrackingAutoDisable=stringPreferencesKey(c.PREF_CV_TRACKING_AUTO_DISABLE)
   }
   private val KEY = Keys(C)
 
@@ -114,6 +119,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_LOC_ALGO_CHOICE-> it[KEY.cvAlgoChoice] = value ?: C.DEFAULT_PREF_CV_LOC_ALGO_CHOICE
 
           C.PREF_CV_LOC_ALGO_EXECUTION-> it[KEY.cvAlgoExec] = value ?: C.DEFAULT_PREF_CV_LOC_ALGO_EXECUTION
+
+          C.PREF_CV_TRACKING_DELAY-> it[KEY.cvTrackingDelay] = value ?: C.DEFAULT_PREF_CV_TRACKING_DELAY
+          C.PREF_CV_TRACKING_AUTO_DISABLE-> it[KEY.cvTrackingDelay] = value ?: C.DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE
         }
       }
     }
@@ -152,6 +160,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
         C.PREF_CV_LOC_ALGO_CHOICE-> prefs.cvAlgoChoice
         C.PREF_CV_LOC_ALGO_EXECUTION-> prefs.cvAlgoExec
+
+        C.PREF_CV_TRACKING_DELAY-> prefs.cvTrackingDelay
+        C.PREF_CV_TRACKING_AUTO_DISABLE-> prefs.cvTrackingAutoDisable
         else -> null
       }
     }
@@ -179,6 +190,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val cvAlgoChoice = preferences[KEY.cvAlgoChoice] ?: C.DEFAULT_PREF_CV_LOC_ALGO_CHOICE
             val cvAlgoExec= preferences[KEY.cvAlgoExec] ?: C.DEFAULT_PREF_CV_LOC_ALGO_EXECUTION
 
+            val cvTrackingDelay= preferences[KEY.cvTrackingDelay] ?: C.DEFAULT_PREF_CV_TRACKING_DELAY
+            val cvTrackingAutoDisable= preferences[KEY.cvTrackingAutoDisable] ?: C.DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE
+
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
                     windowLoggingMs,
@@ -191,8 +205,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     selecteSpace,
                     autoUpdateCvFingerprints,
                     cvAlgoChoice,
-                    cvAlgoExec
-            )
+                    cvAlgoExec,
+                    cvTrackingDelay,
+                    cvTrackingAutoDisable)
             prefs
           }
 
@@ -216,6 +231,10 @@ data class CvMapPrefs(
         val followSelectedUser: Boolean,
         val selectedSpace: String,
         val autoUpdateCvFingerprints: Boolean,
+
         val cvAlgoChoice: String,
         val cvAlgoExec: String,
+
+        val cvTrackingDelay: String,
+        val cvTrackingAutoDisable: String,
 )

@@ -132,10 +132,11 @@ class UiLocalization(
         } else {
           utlUi.text(tv, txt)
           VM.trackingEmptyWindowsConsecutive++
+          val maxEmptyScans = app.dsCvMap.read.first().cvTrackingAutoDisable.toInt()
           LOG.W(TG, "$MT: ${VM.trackingEmptyWindowsConsecutive} consecutive empty windows")
-          if (VM.trackingEmptyWindowsConsecutive > VM.TRACKING_MAX_EMPTY_WINDOWS) {
+          if (VM.trackingEmptyWindowsConsecutive > maxEmptyScans) {
             notify.WARN(scope, "Tracking auto-disabled.\n"+
-                    "Reason: ${VM.TRACKING_MAX_EMPTY_WINDOWS} consecutive empty scans.")
+                    "Reason: $maxEmptyScans consecutive empty scans.")
             endTrackingLoop(tv)
           }
         }
@@ -152,7 +153,7 @@ class UiLocalization(
     VM.localizationMode.update { LocalizationMode.stopped }
   }
 
-  private val TRACKING_DELAY_MS = 5000L
+  // private val TRACKING_DELAY_MS = 5000L
   fun startTrackingLoop(tv: TextView) {
     val MT = ::startTrackingLoop.name
     VM.trackingEmptyWindowsConsecutive=0
@@ -170,8 +171,10 @@ class UiLocalization(
         notify.TUTORIAL(scope, msg)
       }
 
-      val localizationWindow=app.dsCvMap.read.first().windowLocalizationMs
-      val totalDelay=TRACKING_DELAY_MS+localizationWindow.toLong()
+      val prefs = app.dsCvMap.read.first()
+      val localizationWindow=prefs.windowLocalizationMs
+      val trackingDelayMs=prefs.cvTrackingDelay.toInt()
+      val totalDelay=trackingDelayMs+localizationWindow.toLong()
 
       while (VM.isTracking())  {
         LOG.W(TG, "tracking loop..")
