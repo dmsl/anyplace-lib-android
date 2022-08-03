@@ -152,7 +152,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     VM.cacheDetectionsLocally(userCoord, location)
     checkForUploadCache(true)
 
-    if (DBG.UPL) bottom.logging.showUploadBtn()
+    bottom.logging.showUploadBtn()
 
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
@@ -209,11 +209,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val MT = ::setupUploadBtn.name
     uploadButtonInit = true
 
-    if (!DBG.UPL) return
-
-    LOG.E(TG, "$MT: setup upload button")
+    LOG.D(TG, "$MT: setup upload button")
     btnUpload.setOnClickListener {
-      LOG.E(TG, "$MT: clicked upload")
+      LOG.W(TG, "$MT: clicked upload")
       scope.launch(Dispatchers.IO) { // TODO:PMX UPL OK?
         utlUi.disable(groupUpload)
         utlUi.disable(btnUpload)

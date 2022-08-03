@@ -46,6 +46,9 @@ class CvFingerprintSendNW(
 
   private val C by lazy { SMAS(app.applicationContext) }
 
+  /**
+   * used in offline logging
+   */
   suspend fun uploadFromCache(uiLog: CvLoggerUI) {
     val MT = ::uploadFromCache.name
     val smasUser = app.dsUserSmas.read.first()
@@ -96,9 +99,11 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
-    val fetched = VM.nwCvFingerprintsGet.safeCall(false)
-    if (fetched>0) {
-      reportMsg+="\nFetched $fetched fingerprints."
+    if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
+      val fetched = VM.nwCvFingerprintsGet.safeCall(false)
+      if (fetched>0) {
+        reportMsg+="\nFetched $fetched fingerprints."
+      }
     }
 
     notify.info(VM.viewModelScope, reportMsg)
@@ -136,7 +141,10 @@ class CvFingerprintSendNW(
   }
 
 
-  /** Send the [Chatuser]'s location (safecall) */
+  /** Send the [Chatuser]'s location (safecall).
+   * used for online logging.
+   * it uploads right after a detection.
+   * */
   suspend fun safeCall(userCoords: UserCoordinates,
                        detectionsReq: List<CvObjectReq>, model: DetectionModel) {
     val MT = ::safeCall.name
@@ -190,10 +198,18 @@ class CvFingerprintSendNW(
       resp.collect {
         when (it)  {
           is NetworkResult.Success -> {
-            val msg = "Uploaded Fingerprints (${it.data?.rows})"
-            LOG.W(TG, "$MT: $msg")
-            notify.shortDEV(VM.viewModelScope, msg)
+            var reportMsg = "Uploaded Fingerprints (${it.data?.rows})"
+            LOG.W(TG, "$MT: $reportMsg")
+
+            if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
+              val fetched = VM.nwCvFingerprintsGet.safeCall(false)
+              if (fetched>0) {
+                reportMsg+="\nFetched $fetched fingerprints."
+              }
+            }
+            notify.shortDEV(VM.viewModelScope, reportMsg)
           }
+
           is NetworkResult.Error -> {
             if (!err.handle(app, it.message, TG)) {
               val msg = it.message ?: "unspecified error"

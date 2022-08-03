@@ -7,8 +7,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 /**
  * Based on [CvModelClass]
  */
-@Entity(tableName = SMAS.DB_CVMODELS)
-data class CvModelClassEntity(
+@Entity(tableName = SMAS.DB_OBJECT)
+data class OBJECT(
   /** SMAS generated OID (alt key: smas model id + class id) */
   @PrimaryKey(autoGenerate = false)
   var oid: Int,

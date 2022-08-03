@@ -9,7 +9,7 @@ import okhttp3.ResponseBody
 /**
  * Anyplace Remote DataSource (uses Anyplace API)
  */
-class ApRemoteDS @Inject constructor(private val RH: RetrofitHolderAP) {
+class ApRemoteSRC @Inject constructor(private val RH: RetrofitHolderAP) {
 
   // FLOORPLANS
   suspend fun getFloorplanBase64(buid: String, floorNum: String) : Response<ResponseBody> = RH.api.floorplanBase64(buid, floorNum)

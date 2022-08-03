@@ -39,23 +39,11 @@ import kotlinx.coroutines.launch
 /**
  * Accepts a serialized [Space] as an argument (using [Bundle]).
  * Has similarities with [SettingsCvLoggerFragment]
- *
- * TODO Settings:
- * - clear section
- * - clear all cache
- * - clear floorplans
- * - clear cvmaps
- *
- * TODO: Datastore Settings:
- *
- * NOTE: this should have been in the SMAS source code
- *
- *
- * CvMapDS
  */
 @AndroidEntryPoint
 class SettingsCvActivity: SettingsActivity() {
   companion object {
+    private const val TG = "act-settings-cv"
     const val ARG_SPACE = "pref_act_space"
     const val ARG_FLOORS = "pref_act_floors"
     const val ARG_FLOOR = "pref_act_floor"
@@ -65,18 +53,19 @@ class SettingsCvActivity: SettingsActivity() {
   private lateinit var VM: CvViewModel
 
   override fun onBackPressed() {
+    val MT = ::onBackPressed.name
     super.onBackPressed()
-    LOG.D4(TAG, "SettingsNav on backPressed")
+    LOG.D4(TG, MT)
   }
 
   override fun onResume() {
+    val MT = ::onResume.name
     super.onResume()
-    LOG.D4(TAG, "SettingsNav on resume")
+    LOG.D4(TG, MT)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
     VM = ViewModelProvider(this)[SmasMainViewModel::class.java]
 
     settingsFragment = SettingsCvFragment(app, VM, VMap, dsCvMap, dsCv, repoAP, repoSmas)
@@ -94,26 +83,40 @@ class SettingsCvActivity: SettingsActivity() {
           private val repoAP: RepoAP,
           private val repoSmas: RepoSmas,
   ) : PreferenceFragmentCompat() {  // PreferenceFragmentCompat
+    private val TG = "${SettingsCvActivity.TG}-frgmt"
 
     override fun onResume() {
+      val MT = ::onResume.name
       super.onResume()
-      LOG.D4(TAG, "SettingsNav: FRAGMENT on resume")
+      LOG.D4(TG, MT)
     }
 
+    @Deprecated("")
     var spaceH : SpaceWrapper? = null
+    @Deprecated("")
     var levelsH: LevelsWrapper? = null
+    @Deprecated("")
     var levelH: LevelWrapper? = null
 
     val cache by lazy { Cache(requireActivity()) }
 
-
-
+    /**
+     * Preferences must be bound to the [ds] ([CvMapDataStore].
+     * Otherwise the [R.xml.preferences_cv] will not be initialized properly.
+     * Some values need to be updated as they change (e.g., setPercentageInput, numericInput, etc..)
+     * while some others dont (setListPreferenceInput).
+     *
+     * Some others are handled as buttons that do other actions,
+     * e.g., setupChangeCvModel, or deleting some caches..
+     */
     @SuppressLint("ResourceAsColor")
     override fun onCreatePreferences(args: Bundle?, rootKey: String?) {
+      val MT = ::onCreatePreferences.name
       setPreferencesFromResource(R.xml.preferences_cv, rootKey)
 
       preferenceManager.preferenceDataStore = ds
 
+      // used to accept the selected space. but this is not used anymore.. [spaceH], [levelsH], and [levelH]
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, ARG_SPACE)
       levelsH = IntentExtras.getFloors(spaceH, extras, ARG_FLOORS)
@@ -121,9 +124,7 @@ class SettingsCvActivity: SettingsActivity() {
 
       // bind DataStore values to the preference XML
       lifecycleScope.launch {
-        LOG.D(TAG, "SNAct: calls read")
         val prefs = ds.read.first()
-        LOG.E(TAG, "SCAN: SNAct: scanDelay: ${prefs.scanDelay}")
 
         setPercentageInput(R.string.prev_cvmap_alpha,
                 R.string.summary_map_alpha, prefs.mapAlpha,
@@ -135,31 +136,22 @@ class SettingsCvActivity: SettingsActivity() {
         setNumericInput(R.string.pref_cv_localization_ms,
                 R.string.summary_localization_window, prefs.windowLocalizationMs, 0)
 
-        if (DBG.LMT) {
-          setNumericInput(R.string.pref_cv_logging_ms,
-                  R.string.summary_logging_window, prefs.windowLoggingMs, 1000)
-        } else {
-          setNumericInput(R.string.pref_cv_logging_ms,
-                  R.string.summary_logging_window, prefs.windowLoggingMs, 0)
-        }
+        setNumericInput(R.string.pref_cv_logging_ms,
+                R.string.summary_logging_window, prefs.windowLoggingMs, 1000)
 
-        if (DBG.LMT) {
-          setNumericInput(R.string.pref_smas_location_refresh,
-                  R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
-        } else {
-          setNumericInput(R.string.pref_smas_location_refresh,
-                  R.string.summary_refresh_locations, prefs.locationRefreshMs, 0)
-        }
-
+        setNumericInput(R.string.pref_smas_location_refresh,
+                R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
 
         setBooleanInput(R.string.pref_cv_dev_mode, prefs.devMode)
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
         setBooleanInput(R.string.pref_cv_follow_selected_user, prefs.followSelectedUser)
         setBooleanInput(R.string.pref_cv_fingerprints_auto_update, prefs.autoUpdateCvFingerprints)
 
+        setListPreferenceInput(R.string.pref_cv_loc_algo_choice, prefs.cvAlgoChoice)
+        setListPreferenceInput(R.string.pref_cv_loc_algo_execution, prefs.cvAlgoExec)
+
         setupChangeCvModel()
         setupButtonServerSettings()
-        setupClearCvFingerprints()
         setupUiClearCvModelsDB(app, VM)
 
         setupDownloadCvMap(app, VM)
@@ -168,19 +160,21 @@ class SettingsCvActivity: SettingsActivity() {
     }
 
     private fun setupButtonServerSettings() {
+      val MT = ::setupButtonServerSettings.name
       val pref = findPreference<Preference>(getString(R.string.pref_anyplace_server))
       pref?.setOnPreferenceClickListener {
-        LOG.D(TAG_METHOD)
+        LOG.D(TG, MT)
         startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
         true
       }
     }
 
     private fun setupChangeCvModel() {
+      val MT = ::setupChangeCvModel.name
       val pref = findPreference<Preference>(getString(R.string.pref_cv_model))
       lifecycleScope.launch {
         pref?.setOnPreferenceClickListener {
-          LOG.W(TAG, "Changing CV model")
+          LOG.W(TG, "$MT: changing CV model")
           ModelPickerDialog.SHOW(requireActivity().supportFragmentManager, dsCv)
           true
         }
@@ -191,9 +185,10 @@ class SettingsCvActivity: SettingsActivity() {
     }
 
     private fun setupUiClearCvModelsDB(app: AnyplaceApp, VM: CvViewModel) {
+      val MT = ::setupUiClearCvModelsDB.name
       val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_models))
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG, "$METHOD: clear cache")
+        LOG.W(TG, "$MT: clear cache")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Refresh CV Models",
                 "Will delete the CV Model classes.\n" +
@@ -217,6 +212,7 @@ class SettingsCvActivity: SettingsActivity() {
 
 
     private fun setupDownloadCvMap(app: AnyplaceApp, VM: CvViewModel) {
+      val MT = ::setupDownloadCvMap.name
       val pref = findPreference<Preference>(getString(R.string.pref_loc_cv_map))
 
       if (!DBG.CVM) {
@@ -225,7 +221,7 @@ class SettingsCvActivity: SettingsActivity() {
       }
 
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG, "$METHOD: setting up")
+        LOG.W(TG, "$MT: setting up")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Download CvMap",
                 "The previous CvMap will be overridden.\nAn application restart is required.",
@@ -233,12 +229,12 @@ class SettingsCvActivity: SettingsActivity() {
 
           lifecycleScope.launch(Dispatchers.IO) {
             if (!app.hasInternet()) {
-              app.showToast(VM.viewModelScope, "Internet connection is required")
+              app.notify.short(VM.viewModelScope, "Internet connection is required")
               return@launch
             }
 
             VM.nwCvFingerprintsGet.dropFingerprints()
-            VM.nwCvFingerprintsGet.blockingCall(app.wSpace.obj.buid)
+            VM.nwCvFingerprintsGet.blockingCall(app.wSpace.obj.buid, false)
             VM.nwCvFingerprintsGet.collect()
           }
         }
@@ -248,18 +244,17 @@ class SettingsCvActivity: SettingsActivity() {
 
 
     fun getSelectedSpaceSummary(value: String) : String {
-      return value.ifEmpty {
-        "No space selected"
-      }
+      return value.ifEmpty { "No space selected" }
     }
 
     private fun clearAvailableSpaces(app: AnyplaceApp, VM: CvViewModel, VMap: AnyplaceViewModel) {
+      val MT = ::clearAvailableSpaces.name
       val pref = findPreference<Preference>(getString(R.string.pref_clear_available_spaces))
 
       if (!DBG.SLR) { pref?.isVisible = false; return }
 
       pref?.setOnPreferenceClickListener {
-        LOG.W(TAG, "$METHOD: setting up")
+        LOG.W(TG, "$MT: setting up")
         val mgr = requireActivity().supportFragmentManager
         ConfirmActionDialog.SHOW(mgr, "Clear available spaces",
                 "Space Selector will fetch them again from remote,\n"+
@@ -270,7 +265,7 @@ class SettingsCvActivity: SettingsActivity() {
 
           lifecycleScope.launch(Dispatchers.IO) {
             if (!app.hasInternet()) {
-              app.showToast(VM.viewModelScope, "Internet connection is required")
+              app.notify.short(VM.viewModelScope, "Internet connection is required")
               return@launch
             }
 
@@ -281,28 +276,5 @@ class SettingsCvActivity: SettingsActivity() {
         true
       }
     }
-
-    // CLR: V22 implemented in the UI btnUploadDiscard
-    private fun setupClearCvFingerprints() {
-      val pref = findPreference<Preference>(getString(R.string.pref_log_clear_cache_cv_fingerprints))
-      pref?.isEnabled = cache.hasFingerprints()
-      pref?.isVisible=false  // TODO:PMX: V22
-
-      pref?.setOnPreferenceClickListener {
-        val mgr=requireActivity().supportFragmentManager
-        // TODO:PMX: V22
-        // ConfirmActionDialog.SHOW(mgr, "Discard CV Fingerprint cache",
-        //         "These are scanned objects that have not been uploaded yet to the database.\n" +
-        //                 "Proceed only if you want to discard them.") { // on confirmed
-        //   lifecycleScope.launch(Dispatchers.IO) {
-        //     cache.deleteFingerprintsCache()
-        //   }
-        // }
-        true
-      }
-    }
-
   }
-
-
 }

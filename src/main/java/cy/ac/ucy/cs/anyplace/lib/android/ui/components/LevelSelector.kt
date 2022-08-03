@@ -192,10 +192,10 @@ class LevelSelector(
 
     scope.launch(Dispatchers.IO) {
       if (WF.hasLevelplanCached()) {
-        LOG.D(TG, "$MT: local")
+        LOG.D3(TG, "$MT: local")
         VM.nwLevelPlan.readFromCache(VM, WF)
       } else {
-        LOG.D(TG, "$MT: remote")
+        LOG.D3(TG, "$MT: remote")
         VM.nwLevelPlan.getLevelplan(WF)
       }
     }

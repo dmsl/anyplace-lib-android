@@ -4,12 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
-
 /**
- * Based on [CvMapRow]
+ * Based on [CvFingerprintRow]
+ * On SMAS this is a view
  */
 @Entity(tableName = SMAS.DB_FINGERPRINT)
-data class CvMapRowEntity(
+data class FINGERPRINT(
         @PrimaryKey(autoGenerate = false)
         val foid: Int,
         val flid: Int, val uid: String,

@@ -124,6 +124,8 @@ open class CvViewModel @Inject constructor(
   /** Controlling tracking mode (of localization) */
   val trackingMode = MutableStateFlow(TrackingMode.off)
 
+  suspend fun isTracking() = trackingMode.first() == TrackingMode.on
+
   /** workaround. should have used a different flow that allows duplicats */
   data class DetTrack(val det: Int, val ts: Long)
   /** Keep a counter of the detections for the tracking window */
@@ -231,13 +233,14 @@ open class CvViewModel @Inject constructor(
   var collectingCvLocalization = false
 
   /**
-   * Perform localiation
+   * Perform localization:
+   * - either local or remote (based on settings)
+   * - the algorithm choice also depends on settings
    */
   fun performLocalization(recognitions: List<Classifier.Recognition>) {
     val MT = ::performLocalization.name
     LOG.D2(TG, "$MT: performing remote localization")
 
-    // TODO convert detections
     val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)
     viewModelScope.launch(Dispatchers.IO) {
 
@@ -246,27 +249,41 @@ open class CvViewModel @Inject constructor(
         nwCvLocalize.collect()
       }
 
-      // TODO: ALR: pick an option for localization
-      // automode: has internet or not..
-      if (DBG.CVM && !app.hasInternet()) {
+      if (offlineLocalization()) {
         localizeOffline(detectionsReq)
-        // return@launch
       } else {
-        // REMOTE: ALGO
-        nwCvLocalize.safeCall(app.wSpace.obj.buid, detectionsReq, model)
+        localizeOnline(detectionsReq)
       }
     }
   }
 
+  private suspend fun offlineLocalization() : Boolean {
+    val choice = app.dsCvMap.read.first().cvAlgoExec
+    return when {
+     !DBG.CVM -> false // online
+      choice == C.CV_ALGO_EXEC_AUTO && app.hasInternet() -> false // online (more up to date)
+      choice == C.CV_ALGO_EXEC_AUTO && !app.hasInternet() -> true // offline
+      choice == C.CV_ALGO_EXEC_REMOTE -> false                    // requested online specifically
+      choice == C.CV_ALGO_EXEC_LOCAL -> true                      // requested offline specifically
+      else -> false
+    }
+  }
+
+  private suspend fun localizeOnline(detectionsReq: List<CvObjectReq>) {
+    nwCvLocalize.safeCall(app.wSpace.obj.buid, detectionsReq, model)
+  }
+
   suspend fun localizeOffline(detectionsReq: List<CvObjectReq>) {
+    val MT = ::localizeOffline.name
+    LOG.E(TG, MT)
     if (!repoSmas.local.hasCvFingerprints()) {
-      val msg = "Cannot localize offline: No CvMap.\nUse settings to download the latest one."
+      val msg = "Cannot localize offline: No Fingerprints.\nUse settings to download the latest ones."
       notify.WARN(viewModelScope, msg)
       return
     }
 
-    val chatUser = app.dsUserAP.read.first()
-    repoSmas.local.localize(this, model.idSmas, app.space!!.buid, detectionsReq, chatUser)
+    val userSmas = app.dsUserSmas.read.first()
+    repoSmas.local.localize(app, this, model.idSmas, app.space!!.buid, detectionsReq, userSmas)
   }
 
   /** TODO in new class
@@ -315,7 +332,6 @@ open class CvViewModel @Inject constructor(
   var backFromSettings= false // INFO filled by the observer (collected from the fragment)
   var readBackFromSettings= dsMisc.backFromSettings.asLiveData()
 
-  // TODO:PMX IST
   fun showNetworkStatus() {
     if (!networkStatus) {
       app.showToast(viewModelScope, C.ERR_MSG_NO_INTERNET, Toast.LENGTH_LONG)

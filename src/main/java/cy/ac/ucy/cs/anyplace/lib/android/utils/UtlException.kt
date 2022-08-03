@@ -62,7 +62,7 @@ class UtilErr() {
     if (errCnt <MAX_CONSECUTIVE_SAME_ERRORS && msg != prevErrorMsg) {
       prevErrorMsg=msg
       errCnt=0 // different error
-      app.notify.WARN(scope, msg)
+      // app.notify.WARN(scope, msg)
       LOG.W(TG, "$TG: $msg")
 
       // dismiss the message asnyc, after 10 seconds
@@ -73,8 +73,8 @@ class UtilErr() {
     } else {
       errCnt++
       if(errCnt>=MAX_CONSECUTIVE_SAME_ERRORS) errCnt=MAX_CONSECUTIVE_SAME_ERRORS
-      LOG.E(TG, "$MT: [SUPPRESSING ERR MSGS]")
-      LOG.E(TG, "$MT: $msg")
+      LOG.V(TG, "$MT: [SUPPRESSING ERR MSGS]")
+      LOG.V(TG, "$MT: $msg")
     }
   }
 }

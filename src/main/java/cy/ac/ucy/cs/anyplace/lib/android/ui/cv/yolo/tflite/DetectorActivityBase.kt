@@ -220,7 +220,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
     // No mutex needed as this method is not reentrant.
     if (!VMD.isDetecting() ) {
-      LOG.V4(TG, "$MT: Skipping inference.. (disabled)")
+      LOG.V2(TG, "$MT: Skipping inference.. (disabled)")
       skipDetection()
       return
     }

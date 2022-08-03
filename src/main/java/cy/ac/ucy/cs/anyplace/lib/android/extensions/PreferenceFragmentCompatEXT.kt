@@ -4,6 +4,7 @@ import android.text.InputType
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -88,4 +89,9 @@ fun outOfBounds(value: Int) : Boolean = (value < 0 || value > 100)
 fun PreferenceFragmentCompat.setBooleanInput(@StringRes prefRes: Int, value: Boolean) {
   val preference = findPreference(getString(prefRes)) as SwitchPreferenceCompat?
   preference?.isChecked = value
+}
+
+fun PreferenceFragmentCompat.setListPreferenceInput(@StringRes prefRes: Int, value: String) {
+  val pref= findPreference(getString(prefRes)) as ListPreference?
+  pref?.value = value
 }

@@ -83,11 +83,10 @@ class UiLocalization(
    */
   private fun setupTrackingMode() {
     val MT = ::setupTrackingMode.name
+    if (!DBG.TRK) return
 
     when (act) {
       is SmasMainActivity -> {
-        LOG.W(TG, "$MT: LONG CLICK will setup")
-
         val tvSubtitle: TextView = act.findViewById(R.id.tvSubtitle)
         collectTrackingDetections(tvSubtitle)
 
@@ -126,7 +125,7 @@ class UiLocalization(
     scope.launch(Dispatchers.IO) {
       VM.detectionsTracking.collect {
         val detections = it.det
-        LOG.E(TG, "$MT: detections: $detections")
+        LOG.D2(TG, "$MT: detections: $detections")
         if (detections > 0) {
           utlUi.text(tv, "$txt ($detections)")
           VM.trackingEmptyWindowsConsecutive=0
@@ -174,7 +173,7 @@ class UiLocalization(
       val localizationWindow=app.dsCvMap.read.first().windowLocalizationMs
       val totalDelay=TRACKING_DELAY_MS+localizationWindow.toLong()
 
-      while (VM.trackingMode.first() == TrackingMode.on)  {
+      while (VM.isTracking())  {
         LOG.W(TG, "tracking loop..")
         VM.localizationMode.update { LocalizationMode.runningForTracking }
         delay(totalDelay)
@@ -185,7 +184,7 @@ class UiLocalization(
   var initedWhereAmI = false
   private fun setupButtonWhereAmI() {
     val MT = ::setupButtonWhereAmI.name
-    LOG.E(TG, "$MT")
+    LOG.D(TG, MT)
     btnWhereAmI.setOnClickListener {
       scope.launch {
         if (!DBG.WAI) return@launch
@@ -194,7 +193,6 @@ class UiLocalization(
         val lr = app.locationSmas.value
         var msg = ""
         if (lr is LocalizationResult.Success) {
-          LOG.E(TG, "$MT: success")
           val coord = lr.coord!!
           val curFloor = app.wLevel?.levelNumber()
 
@@ -215,8 +213,8 @@ class UiLocalization(
         }
 
         if (showTutorial) {
-          var tutMsg = "WHERE AM I:\ncenters map to your location.\n" +
-                  "If unknown, it centers on the ${app.wSpace.prettyLevel}."
+          var tutMsg = "WHERE AM I:\nCenters map to your location when known." +
+                  "Otherwise it centers on ${app.wSpace.prettyLevel}."
           if (msg.isNotEmpty()) tutMsg+="\nResult: $msg"
 
           notify.TUTORIAL(VM.viewModelScope, tutMsg)
@@ -288,7 +286,7 @@ class UiLocalization(
     scope.launch(Dispatchers.IO) {
       VM.enableCvDetection()
 
-      val tracking = VM.trackingMode.first() == TrackingMode.on
+      val tracking = VM.isTracking()
       VM.currentTime = System.currentTimeMillis()
       VM.windowStart = VM.currentTime
       VM.localizationMode.update {

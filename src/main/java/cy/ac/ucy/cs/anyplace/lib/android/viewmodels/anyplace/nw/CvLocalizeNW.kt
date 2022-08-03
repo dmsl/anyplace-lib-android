@@ -2,7 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
@@ -13,7 +12,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.OfflineLocalizati
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult.Companion.ENGINE_QUERY_OFFLINE
@@ -40,9 +38,6 @@ class CvLocalizeNW(
 
   companion object {
     private const val TG = "nw-cv-loc"
-    
-    const val CV_LOG_ALGO_GLOBAL = 3
-    const val CV_LOG_ALGO_NEW = 4
   }
 
   private val err by lazy { SmasErrors(app, VM.viewModelScope) }
@@ -63,8 +58,7 @@ class CvLocalizeNW(
 
     resp.value = NetworkResult.Unset()
 
-    val tracking = VM.trackingMode.first() == TrackingMode.on
-    if (detections.isEmpty() && !tracking) {
+    if (detections.isEmpty() && !VM.isTracking()) {
       notify.shortDEV(VM.viewModelScope, "No objects detected.")
       return
     }
@@ -72,30 +66,31 @@ class CvLocalizeNW(
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
-        var algo = CV_LOG_ALGO_NEW // TODO this can become an option
+        // pick algorithm. on auto, don't request specifically from the server
+        var requestAlgo : Int? = app.dsCvMap.read.first().cvAlgoChoice.toInt()
+        if (requestAlgo == C.CV_ALGO_CHOICE_AUTO.toInt()) {
+          requestAlgo=null
+        }
+
         val prevCoord  = app.locationSmas.value.coord
         val epoch = utlTime.epoch().toString()
+        val req = CvLocalizeReq(user, epoch, buid, model.idSmas, detections, requestAlgo, prevCoord)
 
-        val req =  if (prevCoord!=null) {
-          CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo, prevCoord)
-        } else {
-          algo= CV_LOG_ALGO_GLOBAL
-          CvLocalizeReq(user, epoch, buid, model.idSmas, detections, algo)
-        }
-
-        val strInfo = "Recognitions: ${detections.size}. Algo: Online: $algo"
-        // detections.forEach { strInfo+= "${it.oid} " }
-
-        val trackingOn = VM.trackingMode.first() == TrackingMode.on
-        if (!trackingOn) {
-          notify.shortDEV(VM.viewModelScope, strInfo)
-        }
-
-        LOG.V2(TG, "$MT: ${req.time}: #: ${detections.size}")
-        LOG.W(TG, "$MT: calling remote endpoint..")
+        LOG.W(TG, "$MT: ${req.time}: #: ${detections.size}")
         val response = repo.remote.cvLocalization(req)
-        LOG.W(TG, "$MT: Resp: ${response.message()}" )
+        LOG.W(TG, "$MT: Resp: ${response.message()}")
         resp.value = handleResponse(response)
+
+        if (!VM.isTracking()) {
+          val remoteAlgo = resp.value.data?.algorithm
+          var strInfo = "Recognitions: ${detections.size}.\nAlgo: Online: "
+          if (remoteAlgo != null) strInfo+="$remoteAlgo "
+          val requestAlgoStr = requestAlgo ?: "auto"
+          strInfo+= "(requested ${requestAlgoStr})"
+
+          notify.longDEV(VM.viewModelScope, strInfo)
+        }
+
       } catch(e: Exception) {
         val msg = utlErr.handle(app, RH, VM.viewModelScope, e, TG)
         resp.value = NetworkResult.Error(msg)
@@ -134,7 +129,7 @@ class CvLocalizeNW(
         else -> return NetworkResult.Error(resp.message())
       }
     }
-    return NetworkResult.Error("$TAG: ${resp.message()}")
+    return NetworkResult.Error("$TG: ${resp.message()}")
   }
 
   fun collect() {

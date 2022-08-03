@@ -23,6 +23,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG;
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG;
 
 public class Utils {
+  private static final String TG ="utils-tflite";
 
   /**
    * Memory-map the model file in Assets.
@@ -31,7 +32,7 @@ public class Utils {
           throws IOException {
 
     if (!DBG.USE_ASSETS) { // load from cache
-      LOG.E("tflite-utils", "Filename: " + modelFilename);
+      LOG.V(TG, "Filename: " + modelFilename);
       return loadModelFileFromSdcard(modelFilename);
     }
 

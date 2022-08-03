@@ -17,18 +17,18 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val SLR = true
+    const val SLR = true // TODO space selector: finalize
+
+    const val CVM = true // offline localization?
+
+    const val DVO = true // developer mode
     const val WAI = true
-
-    const val CVM = true
-    const val UPL = true
-
-    const val FLD = true
-
-    const val LMT = true
-    const val DVO = true
-    const val LCLG = true
     const val uim= true
+    const val LCLG = true // logging UI hiding
+    const val FLD = true // logging ui
+
+    const val TRK = true // track
+    const val TUTORIALS=false
   }
 }
 

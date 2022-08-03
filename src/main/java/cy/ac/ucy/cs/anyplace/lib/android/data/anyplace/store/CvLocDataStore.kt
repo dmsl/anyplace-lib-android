@@ -1,15 +1,11 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -27,6 +23,7 @@ import javax.inject.Singleton
 @Singleton
 class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Context)
   : PreferenceDataStore() {
+  val TG = "ds-cv"
 
   private val C by lazy { CONST(ctx) }
   private val Context.dataStoreCvMap by preferencesDataStore(name = C.PREF_CVMAP)
@@ -44,6 +41,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_FOLLOW_SELECTED_USER,
           C.PREF_SELECTED_SPACE,
           C.PREF_CV_AUTO_UPDATE_FINGERPRINTS,
+          C.PREF_CV_LOC_ALGO_CHOICE,
+          C.PREF_CV_LOC_ALGO_EXECUTION,
   )
 
   private class Keys(c: CONST) {
@@ -58,20 +57,25 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     val followSelectedUser = booleanPreferencesKey(c.PREF_CV_FOLLOW_SELECTED_USER)
     val selectedSpace = stringPreferencesKey(c.PREF_SELECTED_SPACE)
     val autoUpdateCvFingerprints= booleanPreferencesKey(c.PREF_CV_AUTO_UPDATE_FINGERPRINTS)
+
+    val cvAlgoChoice= stringPreferencesKey(c.PREF_CV_LOC_ALGO_CHOICE)
+    val cvAlgoExec= stringPreferencesKey(c.PREF_CV_LOC_ALGO_EXECUTION)
   }
   private val KEY = Keys(C)
 
   private fun validKey(key: String?): Boolean {
+    val MT = ::validKey.name
     val found = validKeys.contains(key)
-    if(!found) LOG.W(TAG, "Unknown key: $key")
+    if(!found) LOG.W(TG, "$MT unknown: $key")
     return found
   }
 
   override fun putBoolean(key: String?, value: Boolean) {
+    val MT = ::putBoolean.name
     if (!validKey(key)) return
     runBlocking {
       datastore.edit {
-        LOG.D2(TAG, "putBoolean: $key:$value" )
+        LOG.W(TG, "$MT: $key:$value" )
         when (key) {
           C.PREF_CV_DEV_MODE -> it[KEY.devMode] = value
           C.PREF_CV_AUTOSET_INITIAL_LOCATION-> it[KEY.autoSetInitialLocation] = value
@@ -82,13 +86,13 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
     }
   }
 
-
   /**
    * WORKAROUND: SharedPreferences/XML use by default string.
    * Here it is convert ot an [Int] and stored in the [DataStore].
    */
   override fun putString(key: String?, value: String?) {
-    LOG.D3(TAG, "putString: $key = $value")
+    val MT = ::putString.name
+    LOG.W(TG, "$MT: $key = $value")
     if (!validKey(key)) return
     runBlocking {
       datastore.edit {
@@ -106,15 +110,20 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_SMAS_LOCATION_REFRESH_MS-> it[KEY.locationRefreshMs] = value ?: C.DEFAULT_PREF_SMAS_LOCATION_REFRESH_MS
 
           C.PREF_SELECTED_SPACE-> it[KEY.selectedSpace] = value ?: ""
+
+          C.PREF_CV_LOC_ALGO_CHOICE-> it[KEY.cvAlgoChoice] = value ?: C.DEFAULT_PREF_CV_LOC_ALGO_CHOICE
+
+          C.PREF_CV_LOC_ALGO_EXECUTION-> it[KEY.cvAlgoExec] = value ?: C.DEFAULT_PREF_CV_LOC_ALGO_EXECUTION
         }
       }
     }
   }
 
   override fun getBoolean(key: String?, defValue: Boolean): Boolean {
+    val MT = ::getBoolean.name
     if (!validKey(key)) return false
     return runBlocking(Dispatchers.IO) {
-      LOG.D(TAG, "CvMapDS: getBoolean: calls read")
+      LOG.W(TG, "$MT: read")
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_DEV_MODE -> prefs.devMode
@@ -127,9 +136,10 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
   }
 
   override fun getString(key: String?, defValue: String?): String? {
+    val MT = ::getString.name
     if (!validKey(key)) return null
     return runBlocking(Dispatchers.IO) {
-      LOG.D(TAG, "CvMapDS: getString: calls read")
+      LOG.D(TG, "$MT: calls read")
       val prefs = read.first()
       return@runBlocking when (key) {
         C.PREF_CV_START_ACT-> prefs.startActivity
@@ -139,6 +149,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         C.PREV_CVMAP_ALPHA-> prefs.mapAlpha
         C.PREF_SMAS_LOCATION_REFRESH_MS-> prefs.locationRefreshMs
         C.PREF_SELECTED_SPACE -> prefs.selectedSpace
+
+        C.PREF_CV_LOC_ALGO_CHOICE-> prefs.cvAlgoChoice
+        C.PREF_CV_LOC_ALGO_EXECUTION-> prefs.cvAlgoExec
         else -> null
       }
     }
@@ -163,6 +176,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val selecteSpace = preferences[KEY.selectedSpace] ?: ""
             val autoUpdateCvFingerprints = preferences[KEY.autoUpdateCvFingerprints] ?: C.DEFAULT_PREF_CV_AUTO_UPDATE_FINGERPRINTS
 
+            val cvAlgoChoice = preferences[KEY.cvAlgoChoice] ?: C.DEFAULT_PREF_CV_LOC_ALGO_CHOICE
+            val cvAlgoExec= preferences[KEY.cvAlgoExec] ?: C.DEFAULT_PREF_CV_LOC_ALGO_EXECUTION
+
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
                     windowLoggingMs,
@@ -173,7 +189,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     autoSetInitialLocation,
                     followSelectedUser,
                     selecteSpace,
-                    autoUpdateCvFingerprints
+                    autoUpdateCvFingerprints,
+                    cvAlgoChoice,
+                    cvAlgoExec
             )
             prefs
           }
@@ -198,4 +216,6 @@ data class CvMapPrefs(
         val followSelectedUser: Boolean,
         val selectedSpace: String,
         val autoUpdateCvFingerprints: Boolean,
+        val cvAlgoChoice: String,
+        val cvAlgoExec: String,
 )

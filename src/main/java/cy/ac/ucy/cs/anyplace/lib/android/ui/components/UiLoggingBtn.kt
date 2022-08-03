@@ -233,11 +233,6 @@ class UiLoggingBtn(
    * or discarding the locally stored scanned objects.
    */
   fun showUploadBtn() {
-    if (!DBG.UPL) return
-
-    // val cause = "Please upload or discard your scans\n" +
-    //         "before you can Demo-Localize in Logger"
-    // ui.localization.disable(cause, true, listOf<View>(uiLog.btnUpload, uiLog.btnUploadDiscard))
     utlUi.changeMaterialIcon(uiLog.btnUpload, R.drawable.ic_upload)
     utlUi.text(uiLog.btnUpload, ctx.getString(R.string.upload_scans))
     utlUi.enable(uiLog.groupUpload)

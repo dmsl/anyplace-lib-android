@@ -458,12 +458,12 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   fun updateModelName() {
     val MT = ::updateModelName.name
-    LOG.D2(TG, MT)
+    LOG.D3(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
       while (!VM.initedDetector) delay(100)
 
       val modelInfo = "$actName | ${VM.model.modelName}"
-      LOG.W(TG, "$MT: $modelInfo")
+      LOG.V3(TG, "$MT: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
     }
   }

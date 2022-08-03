@@ -6,6 +6,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
+import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -77,6 +78,8 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
    * In those cases, it disables it so the next time it won't run
    */
   private suspend fun tutInternal(key: Preferences.Key<Boolean>) : Boolean {
+    if (!DBG.TUTORIALS) return false  // centrally controlling tutorials
+
     val result = readBoolean(key, true).first()
     if (result) { tutorialWatched(key) } // unset tutorial
     return result

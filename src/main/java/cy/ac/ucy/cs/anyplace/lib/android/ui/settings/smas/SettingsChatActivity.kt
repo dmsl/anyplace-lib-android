@@ -18,7 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.setTextColor
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
-import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
+import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.ChatCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
@@ -37,7 +37,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
   @Inject lateinit var repo: RepoSmas
   @Inject lateinit var RFH: RetrofitHolderSmas
 
-  private val cacheChat by lazy { SmasCache(applicationContext) }
+  private val cacheChat by lazy { ChatCache(applicationContext) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -55,12 +55,12 @@ class SettingsChatActivity: BaseSettingsActivity() {
   }
 
   class SettingsChatFragment(
-          private val VM: SmasMainViewModel,
-          private val VMchat: SmasChatViewModel,
-          private val RFH: RetrofitHolderSmas,
-          private val dsChat: SmasDataStore,
-          private val cacheChat: SmasCache,
-          private val repo: RepoSmas) : PreferenceFragmentCompat() {
+    private val VM: SmasMainViewModel,
+    private val VMchat: SmasChatViewModel,
+    private val RFH: RetrofitHolderSmas,
+    private val dsChat: SmasDataStore,
+    private val cacheChat: ChatCache,
+    private val repo: RepoSmas) : PreferenceFragmentCompat() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       preferenceManager.preferenceDataStore = dsChat

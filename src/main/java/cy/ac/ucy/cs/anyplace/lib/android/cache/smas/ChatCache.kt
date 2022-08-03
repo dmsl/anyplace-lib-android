@@ -14,7 +14,7 @@ import java.io.FileOutputStream
 /**
  * File Cache for SMAS (extending anyplace-lib [Cache])
  */
-class SmasCache(ctx: Context): Cache(ctx) {
+class ChatCache(ctx: Context): Cache(ctx) {
   companion object {
     private val TG = "cache-smass"
   }

@@ -11,29 +11,34 @@
   </string-array>
 
   <string-array name="cv_localization_entries">
-    <item>Surface Local</item>
-    <item>Surface Global</item>
+    <item>Auto</item>
+    <item>Surface Local  (4)</item>
+    <item>Surface Global (3)</item>
   </string-array>
 
   <string-array name="cv_localization_values">
-    <item>3</item>
-    <item>4</item>
+    <item>@string/cv_algo_choice_auto</item>
+    <item>@string/cv_algo_choice_local</item>
+    <item>@string/cv_algo_choice_global</item>
   </string-array>
 
   <string-array name="cv_loc_exec_entries">
     <item>Auto (based on connectivity)</item>
-    <item>Always Locally (Offline)</item>
-    <item>Always Remotely (Needs internet)</item>
+    <item>Locally (Offline)</item>
+    <item>Remotely (Needs internet)</item>
   </string-array>
 
   <string-array name="cv_loc_exec_values">
-    <item>@string/cv_loc_exec_auto</item>
-    <item>@string/cv_loc_exec_local</item>
-    <item>@string/cv_loc_exec_remote</item>
+    <item>@string/cv_algo_exec_auto</item>
+    <item>@string/cv_algo_exec_local</item>
+    <item>@string/cv_algo_exec_remote</item>
   </string-array>
 
+  <string name="cv_algo_choice_auto">0</string>
+  <string name="cv_algo_choice_local">4</string>
+  <string name="cv_algo_choice_global">3</string>
 
-  <string name="cv_loc_exec_auto">cv.loc.auto</string>
-  <string name="cv_loc_exec_local">cv.loc.local</string>
-  <string name="cv_loc_exec_remote">cv.loc.remote</string>
+  <string name="cv_algo_exec_auto">cv.loc.auto</string>
+  <string name="cv_algo_exec_local">cv.loc.local</string>
+  <string name="cv_algo_exec_remote">cv.loc.remote</string>
 </resources>

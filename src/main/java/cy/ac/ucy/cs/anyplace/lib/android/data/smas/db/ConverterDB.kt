@@ -50,11 +50,11 @@ class ConverterDB {
       return ChatMsgsResp(null, "msgs read locally", null, spaces)
     }
 
-    fun cvModelClassToEntity(cvc: CvModelClass): CvModelClassEntity {
+    fun cvModelClassToEntity(cvc: CvModelClass): OBJECT {
       // skip saving base64 on SQLite.
       // Those will be stored in [SmasCache] (file cache)
       // val content = if (msg.mtype == TP_SEND_IMG) " " else msg.msg
-      return CvModelClassEntity(
+      return OBJECT(
               cvc.oid,
               cvc.cid,
               cvc.modeldescr,
@@ -62,7 +62,7 @@ class ConverterDB {
               cvc.name)
     }
 
-    fun entityToCvModelClass(e: CvModelClassEntity): CvModelClass {
+    fun entityToCvModelClass(e: OBJECT): CvModelClass {
       return CvModelClass(
               e.oid,
               e.cid,
@@ -71,8 +71,8 @@ class ConverterDB {
               e.name)
     }
 
-    fun cvMapRowToEntity(c: CvMapRow): CvMapRowEntity {
-      return CvMapRowEntity(
+    fun cvMapRowToEntity(c: CvFingerprintRow): FINGERPRINT {
+      return FINGERPRINT(
               c.foid, c.flid, c.uid,
               c.time,  c.timestr,
               c.buid,  c.x, c.y, c.level,
@@ -83,8 +83,8 @@ class ConverterDB {
       )
     }
 
-    fun entityToCvMapRow(c: CvMapRowEntity): CvMapRow {
-      return CvMapRow(
+    fun entityToCvMapRow(c: FINGERPRINT): CvFingerprintRow {
+      return CvFingerprintRow(
               c.foid, c.flid, c.uid,
               c.time, c.timestr,
               c.buid, c.x, c.y, c.deck,
@@ -110,19 +110,18 @@ class ConverterDB {
     /**
      * NOT USED
      */
-    fun entityToCvModelClassesResp(tuples: List<CvModelClassEntity>): CvModelsResp {
+    fun entityToCvModelClassesResp(tuples: List<OBJECT>): CvModelsResp {
       return CvModelsResp(entityToCvModelClasses(tuples), NetworkResult.DB_LOADED , "db", null)
     }
 
     /**
      * Converts chat tuples to a list of [CvModelClass]es
      */
-    fun entityToCvModelClasses(tuples: List<CvModelClassEntity>): List<CvModelClass>{
+    fun entityToCvModelClasses(tuples: List<OBJECT>): List<CvModelClass>{
       val list = mutableListOf<CvModelClass>()
       tuples.forEach {  list .add(entityToCvModelClass(it))  }
       return list
     }
-
   }
 
   val gson = Gson() // Kotlin Serialization?

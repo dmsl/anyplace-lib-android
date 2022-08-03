@@ -138,9 +138,12 @@ class SpacesAdapter(private val app: AnyplaceApp,
       downloadConnectionsAndPois()
     }
 
+    /**
+     * Download Cv Model files (classes/obj.names and weights/tflite)
+     */
     private suspend fun downloadCvModelFilesAndCvClasses() {
       val MT = ::downloadCvModelFilesAndCvClasses.name
-      LOG.E(TG, MT)
+      LOG.D(TG, MT)
       if  (act.VMcv.nwCvModelFilesGet.mustDownloadCvModels()) {
         notify.INFO(scope, "Downloading CvModels..")
         act.VMcv.nwCvModelFilesGet.downloadMissingModels() // tflite/weights, and labels
@@ -152,7 +155,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
       val MT = ::downloadCvFingerprints.name
       LOG.E(TG, "$MT: $buid")
       notify.INFO(scope, "Downloading new fingerprints..")
-      act.VMcv.nwCvFingerprintsGet.blockingCall(buid)
+      act.VMcv.nwCvFingerprintsGet.blockingCall(buid, false)
     }
 
     /**

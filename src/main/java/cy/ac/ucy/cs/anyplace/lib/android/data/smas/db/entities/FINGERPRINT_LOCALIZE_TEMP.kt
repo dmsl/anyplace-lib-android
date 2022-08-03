@@ -4,7 +4,7 @@ import androidx.room.Entity
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
 /**
- * Based on [ChatMsg]
+ * Matching SMAS Backend SQLite Database
  */
 @Entity(
         tableName = SMAS.DB_LOCALIZE_TEMP,

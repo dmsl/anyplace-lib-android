@@ -4,7 +4,6 @@
   <string name="pref_cat_space">pref_cat_space</string>
   <string name="pref_cv_model">pref_cv_model</string>
   <string name="pref_cat_floor">pref_cat_floor</string>
-  <string name="pref_log_clear_cache_cv_fingerprints">pref_log_clear_cache_cv_fingerprints</string>
   <string name="pref_log_clear_cache_cv_models">pref_log_clear_cache_cv_models</string>
   <string name="pref_log_sync_local_data">pref_log_sync_local_data</string>
   <string name="pref_loc_cv_map">pref_loc_cv_map</string>
@@ -13,6 +12,7 @@
 
   <string name="pref_ap_logout">pref_ap_logout</string>
 
+  <string name="prefcat_cv_logging">prefcat_cv_logging</string>
   <!-- PREFERENCES: COMMON KEYS -->
   <!--  NOTE: these are just common keys. they are stored in different apps though. -->
   <string name="pref_cv_dev_mode">pref_cv_dev_mode</string>

@@ -38,21 +38,21 @@ class CvFingerprintsGet(
   private val err by lazy { SmasErrors(app, scope) }
 
   /** Network Responses from API calls */
-  private val resp: MutableStateFlow<NetworkResult<CvMapResp>> = MutableStateFlow(NetworkResult.Unset())
+  private val resp: MutableStateFlow<NetworkResult<CvFingerprintResp>> = MutableStateFlow(NetworkResult.Unset())
 
   private val C by lazy { SMAS(app.applicationContext) }
 
   /**
    * Get fingerprints for ALL the models (a bit hardcoded..
    */
-  suspend fun blockingCall(buid: String) {
+  suspend fun blockingCall(buid: String, showNotif: Boolean=true) {
     val MT = ::blockingCall.name
     LOG.E(TG, MT)
     val smasUser = app.dsUserSmas.read.first()
     val from = getTimestamp()
     DetectionModel.list.forEach { model->
       val modelid = model.idSmas
-      val request = CvMapReq(smasUser, modelid, buid, from)
+      val request = CvFingerprintReq(smasUser, modelid, buid, from)
 
       LOG.E(TG, "$MT: downloading: ${model.modelName}: $buid $from")
       val response = repo.remote.cvMapGet(request)
@@ -66,8 +66,8 @@ class CvFingerprintsGet(
         } else {
           if (cvMap.isNotEmpty()) {
             val msg = "Fetched ${cvMap.size} new fingerprints"
-            app.notify.shortDEV(scope, msg)
-            LOG.W(TG, "$MT: $msg")
+            if (showNotif) app.notify.shortDEV(scope, msg)
+            LOG.I(TG, "$MT: $msg")
           }
           persistToDB(cvMap)
         }
@@ -84,7 +84,7 @@ class CvFingerprintsGet(
     } else 0
   }
 
-  private fun getRequest(smasUser: SmasUser): CvMapReq {
+  private fun getRequest(smasUser: SmasUser): CvFingerprintReq {
     val MT = ::getRequest.name
     val from = getTimestamp()
     val modelid = VM.model.idSmas
@@ -92,7 +92,7 @@ class CvFingerprintsGet(
 
     LOG.W(TG, "$MT: ${VM.model.modelName}: $from $buid")
 
-    return CvMapReq(smasUser, modelid, buid, from)
+    return CvFingerprintReq(smasUser, modelid, buid, from)
   }
 
   fun dropFingerprints() {
@@ -124,10 +124,9 @@ class CvFingerprintsGet(
           if (cvMap.isNotEmpty()) {
             val msg = "Fetched ${cvMap.size} new fingerprints"
             if (showNotif) app.notify.shortDEV(scope, msg)
-            LOG.E(TG, "$MT: $msg")
+            LOG.I(TG, "$MT: $msg")
           } else {
-            var msg = "No fingerprints fetched"
-            LOG.W(TG, msg)
+            LOG.W(TG, "No fingerprints fetched")
           }
           persistToDB(cvMap)
           return cvMap.size
@@ -142,7 +141,7 @@ class CvFingerprintsGet(
     return 0
   }
 
-  private fun handleResponse(resp: Response<CvMapResp>): NetworkResult<CvMapResp> {
+  private fun handleResponse(resp: Response<CvFingerprintResp>): NetworkResult<CvFingerprintResp> {
     val MT = ::handleResponse.name
     LOG.D2(TG, MT)
     if(resp.isSuccessful) {
@@ -195,7 +194,7 @@ class CvFingerprintsGet(
    * It does not store images (base64) to DB.
    * Those will be stored in [SmasCache] (file cache)
    */
-  private fun persistToDB(obj: List<CvMapRow>) {
+  private fun persistToDB(obj: List<CvFingerprintRow>) {
     val MT = ::persistToDB.name
     LOG.W(TG, "$MT: storing: ${obj.size} CvModel classes")
     scope.launch(Dispatchers.IO) {

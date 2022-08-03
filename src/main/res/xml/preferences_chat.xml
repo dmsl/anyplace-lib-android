@@ -2,9 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
   <PreferenceCategory app:title="@string/prefs_header_data">
-<!--    TODO: delete image copy as well.. -->
+    <!-- TODO: delete image copy as well.. -->
     <Preference
         app:key="@string/pref_smas_delete_local_msgs"
         app:title="@string/delete_local_msgs"

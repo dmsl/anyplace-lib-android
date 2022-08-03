@@ -21,6 +21,7 @@
   </PreferenceCategory>
 
   <PreferenceCategory
+      android:key="@string/prefcat_cv_logging"
       app:title="@string/prefs_header_logging"
       app:icon="@drawable/ic_map">
 
@@ -54,8 +55,8 @@
         />
 
     <ListPreference
-        app:key="@string/pref_cv_loc_algorithm"
-        app:defaultValue="3"
+        app:key="@string/pref_cv_loc_algo_choice"
+        app:defaultValue="0"
         app:entries="@array/cv_localization_entries"
         app:entryValues="@array/cv_localization_values"
         app:title="@string/title_cv_localization_algorithm"
@@ -63,7 +64,7 @@
 
     <ListPreference
         app:key="@string/pref_cv_loc_algo_execution"
-        app:defaultValue="@string/cv_loc_exec_auto"
+        app:defaultValue="@string/cv_algo_exec_auto"
         app:entries="@array/cv_loc_exec_entries"
         app:entryValues="@array/cv_loc_exec_values"
         app:title="@string/title_cv_loc_algo_execution"
@@ -91,21 +92,14 @@
     <SwitchPreferenceCompat
         app:key="@string/pref_cv_autoset_initial_location"
         android:defaultValue="true"
-        app:title="Restore last location on start"
-        app:summary="Only when location was set in the last 10 minutes"
+        app:title="Restore own recent location on start"
+        app:summary="Only when it was last set within 10 minutes"
         />
 
   </PreferenceCategory>
 
   <PreferenceCategory app:title="@string/prefs_header_data"
       app:icon="@drawable/ic_folder">
-
-    <Preference
-        android:title="Discard cached fingerprints"
-        android:key="@string/pref_log_clear_cache_cv_fingerprints"
-        android:summary="Those were not uploaded, and will be lost."
-        app:isPreferenceVisible="false"
-        />
 
     <Preference
         android:title="Update CV Model classes"

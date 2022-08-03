@@ -13,7 +13,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.SmasCache
+import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.ChatCache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ReplyToMessage
@@ -61,7 +61,7 @@ class SmasChatViewModel @Inject constructor(
   val nwMsgGet by lazy { MsgGetNW(app, this, RFH, repoSmas) }
   private val nwMsgSend by lazy { MsgSendNW(app, this, RFH, repoSmas) }
 
-  val chatCache by lazy { SmasCache(app.applicationContext) }
+  val chatCache by lazy { ChatCache(app.applicationContext) }
 
   // Preferences
   val prefsCvMap = dsCvMap.read

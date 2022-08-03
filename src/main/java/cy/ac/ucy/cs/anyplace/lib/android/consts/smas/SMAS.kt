@@ -6,10 +6,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 
 open class SMAS(ctx: Context) : CONST(ctx) {
 
-  //// ROOM
   companion object {
     const val DB_MSGS= "messages"
-    const val DB_CVMODELS= "FINGERPRINT_OBJECT"
+    const val DB_OBJECT= "OBJECT" // WAS FINGERPRINT_OBJECT.. CLR:PM
     const val DB_FINGERPRINT= "FINGERPRINT"
     const val DB_LOCALIZE_TEMP= "FINGERPRINT_LOCALIZE_TEMP"
     const val DB_OBJECT_FREQUENCY= "OBJECT_FREQUENCY"
@@ -17,7 +16,6 @@ open class SMAS(ctx: Context) : CONST(ctx) {
 
   val DB_SMAS_NAME = "smas_db"
 
-  // TODO:PM rename all to smas
   // PREFERENCES
   //// CHAT SERVER
   val PREF_SMAS_SERVER = ctx.getString(R.string.pref_smas_server)

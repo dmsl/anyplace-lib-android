@@ -266,7 +266,7 @@
   <string name="pref_cv_tracking_auto_disable">pref_cv_tracking_auto_disable</string>
   <string name="summary_tracking_auto_disable">Stops tracking when %1$s consecutive no detection scans occur</string>
   <string name="title_cv_localization_algorithm">Localization Algorithm</string>
-  <string name="pref_cv_loc_algorithm">pref_cv_loc_algorithm</string>
+  <string name="pref_cv_loc_algo_choice">pref_cv_loc_algo_choice</string>
   <string name="pref_cv_loc_algo_execution">pref_cv_loc_algo_execution</string>
   <string name="title_cv_loc_algo_execution">Algorithm Execution</string>
   <string name="pref_misc_tutLoggerLongPress">pref_misc_tutLogLongPress</string>

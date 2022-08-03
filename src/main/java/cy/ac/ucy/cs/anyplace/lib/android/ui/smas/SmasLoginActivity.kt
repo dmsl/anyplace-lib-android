@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,7 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
@@ -184,13 +186,16 @@ class SmasLoginActivity : BaseActivity() {
               user?.let {
                 app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
                 if (!DBG.SLR) {
-                  notify.INFO(lifecycleScope, "Downloading CvModels..\nPlease wait...")
                   VMcv.nwCvModelFilesGet.downloadMissingModels()
+                  lifecycleScope.launch(Dispatchers.Main) {
+                    binding.textViewError.text = "Downloading CvModels..."
+                    binding.textViewError.visibility = View.VISIBLE
+                    binding.textViewError.setTextColor(UtilColor(applicationContext).Black())
+                  }
                 }
                 openLoggedInActivity()
               }
             }
-
           }
           is NetworkResult.Error -> {
             binding.textViewError.text = response.message

@@ -16,7 +16,7 @@ import javax.inject.Inject
 /**
  * Anyplace Local DataStore (uses SQLite)
  */
-class ApLocalDS @Inject constructor(
+class ApLocalSRC @Inject constructor(
   private val DAO: AnyplaceDAO) {
   val TG = "ds-local-ap"
 

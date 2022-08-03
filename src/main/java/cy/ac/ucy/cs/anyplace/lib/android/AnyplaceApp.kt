@@ -238,7 +238,7 @@ abstract class AnyplaceApp : Application() {
     val prettySpace = wSpace.prettyTypeCapitalize
     val prettyFloors= wSpace.prettyFloors
 
-    LOG.E(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
+    LOG.I(TG, "$MT: loaded: $prettySpace: ${space!!.name} " +
             "(has ${levels!!.levels.size} $prettyFloors)")
 
     initedSpace=true

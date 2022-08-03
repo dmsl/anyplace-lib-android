@@ -1,6 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.smas.source
 
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.SmasDAO
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.ChatMsgEntity
@@ -10,15 +11,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvMa
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvModelClassToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToCvModelClasses
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.localizationFingerprintTempToEntity
-import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.smasQueries
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
-import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TrackingMode
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvObjectReq
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvMapRow
-import cy.ac.ucy.cs.anyplace.lib.smas.models.CvModelClass
+import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -26,7 +23,7 @@ import javax.inject.Inject
 /**
  * Smas Local DataStore (uses SQLite)
  */
-class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
+class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
   private val TG = "ds-local-smas"
 
   fun readMsgs(): Flow<List<ChatMsgEntity>> {
@@ -78,7 +75,7 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
 
   fun getCvModelIds() : List<Int> = DAO.getModelIds()
 
-  suspend fun insertCvFingerprintRow(o: CvMapRow) {
+  suspend fun insertCvFingerprintRow(o: CvFingerprintRow) {
     val MT = ::insertCvFingerprintRow.name
     LOG.D2("$MT: DB: insert: CvModelClass: ${o.flid}: ${o.buid}")
     DAO.insertCvMapRow(cvMapRowToEntity(o))
@@ -100,29 +97,56 @@ class SmasLocalDS @Inject constructor(private val DAO: SmasDAO) {
     return DAO.lastFingerprintTimestamp()
   }
 
-  suspend fun localize(VM: CvViewModel, modelid: Int, buid: String, detectionsReq: List<CvObjectReq>, chatUserAP: UserAP) {
+  suspend fun localize(app: AnyplaceApp, VM: CvViewModel, modelid: Int, buid: String,
+                       detectionsReq: List<CvObjectReq>, user: SmasUser) {
     val MT = ::localize.name
+
     // Preparation: fill tmp array with scans
     DAO.dropLocalizeFpTemp()
     detectionsReq.forEach {
-      DAO.insertLocalizeTemp(localizationFingerprintTempToEntity(chatUserAP.id, it))
+      DAO.insertLocalizeTemp(localizationFingerprintTempToEntity(user.uid, it))
     }
 
-    val strInfo = "Recognitions: ${detectionsReq.size}. Algo: Offline"
-    // detections.forEach { strInfo+= "${it.oid} " }
+    val uid = user.uid
 
-    val res3 = DAO.localizeAlgo3(DAO.getQueryAlgo3(modelid, buid))
+    val prevCoord  = app.locationSmas.value.coord
+    val requestedAlgo = app.dsCvMap.read.first().cvAlgoChoice
+    var algoChosen = requestedAlgo
+    var requestedAlgoStr = requestedAlgo
+
+    if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO) requestedAlgoStr="auto"
+    /*
+     * Whether it's AUTO or LOCAL, if there is no prev record, then we have to do global
+     * Basically there is no AUTO in offline mode, as LOCAL requires a prev position
+     */
+    if (algoChosen == VM.C.CV_ALGO_CHOICE_AUTO || algoChosen == VM.C.CV_ALGO_EXEC_LOCAL) {
+      algoChosen = if (prevCoord != null) { // has prev coordinates: run local
+        VM.C.CV_ALGO_CHOICE_LOCAL
+      } else { // otherwise: global
+        VM.C.CV_ALGO_CHOICE_GLOBAL
+      }
+    }
+
+    val result = if (algoChosen == VM.C.CV_ALGO_CHOICE_LOCAL) { // run local
+      LOG.E(TG, "RUNNING ALGO 3")
+      DAO.runRawAlgo3(smasQueries.algo3(uid, modelid, buid))
+    } else { // run global
+      LOG.E(TG, "SHOULD RUN ALGO 4")
+      DAO.runRawAlgo3(smasQueries.algo3(uid, modelid, buid))
+    }
+
     var msg =""
-    if (res3.isNotEmpty()) {
-      val loc3 = res3[0]
-      LOG.W(TG, "$MT: ALGO3: $loc3")
-      VM.nwCvLocalize.postOfflineResult(convertToGeneric(loc3))
+    if (result.isNotEmpty()) {
+      val location = result[0]
+      LOG.W(TG, "$MT: ALGO: $algoChosen $location")
+      VM.nwCvLocalize.postOfflineResult(convertToGeneric(location))
     } else {
       msg+="Offline algorithm returned no results"
     }
 
-    val tracking = VM.trackingMode.first() == TrackingMode.on
-    if ((VM.app.hasDevMode() && !tracking) || msg.isNotEmpty()) {
+    if ((VM.app.hasDevMode() && !VM.isTracking()) || msg.isNotEmpty()) {
+      var strInfo = "Recognitions: ${detectionsReq.size}. \nAlgo: Offline: "
+      strInfo+= "(requested ${requestedAlgoStr})"
       val devMsg = if (msg.isNotEmpty()) "$msg\n$strInfo" else strInfo
       VM.notify.longDEV(VM.viewModelScope, devMsg)
     } else if (msg.isNotEmpty()) {

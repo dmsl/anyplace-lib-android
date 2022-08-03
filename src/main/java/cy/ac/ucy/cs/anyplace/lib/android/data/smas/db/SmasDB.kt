@@ -8,8 +8,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
 @Database(
         entities = [
           ChatMsgEntity::class,
-          CvModelClassEntity::class,
-          CvMapRowEntity::class,
+          OBJECT::class,
+          FINGERPRINT::class,
           FINGERPRINT_LOCALIZE_TEMP::class,
         ],
         views =[

@@ -69,8 +69,10 @@ open class CONST(ctx: Context) {
   val PREF_CV_FOLLOW_SELECTED_USER = ctx.getString(R.string.pref_cv_follow_selected_user)
   val PREF_CV_AUTO_UPDATE_FINGERPRINTS = ctx.getString(R.string.pref_cv_fingerprints_auto_update)
 
+  val PREF_CV_LOC_ALGO_CHOICE = ctx.getString(R.string.pref_cv_loc_algo_choice)
+  val PREF_CV_LOC_ALGO_EXECUTION= ctx.getString(R.string.pref_cv_loc_algo_execution)
+
   //// Settings for Cv Logger
-  val PREF_CVLOG = ctx.getString(R.string.pref_cvlog)
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
 
   val PREF_SELECTED_SPACE=ctx.getString(R.string.pref_selected_space)
@@ -86,6 +88,16 @@ open class CONST(ctx: Context) {
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
   //// LOCALIZATION
   val DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS = "3000"
+
+  val CV_ALGO_CHOICE_AUTO =ctx.getString(R.string.cv_algo_choice_auto)
+  val CV_ALGO_CHOICE_LOCAL=ctx.getString(R.string.cv_algo_choice_local)
+  val CV_ALGO_CHOICE_GLOBAL=ctx.getString(R.string.cv_algo_choice_global)
+  val DEFAULT_PREF_CV_LOC_ALGO_CHOICE= CV_ALGO_CHOICE_AUTO
+
+  val CV_ALGO_EXEC_AUTO =ctx.getString(R.string.cv_algo_exec_auto)
+  val CV_ALGO_EXEC_LOCAL=ctx.getString(R.string.cv_algo_exec_local)
+  val CV_ALGO_EXEC_REMOTE=ctx.getString(R.string.cv_algo_exec_remote)
+  val DEFAULT_PREF_CV_LOC_ALGO_EXECUTION= CV_ALGO_EXEC_AUTO
 
   //// Settings for Cv Navigator/Localization apps
   val PREF_CVMAP = ctx.getString(R.string.pref_cvmap)

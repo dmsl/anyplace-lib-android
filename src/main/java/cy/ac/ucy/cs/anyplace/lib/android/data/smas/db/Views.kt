@@ -10,11 +10,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 @DatabaseView("SELECT O.*, COUNT(*) AS object_count\n" +
         "FROM (\n" +
         "SELECT F.*, O.*\n" +
-        "FROM ${SMAS.DB_FINGERPRINT} F, ${SMAS.DB_CVMODELS} O\n" +
+        "FROM ${SMAS.DB_FINGERPRINT} F, ${SMAS.DB_OBJECT} O\n" +
         "WHERE F.oid = O.oid\n" +
         "GROUP BY F.oid, F.x, F.y, F.deck\n" +
         "-- ORDER BY  O.oid ASC;\n" +
-        ") AS A, ${SMAS.DB_CVMODELS} O\n" +
+        ") AS A, ${SMAS.DB_OBJECT} O\n" +
         "WHERE A.oid = O.oid\n" +
         "GROUP BY A.oid;")
 data class OBJECT_COUNT(

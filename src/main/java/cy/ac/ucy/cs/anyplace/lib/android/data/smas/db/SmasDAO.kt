@@ -24,22 +24,22 @@ interface SmasDAO {
   fun countMsgs(): Int?
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun insertCvModelClass(tuple: CvModelClassEntity)
+  suspend fun insertCvModelClass(tuple: OBJECT)
 
-  @Query("DELETE FROM ${SMAS.DB_CVMODELS}")
+  @Query("DELETE FROM ${SMAS.DB_OBJECT}")
   fun dropCvModelClasses()
 
-  @Query("SELECT * FROM ${SMAS.DB_CVMODELS} WHERE modelid == :modelId")
-  fun readCvModelClasses(modelId: Int): Flow<List<CvModelClassEntity>>
+  @Query("SELECT * FROM ${SMAS.DB_OBJECT} WHERE modelid == :modelId")
+  fun readCvModelClasses(modelId: Int): Flow<List<OBJECT>>
 
-  @Query("SELECT COUNT(oid) FROM ${SMAS.DB_CVMODELS}")
+  @Query("SELECT COUNT(oid) FROM ${SMAS.DB_OBJECT}")
   fun countCvModelClasses(): Int?
 
-  @Query("SELECT DISTINCT modelid FROM ${SMAS.DB_CVMODELS}")
+  @Query("SELECT DISTINCT modelid FROM ${SMAS.DB_OBJECT}")
   fun getModelIds(): List<Int>
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun insertCvMapRow(tuple: CvMapRowEntity)
+  suspend fun insertCvMapRow(tuple: FINGERPRINT)
 
   // TODO:PMX
   @Query("SELECT COUNT(foid) FROM ${SMAS.DB_FINGERPRINT}")
@@ -58,6 +58,10 @@ interface SmasDAO {
   @Query("DELETE FROM ${SMAS.DB_LOCALIZE_TEMP}")
   fun dropLocalizeFpTemp()
 
+  /**
+   * LOCALIZATION ALGORITHM 1
+   * (just for testing purposes)
+   */
   @Query(
           "    SELECT FL.flid, FL.time, FL.buid, FL.X, FL.Y, FL.deck, FL.modelid\n" +
                   "    FROM ${SMAS.DB_FINGERPRINT} FL, ${SMAS.DB_FINGERPRINT} FO\n" +
@@ -77,27 +81,8 @@ interface SmasDAO {
   )
   fun localizeAlgo1(modelid: Int, buid: String, uid: String): Flow<List<OfflineLocalizationAlgo1>>
 
-  fun getQueryAlgo3(modelid: Int, buid: String) : SimpleSQLiteQuery {
-    return SimpleSQLiteQuery(
-            "    SELECT F.flid, F.X, F.Y, F.deck, (SELECT IFNULL(SUM(weight)/COUNT(*),0) FROM\n" +
-                    "        ( -- simulate except all operator with rowid\n" +
-                    "        SELECT ROW_NUMBER() OVER (PARTITION BY FLT.oid) AS RowNum, FLT.oid, OFR.weight as weight\n" +
-                    "          FROM FINGERPRINT_LOCALIZE_TEMP FLT, OBJECT_FREQUENCY OFR WHERE  FLT.oid =  OFR.oid\n" +
-                    "        EXCEPT\n" +
-                    "        SELECT ROW_NUMBER() OVER (PARTITION BY FO.oid) AS RowNum, FO.oid, OFR.weight  as weight\n" +
-                    "          FROM FINGERPRINT FO,  OBJECT_FREQUENCY OFR WHERE   FO.oid =  OFR.oid and FO.flid=F.flid\n" +
-                    "        )\n" +
-                    "    ) AS dissimilarity\n" +
-                    "    FROM FINGERPRINT F\n" +
-                    "    WHERE F.modelid=? and F.buid=? \n" +
-                    "    GROUP BY F.X, F.Y, F.deck -- keep only x,y,deck\n" +
-                    "    ORDER BY dissimilarity, time ASC\n" +
-                    "    LIMIT 1; -- sort by newest match to oldest MATCH",
-            arrayOf<Any>(modelid, buid))
-  }
-
   @RawQuery
-  fun localizeAlgo3(query: SupportSQLiteQuery): List<OfflineLocalizationAlgo3>
+  fun runRawAlgo3(query: SupportSQLiteQuery): List<OfflineLocalizationAlgo3>
 }
 
 

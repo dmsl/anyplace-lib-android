@@ -14,7 +14,7 @@ import javax.inject.Inject
 /**
  * SMAS Remote DataSource (uses SMAS API)
  */
-class SmasRemoteDS @Inject constructor(
+class SmasRemoteSRC @Inject constructor(
         private val RH: RetrofitHolderSmas) {
 
   // MISC
@@ -51,5 +51,5 @@ class SmasRemoteDS @Inject constructor(
   suspend fun cvLocalization(r: CvLocalizeReq) : Response<CvLocalizeResp>
           = RH.api.cvLocalization(RH.path, r)
 
-  suspend fun cvMapGet(r: CvMapReq) : Response<CvMapResp> = RH.api.cvFingerprintGet(RH.path, r)
+  suspend fun cvMapGet(r: CvFingerprintReq) : Response<CvFingerprintResp> = RH.api.cvFingerprintGet(RH.path, r)
 }

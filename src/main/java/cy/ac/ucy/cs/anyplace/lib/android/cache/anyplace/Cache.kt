@@ -102,7 +102,7 @@ open class Cache(val ctx: Context) {
       LOG.V3(TG, "$method: $lastVal")
       LOG.V3(TG, "$method: $filename")
 
-      LOG.W(TG, "$method: CACHED: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
+      LOG.D2(TG, "$method: cached: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
 
       true
     } catch (e: Exception) {

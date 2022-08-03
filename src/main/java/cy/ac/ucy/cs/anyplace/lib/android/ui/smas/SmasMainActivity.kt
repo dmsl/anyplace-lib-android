@@ -153,7 +153,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
     VM.ui.map.obj.setOnMapLongClickListener {
-      LOG.W(TG, "$MT: long click")
+      LOG.W(TG, "$MT: long-clicked received")
       lifecycleScope.launch(Dispatchers.IO) {
         // tutNavLongPress
 
@@ -215,7 +215,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         VM.waitForDetector()
         app.waitForSpace()
         if (app.hasInternet()) {
-          LOG.E(TG, "$MT: checking..")
+          LOG.D2(TG, "$MT: checking..")
           VM.nwCvFingerprintsGet.safeCall(false)
         }
       }
@@ -227,7 +227,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
    */
   override fun onFirstLevelLoaded() {
     val MT = ::onFirstLevelLoaded.name
-    LOG.I(TG, "$MT: Floor: ${app.level.value?.number}")
+    LOG.D2(TG, "$MT: Floor: ${app.level.value?.number}")
 
     super.onFirstLevelLoaded()
 
