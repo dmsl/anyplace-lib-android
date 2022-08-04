@@ -9,18 +9,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.setBackButton
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.setTextColor
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.BaseSettingsActivity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.ChatCache
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
+import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg.TG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,11 +28,16 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsChatActivity: BaseSettingsActivity() {
+  companion object {
+   private val TG = "act-settings-chat"
+  }
+
   private lateinit var settingsFragment: SettingsChatFragment
   private lateinit var VM: SmasMainViewModel
   private lateinit var VMchat: SmasChatViewModel
   @Inject lateinit var repo: RepoSmas
   @Inject lateinit var RFH: RetrofitHolderSmas
+
 
   private val cacheChat by lazy { ChatCache(applicationContext) }
 
@@ -45,7 +47,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
     VM = ViewModelProvider(this)[SmasMainViewModel::class.java]
     VMchat = ViewModelProvider(this)[SmasChatViewModel::class.java]
 
-    settingsFragment = SettingsChatFragment(VM, VMchat, RFH, this.appSmas.dsSmas, cacheChat, repo)
+    settingsFragment = SettingsChatFragment(VM, VMchat, RFH, this.app.dsSmas, cacheChat, repo)
     setupFragment(settingsFragment, savedInstanceState)
 
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -61,6 +63,8 @@ class SettingsChatActivity: BaseSettingsActivity() {
     private val dsChat: SmasDataStore,
     private val cacheChat: ChatCache,
     private val repo: RepoSmas) : PreferenceFragmentCompat() {
+
+    private val TG = "${SettingsChatActivity.TG}-frgmnt"
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       preferenceManager.preferenceDataStore = dsChat
@@ -82,7 +86,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
       prefBtn?.setOnPreferenceClickListener {
         lifecycleScope.launch(Dispatchers.IO) {
           if (!cacheChat.hasImgCache() && !repo.local.hasMsgs()) {
-            appSmas.showToast(lifecycleScope, "No messages found")
+            app.showToast(lifecycleScope, "No messages found")
           } else {
             ConfirmActionDialog.SHOW(mgr, title, subtitle, cancellable = true, isImportant = true) { // on confirmed
               clearMessages()
@@ -99,13 +103,14 @@ class SettingsChatActivity: BaseSettingsActivity() {
      * TODO: there can be contention if we have background ongoing tasks for fetching messages.
      */
     private fun clearMessages() {
-      LOG.W(TAG, "$METHOD: from DB and SmasCache (images)")
+      val MT = ::clearMessages.name
+      LOG.W(TG, "$MT: from DB and SmasCache (images)")
       lifecycleScope.launch(Dispatchers.IO) {  // artificial delay
 
         // from now on don't pull any new messages (wait for any ongoing pulls)
         appSmas.stopMsgGetBLOCKING()
 
-        LOG.D2(TAG, "$METHOD: dropping db, clearing img cache, & LazyColumn msgList")
+        LOG.D2(TG, "$MT: dropping db, clearing img cache, & LazyColumn msgList")
         repo.local.dropMsgs()
         cacheChat.clearImgCache()
         appSmas.msgList.clear()
@@ -137,7 +142,7 @@ class SettingsChatActivity: BaseSettingsActivity() {
     private fun observeChatPrefs(versionPreferences: Preference?) {
       VM.prefsChat.asLiveData().observe(this) { prefs ->
         RFH.set(prefs)
-        LOG.D3(TAG, "Chat Base URL: ${RFH.retrofit.baseUrl()}")
+        LOG.D3(TG, "Chat Base URL: ${RFH.retrofit.baseUrl()}")
         VM.displayVersion(versionPreferences)
       }
     }

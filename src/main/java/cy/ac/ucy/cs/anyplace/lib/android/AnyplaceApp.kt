@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_LOGGER
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
@@ -27,6 +27,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSnackBarNotifier
 import cy.ac.ucy.cs.anyplace.lib.android.utils.cv.CvUtils
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.CvBackendLoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
@@ -40,6 +44,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class NavigationAppSelection {
+  Navigator,  // BUILDING THE APP AS ANYPLACE NAVIGATOR
+  SMAS,       // BUILDING THE APP AS SMAS (for LASHFIRE)
+}
 
 enum class MapBounds {
   outOfBounds,        // user is out of bounds (of gmap projection)
@@ -55,6 +63,26 @@ enum class MapBounds {
  */
 abstract class AnyplaceApp : Application() {
   private val TG = "app"
+
+  protected open val navigatorBaseApp = NavigationAppSelection.Navigator
+
+  fun isNavigator() = navigatorBaseApp == NavigationAppSelection.Navigator
+  fun isSMAS() = navigatorBaseApp == NavigationAppSelection.SMAS
+  fun getNavigatorActivityName() = if (isNavigator()) CONST.ACT_NAME_NAV else CONST.ACT_NAME_SMAS
+
+  fun getNavigatorClass() = if (isNavigator())
+      CvNavigatorActivity::class.java as Class<Activity>
+  else  SmasMainActivity::class.java as Class<Activity>
+
+  fun getSmasBackendLoginActivity() = if (isNavigator())
+    CvBackendLoginActivity::class.java else SmasLoginActivity::class.java
+
+  fun defaultNavigationAppCode(): String {
+    val MT = ::defaultNavigationAppCode.name
+    LOG.E(TG, "$MT: app: $navigatorBaseApp")
+
+    return if (isNavigator()) CONST.START_ACT_NAV else CONST.START_ACT_SMAS
+  }
 
   var spaceSelectionInProgress: Boolean = false
   @Inject lateinit var RH: RetrofitHolderAP
@@ -74,8 +102,6 @@ abstract class AnyplaceApp : Application() {
 
   /** SMAS Server preferences */
   @Inject lateinit var dsSmas: SmasDataStore
-
-
   @Inject lateinit var repoAP: RepoAP
   @Inject lateinit var repoSmas: RepoSmas
 
@@ -143,6 +169,8 @@ abstract class AnyplaceApp : Application() {
     LOG.D2()
     DaggerAppComponent.builder().application(this).build()
 
+    LOG.E(TG, "NAVIGATION APP: $navigatorBaseApp")
+
     cvUtils = CvUtils(this, repoSmas )
     observeServerPrefs()
   }
@@ -158,7 +186,7 @@ abstract class AnyplaceApp : Application() {
     val serverPref = dsAnyplace.read
     serverPref.asLiveData().observeForever { prefs ->
       RH.set(prefs)
-      LOG.D2(TAG, "URL: ANYPLACE: ${RH.baseURL}")
+      LOG.D2(TG, "URL: ANYPLACE: ${RH.baseURL}")
     }
   }
 

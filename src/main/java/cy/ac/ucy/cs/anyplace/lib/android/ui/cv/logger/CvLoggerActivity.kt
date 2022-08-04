@@ -6,13 +6,11 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_LOGGER
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
@@ -135,8 +133,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
 
 
   /**
-   * Observes [VM.objectDetectionsAll] changes and updates
-   * [binding.bottomUi.buttonCameraTimer] accordingly.
+   * Observes [VM.objectDetectionsAll] changes and updates [bottomUi.buttonCameraTimer] accordingly.
    */
   private fun uiReactObjectDetection() {
     VM.statObjWindowAll.observeForever { detections ->
@@ -166,10 +163,11 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   private fun collectLoggedInChatUser() {
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
-      appSmas.dsUserSmas.read.collect { user ->
+      app.dsUserSmas.read.collect { user ->
         if (user.sessionkey.isBlank()) {
           finish()
-          startActivity(Intent(this@CvLoggerActivity, SmasLoginActivity::class.java))
+
+          startActivity(Intent(this@CvLoggerActivity, app.getSmasBackendLoginActivity()))
         } else {
           // lifecycleScope.launch(Dispatchers.Main) {
           //   Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()

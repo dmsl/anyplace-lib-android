@@ -227,7 +227,7 @@ class SpaceListFragment : Fragment() {
     val MT = ::loadSpacesQuery.name
     lifecycleScope.launch(Dispatchers.IO) {
       VM.dbqSpaces.spacesQuery.collect { query ->
-        LOG.E(TG, "$MT: query: ${query.size}")
+        LOG.D2(TG, "$MT: query: ${query.size}")
         loadDatabaseResults(query)
       }
     }
@@ -246,7 +246,8 @@ class SpaceListFragment : Fragment() {
    */
   private fun loadDatabaseResults(spaces: List<SpaceEntity>) {
     val MT = ::loadDatabaseResults.name
-    LOG.W(TG, MT)
+    LOG.D2(TG, MT)
+
     hideShimmerEffect()
     spaces.let { mAdapter.setData(toSpaces(spaces)) }
     if (spaces.isNotEmpty()) {

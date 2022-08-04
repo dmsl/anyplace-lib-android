@@ -7,11 +7,10 @@ import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -110,12 +109,12 @@ open class CvViewModel @Inject constructor(
 
   val nwConnections by lazy { ConnectionsGetNW(app, this, RHap, repoAP) }
   val nwPOIs by lazy { POIsGetNW(app, this, RHap, repoAP) }
-  val nwCvModelsGet by lazy { CvModelsGetNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvModelFilesGet by lazy { CvModelFilesGetNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvFingerprintsGet by lazy { CvFingerprintsGet(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwCvLocalize by lazy { CvLocalizeNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwLevelPlan by lazy { LevelPlanNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwCvModelsGet by lazy { CvModelsGetNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwCvModelFilesGet by lazy { CvModelFilesGetNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwCvFingerprintsGet by lazy { CvFingerprintsGet(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwCvFingerprintSend by lazy { CvFingerprintSendNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwCvLocalize by lazy { CvLocalizeNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwLevelPlan by lazy { LevelPlanNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
 
   var downloadingPoisAndConnections = false
 
@@ -402,13 +401,13 @@ open class CvViewModel @Inject constructor(
             }
 
             // show notification on smas
-            if (attachedActivityId==ACT_NAME_SMAS) {
-              // var msg = "Please localize or set location manually."
-              // if (dsCvMap.read.first().autoSetInitialLocation) {
-              //   // msg="Previous location expired.\nPlease localize or set it manually"
-              // }
-              // notify.long(viewModelScope, msg)
-            }
+            // if (attachedActivityId==ACT_NAME_SMAS) {
+            //   var msg = "Please localize or set location manually."
+            //   if (dsCvMap.read.first().autoSetInitialLocation) {
+            //     // msg="Previous location expired.\nPlease localize or set it manually"
+            //   }
+            //   notify.long(viewModelScope, msg)
+            // }
           }
         }
       }

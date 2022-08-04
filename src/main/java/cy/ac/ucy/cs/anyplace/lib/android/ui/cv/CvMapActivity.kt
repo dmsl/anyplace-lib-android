@@ -12,7 +12,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
@@ -22,6 +21,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.CvBackendLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -146,10 +146,11 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
     // only logged in users are allowed on this activity:
     lifecycleScope.launch(Dispatchers.IO) {
-      appSmas.dsUserSmas.read.collectLatest { user ->
+      app.dsUserSmas.read.collectLatest { user ->
         if (user.sessionkey.isBlank()) {
           finish()
-          startActivity(Intent(this@CvMapActivity, SmasLoginActivity::class.java))
+
+          startActivity(Intent(this@CvMapActivity, app.getSmasBackendLoginActivity()))
         }
       }
     }

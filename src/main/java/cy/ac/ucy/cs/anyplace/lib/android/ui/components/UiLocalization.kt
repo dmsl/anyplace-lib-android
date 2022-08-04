@@ -10,6 +10,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -79,13 +80,14 @@ class UiLocalization(
 
   /**
    * Tracking mode.
-   * - only available in SMAS (not in logger)
+   * - only available in SMAS/Nav (not in logger)
    */
   private fun setupTrackingMode() {
     val MT = ::setupTrackingMode.name
     if (!DBG.TRK) return
 
     when (act) {
+      is CvNavigatorActivity,
       is SmasMainActivity -> {
         val tvSubtitle: TextView = act.findViewById(R.id.tvSubtitle)
         collectTrackingDetections(tvSubtitle)

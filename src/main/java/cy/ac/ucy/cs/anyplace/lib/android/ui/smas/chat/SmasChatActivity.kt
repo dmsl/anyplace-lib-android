@@ -12,10 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.*
 import androidx.lifecycle.ViewModelProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.components.Conversation
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.components.TopMessagesBar
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.*

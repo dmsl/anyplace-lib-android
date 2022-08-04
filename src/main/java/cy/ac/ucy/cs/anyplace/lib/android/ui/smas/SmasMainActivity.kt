@@ -19,7 +19,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -96,7 +95,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override val view_model_class: Class<DetectorViewModel> =
           SmasMainViewModel::class.java as Class<DetectorViewModel>
 
-
   // VIEW MODELS
   /** extends [CvViewModel] */
   private lateinit var VM: SmasMainViewModel
@@ -118,7 +116,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     LOG.D2(TG, "onCreate")
-    app.dsCvMap.setMainActivity(CONST.START_ACT_SMAS)
   }
 
   /**
@@ -130,7 +127,6 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.D2(TG, MT)
 
     setupButtonSettings()
-    // setupButtonSwitch()
     setupButtonChat()
     setupButtonFlir()
     setupButtonAlert()
@@ -443,7 +439,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     utlUi.clearAnimation(btnAlert)
     utlUi.text(btnAlert, "SEND ALERT")
     utlUi.setTextSizeSp(btnAlert, 42f)
-    utlUi.changeBackgroundMaterial(btnAlert, R.color.gray)
+    utlUi.changeBackgroundMaterial(btnAlert, R.color.lightRed)
   }
 
   private fun setupButtonSettings() {

@@ -1,10 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -29,7 +31,7 @@ import java.lang.Exception
  * Sends recognized objects to the SMAS backend and receives the user's location.
  */
 class CvLocalizeNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {

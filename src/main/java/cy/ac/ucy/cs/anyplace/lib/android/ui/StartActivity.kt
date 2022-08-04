@@ -17,8 +17,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.user.AnyplaceLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
@@ -64,12 +64,15 @@ class StartActivity : BaseActivity() {
       val mustLoginToAnyplace =  userAP.accessToken.isBlank()
       val actCode = prefsCv.startActivity
 
+      LOG.E(TG, "$MT: $actCode")
+
       val activityClass = when {
         DBG.SLR && mustSelectSpace && mustLoginToAnyplace -> AnyplaceLoginActivity::class.java
         DBG.SLR && mustSelectSpace -> SelectSpaceActivity::class.java
         actCode == CONST.START_ACT_LOGGER -> CvLoggerActivity::class.java
         actCode == CONST.START_ACT_SMAS -> SmasMainActivity::class.java
-        else -> SmasMainActivity::class.java
+        actCode == CONST.START_ACT_NAV -> CvNavigatorActivity::class.java
+        else -> act.app.getNavigatorClass()
       }
 
       LOG.W(TG, "$MT: open activity: ${activityClass.simpleName}")
@@ -81,7 +84,11 @@ class StartActivity : BaseActivity() {
 
   public override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_start)
+    if (app.isNavigator()) {
+      setContentView(R.layout.activity_start_anyplace)
+    } else {
+      setContentView(R.layout.activity_start_smas)
+    }
 
     VMap = ViewModelProvider(this)[AnyplaceViewModel::class.java]
     tvVersion = findViewById<View>(R.id.tvVersion) as TextView
@@ -131,7 +138,8 @@ class StartActivity : BaseActivity() {
         openActivity(prefsCv, app.dsUserAP.read.first(),this@StartActivity)
       } else { // user must login to SMAS first
         LOG.W(TG, "$MT opening activity: SMAS login")
-        val intent = Intent(this@StartActivity, SmasLoginActivity::class.java)
+
+        val intent = Intent(this@StartActivity, app.getSmasBackendLoginActivity())
         startActivity(intent)
       }
       finish()

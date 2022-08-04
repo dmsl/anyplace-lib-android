@@ -1,8 +1,8 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -22,7 +22,7 @@ import java.lang.Exception
  * Probably not handling everything as we should
  */
 class CvModelFilesGetNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {

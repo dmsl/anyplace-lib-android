@@ -31,6 +31,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
+import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvbackendLoginBinding
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -40,19 +41,17 @@ import org.jetbrains.annotations.TestOnly
 
 
 /**
- * Logs in a user to SMAS backend service, and then opens the relevant activity
- * - Might need to select space (and might check for AnyplaceLogin in that case too)
- * - or open SMAS/Logger (depending on last user's action)
+ * Copied from [SmasLoginActivity], with minor UI adjustments.
  *
- * NOTE: there is also [AnyplaceLoginActivity], that logs into Anyplace
+ * SMAS was renamed to CvBackend
  */
 @AndroidEntryPoint
-class SmasLoginActivity : BaseActivity() {
-  val TG = "act-login-smas"
+class CvBackendLoginActivity: BaseActivity() {
+  val TG = "act-login-cvbackend"
 
   private lateinit var VM: SmasLoginViewModel
   private lateinit var VMcv: CvViewModel
-  private var _binding: ActivitySmasLoginBinding?= null
+  private var _binding: ActivityCvbackendLoginBinding?= null
   private val binding get() = _binding!!
 
   private val utlButton by lazy { UtilUI(applicationContext, lifecycleScope) }
@@ -61,7 +60,7 @@ class SmasLoginActivity : BaseActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    _binding = ActivitySmasLoginBinding.inflate(layoutInflater)
+    _binding = ActivityCvbackendLoginBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
     app.setMainView(binding.root)
@@ -71,7 +70,7 @@ class SmasLoginActivity : BaseActivity() {
 
     VM= ViewModelProvider(this)[SmasLoginViewModel::class.java]
     VMcv= ViewModelProvider(this)[CvViewModel::class.java]
-    VM.loginFormState.observe(this@SmasLoginActivity, Observer {
+    VM.loginFormState.observe(this@CvBackendLoginActivity, Observer {
       if (it == null) return@Observer
       val loginState = it
 
@@ -220,13 +219,13 @@ class SmasLoginActivity : BaseActivity() {
     lifecycleScope.launch (Dispatchers.Main) {
       val prefsCv = app.dsCvMap.read.first()
       val userAP = app.dsUserAP.read.first()
-      StartActivity.openActivity(prefsCv, userAP, this@SmasLoginActivity)
+      StartActivity.openActivity(prefsCv, userAP, this@CvBackendLoginActivity)
     }
   }
 
   private fun setupButtonSettings() {
     binding.btnSettings.setOnClickListener {
-      startActivity(Intent(this@SmasLoginActivity, SettingsChatActivity::class.java))
+      startActivity(Intent(this@CvBackendLoginActivity, SettingsChatActivity::class.java))
     }
   }
 

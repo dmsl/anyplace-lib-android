@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_NAV
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -51,8 +52,8 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
 
     if (act is CvMapActivity) {
       val cvAct = act as CvMapActivity
-      // no bottom sheet on smas
-      if (cvAct.actName==ACT_NAME_SMAS) return
+      // no bottom sheet on smas/nav
+      if (cvAct.actName==ACT_NAME_SMAS || cvAct.actName==ACT_NAME_NAV) return
     }
 
     // Setup peak height

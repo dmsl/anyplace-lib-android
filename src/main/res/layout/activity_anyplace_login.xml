@@ -6,20 +6,7 @@
   This is not in use, but it could provide Anyplace login
   (incl. Google login into anyplace).
   Might not work out of the box, play around with it..
-
    -->
-  <!-- INFO this XML has multiple screen configurations.
-  The changes must be reflected in all configurations,
-  otherwise the bindings will be nullable.
-  -->
-
-  <!--  CLR:PM -->
-<!--  <data>-->
-<!--    <variable-->
-<!--        name="bindingVMlogin"-->
-<!--        type="cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoginViewModel" />-->
-<!--  </data>-->
-
   <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/container"
       android:layout_width="match_parent"
@@ -105,18 +92,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/username" />
-    <!--    -->
-
-    <!--    style="@style/SignInButtonAnyplace"-->
-    <!--    android:background="@drawable/button_login_local"-->
-    <!--style="@style/SignInButtonAnyplace"-->
 
     <!--  There are some crashes w/ this one.. -->
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/darkBlue"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:text="Anyplace Login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnSettings"
+        app:layout_constraintBottom_toBottomOf="@id/btnSettings"
+        />
+
     <ImageView
         android:id="@+id/ivLogoAnyplace"
         android:layout_width="201dp"
         android:layout_height="90dp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
         android:alpha="0.9"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"

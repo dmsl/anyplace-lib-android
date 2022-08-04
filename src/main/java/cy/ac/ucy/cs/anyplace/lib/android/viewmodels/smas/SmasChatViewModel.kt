@@ -7,12 +7,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.*
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.MiscDS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.smas.ChatCache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -55,7 +55,7 @@ class SmasChatViewModel @Inject constructor(
 
   val tag = "vm-smas-chat"
 
-  private val app = _application as SmasApp
+  private val app = _application as NavigatorAppBase
   private val C by lazy { SMAS(app.applicationContext) }
 
   val nwMsgGet by lazy { MsgGetNW(app, this, RFH, repoSmas) }

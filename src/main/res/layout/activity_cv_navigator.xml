@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/AppTheme.Compat.ObjectDetection"
+    android:background="#00000000">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/relativeLayout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/black"
+      android:orientation="vertical">
+
+    <!-- CameraActivity -->
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_anchor="@+id/relativeLayout"
+        android:paddingTop="64dp"
+        app:layout_anchorGravity="center"
+        tools:context="org.tensorflow.demo.CameraActivity">
+
+    </FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_localization"
+        style="@style/MaterialButtonIcon"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/darkGray"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_location_found"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
+        app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
+        app:layout_constraintTop_toBottomOf="@id/button_levelDown"
+        app:layout_constraintVertical_bias="0.22"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_imu"
+        style="@style/MaterialButtonIcon"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/darkGray"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_compass"
+        tools:visibility="invisible"
+        android:visibility="invisible"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btn_localization"
+        app:layout_constraintBottom_toBottomOf="@id/btn_localization"
+    />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_anchor="@+id/relativeLayout"
+        app:layout_anchorGravity="top|center">
+
+    <!-- SETTINGS -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_settings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:iconSize="40dp"
+        android:backgroundTint="@color/darkBlue"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:elevation="50dp"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_settings_dark"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_whereami"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:elevation="50dp"
+        android:insetLeft="0dp"
+        tools:visibility="visible"
+        android:visibility="invisible"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        android:backgroundTint="@color/colorPrimary"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_whereami"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        app:layout_constraintBottom_toTopOf="@id/button_levelUp"
+        app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
+        app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
+        />
+
+    <!-- TV TITLE -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="navigator"
+        android:alpha="0.9"
+        android:textSize="18sp"
+        android:layout_marginTop="5dp"
+        android:drawableLeft="@drawable/ic_anyplace"
+        android:drawableRight="@drawable/ic_aperture"
+        android:textColor="@color/white"
+        android:drawableTint="@color/white"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/location_tracking"
+        android:paddingLeft="7dp"
+        android:paddingRight="7dp"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        android:textSize="18sp"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/yellow"
+        android:background="@drawable/bg_round_black_70"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <!--    START OF FLOOR SELECTOR-->
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_levelSelector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        app:constraint_referenced_ids="button_levelUp,button_levelDown,button_selectedLevel,textView_titleLevel" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_levelUp"
+        android:background="@drawable/button_round_top"
+        app:icon="@drawable/ic_arrow_up_disabled"
+        app:layout_constraintBottom_toTopOf="@+id/button_selectedLevel"
+        app:layout_constraintEnd_toEndOf="parent"
+        style="@style/MaterialButtonIcon"
+        android:translationY="20dp"
+        android:text=""
+        app:cornerRadius="50dp"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+        />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_levelDown"
+        style="@style/MaterialButtonIcon"
+        android:text=""
+        android:rotation="180"
+        app:icon="@drawable/arrow_up"
+        android:background="@drawable/button_round_top"
+        app:cornerRadius="50dp"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="38dp"
+
+        android:layout_marginTop="0dp"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <Button
+        android:id="@+id/button_selectedLevel"
+        style="@style/MaterialButtonIcon"
+        android:layout_width="48dp"
+        android:layout_height="22dp"
+        android:translationY="10dp"
+        android:elevation="42dp"
+        android:fontFamily="sans-serif-black"
+        tools:text="5"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/button_levelDown"
+        />
+
+
+    <!--    FLOOR SELECTOR: START-->
+    <TextView
+        android:background="@drawable/bg_round_white_70"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
+        android:id="@+id/textView_titleLevel"
+        app:layout_constraintStart_toStartOf="@id/button_levelDown"
+        app:layout_constraintEnd_toEndOf="@id/button_levelDown"
+        app:layout_constraintTop_toBottomOf="@id/button_levelDown"
+        android:fontFamily="sans-serif-black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:translationY="-5dp"
+        android:textSize="18sp"
+        android:textColor="@color/colorPrimary"
+        android:text="@string/floor"
+        />
+
+    <!--    FLOOR SELECTOR: END-->
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+  <include
+      android:id="@+id/bottom_sheet_cvmap"
+      layout="@layout/example_bottom_sheet_cv"
+      android:elevation="0dp"
+      app:behavior_peekHeight="2dp"
+      tools:visibility="gone"
+      />
+
+  <com.google.android.gms.maps.MapView
+      android:id="@+id/mapView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:alpha="0.9"
+      app:layout_anchor="@+id/relativeLayout"
+      app:layout_anchorGravity="center"
+      tools:context=".android.ui.cv.CvMapActivity" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -4,12 +4,10 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import androidx.preference.Preference
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasVersion
@@ -25,9 +23,10 @@ import java.net.UnknownServiceException
  * - the SafeCall of the version endpoint and it's handling:
  */
 class VersionSmasNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val RH: RetrofitHolderSmas,
         private val repoSmas: RepoSmas) {
+  val TG = "nw-version-smas"
 
   private val resp: MutableStateFlow<NetworkResult<SmasVersion>> = MutableStateFlow(NetworkResult.Unset())
 
@@ -49,7 +48,8 @@ class VersionSmasNW(
   }
 
   suspend fun safeCallAndUpdateUi(versionPref: Preference?) {
-    LOG.D4(TAG_METHOD, "base url: ${RH.baseURL}")
+    val MT = ::safeCallAndUpdateUi.name
+    LOG.D4(TG, "$MT: base url: ${RH.baseURL}")
     versionPref?.summary = "reaching SMAS .."
 
     var msg = ""
@@ -68,7 +68,7 @@ class VersionSmasNW(
         }
 
       } catch(e: UnknownServiceException) {
-        LOG.E(TAG, e)
+        LOG.E(TG, e)
         exception = e
         e.let {
           if (e.message?.contains(C.ERR_MSG_HTTP_FORBIDEN) == true) {
@@ -77,8 +77,8 @@ class VersionSmasNW(
           resp.value = NetworkResult.Error(e.message)
         }
       } catch(e: Exception) {
-        LOG.E(TAG, "EXCEPTION: ${e.javaClass}")
-        LOG.E(TAG, e)
+        LOG.E(TG, "$MT: EXCEPTION: ${e.javaClass}")
+        LOG.E(TG, e)
         exception = when (e) {
           is NullPointerException -> Exception(C.MSG_ERR_NPE)
           else -> e

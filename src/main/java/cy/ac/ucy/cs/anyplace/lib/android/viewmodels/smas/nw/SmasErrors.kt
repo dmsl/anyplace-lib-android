@@ -1,9 +1,9 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import android.widget.Toast
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
  * Handling SMAS errors.
  * - Logging-out the user if required
  */
-class SmasErrors(private val app: SmasApp,
+class SmasErrors(private val app: NavigatorAppBase,
                  private val scope: CoroutineScope) {
   private val SESSION_KEY = "invalid sessionkey"
   private val DB_ERROR = "db error"
@@ -21,7 +21,7 @@ class SmasErrors(private val app: SmasApp,
   /**
    * Returns [true] when an error is handled
    */
-  fun handle(app: SmasApp, cause: String?, extra: String?) : Boolean {
+  fun handle(app: NavigatorAppBase, cause: String?, extra: String?) : Boolean {
     return when (cause) {
       SESSION_KEY -> {
         scope.launch {

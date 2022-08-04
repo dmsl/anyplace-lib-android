@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.viewModelScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
@@ -50,11 +50,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 @ExperimentalMaterialApi
 @Composable
 fun Conversation(
-        app: SmasApp,
-        VMchat: SmasChatViewModel,
-        manager: FragmentManager,
-        repo: RepoSmas,
-        returnCoords: (lat: Double, lng: Double, level: Int) -> Unit) {
+  app: NavigatorAppBase,
+  VMchat: SmasChatViewModel,
+  manager: FragmentManager,
+  repo: RepoSmas,
+  returnCoords: (lat: Double, lng: Double, level: Int) -> Unit) {
   Column {
     LazyColumn(
             modifier = Modifier

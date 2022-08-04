@@ -18,21 +18,17 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_LOGGER
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.ACT_NAME_SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.databinding.DialogSettingsSmasBinding
-// import cy.ac.ucy.cs.anyplace.smas.ui.SmasMainActivity
-// import cy.ac.ucy.cs.anyplace.smas.ui.settings.SettingsChatActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -115,6 +111,10 @@ class MainSettingsDialog(
         binding.tvTitleAppName.text = "Anyplace Logger"
         binding.ivLogoApp.setImageResource(R.drawable.ic_anyplace)
       }
+      is CvNavigatorActivity -> {
+        binding.tvTitleAppName.text = "Anyplace Navigator"
+        binding.ivLogoApp.setImageResource(R.drawable.ic_anyplace)
+      }
       is SmasMainActivity -> {
         binding.tvTitleAppName.text = "Smart Alert System"
         binding.ivLogoApp.setImageResource(R.drawable.ic_lashfire_logo)
@@ -131,9 +131,9 @@ class MainSettingsDialog(
 
     val directive="Switch to"
     if (parentActivity is CvLoggerActivity) {
-      actName=ACT_NAME_SMAS
-      klass = SmasMainActivity::class.java as Class<Activity>
-    } else if (parentActivity is SmasMainActivity) {
+      actName= app.getNavigatorActivityName()
+      klass = app.getNavigatorClass()
+    } else if (parentActivity is SmasMainActivity || parentActivity is CvNavigatorActivity) {
       actName=ACT_NAME_LOGGER
       klass = CvLoggerActivity::class.java as Class<Activity>
     }
@@ -184,7 +184,7 @@ class MainSettingsDialog(
 
   private fun setupChatUser() {
     CoroutineScope(Dispatchers.Main).launch {
-      val chatUser = requireActivity().appSmas.dsUserSmas.read.first()
+      val chatUser = requireActivity().app.dsUserSmas.read.first()
       if (chatUser.sessionkey.isNotBlank()) {
         binding.user = chatUser
         binding.tvAccountType.isVisible = true
@@ -217,7 +217,7 @@ class MainSettingsDialog(
   private fun setupVersion(version: String) {
     CoroutineScope(Dispatchers.Main).launch {
 
-      val prefsChat = requireActivity().appSmas.dsSmas.read.first()
+      val prefsChat = requireActivity().app.dsSmas.read.first()
       LOG.V2(TAG, "Ver: $prefsChat")
       var versionStr = version
       if (prefsChat.version != null) versionStr += " (${prefsChat.version})"
@@ -230,7 +230,7 @@ class MainSettingsDialog(
     binding.btnLogout.setOnClickListener {
       CoroutineScope(Dispatchers.Main).launch {
         val msg: String
-        val chatUserDS = requireActivity().appSmas.dsUserSmas
+        val chatUserDS = requireActivity().app.dsUserSmas
         val user = chatUserDS.read.first()
         if (user.sessionkey.isNotBlank()) {
           msg = "Logging out ${app.dsUserAP.read.first().name}.."

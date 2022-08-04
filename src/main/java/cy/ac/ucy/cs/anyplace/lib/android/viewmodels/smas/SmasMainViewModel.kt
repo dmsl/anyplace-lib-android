@@ -4,8 +4,7 @@ import android.app.Application
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
-import cy.ac.ucy.cs.anyplace.lib.android.appSmas
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
@@ -19,6 +18,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.LocationSendNW
@@ -60,9 +60,9 @@ class SmasMainViewModel @Inject constructor(
   }
 
   //// RETROFIT UTILS:
-  val nwVersion by lazy { VersionSmasNW(app as SmasApp, RHsmas, repoSmas) }
-  val nwLocationGet by lazy { LocationGetNW(app as SmasApp, this, RHsmas, repoSmas) }
-  val nwLocationSend by lazy { LocationSendNW(app as SmasApp, this, RHsmas, repoSmas) }
+  val nwVersion by lazy { VersionSmasNW(app as NavigatorAppBase, RHsmas, repoSmas) }
+  val nwLocationGet by lazy { LocationGetNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
+  val nwLocationSend by lazy { LocationSendNW(app as NavigatorAppBase, this, RHsmas, repoSmas) }
 
   val alertingUser : MutableStateFlow<UserLocation?>
     get() = nwLocationGet.alertingUser
@@ -127,7 +127,7 @@ class SmasMainViewModel @Inject constructor(
 
   fun readBackendVersion() {
     viewModelScope.launch(Dispatchers.IO) {
-      val prefsChat = appSmas.dsSmas.read.first()
+      val prefsChat = app.dsSmas.read.first()
       if (prefsChat.version == null) {
         nwVersion.getVersion()
       }

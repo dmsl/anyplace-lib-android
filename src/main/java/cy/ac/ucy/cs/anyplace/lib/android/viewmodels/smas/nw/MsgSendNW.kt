@@ -1,12 +1,11 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
@@ -22,7 +21,7 @@ import kotlinx.coroutines.flow.first
 import retrofit2.Response
 import java.lang.Exception
 
-class MsgSendNW(private val app: SmasApp,
+class MsgSendNW(private val app: NavigatorAppBase,
                 private val VM: SmasChatViewModel,
                 private val RH: RetrofitHolderSmas,
                 private val repo: RepoSmas) {

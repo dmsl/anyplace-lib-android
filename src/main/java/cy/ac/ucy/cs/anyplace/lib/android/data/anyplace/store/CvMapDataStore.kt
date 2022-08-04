@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.preference.PreferenceDataStore
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -98,11 +99,15 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
   override fun putString(key: String?, value: String?) {
     val MT = ::putString.name
     LOG.W(TG, "$MT: $key = $value")
+
     if (!validKey(key)) return
     runBlocking {
+
+      val app = C.ctx as AnyplaceApp
+
       datastore.edit {
         when (key) {
-          C.PREF_CV_START_ACT-> it[KEY.startActivity] = value ?: C.DEFAULT_PREF_CVMAP_START_ACT
+          C.PREF_CV_START_ACT-> it[KEY.startActivity] = value ?: app.defaultNavigationAppCode()
 
           C.PREF_CV_WINDOW_LOCALIZATION_MS-> it[KEY.windowLocalizationMs] = value ?: C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS
 
@@ -175,7 +180,10 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             } else { throw exception }
           }
           .map { preferences ->
-            val startAct = preferences[KEY.startActivity] ?: C.DEFAULT_PREF_CVMAP_START_ACT
+
+            val app = C.ctx as AnyplaceApp
+
+            val startAct = preferences[KEY.startActivity] ?: app.defaultNavigationAppCode()
             val windowLocalizationMs = preferences[KEY.windowLocalizationMs] ?: C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS
             val windowLoggingMs= preferences[KEY.windowLoggingMs] ?: C.DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS
             val mapAlpha = preferences[KEY.mapAlpha] ?: C.DEFAULT_PREF_CVMAP_ALPHA

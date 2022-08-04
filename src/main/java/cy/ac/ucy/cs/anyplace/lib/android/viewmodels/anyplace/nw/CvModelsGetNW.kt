@@ -2,16 +2,14 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.nw
 
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
@@ -29,7 +27,7 @@ import java.lang.Exception
  * But cv localization should have been Anyplace API.
  */
 class CvModelsGetNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
@@ -118,7 +116,8 @@ class CvModelsGetNW(
   }
 
   private fun handleResponse(resp: Response<CvModelsResp>): NetworkResult<CvModelsResp> {
-    LOG.D3(TAG)
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") -> NetworkResult.Error("Timeout.")
@@ -132,18 +131,18 @@ class CvModelsGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TG, "handleResponse: unsuccessful")
+      LOG.E(TG, "$MT: unsuccessful: ${resp.errorBody()}/${resp.body()}/${resp.message()}")
     }
 
-    return NetworkResult.Error("$TAG: ${resp.message()}")
+    return NetworkResult.Error("$TG: ${resp.message()}")
   }
 
   var collectingCvModels = false
   suspend fun collect() {
-    LOG.D2(TG, "$METHOD: $TG")
+    val MT = ::collect.name
+    LOG.D2(TG, "$MT: $TG")
 
     if (collectingCvModels) return
-
     collectingCvModels=true
 
     resp.collect {
@@ -165,14 +164,14 @@ class CvModelsGetNW(
     }
   }
 
-  // ROOM
   /**
    * Persists [ChatMsg]s to SQLite (through ROOM).
    * It does not store images (base64) to DB.
    * Those will be stored in [SmasCache] (file cache)
    */
   private fun persistToDB(obj: List<CvModelClass>) {
-    LOG.W(TG, "$METHOD: storing: ${obj.size} $TG classes")
+    val MT = ::persistToDB.name
+    LOG.W(TG, "$MT: storing: ${obj.size} $TG classes")
     VM.viewModelScope.launch(Dispatchers.IO) {
       obj.forEach {
         repo.local.insertCvModelClass(it)

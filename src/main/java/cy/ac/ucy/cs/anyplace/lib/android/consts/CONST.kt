@@ -6,11 +6,13 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 
-open class CONST(ctx: Context) {
+/**
+ * Constant values.
+ */
+open class CONST(val ctx: Context) {
 
   companion object {
-    // ROOM (SQLite)
-    const val DB_TBL_SPACES = "spaces"
+    const val DB_TBL_SPACES = "spaces"  // ROOM (SQLite)
 
     // YOLO
     const val INPUT_SIZE = 416
@@ -19,11 +21,14 @@ open class CONST(ctx: Context) {
 
     // START ACTIVITY OF THE APP (see [StartActivity])
     const val START_ACT_SMAS= "act.start.smas"
+    const val START_ACT_NAV = "act.start.nav"
     const val START_ACT_LOGGER = "act.start.logger"
     const val ACT_NAME_LOGGER = "logger"
     const val ACT_NAME_SMAS = "SMAS"
-
+    const val ACT_NAME_NAV = "navigator"
   }
+
+  val PREF_CV_START_ACT=  ctx.getString(R.string.pref_cv_start_act)
 
   val DB_NAME = "anyplace_db"
 
@@ -110,9 +115,6 @@ open class CONST(ctx: Context) {
   val PREV_CVMAP_ALPHA= ctx.getString(R.string.prev_cvmap_alpha)
   //// NAVIGATION
   val DEFAULT_PREF_CVMAP_ALPHA= "50"
-
-  val PREF_CV_START_ACT=  ctx.getString(R.string.pref_cv_start_act)
-  val DEFAULT_PREF_CVMAP_START_ACT= START_ACT_SMAS
 
   //// SMAS
   // this should have been in separate SMAS settings

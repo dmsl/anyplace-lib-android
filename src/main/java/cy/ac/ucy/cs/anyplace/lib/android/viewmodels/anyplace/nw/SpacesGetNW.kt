@@ -11,6 +11,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Comp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.ApUserDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_UCY_FST02
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
@@ -107,47 +108,42 @@ class SpacesGetNW(
     LOG.E(TG, MT)
     repo.local.dropSpaces()
 
-    val demoSpaces = mutableListOf<Space>() // CLR:PM
+    // ADD SPACES: both to SQLite and to demo (to be shown in RecyclerView)
+    // 1. ADD ALL OWNED SPACES:
+    // both to SQLite and to demo (to be shown in RecyclerView)
+    if (listOwned != null) {
+      storeToDB(listOwned, SpaceOwnership.OWNED)
+    }
 
-    // VM.viewModelScope.launch(Dispatchers.IO) {
-      // ADD SPACES: both to SQLite and to demo (to be shown in RecyclerView)
-      // 1. ADD ALL OWNED SPACES:
-      // both to SQLite and to demo (to be shown in RecyclerView)
-      if (listOwned != null) {
-        storeToDB(listOwned, SpaceOwnership.OWNED)
-        demoSpaces.addAll(listOwned.spaces)
-      }
+    // 2. ADD ALL ACCESSIBLE SPACES:
+    // both to SQLite and to demo (to be shown in RecyclerView)
+    // NOTE: if a user is an admin, this will be the WHOLE list of spaces.
+    if (listAccessible != null) {
+      storeToDB(listAccessible, SpaceOwnership.ACCESSIBLE)
+    }
 
-      // 2. ADD ALL ACCESSIBLE SPACES:
-      // both to SQLite and to demo (to be shown in RecyclerView)
-      // NOTE: if a user is an admin, this will be the WHOLE list of spaces.
-      if (listAccessible != null) {
-        storeToDB(listAccessible, SpaceOwnership.ACCESSIBLE)
-        demoSpaces.addAll(listAccessible.spaces)
-      }
+    // 3. ADD A SMALL SAMPLE OF PUBLIC SPACES
+    // - For demo purposes:
+    //   - UCY CS building
+    //   - 2 more spaces
+    if (listPublic != null) {
+      val ucyPublicSpaces = listPublic.spaces.filter {
+        it.name.contains("ucy", true) }.take(5)
+      // 2 demo spaces..
+      val ucyCsBuilding = listPublic.spaces.filter { it.buid==BUID_UCY_CS_BUILDING}
+      val ucyFst02Building = listPublic.spaces.filter { it.buid== BUID_UCY_FST02}
 
-      // 3. ADD A SMALL SAMPLE OF PUBLIC SPACES
-      // - For demo purposes:
-      //   - UCY CS building
-      //   - 2 more spaces
-      if (listPublic != null) {
-        // TODO:PMX take 2
-        val ucyPublicSpaces = listPublic.spaces.filter {
-          it.name.contains("ucy", true) }.take(5)
-        // BUID_UCY_FST02
-        val ucyCsBuilding = listPublic.spaces.filter { it.buid==BUID_UCY_CS_BUILDING}
+      val ucySelectSpaces = mutableListOf<Space>()
+      ucySelectSpaces.addAll(ucyCsBuilding)
+      ucySelectSpaces.addAll(ucyFst02Building)
+      ucySelectSpaces.addAll(ucyPublicSpaces)
+      storeToDB(Spaces(ucySelectSpaces), SpaceOwnership.PUBLIC)
+    }
 
-        val ucySelectSpaces = mutableListOf<Space>()
-        ucySelectSpaces.addAll(ucyCsBuilding)
-        ucySelectSpaces.addAll(ucyPublicSpaces)
-        storeToDB(Spaces(ucySelectSpaces), SpaceOwnership.PUBLIC)
-      }
-
-      // no need to store anything, as we will read spaces from DB
-      // we do this, as we augment DB entries with [SpaceOwnership] info
-      // We'll do this once we have collected a [NetworkResult.Success].
-      LOG.E(TG, "$MT: updated NOW the NW RESP")
-    // }
+    // no need to store anything, as we will read spaces from DB
+    // we do this, as we augment DB entries with [SpaceOwnership] info
+    // We'll do this once we have collected a [NetworkResult.Success].
+    LOG.V(TG, "$MT: updated NOW the NW RESP")
   }
 
   private fun handleSpacesResponse(response: Response<Spaces>): NetworkResult<Spaces> {
@@ -166,7 +162,7 @@ class SpacesGetNW(
 
   private suspend fun storeToDB(spaces: Spaces, ownership: SpaceOwnership) {
     val MT = ::storeToDB.name
-    LOG.E(TG, "$MT: $ownership")
+    LOG.W(TG, "$MT: $ownership")
     insertSpaces(spaces, ownership)
   }
 
@@ -175,9 +171,9 @@ class SpacesGetNW(
    */
   private suspend fun insertSpaces(spaces: Spaces, ownership: SpaceOwnership)  {
     val MT=::insertSpaces.name
-    LOG.E(TG, "$MT: total: " + spaces.spaces.size)
+    LOG.D(TG, "$MT: total: " + spaces.spaces.size)
     spaces.spaces.forEach { space ->
-      LOG.E(TG, "$MT: space: ${space.name}: $ownership: ${space.buid}")
+      LOG.V(TG, "$MT: space: ${space.name}: $ownership: ${space.buid}")
       repo.local.insertSpace(space, ownership)
     }
   }

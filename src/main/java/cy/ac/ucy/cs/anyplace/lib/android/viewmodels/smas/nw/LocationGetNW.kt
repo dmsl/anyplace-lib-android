@@ -1,12 +1,12 @@
 package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
@@ -37,7 +37,7 @@ import java.net.ConnectException
  * (to figure out whether the are new msgs to fetch)
  */
 class LocationGetNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val VM: SmasMainViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
@@ -67,7 +67,7 @@ class LocationGetNW(
     if (app.hasInternet()) {
       try {
         val response = repo.remote.locationGet(ChatUserAuth(smasUser))
-        LOG.D4(TG, "$MT: ${response.message()}" )
+        LOG.V2(TG, "$MT: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
@@ -98,7 +98,9 @@ class LocationGetNW(
         else -> NetworkResult.Error(resp.message())
       }
     } else {
-      LOG.E(TG, "$MT: unsuccessful")
+      LOG.E(TG, "$MT: unsuccessful: ${resp.errorBody()}")
+      LOG.E(TG, "$MT: unsuccessful: ${resp.body()}")
+      LOG.E(TG, "$MT: unsuccessful: ${resp.message()}")
     }
     return NetworkResult.Error("$TAG: ${resp.message()}")
   }

@@ -3,13 +3,13 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToChatMessages
@@ -26,10 +26,11 @@ import java.lang.Exception
 import java.net.ConnectException
 
 class MsgGetNW(
-        private val app: SmasApp,
-        private val VM: SmasChatViewModel,
-        private val RH: RetrofitHolderSmas,
-        private val repo: RepoSmas) {
+  private val app: NavigatorAppBase,
+  private val VM: SmasChatViewModel,
+  private val RH: RetrofitHolderSmas,
+  private val repo: RepoSmas) {
+  private val TG = "nw-msg-get"
 
   /**
    * Network Responses from API calls
@@ -48,20 +49,20 @@ class MsgGetNW(
    * Get [ChatMsg] SafeCall
    */
   suspend fun safeCall(showToast: Boolean = false) {
-    LOG.D2(TAG_METHOD)
-    LOG.D2(TAG, "msg-get: size: ${app.msgList.size}")
+    val MT = ::safeCall.name
+    LOG.D2(TG, MT)
+    LOG.D2(TG, "msg-get: size: ${app.msgList.size}")
 
     if (resp.value is NetworkResult.Loading) {
-      LOG.W(TAG, "MsgsGet: already in progress (skipped)")
+      LOG.W(TG, "MsgsGet: already in progress (skipped)")
       return
     } else if (skipCall) {
-      LOG.W(TAG, "MsgsGet: forced skip (unsetting)")
+      LOG.W(TG, "MsgsGet: forced skip (unsetting)")
       resp.value = NetworkResult.Unset()
       return
     }
 
     resp.value = NetworkResult.Loading()
-    // LOG.D2(TAG, "msg-get: size: ${app.msgList.size} after resetting..")
     smasUser = app.dsUserSmas.read.first()
 
     if (app.hasInternet()) {
@@ -70,7 +71,7 @@ class MsgGetNW(
         var incrementalFetch = false
         val response : Response<ChatMsgsResp>
         if (lastTimestamp==null) {
-          LOG.W(TAG, "Will fetch ALL messages")
+          LOG.W(TG, "Will fetch ALL messages")
           response = repo.remote.messagesGet(MsgGetReq(smasUser))
         } else {
           incrementalFetch=true
@@ -93,7 +94,7 @@ class MsgGetNW(
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleException(msg, ce)
       } catch (e: Exception) {
-        val msg = TAG
+        val msg = TG
         handleException(msg, e)
       }
     } else { // offline-mode
@@ -112,7 +113,7 @@ class MsgGetNW(
    * Reads messages from Room (SQLite)
    */
   private suspend fun getMsgsFromDB(): NetworkResult<ChatMsgsResp> {
-    LOG.D2(TAG, "reading msgs from cache")
+    LOG.D2(TG, "reading msgs from cache")
     val localMsgs = repo.local.readMsgs().first()
 
     return if (localMsgs.isNotEmpty()) {
@@ -129,14 +130,15 @@ class MsgGetNW(
           response: Response<ChatMsgsResp>,
           incrementalFetch: Boolean,
           showToast: Boolean): NetworkResult<ChatMsgsResp> {
-    LOG.D3()
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if (response.isSuccessful) {
       when {
         response.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")
         // response.body()!!.chatMsgs.isNullOrEmpty() -> return NetworkResult.Error("Can't get messages.")
         response.isSuccessful -> {
 
-          LOG.V2(TAG, "MSG-GET: Success")
+          LOG.V2(TG, "MSG-GET: Success")
 
           // SMAS special handling (errors should not be 200/OK)
           val r = response.body()!!
@@ -150,23 +152,23 @@ class MsgGetNW(
               return if (app.msgList.isEmpty()) {
                 // the app was opened, w/o new msgs. the [app.msgList] was empty
                 // all we have to do is to load the previous msgs from DB
-                LOG.D2(TAG,"Reading from DB. (empty msgList + no new msgs)")
+                LOG.D2(TG,"Reading from DB. (empty msgList + no new msgs)")
 
                 getMsgsFromDB()
               } else {
                 // no new msgs fetched. [app.msgList] is populated: no work needed!
-                LOG.D2(TAG, "No new msgs. Prev msgList: ${app.msgList.size}")
+                LOG.D2(TG, "No new msgs. Prev msgList: ${app.msgList.size}")
                 NetworkResult.Success(response.body()!!, NetworkResult.UP_TO_DATE)
               }
             }
 
             val msg = "No new messages."
             if (showToast) {
-              LOG.D2(TAG, msg)
+              LOG.D2(TG, msg)
             }
 
             // empty messages
-            LOG.W(TAG, msg)
+            LOG.W(TG, msg)
             return NetworkResult.Success(response.body()!!)
           }
 
@@ -176,7 +178,7 @@ class MsgGetNW(
           if (incrementalFetch)  {
             val localMsgs = if (app.msgList.isEmpty()) {
               val oldMsgs = getMsgsFromDB().data!!.msgs
-              LOG.E(TAG, "Old msgs: ${oldMsgs.size}")
+              LOG.E(TG, "Old msgs: ${oldMsgs.size}")
               oldMsgs
             } else emptyList()
 
@@ -210,8 +212,9 @@ class MsgGetNW(
   }
 
   private fun handleException(msg: String, e: Exception) {
-    val details = "$msg:${e.message}"
-    LOG.E(TAG_METHOD, details)
+    val MT = ::handleException.name
+    val details = "$MT: $msg:${e.message}"
+    LOG.E(TG, details)
     resp.value = NetworkResult.Error(details)
   }
 
@@ -221,24 +224,23 @@ class MsgGetNW(
         is NetworkResult.Success -> {
           when (it.message) {
             NetworkResult.UP_TO_DATE -> {
-              LOG.W(TAG, "Messages: up-to-date. Size: ${app.msgList.size} (skip processing)")
+              LOG.W(TG, "Messages: up-to-date. Size: ${app.msgList.size} (skip processing)")
             }
             NetworkResult.DB_LOADED,
             null -> {
               val msgs = it.data!!.msgs
-              LOG.V2(TAG, "MSGS: collect: new: ${msgs.size}. old: ${app.msgList.size}. (processing)")
+              LOG.V2(TG, "MSGS: collect: new: ${msgs.size}. old: ${app.msgList.size}. (processing)")
               appendMessages(app, VM, msgs)
             }
           }
 
         }
-        // TODO:PMX unspecified error
         is NetworkResult.Error ->  {
           //db error
           if (!err.handle(app, it.message, "msg-get")) {
             val msg = it.message ?: "unspecified error"
             app.showToast(VM.viewModelScope, msg, Toast.LENGTH_SHORT)
-            LOG.E(TAG, msg)
+            LOG.E(TG, msg)
             // LOG.E(TAG, "$msg: from MsgGetNW Collect. class: ${it::class.simpleName}")
           }
         }
@@ -252,8 +254,9 @@ class MsgGetNW(
   // 2. messages should be fetched: in mid delay:
   //// e.g. after 2 secs: locations: after 1 sec msgs
   // Separate alerts from others?
-  private fun appendMessages(app: SmasApp, VM: SmasChatViewModel, msgs: List<ChatMsg>) {
-    LOG.D2(TAG,"$METHOD: New: ${msgs.size} Old: ${app.msgList.size}")
+  private fun appendMessages(app: NavigatorAppBase, VM: SmasChatViewModel, msgs: List<ChatMsg>) {
+    val MT = ::appendMessages.name
+    LOG.D2(TG,"$MT: New: ${msgs.size} Old: ${app.msgList.size}")
     msgs.forEach { obj ->
       val msgH = ChatMsgHelper(app, repo, obj)
       val contents = msgH.content()
@@ -263,8 +266,8 @@ class MsgGetNW(
 
       app.msgList.add(0, obj)   // add to the beginning
       val prettyTimestamp = utlTime.getPrettyEpoch(obj.time, utlTime.TIMEZONE_CY)
-      LOG.V3(TAG, "MSG |$prettyTimestamp| ${msgH.prettyTypeCapitalize.format(6)} | $contents  || [${obj.time}][${obj.timestr}]")
-      LOG.V4(TAG, "MsgList: updated size: ${app.msgList.size}")
+      LOG.V3(TG, "MSG |$prettyTimestamp| ${msgH.prettyTypeCapitalize.format(6)} | $contents  || [${obj.time}][${obj.timestr}]")
+      LOG.V4(TG, "MsgList: updated size: ${app.msgList.size}")
     }
 
     // clear the response
@@ -278,7 +281,8 @@ class MsgGetNW(
    * Those will be stored in [SmasCache] (file cache)
    */
   private fun persistToDB(msgs: ChatMsgsResp) {
-    LOG.D2(TAG, "$METHOD: storing: ${msgs.msgs.size} msgs")
+    val MT = ::persistToDB.name
+    LOG.D2(TG, "$MT: storing: ${msgs.msgs.size} msgs")
     VM.viewModelScope.launch(Dispatchers.IO) {
 
       VM.savedNewMsgs(true) // new messages were saved

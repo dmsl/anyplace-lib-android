@@ -2,12 +2,12 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
@@ -26,7 +26,7 @@ import java.net.ConnectException
  * Manages Location fetching of other users
  */
 class LocationSendNW(
-        private val app: SmasApp,
+        private val app: NavigatorAppBase,
         private val VM: SmasMainViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {

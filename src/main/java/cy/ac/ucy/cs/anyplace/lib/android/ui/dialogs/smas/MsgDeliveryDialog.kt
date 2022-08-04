@@ -11,9 +11,9 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.SmasApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
@@ -27,7 +27,7 @@ import java.lang.IllegalStateException
  *  Users can select who is going to receive their messages.
  */
 class MsgDeliveryDialog(private val dsChat: SmasDataStore,
-                        private val app: SmasApp,
+                        private val app: NavigatorAppBase,
                         vm: SmasChatViewModel) : DialogFragment() {
 
   private val C by lazy { SMAS(app.applicationContext) }
@@ -36,7 +36,7 @@ class MsgDeliveryDialog(private val dsChat: SmasDataStore,
   companion object {
 
     /** Creating the dialog. */
-    fun SHOW(fragmentManager: FragmentManager, dsChat: SmasDataStore, app: SmasApp, vm : SmasChatViewModel) {
+    fun SHOW(fragmentManager: FragmentManager, dsChat: SmasDataStore, app: NavigatorAppBase, vm : SmasChatViewModel) {
       val args = Bundle()
       val dialog = MsgDeliveryDialog(dsChat, app, vm)
       dialog.arguments = args
