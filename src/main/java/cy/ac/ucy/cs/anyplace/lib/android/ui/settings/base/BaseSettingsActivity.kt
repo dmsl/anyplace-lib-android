@@ -8,7 +8,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * Just setting up the UI
+ * Just setting up the UI for ettings
  */
 @AndroidEntryPoint
 open class BaseSettingsActivity: BaseActivity() {

@@ -10,7 +10,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilSpacesDiff
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.databinding.RowSpaceBinding
@@ -19,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
+/*
  * Recycler View for rendering a dynamic list of [Spaces]  (part of SpaceSelector):
  * - the list of many [Space] objects
  * - the adapter is responsible for one entry (one [Space]) in that list
@@ -266,4 +265,21 @@ class SpacesAdapter(private val app: AnyplaceApp,
       return true
     }
   } // END OF MyViewHolder
+}
+
+
+
+class UtilSpacesDiff<T>(private val oldList: List<T>,
+                        private  val newList: List<T>): DiffUtil.Callback() {
+
+  override fun getOldListSize(): Int { return oldList.size }
+  override fun getNewListSize(): Int { return newList.size }
+
+  override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    return oldList[oldItemPosition] === newList[newItemPosition]
+  }
+
+  override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+    return oldList[oldItemPosition] == newList[newItemPosition]
+  }
 }

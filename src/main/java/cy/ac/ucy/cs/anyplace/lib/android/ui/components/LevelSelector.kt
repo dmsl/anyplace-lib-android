@@ -7,10 +7,9 @@ import androidx.constraintlayout.widget.Group
 import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelsWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
@@ -20,9 +19,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
+ * UI Component
  * Encapsulating all functionality of the Level Selection UI component.
  * Level is a floor or a deck
- *
  */
 class LevelSelector(
         private val ctx: Context,
@@ -53,8 +52,6 @@ class LevelSelector(
   fun enable() {
     LOG.V2(TG, "enabling")
 
-    if (!DBG.FLD) { show(); return }
-
     utlUi.changeBackgroundMaterial(btnSelectedLevel, R.color.colorPrimary)
     utlUi.alpha(btnSelectedLevel, 1f)
     utlUi.changeBackgroundDrawable(btnLevelUp, R.drawable.button_round_top_normal)
@@ -69,7 +66,6 @@ class LevelSelector(
 
   fun disable() {
     LOG.V2(TG, "disabling")
-    if (!DBG.FLD) { hide(); return }
     utlUi.changeBackgroundMaterial(btnSelectedLevel, R.color.darkGray)
     utlUi.alpha(btnSelectedLevel, 0.4f)
     utlUi.changeBackgroundDrawable(btnLevelUp, R.drawable.button_round_top_disabled)
@@ -83,6 +79,7 @@ class LevelSelector(
   }
 
   fun updateFloorSelector(level: Level?, FW: LevelsWrapper) {
+    val MT = ::updateFloorSelector.name
     scope.launch(Dispatchers.Main) {
       // if it has floors, then fade in..
       if (group.visibility != View.VISIBLE)
@@ -100,7 +97,7 @@ class LevelSelector(
 
         val isLastLevel = level.number==FW.getLastLevel().number
         updateSelectionButton(btnLevelUp, ctx, !isLastLevel)
-        LOG.V2(TAG_METHOD, "levels: ${FW.getFirstLevel().number} - ${FW.getLastLevel().number}")
+        LOG.V2(TG, "$MT: levels: ${FW.getFirstLevel().number} - ${FW.getLastLevel().number}")
       }
     }
   }
@@ -127,13 +124,14 @@ class LevelSelector(
    * Wait some time, and then change floor
    */
   fun lazilyChangeLevel(VM: CvViewModel, scope: CoroutineScope) {
+    val MT = ::lazilyChangeLevel.name
     val app  = VM.app
     if (app.wLevel == null) {
-      LOG.E(TAG_METHOD, "Null floor")
+      LOG.E(TG, "$MT: null floor")
       return
     }
 
-    LOG.V2()
+    LOG.V2(TG, MT)
     if (levelChangeRequestTime == 0L) {
       levelChangeRequestTime = System.currentTimeMillis()
       loadLevel(VM, scope)
@@ -144,7 +142,7 @@ class LevelSelector(
 
     scope.launch(Dispatchers.IO) {
       if (!isLazilyChangingLevel) {
-        LOG.D4(TAG_METHOD, "Might change to level: ${app.wLevel!!.prettyLevelName()}")
+        LOG.D4(TAG_METHOD, "might change to level: ${app.wLevel!!.prettyLevelName()}")
         isLazilyChangingLevel = true
         do {
           val curTime = System.currentTimeMillis()
@@ -153,14 +151,14 @@ class LevelSelector(
           delay(200)
         } while(diff < DELAY_LEVEL_CHANGE)
 
-        LOG.V2(TG, "lazilyChangeFloor: to level: ${app.wLevel!!.prettyLevelName()} (after delay)")
+        LOG.V2(TG, "MT: to level: ${app.wLevel!!.prettyLevelName()} (after delay)")
 
         isLazilyChangingLevel = false
 
         // BUG: VM or FH has the wrong floor number?
         loadLevel(VM, scope)
       } else {
-        LOG.D4(TAG_METHOD, "Skipping level: ${app.wLevel!!.prettyLevelName()}")
+        LOG.D4(TG, "$MT: Skipping level: ${app.wLevel!!.prettyLevelName()}")
       }
     }
   }
@@ -176,7 +174,6 @@ class LevelSelector(
   private fun loadLevel(VM: CvViewModel, scope: CoroutineScope) {
     val MT = ::loadLevel.name
     val app = VM.app
-    
     LOG.D2(TG, MT)
 
     callback?.before()

@@ -67,13 +67,10 @@ class MapMarkers(private val app: AnyplaceApp,
     val latLng = toLatLng(coord)
     val title = "Own Location"
 
-    // val snippet = getSnippetOwnLocation(locMethod)
-
     return MarkerOptions().position(latLng)
             .userIcon(ctx, ownLocationDrawable(locMethod, alerting))
             .zIndex(100f)
             .title(title)
-    // .snippet(snippet)
   }
 
   /** Computer Vision marker */
@@ -352,50 +349,4 @@ class MapMarkers(private val app: AnyplaceApp,
       lastChatShareLocation!!.showInfoWindow()
     }
   }
-
-  /**
-   * Opens the Info Window of an existing marker, if their [latLng] overlaps exactly.
-   * It might be our own user location, or any other user location.
-   *
-   * If not match is found: returns false
-   */
-  @Deprecated("Does not work as expected..")
-  private fun tryToOpenExistingMarker(coord: Coord) : Boolean {
-    val latLng = coord.toLatLng()
-    // pointing to our current location
-    if (lastOwnLocation != null &&
-            latLng == lastOwnLocation!!.position
-            && coord.level == lastCoord!!.level) {
-      lastOwnLocation!!.showInfoWindow()
-
-      LOG.E(TG, "found own user")
-      return true
-    }
-
-    userLocations.forEach {  // these users are on the current floor anyway (so no need to check the floor)
-      if (latLng == it.position) {
-        LOG.E(TG, "found existing other user")
-        // extract uid from tag
-        val metadata = it.tag as UserInfoMetadata?
-        if (metadata != null) {
-          lastSelectedUser = metadata.uid
-          LOG.E(TG, "USER FOUND: $metadata.uid")
-        }
-
-        // very ugly workaround: open InfoWindow in a few moments
-        // (so the method will return, and afterwards we'll open it)
-        scope.launch(Dispatchers.IO) {
-          delay(250)
-          scope.launch(Dispatchers.Main) { // switch to main thread
-
-            LOG.E(TG, "SHOWING INFO WIN")
-            it.showInfoWindow()
-          }
-        }
-        return true
-      }
-    }
-    return false  // an additional marker will have to be drawn
-  }
-
 }

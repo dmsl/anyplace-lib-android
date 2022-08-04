@@ -19,7 +19,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.BottomSheetSpaceFilterBinding
 
 /**
- * Filtering the [Spaces] of the [SpaceListFragment].
+ * Filtering the [Spaces] of the [SpaceListFragment]. (Space Selector)
  */
 class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
   val TG = "bsheet-space-filter"

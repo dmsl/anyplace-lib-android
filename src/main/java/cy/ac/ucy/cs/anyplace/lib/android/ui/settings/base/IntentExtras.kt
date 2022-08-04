@@ -4,11 +4,16 @@ import android.app.Activity
 import android.os.Bundle
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 
+/**
+ * Extracting a [Space], or a [Level], etc from [Intent]
+ * - not used. stays as a reference
+ * - eg someone can pass to a new activity a space as a string.
+ */
 object IntentExtras {
 
   fun getSpace(activity: Activity, repo: RepoAP, extras: Bundle?, key: String) : SpaceWrapper? {

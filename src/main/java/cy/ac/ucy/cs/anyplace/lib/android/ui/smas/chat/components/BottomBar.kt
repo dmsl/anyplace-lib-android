@@ -32,24 +32,22 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.LightGray
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.MildGray
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.AnyplaceBlue
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.LightGray
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.MildGray
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_IMG
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_LOCATION
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_TXT
 
 /**
- *
  * Reply card that includes a(n):
  * - [ReplyToMessage]: for viewing details when trying to reply to a message
  * - [TextBox]: for entering the text message
  * - [ImgBtn]: for selecting an image from the file system
  * - [ShareLocBtn]: for sharing the current location in the chat
  * - [ShowSelectedImg]: for displaying the selected image before sending it in the chat
- *
  */
 @ExperimentalPermissionsApi
 @RequiresApi(Build.VERSION_CODES.O)

@@ -3,14 +3,11 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.smas
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,21 +15,19 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.afterTextChanged
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.ui.BaseActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasLoginReq
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsSmasServerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvbackendLoginBinding
-import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySmasLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -42,8 +37,8 @@ import org.jetbrains.annotations.TestOnly
 
 /**
  * Copied from [SmasLoginActivity], with minor UI adjustments.
- *
- * SMAS was renamed to CvBackend
+ * - to hide the SMAS/LASHFIRE components
+ * - SMAS appears as: CvBackend
  */
 @AndroidEntryPoint
 class CvBackendLoginActivity: BaseActivity() {
@@ -185,7 +180,7 @@ class CvBackendLoginActivity: BaseActivity() {
               val user = response.data
               user?.let {
                 app.dsUserSmas.storeUser(SmasUser(user.uid, user.sessionkey))
-                if (!DBG.SLR) {
+                if (!DBG.USE_SPACE_SELECTOR) {
                   VMcv.nwCvModelFilesGet.downloadMissingModels()
                   lifecycleScope.launch(Dispatchers.Main) {
                     binding.textViewError.text = "Downloading CvModels..."
@@ -225,7 +220,7 @@ class CvBackendLoginActivity: BaseActivity() {
 
   private fun setupButtonSettings() {
     binding.btnSettings.setOnClickListener {
-      startActivity(Intent(this@CvBackendLoginActivity, SettingsChatActivity::class.java))
+      startActivity(Intent(this@CvBackendLoginActivity, SettingsSmasServerActivity::class.java))
     }
   }
 

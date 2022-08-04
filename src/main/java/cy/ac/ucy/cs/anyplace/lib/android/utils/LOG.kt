@@ -17,18 +17,16 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    const val SLR = true // TODO space selector: finalize
+    /** disabling this may hardcode the space.
+     * at least initially it was like that. more changes might be required though
+     */
+    const val USE_SPACE_SELECTOR = true
 
-    const val CVM = true // offline localization?
+    const val TRK = false  // track
+    const val IMU= false   // experimental
+    const val WAI = false  //
 
-    const val DVO = true // developer mode
-    const val WAI = true
-    const val uim= true
-    const val LCLG = true // logging UI hiding
-    const val FLD = true // logging ui
-
-    const val TRK = true // track
-    const val TUTORIALS=false
+    const val TUTORIALS=false // might be spamming a bit the users
   }
 }
 

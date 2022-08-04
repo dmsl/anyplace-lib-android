@@ -12,6 +12,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.rotate
 import java.io.ByteArrayOutputStream
 import java.io.File
 
+/**
+ * Some image  utils>
+ * - encoding/decoding to base 64, rotations, etc
+ * - there is also decoding from base 64 to byte array (used to decode the TFLite model that we download)
+ *   - that one is irrelevant to images.. maybe refactor it..
+ */
 object utlImg {
   val TG = "utl-img"
 

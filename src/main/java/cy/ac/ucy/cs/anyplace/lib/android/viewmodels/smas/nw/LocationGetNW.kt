@@ -2,10 +2,10 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas

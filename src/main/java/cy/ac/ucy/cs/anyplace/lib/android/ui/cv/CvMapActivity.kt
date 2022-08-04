@@ -13,29 +13,26 @@ import com.google.android.material.button.MaterialButton
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper.Companion.BUID_HARDCODED
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.SpaceWrapper.Companion.BUID_HARDCODED
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvEnginePrefs
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.BottomSheetCvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.CvBackendLoginActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasLoginActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.demo.AssetReader
-import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
-import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.SensorsViewModel
+import cy.ac.ucy.cs.anyplace.lib.android.sensors.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.sensors.imu.SensorsViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -43,13 +40,15 @@ import kotlinx.coroutines.launch
 
 
 /**
+ * Base activity for [CvMap]: Computer Vision stuff + a [GoogleMap]
  * It uses:
  * - uses Yolov4 TFLite
  * - Settings
  * - Google Maps
  *   - cache mechanism + floor changing
  *
- *   - reuse functionality using Helper UI classes/objects?
+ * - it is extended by [CvLoggerActivity], [CvNavigatorActivity], and SmasMainActivity
+ *   - t allows reusing functionality using Helper UI classes/objects?
  */
 @AndroidEntryPoint
 abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
@@ -76,7 +75,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   protected abstract val id_btn_whereami: Int
 
   private val C by lazy { CONST(applicationContext) }
-
 
   @Suppress("UNCHECKED_CAST")
   override val view_model_class: Class<DetectorViewModel> =
@@ -172,7 +170,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
         true
       }
 
-      if (!DBG.SLR) {
+      if (!DBG.USE_SPACE_SELECTOR) {
         LOG.E(TG, "$MT: Forcing space: $BUID_HARDCODED")
         dsCvMap.setSelectedSpace(BUID_HARDCODED)
       }
@@ -297,16 +295,13 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
    */
   override fun onMapReady(googleMap: GoogleMap) {
     val MT = ::onMapReady.name
-    LOG.I(TG, MT)
-
-    LOG.E(TG, "$MT: map ready")
+    LOG.W(TG, "$MT: map ready")
 
     VM.ui.map.setup(googleMap, this)
     lifecycleScope.launch(Dispatchers.Main) {
       VM.ui.localization.setup()
       collectOwnUserLocation()
     }
-
   }
 
   override fun onProcessImageFinished() {
@@ -324,7 +319,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   fun collectDetections() {
     if (collectingDetections) return
     collectingDetections=true
-
     lifecycleScope.launch(Dispatchers.IO) {
       VM.detectionsLOC.collectLatest {
         it.forEach { rec ->
@@ -335,7 +329,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   }
 
   var firstLevelLoaded = false
-
   open fun onFirstLevelLoaded() {
     val MT = ::onFirstLevelLoaded.name
     LOG.D2(TG, "$MT: ${app.wLevel?.levelNumber()}")
@@ -347,7 +340,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     lifecycleScope.launch(Dispatchers.IO) {
       if (app.wLevel != null) {
         VM.waitForUi()
-
         VM.ui.map.markers.updateLocationMarkerBasedOnFloor(app.wLevel!!.levelNumber())
         loadPOIsAndConnections()
       }
@@ -358,7 +350,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
           app.userOnOtherFloor() -> MapBounds.outOfBounds
           else -> MapBounds.inBounds
         }
-
         boundState
       }
     }
@@ -366,7 +357,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   suspend fun loadPOIsAndConnections() {
     val MT = ::loadPOIsAndConnections.name
-      if (!DBG.uim) return
+      if (!DBG.IMU) return
 
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         VM.downloadingPoisAndConnections=true
@@ -445,28 +436,24 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
             LOG.D(TG, "Changing to ${app.wLevel?.prettyFloor}: ${coord.level}")
             // app.showToast(lifecycleScope, )
           }
-
           app.wLevels.moveToFloor(VM, coord.level)
         }
       }
     }
   }
 
-
   /**
-   * TODO: for this (and any similar code that loops+delay):
    * - create a variable and observe it (a Flow or something observable)
    */
   fun updateModelName() {
     val MT = ::updateModelName.name
     LOG.D3(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
-      while (!VM.initedDetector) delay(100)
+      VM.waitForDetector()
 
       val modelInfo = "$actName | ${VM.model.modelName}"
       LOG.V3(TG, "$MT: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
     }
   }
-
 }

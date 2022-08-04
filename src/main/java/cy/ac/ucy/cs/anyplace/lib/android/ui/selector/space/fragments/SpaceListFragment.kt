@@ -20,7 +20,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.NetworkListener
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.databinding.FragmentSpacesListBinding
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -28,23 +28,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-fun RecyclerView.executeSafely(func : () -> Unit) {
-  if (scrollState != RecyclerView.SCROLL_STATE_IDLE) {
-    val animator = itemAnimator
-    itemAnimator = null
-    func()
-    itemAnimator = animator
-  } else {
-    func()
-  }
-}
 
 /**
- * This implementation should be discarded..
- * Some things are obsolete. (Observers..)
- * Some things are crashing (and are disabled)
- *
- * It uses NavController
+ * This implementation is complex..  (part of Space Selector)
+ * - Some things are obsolete. (Observers..)
+ * - It uses NavController
  */
 @AndroidEntryPoint
 class SpaceListFragment : Fragment() {
@@ -327,5 +315,16 @@ class SpaceListFragment : Fragment() {
       binding.shimmerLayout.visibility = View.GONE
       binding.recyclerView.visibility = View.VISIBLE
     }
+  }
+}
+
+fun RecyclerView.executeSafely(func : () -> Unit) {
+  if (scrollState != RecyclerView.SCROLL_STATE_IDLE) {
+    val animator = itemAnimator
+    itemAnimator = null
+    func()
+    itemAnimator = animator
+  } else {
+    func()
   }
 }

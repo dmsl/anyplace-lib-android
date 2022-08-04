@@ -10,6 +10,10 @@ import java.io.IOException
 import java.io.InputStream
 import java.lang.Exception
 
+/**
+ * Can be used for demo purposes
+ * - e.g., read some stuff from the assets folder of the application
+ */
 open class AssetReader(val ctx: Context) {
   private val gson = Gson()
 

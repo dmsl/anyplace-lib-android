@@ -15,9 +15,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_LOGGER
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
@@ -61,6 +61,14 @@ enum class MapBounds {
  *  - the Anyplace API (anyplace-core)
  *  - Preferences
  *  - the FileCache
+ *
+ *  It is specialized by different apps:
+ *  - NavigatorApp: this one has CvLogger and also CvNavigator activities
+ *    - no need for a separate logger app
+ *    - its on the [navigator] app module (outside of the lib-android)
+ *  - SmasApp: has CvLogger and SMAS functionality (like CvNavigator + Chat + Alerts)
+ *    - its on the [smas] app module (outside of the lib-android)
+ *  - LoggerApp: this one is outdated....
  */
 abstract class AnyplaceApp : Application() {
   private val TG = "app"

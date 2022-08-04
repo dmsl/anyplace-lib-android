@@ -22,9 +22,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.ImgDialog
-import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.smas.MsgDeliveryDialog
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.chat.ImgDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.chat.MsgDeliveryDialog
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.AnyplaceBlue
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgGetNW
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.MsgSendNW
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_LOCATION

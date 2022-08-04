@@ -4,17 +4,16 @@ import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToChatMessages
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.wrappers.ChatMsgWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +24,9 @@ import retrofit2.Response
 import java.lang.Exception
 import java.net.ConnectException
 
+/**
+ * Fetches the chat messages
+ */
 class MsgGetNW(
   private val app: NavigatorAppBase,
   private val VM: SmasChatViewModel,
@@ -258,7 +260,7 @@ class MsgGetNW(
     val MT = ::appendMessages.name
     LOG.D2(TG,"$MT: New: ${msgs.size} Old: ${app.msgList.size}")
     msgs.forEach { obj ->
-      val msgH = ChatMsgHelper(app, repo, obj)
+      val msgH = ChatMsgWrapper(app, repo, obj)
       val contents = msgH.content()
 
       // cache images

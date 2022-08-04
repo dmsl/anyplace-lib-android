@@ -12,7 +12,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.cvMo
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.entityToCvModelClasses
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.localizationFingerprintTempToEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.smasQueries
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.wrappers.ChatMsgWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
@@ -33,7 +33,7 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
 
   suspend fun insertMsg(msg: ChatMsg) {
     val MT = ::insertMsg.name
-    LOG.D4("$MT: DB: insert: ${msg.mid}: ${ChatMsgHelper.content(msg)}")
+    LOG.D4("$MT: DB: insert: ${msg.mid}: ${ChatMsgWrapper.content(msg)}")
     DAO.insertChatMsg(chatMsgtoEntity(msg))
   }
 

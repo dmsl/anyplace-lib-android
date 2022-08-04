@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
@@ -25,10 +25,12 @@ import retrofit2.Response
 import java.lang.Exception
 
 /**
- * Manages Location fetching of other users
- *
- * NOTE: this is from SMAS API.
- * But cv localization should have been Anyplace API.
+ * Sends/Uploads the fingerprints to the backend.
+ * - Can send the on the spot (no longer used)
+ * - or from cache: (currently in use):
+ *   - opens a cache file
+ *   - pops a line and securely uploads it
+ *   - keeps doing that until all lines are uploaded..
  */
 class CvFingerprintSendNW(
         private val app: NavigatorAppBase,
@@ -99,7 +101,9 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
+    LOG.E(TG, "$MT: auto update?")
     if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
+      LOG.E(TG, "$MT: auto update? yes")
       val fetched = VM.nwCvFingerprintsGet.safeCall(false)
       if (fetched>0) {
         reportMsg+="\nFetched $fetched fingerprints."

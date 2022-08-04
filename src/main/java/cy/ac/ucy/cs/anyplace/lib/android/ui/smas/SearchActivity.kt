@@ -12,10 +12,10 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
- * TODO:ATHX this file is yours. put your all of your stuff here (for poi/user search)
- * This will be merged later with another class (by me).
- * But for now keep everything separate here..
- *
+ * DEMO CODE that was used by Athina (ATH)
+ * - there is an open pull request with some of this functionality in demo mode
+ * - many things are hardcoded by there is a UI component that allows some search
+ *   (on those hardcoded data. by hardcoded: some pois are loaded from assets..)
  */
 @AndroidEntryPoint
 class SearchActivity : CvMapActivity(), OnMapReadyCallback {

@@ -1,7 +1,6 @@
 package cy.ac.ucy.cs.anyplace.lib.android.ui.settings
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
@@ -17,13 +16,12 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvDataStore
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelsWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.SpaceWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelsWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ModelPickerDialog
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.base.SettingsActivity
@@ -40,6 +38,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
+ * Basic CV Settings of the application
+ * - shown in both SMAS/Navigator, and Logger
+ *   - logger makes visible an extra preference-category
+ *
  * Accepts a serialized [Space] as an argument (using [Bundle]).
  * Has similarities with [SettingsCvLoggerFragment]
  */
@@ -117,15 +119,17 @@ class SettingsCvActivity: SettingsActivity() {
       val MT = ::onCreatePreferences.name
       setPreferencesFromResource(R.xml.preferences_cv, rootKey)
 
+      // a datastore must be binded to preferenceDataStore
       preferenceManager.preferenceDataStore = ds
 
+      // these are not used.. (see [IntentExtras])
       // used to accept the selected space. but this is not used anymore.. [spaceH], [levelsH], and [levelH]
       val extras = requireActivity().intent.extras
       spaceH = IntentExtras.getSpace(requireActivity(), repoAP, extras, ARG_SPACE)
       levelsH = IntentExtras.getFloors(spaceH, extras, ARG_FLOORS)
       levelH = IntentExtras.getFloor(spaceH, extras, ARG_FLOOR)
 
-      // bind DataStore values to the preference XML
+      // BINDING DataStore VALUES TO THE PREFERENCE XML
       lifecycleScope.launch {
         val prefs = ds.read.first()
 
@@ -172,7 +176,7 @@ class SettingsCvActivity: SettingsActivity() {
 
     private suspend fun showLoggerPreferences() {
       val MT = ::showLoggerPreferences.name
-      LOG.W(TG, "$MT")
+      LOG.W(TG, MT)
       if (app.isLogger()) {
         LOG.E(TG, "$MT: showing")
         val pref = findPreference<PreferenceCategory>(getString(R.string.prefcat_cv_logging))
@@ -185,7 +189,7 @@ class SettingsCvActivity: SettingsActivity() {
       val pref = findPreference<Preference>(getString(R.string.pref_anyplace_server))
       pref?.setOnPreferenceClickListener {
         LOG.D(TG, MT)
-        startActivity(Intent(requireActivity(), SettingsServerActivity::class.java))
+        startActivity(Intent(requireActivity(), SettingsAnyplaceServerActivity::class.java))
         true
       }
     }
@@ -231,15 +235,9 @@ class SettingsCvActivity: SettingsActivity() {
       }
     }
 
-
     private fun setupDownloadCvMap(app: AnyplaceApp, VM: CvViewModel) {
       val MT = ::setupDownloadCvMap.name
       val pref = findPreference<Preference>(getString(R.string.pref_loc_cv_map))
-
-      if (!DBG.CVM) {
-        pref?.isVisible = false
-        return
-      }
 
       pref?.setOnPreferenceClickListener {
         LOG.W(TG, "$MT: setting up")
@@ -263,7 +261,6 @@ class SettingsCvActivity: SettingsActivity() {
       }
     }
 
-
     fun getSelectedSpaceSummary(value: String) : String {
       return value.ifEmpty { "No space selected" }
     }
@@ -272,7 +269,7 @@ class SettingsCvActivity: SettingsActivity() {
       val MT = ::clearAvailableSpaces.name
       val pref = findPreference<Preference>(getString(R.string.pref_clear_available_spaces))
 
-      if (!DBG.SLR) { pref?.isVisible = false; return }
+      if (!DBG.USE_SPACE_SELECTOR) { pref?.isVisible = false; return }
 
       pref?.setOnPreferenceClickListener {
         LOG.W(TG, "$MT: setting up")

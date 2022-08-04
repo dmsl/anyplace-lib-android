@@ -32,6 +32,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Has all [GoogleMap] related functionality
+ * - manages markers, overlays polylines
+ *   - these are further broken down into separate classes
+ */
 class GmapWrapper(
         private val app: AnyplaceApp,
         private val scope: CoroutineScope,
@@ -49,7 +54,7 @@ class GmapWrapper(
 
   private val assetReader by lazy { AssetReader(ctx) }
   /** Overlays on top of the map, like Heatmaps */
-  val overlays by lazy { Overlays(ctx, scope) }
+  val overlays by lazy { MapOverlays(ctx, scope) }
   val wrOverlays by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI, overlays) }
 
   lateinit var mapView : MapView
@@ -151,8 +156,8 @@ class GmapWrapper(
             return@setOnInfoWindowClickListener
           }
 
-          LOG.E(TG, "$method: USER: ${metadata.uid}")
-          LOG.E(TG, "$method: LOCATION: ${metadata.coord}")
+          LOG.W(TG, "$method: USER: ${metadata.uid}")
+          LOG.W(TG, "$method: LOCATION: ${metadata.coord}")
 
           val uid = metadata.uid
           val deck = metadata.coord.level
@@ -227,7 +232,7 @@ class GmapWrapper(
   suspend fun loadSpace() : Boolean {
     LOG.W()
     try {
-      if (!DBG.SLR) {
+      if (!DBG.USE_SPACE_SELECTOR) {
         if(!loadSpaceFromAssets()) return false
       } else {
         val prefs = VM.dsCvMap.read.first()
@@ -244,7 +249,6 @@ class GmapWrapper(
 
   /**
    * Cache is prepared by [SpaceSelector]
-   * TODO put other act here
    */
   private fun loadSpaceFromCache(selectedSpace: String): Boolean {
     val method = ::loadSpaceFromCache.name
@@ -372,5 +376,4 @@ class GmapWrapper(
     LOG.D(TG, method)
     markers.setOwnLocationMarker(coord, locMethod, app.alerting)
   }
-
 }

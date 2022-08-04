@@ -33,8 +33,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 /**
- * NOTE: THIS ACTIVITY WAS CREATED FROM: [SmasMainActivity]
+ * CV Navigator Activity
+ * NOTE: THIS ACTIVITY WAS CREATED/EXTRACTED FROM: [SmasMainActivity]
  * - Probably more things need to be done to clean it up.
+ *
+ * It's like SMAS, without chat and alerts
+ * - markers, users, etc still appear
+ *
+ * TODO: a better approach would be to:
+ * - create a CvNavigatorBaseActivityt
+ * - put in there all common functionality
+ * - and extend it here, and also in [SmasMainActivity] to specialize
+ * - this parent class should be abstract
  */
 @AndroidEntryPoint
 class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
@@ -110,7 +120,6 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
     val MT = ::setupMapLongClick.name
 
     // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
-    // VM.ui.map.obj: CHECK: not using the [VM.ui.map.obj].
     googleMap.setOnMapLongClickListener {
 
       LOG.W(TG, "$MT: long-click received")
@@ -254,8 +263,11 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
     super.onResume()
     val MT = ::onResume.name
     LOG.W(TG, MT)
+
+    dsCvMap.setMainActivity(CONST.START_ACT_NAV)
+
     isActive = true
-    if (DBG.uim) VMsensor.registerListeners()
+    if (DBG.IMU) VMsensor.registerListeners()
   }
 
   override fun setupUiAfterGmap() {
@@ -269,7 +281,7 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TG, "$TG: $MT")
     isActive = false
 
-    if (DBG.uim) VMsensor.unregisterListener()
+    if (DBG.IMU) VMsensor.unregisterListener()
   }
 
   /**
@@ -289,19 +301,6 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
               MainSettingsDialog.FROM_MAIN, this@CvNavigatorActivity, versionStr)
     }
   }
-
-  // var collectorMsgsEnabled = false  // BUGFIX: setting up multiple collectors
-  // /**
-  //  * React to flow that is populated by [nwMsgGet] safeCall
-  //  */
-  // private fun collectMessages() {
-  //   if (!collectorMsgsEnabled) {
-  //     collectorMsgsEnabled = true
-  //     lifecycleScope.launch(Dispatchers.IO) {
-  //       VMsmas.nwMsgGet.collect(app)
-  //     }
-  //   }
-  // }
 
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     val MT = ::onInferenceRan.name

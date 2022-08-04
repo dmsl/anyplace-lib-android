@@ -16,6 +16,18 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 
+/**
+ * BottomSheet for the logger
+ *
+ * NOTE: this used to display more information, like:
+ * - how many objects in a window, total detections, inference time
+ * - it was modifying these components: tvTimeInfo, tvCropInfo, etc..
+ * - Now this functionality is not incorporated..
+ *   - could be done w/ view binding (once the relevant data are ready from the CV Engine
+ *   - I think [onInferenceRan] was called at a relevant place to bind these stats..
+ *
+ *   Extends the base [BottomSheetCvUI]
+ */
 class BottomSheetCvLoggerUI(
   private val act: CvLoggerActivity,
   val VMlog: CvLoggerViewModel,
@@ -23,12 +35,7 @@ class BottomSheetCvLoggerUI(
   val id_btn_logging: Int,
   val visible: Boolean)
   : BottomSheetCvUI(act as DetectorActivityBase, visible) {
-
-  // val llBottomSheet: ConstraintLayout by lazy {act.findViewById(id_bottomsheet) }
-
-  // TODO replace  bu_TvTimeInfo by: tvTimeInfo
-  // TODO replace bu_TvCropInfo: with tvCropInfo
-  // TODO replace ivBottomSheetArrow with  ivArrowImg
+  private val TG = "ui-cv-logger-bottomsheet"
 
   private val id_btn_timer = R.id.button_cameraTimer
   private val id_progressBar_timer = R.id.progressBar_timer
@@ -53,9 +60,6 @@ class BottomSheetCvLoggerUI(
   val tvCurWindow: TextView by lazy { act.findViewById(R.id.tv_currentWindow) }
   val tvObjTotal: TextView by lazy { act.findViewById(R.id.tv_totalObjects) }
 
-
-  // TODO: in parent BottomSheetCvUI?
-  // NAV COMMON shared between activities? (pre-merge)
   fun bindCvStats() {
     tvElapsedTime.text=VMlog.getElapsedSecondsStr()
     tvObjUnique.text=VMlog.statObjWindowUNQ.toString()
@@ -63,8 +67,6 @@ class BottomSheetCvLoggerUI(
     tvObjTotal.text=VMlog.statObjTotal.toString()
   }
 
-
-  // TODO: in parent BottomSheetCvUI? override?!
   override fun hideBottomSheet() {
     // super.hideBottomSheet() CLR ?
     utlUi.gone(ivArrowImg)
@@ -83,15 +85,12 @@ class BottomSheetCvLoggerUI(
   }
 
   override fun setupSpecialize() {
-
     // Peak height setup
     llGestureLayout.viewTreeObserver.addOnGlobalLayoutListener {
       act.sheetBehavior.peekHeight = ivBottomSheetArrow.bottom + 60
-      LOG.V4(TAG, "peek height: ${act.sheetBehavior.peekHeight}")
+      LOG.V4(TG, "peek height: ${act.sheetBehavior.peekHeight}")
     }
 
-    // TODO:PM get detectionModel and setup sizes
-    // val model = VMb.detector.getDetectionModel()
     @SuppressLint("SetTextI18n")
     tvCropInfo.text = "<NAN>x<NAN>"
     // binding.bottomUi.cropInfo.text = "${model.inputSize}x${model.inputSize}"

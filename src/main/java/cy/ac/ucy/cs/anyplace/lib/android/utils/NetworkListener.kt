@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 
 /**
- * Asynchronously updating internet connectivity
+ * Asynchronously updating internet connectivity.
+ *
+ * Could be used to provide an internet connectivity button to the app
  */
 class NetworkListener: ConnectivityManager.NetworkCallback() {
   private val isNetworkAvailable = MutableStateFlow(false)

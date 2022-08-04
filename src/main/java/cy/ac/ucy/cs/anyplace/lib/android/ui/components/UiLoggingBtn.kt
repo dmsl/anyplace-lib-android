@@ -9,22 +9,22 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerUI.Companion.ANIMATION_DELAY
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingMode
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.TimerAnimation
-// import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LocalizingStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-
 /**
- * UI Logging Button
+ * UI Component:
+ * - the Logging Button. handles:
+ *   - logging mode and demo mode (RecognitionDemo)
+ *   - uploading to the web locally cached fingerprints
  */
 class UiLoggingBtn(
         private val act: CvLoggerActivity,
@@ -97,9 +97,6 @@ class UiLoggingBtn(
     uiLog.bottom.timer.reset()
   }
 
-  /**
-   * TODO:PM put uiLog.updateUi logic IN TWO METHODS
-   */
   var collecting = false
   fun collectStatus() {
     if (collecting) return
@@ -124,13 +121,12 @@ class UiLoggingBtn(
   }
 
   fun handleMustStore() {
+    val MT = ::handleMustStore.name
     VM.disableCvDetection()
 
-    LOG.D(TG, "$METHOD: stopped must store: visible")
+    LOG.D(TG, "$MT: stopped must store: visible")
     uiLog.bottom.timer.resetBtnClearObjects()
     utlUi.animateAlpha(ui.map.mapView, alphaMax, ANIMATION_DELAY)
-    // CHECK THIS.....
-    // ui.localization.visibilityGone() // dont show this yet..
     utlUi.changeBackgroundCompat(btn, R.color.yellowDark)
     utlUi.text(btn, "long-click on map")
     uiLog.bottom.timer.setToStoreMode()
@@ -139,7 +135,8 @@ class UiLoggingBtn(
 
   var uploadWasVisible=false
   fun startLogging() {
-    LOG.W(TG, "$METHOD")
+    val MT = ::startLogging.name
+    LOG.W(TG, MT)
 
     uploadWasVisible = uiLog.groupUpload.isVisible
     if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
@@ -165,12 +162,14 @@ class UiLoggingBtn(
   }
 
   fun stopLogging() {
+    val MT = ::stopLogging.name
+
     if (uploadWasVisible) showUploadBtn()
     ui.levelSelector.enable()
     utlUi.enable(act.btnSettings)
     uiLog.bottom.showBottomSheet()
 
-    LOG.W(TG, "$METHOD: logging")
+    LOG.W(TG, "$MT: logging")
     VM.disableCvDetection()
     ui.map.mapView.alpha = alphaMax
 
@@ -186,7 +185,9 @@ class UiLoggingBtn(
   }
 
   fun startRecognitionDemo() {
-    LOG.W(TG, "$METHOD: Not logging. Only obj-rec.")
+    val MT = ::startRecognitionDemo.name
+
+    LOG.W(TG, "$MT: Not logging. Only obj-rec.")
     uploadWasVisible = uiLog.groupUpload.isVisible
     if (uploadWasVisible) utlUi.fadeOut(uiLog.groupUpload)
 
@@ -210,7 +211,8 @@ class UiLoggingBtn(
 
 
   fun endRecognitionDemo() {
-    LOG.D3(TG, "$METHOD: stopping demo")
+    val MT = ::endRecognitionDemo.name
+    LOG.D3(TG, "$MT: stopping demo")
     VM.statusLogging.update { LoggingMode.stopped }
     uiLog.bottom.showBottomSheet()
     utlUi.enable(uiLog.btnSettings)
@@ -223,10 +225,6 @@ class UiLoggingBtn(
 
   fun hide() = utlUi.fadeOut(btn)
   fun show() = utlUi.fadeIn(btn)
-
-  // fun visibilityGone() {
-  //   btn.visibility = View.GONE
-  // }
 
   /**
    * Showing a button for uploading to the backend,

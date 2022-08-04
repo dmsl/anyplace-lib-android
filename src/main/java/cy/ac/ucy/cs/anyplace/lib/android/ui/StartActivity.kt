@@ -67,8 +67,8 @@ class StartActivity : BaseActivity() {
       LOG.E(TG, "$MT: $actCode")
 
       val activityClass = when {
-        DBG.SLR && mustSelectSpace && mustLoginToAnyplace -> AnyplaceLoginActivity::class.java
-        DBG.SLR && mustSelectSpace -> SelectSpaceActivity::class.java
+        DBG.USE_SPACE_SELECTOR && mustSelectSpace && mustLoginToAnyplace -> AnyplaceLoginActivity::class.java
+        DBG.USE_SPACE_SELECTOR && mustSelectSpace -> SelectSpaceActivity::class.java
         actCode == CONST.START_ACT_LOGGER -> CvLoggerActivity::class.java
         actCode == CONST.START_ACT_SMAS -> SmasMainActivity::class.java
         actCode == CONST.START_ACT_NAV -> CvNavigatorActivity::class.java

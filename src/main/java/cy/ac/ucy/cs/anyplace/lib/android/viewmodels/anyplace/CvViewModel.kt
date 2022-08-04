@@ -15,7 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.utils.imu.IMU
+import cy.ac.ucy.cs.anyplace.lib.android.sensors.imu.IMU
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.CvUI
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
@@ -41,6 +41,7 @@ import javax.inject.Inject
 
 
 /**
+ *
  * Localization is generally an one-time call. It gets a list of objects from the camera,
  * and calculates the user location.
  *
@@ -59,9 +60,13 @@ enum class TrackingMode {
   off,
 }
 
-/** CvMapViewModel is used as a base by:
+/**
+ *
+ * CvMapViewModel is used as a base by ViewModels of:
  *  - Logger
  *  - SMAS
+ *
+ *  It extends the [DetectorViewModel], which provides the TFlite-related functionality
  */
 @HiltViewModel
 open class CvViewModel @Inject constructor(
@@ -259,7 +264,6 @@ open class CvViewModel @Inject constructor(
   private suspend fun offlineLocalization() : Boolean {
     val choice = app.dsCvMap.read.first().cvAlgoExec
     return when {
-     !DBG.CVM -> false // online
       choice == C.CV_ALGO_EXEC_AUTO && app.hasInternet() -> false // online (more up to date)
       choice == C.CV_ALGO_EXEC_AUTO && !app.hasInternet() -> true // offline
       choice == C.CV_ALGO_EXEC_REMOTE -> false                    // requested online specifically

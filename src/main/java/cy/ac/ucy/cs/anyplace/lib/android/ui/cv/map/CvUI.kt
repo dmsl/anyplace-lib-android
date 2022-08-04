@@ -16,8 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * COMMON UI for CV operations
- *
+ * Enapsulating UI for common CV/Map operations
  * - floors
  * - floorplans
  * - floorSelector
@@ -44,12 +43,11 @@ open class CvUI(
           btn_id_whereami) }
 
   /**
-   * MERGE:PM once image is analyzed
    * Used to be inside analyzeImage I think
    */
   open fun onInferenceRan() {
     val MT = ::onInferenceRan.name
-    LOG.V2(TG, "$MT")
+    LOG.V2(TG, MT)
     // scope.launch(Dispatchers.Main) {
       // TODO: binding bottom sheet stats..
       // bottom.tvTimeInfo.text =  "<TODO>ms" // "${detectionTime}ms"

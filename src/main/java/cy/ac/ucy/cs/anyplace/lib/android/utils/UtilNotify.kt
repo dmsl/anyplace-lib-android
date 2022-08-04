@@ -8,6 +8,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.core.content.getSystemService
 
+/**
+ * Some sound and vibration notifications
+ */
 class UtilNotify(val ctx: Context) {
 
   private fun beep() {

@@ -27,9 +27,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 /**
- * UI Localization Button
+ * UI Component:
+ * Handles localization:
+ * - the localization button
+ *   - localization mode & tracking mode
+ * - the IMU button
  */
 class UiLocalization(
         private val act: CvMapActivity,
@@ -73,7 +76,6 @@ class UiLocalization(
         if (app.dsMisc.showTutorialNavLocalize()) {
          notify.TUTORIAL(scope, "LOCALIZATION: Camera opens to recognize objects and derive user location")
         }
-
       }
     }
   }
@@ -155,7 +157,6 @@ class UiLocalization(
     VM.localizationMode.update { LocalizationMode.stopped }
   }
 
-  // private val TRACKING_DELAY_MS = 5000L
   fun startTrackingLoop(tv: TextView) {
     val MT = ::startTrackingLoop.name
     VM.trackingEmptyWindowsConsecutive=0
@@ -224,7 +225,6 @@ class UiLocalization(
 
           notify.TUTORIAL(VM.viewModelScope, tutMsg)
         }
-
       }
     }
       initedWhereAmI = true
@@ -279,7 +279,6 @@ class UiLocalization(
     if (VM.uiLoaded() && act.uiBottom.bottomSheetEnabled) {
       act.uiBottom.showBottomSheet()
     }
-
     utlUi.enable(act.btnSettings)
   }
 
@@ -316,51 +315,23 @@ class UiLocalization(
 
   fun hide() = utlUi.fadeOut(btn)
   fun show() {
-    // CLR:PM in this file...
-    // if (isDisabled()) {
-    //   enableLocalizationBtn()
-    // } else {
-    // }
     utlUi.fadeIn(btn)
   }
-
-  // var disabledCause = ""
-  // var disabledUserAction: Boolean = false
-  // var disabledAttentionViews = mutableListOf<View>()
-  // fun disableLocalizationBtn(cause: String, requireUserAction: Boolean, attentionViews: List<View>) {
-  //   disabledCause=cause
-  //   disabledUserAction=requireUserAction
-  //   disabledAttentionViews.clear()
-  //   disabledAttentionViews.addAll(attentionViews)
-  //   utlUi.animateAlpha(btn, 0.5f)
-  // // }
-  // private fun enableLocalizationBtn() {
-  //   disabledCause=""
-  //   disabledUserAction=false
-  //   disabledAttentionViews.clear()
-  //   utlUi.animateAlpha(btn, 1f)
-  // }
-  // fun isDisabled() = disabledCause.isNotEmpty()
 
   var imuButtonInited = false
   lateinit var btnImu : MaterialButton
   fun setupButtonImu(btnImu: MaterialButton) {
     val MT = ::setupButtonImu.name
     if (imuButtonInited) return
-    if (!DBG.uim) return
+    if (!DBG.IMU) return
 
     this.btnImu=btnImu
     scope.launch(Dispatchers.IO) {
-      // if (!app.hasDevMode()) {  // ONLY DEV MODE?!
-      //   utlUi.gone(btnImu)
-      //   return@launch
-      // }
 
       LOG.W(TG, MT)
       imuButtonInited=true
 
       utlUi.visible(btnImu)
-
 
       btnImu.setOnClickListener {
         scope.launch(Dispatchers.IO) {
@@ -417,5 +388,4 @@ class UiLocalization(
       VM.imuEnabled=false
     }
   }
-
 }

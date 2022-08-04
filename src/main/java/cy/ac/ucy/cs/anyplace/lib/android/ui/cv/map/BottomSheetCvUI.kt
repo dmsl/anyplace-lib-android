@@ -20,8 +20,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+/***
+ * A more generic BottomSheet.
+ * Only logger shows the bottom sheet as it has a tutorial.
+ *
+ * The default YOLO/TFLite code had a bottom sheet, so we keep it in the code
+ * - for compatibility..
+ */
 open class BottomSheetCvUI(private val act: DetectorActivityBase,
                            val bottomSheetEnabled: Boolean = false) {
+  private val TG = "ui-cv-bottomsheet"
 
   val tvFrameInfo : TextView by lazy { act.findViewById(R.id.frame_info) }
   val tvCropInfo: TextView by lazy { act.findViewById(R.id.crop_info) }
@@ -32,12 +40,9 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
   val utlUi by lazy { UtilUI(act.applicationContext, act.lifecycleScope) }
 
   fun setup() {
-    LOG.W(TAG, " BSheet CV setup")
+    val MT = ::setup.name
+    LOG.W(TG,  MT)
     if (!bottomSheetEnabled) hideBottomSheet()
-
-    // CLR if ok
-    // defaultSetup()
-    // setupStatechanges(ivArrowImg, R.drawable.ic_icon_down, R.drawable.ic_icon_up)
 
     act.sheetBehavior = BottomSheetBehavior.from(act.bottomSheetLayout)
     act.sheetBehavior.isHideable = false
@@ -61,8 +66,7 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
 
     // workaround?
     if(!act.gestureLayout.viewTreeObserver.isAlive || !vto.isAlive) {
-      // CHECK: BUG?
-      LOG.E(TAG, "FAILED TO SETUP BOTTOM SHEET: was not alive")
+      LOG.E(TG,  "FAILED TO SETUP BOTTOM SHEET: was not alive")
       return
     }
 
@@ -77,13 +81,9 @@ open class BottomSheetCvUI(private val act: DetectorActivityBase,
             })
   }
 
-  open fun hideBottomSheet() {
-    act.hideBottomSheet()
-  }
+  open fun hideBottomSheet() { act.hideBottomSheet() }
 
-  open fun showBottomSheet() {
-    act.showBottomSheet()
-  }
+  open fun showBottomSheet() { act.showBottomSheet() }
 
 
   @SuppressLint("SetTextI18n")

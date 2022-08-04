@@ -48,10 +48,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 /**
+ * Main activity of SMAS:
+ *
  * This activity takes care of pulling user locations and messages.
  * When the [SmasChatActivity] runs, this activity is still in the background,
  * providing this functionality:
- *
  *
  *  + How locations are pulled:
  *    - [updateLocationsLOOP] every [locationRefreshMs] ms (settting) it:
@@ -205,6 +206,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
   private fun checkForFingerprintUpdates() {
     val MT = ::checkForFingerprintUpdates.name
+    LOG.W(TG, MT)
     lifecycleScope.launch(Dispatchers.IO) {
       if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
         VM.waitForDetector()
@@ -235,11 +237,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     VM.collectUserOutOfBounds()
   }
 
-
   /* Runs when any of the floors is loaded */
   override fun onLevelLoaded() {
     super.onLevelLoaded()
-
     lifecycleScope.launch(Dispatchers.IO) {
       // workaround: wait for UI to be ready (not the best one)
       VM.waitForUi()
@@ -279,20 +279,20 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
         }
 
         LOG.V2(TG, "loop-location: main: $msg")
-
         delay(VM.prefsCvMap.locationRefreshMs.toLong())
       }
     }
   }
 
-  ////////////////////////////////////////////////
-
   override fun onResume() {
     super.onResume()
     val MT = ::onResume.name
+
+    dsCvMap.setMainActivity(CONST.START_ACT_SMAS)
+
     LOG.W(TG, MT)
     isActive = true
-    if (DBG.uim) VMsensor.registerListeners()
+    if (DBG.IMU) VMsensor.registerListeners()
   }
 
   override fun setupUiAfterGmap() {
@@ -306,7 +306,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TG, "$TG: $MT")
     isActive = false
 
-    if (DBG.uim) VMsensor.unregisterListener()
+    if (DBG.IMU) VMsensor.unregisterListener()
   }
 
   /**

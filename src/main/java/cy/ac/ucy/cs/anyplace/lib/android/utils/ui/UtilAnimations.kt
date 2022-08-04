@@ -13,6 +13,9 @@ import kotlinx.coroutines.launch
 /**
  * Button Utils (some provide backwards compatibility)
  * utlButton
+ *
+ * They execute operations the [Dispatchers.Main]:
+ * - whetever touches the UI must be on the main thread
  */
 open class UtilAnimations(
         private val ctx: Context,
@@ -41,9 +44,8 @@ open class UtilAnimations(
 
   fun attentionZoom(v: View)
           = scope.launch(Dispatchers.Main) {
-            // XXX BUG
-    // v.attentionZoom()
-          }
+    // v.attentionZoom() Bug?
+  }
 
   fun gone(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.GONE }
   fun invisible(v: View) = scope.launch(Dispatchers.Main) { v.visibility = View.INVISIBLE }

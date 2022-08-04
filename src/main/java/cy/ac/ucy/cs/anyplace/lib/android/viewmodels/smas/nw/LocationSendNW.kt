@@ -7,7 +7,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.SmasUser
@@ -23,7 +23,7 @@ import java.lang.Exception
 import java.net.ConnectException
 
 /**
- * Manages Location fetching of other users
+ * Manages Location sending of other users
  */
 class LocationSendNW(
         private val app: NavigatorAppBase,
@@ -80,7 +80,7 @@ class LocationSendNW(
         val req= LocationSendReq(smasUser, getAlertFlag(), userCoords, utlTime.epoch().toString())
         LOG.V2(TG, "$MT  ${req.time}: tp: ${mode.value} deck: ${req.level}: x:${req.x} y:${req.y}")
         val response = repo.remote.locationSend(req)
-        LOG.D2(TG, "$MT: Resp: ${response.message()}" )
+        LOG.V2(TG, "$MT: Resp: ${response.message()}" )
         resp.value = handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
@@ -97,7 +97,7 @@ class LocationSendNW(
   private fun handleResponse(resp: Response<LocationSendResp>): NetworkResult<LocationSendResp> {
     val MT = ::handleResponse.name
 
-    LOG.D2(TG, MT)
+    LOG.V(TG, MT)
     if(resp.isSuccessful) {
       when {
         resp.message().toString().contains("timeout") -> return NetworkResult.Error("Timeout.")

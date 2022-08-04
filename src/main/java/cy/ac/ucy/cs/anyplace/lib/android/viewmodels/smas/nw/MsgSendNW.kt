@@ -5,13 +5,13 @@ import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserCoordinates
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.wrappers.ChatMsgWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.WineRed
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilErr
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_SAME_DECK
@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.first
 import retrofit2.Response
 import java.lang.Exception
 
+/**
+ * Sends Chat messages
+ */
 class MsgSendNW(private val app: NavigatorAppBase,
                 private val VM: SmasChatViewModel,
                 private val RH: RetrofitHolderSmas,
@@ -45,7 +48,7 @@ class MsgSendNW(private val app: NavigatorAppBase,
     if (app.hasInternet()) {
       try {
         val req = MsgSendReq(smasUser, userCoords, mdelivery, msg, mtype, mexten, utlTime.epoch().toString())
-        val content = if (ChatMsgHelper.isImage(mtype)) "<base64>" else msg
+        val content = if (ChatMsgWrapper.isImage(mtype)) "<base64>" else msg
         LOG.D2(TG, "$MT: Send: ${req.time}: mtype: ${mtype} msg: ${content} x,y: ${userCoords.lat},${userCoords.lon} deck: ${userCoords.level} ")
         val response = repo.remote.messagesSend(req)
         LOG.D2(TG, "$MT: Resp: ${response.message()}")

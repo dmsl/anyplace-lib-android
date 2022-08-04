@@ -8,15 +8,15 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.store.SmasDataStore
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.di.RetrofitHolderSmas
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * The Navigator
- * BASE [AnyplaceApp] for [SmasApp] and [NavigatorApp]
+ * BASE class for [SmasApp] and [NavigatorApp]
+ * - keep the common functionality in here..
  */
 abstract class NavigatorAppBase : AnyplaceApp() {
   private val TG ="app-nav-base"

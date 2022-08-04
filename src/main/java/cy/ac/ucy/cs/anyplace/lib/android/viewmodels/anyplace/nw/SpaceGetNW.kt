@@ -13,7 +13,7 @@ import java.lang.Exception
 import java.net.ConnectException
 
 /**
- * Manages Location fetching of [Space]
+ * Manages fetching of a [Space]
  */
 class SpaceGetNW(
         private val app: AnyplaceApp,

@@ -3,26 +3,20 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 import android.content.Context
 import com.google.android.gms.maps.GoogleMap
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.maps.Overlays
+import cy.ac.ucy.cs.anyplace.lib.android.maps.MapOverlays
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
-import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
+import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * Manages the [Overlays] of a level (floor or deck).
+ * Manages the [MapOverlays] of a level (floor or deck).
  * Overlays are: whatever images are drawn on the map
  * - levelplan: floorplan or deckplan
  * - heatmaps
- *
- * TODO:PMX load levelplan here
- * - LevelPlanLoader: put it in here
- * - Overlays.drawFloorplan
- *
- * also [Overlays] ??
  *
  * NOTE: [MapMarkers] and [MapLines] are not images
  */
@@ -32,7 +26,7 @@ open class LevelOverlaysWrapper(
         protected val ctx: Context,
         private val UI: CvUI,
         /** [GoogleMap] overlays */
-        protected val overlays: Overlays
+        protected val mapOverlays: MapOverlays
 ) {
   private val TG = "wr-lvl-overlays"
   private val app = VM.app

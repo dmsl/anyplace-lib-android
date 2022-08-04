@@ -12,6 +12,9 @@ import java.util.*
 fun Coord.toLatLng() = LatLng(this.lat, this.lon)
 fun Location.toLatLng() = LatLng(latitude, longitude)
 
+/**
+ * Location utilities..
+ */
 object utlLoc {
 
   fun toLatLng(coord: Coord) = LatLng(coord.lat, coord.lon)

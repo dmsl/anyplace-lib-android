@@ -6,10 +6,7 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
@@ -22,16 +19,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Polylines placed on the map
+ * Polylines on the map. there are the graph that connections different POIs between them
  * (and everything related to Connections and POIs..)
  *
- * POIs are not rendered at the moment
- * So do Polylines (Connections)
+ * - neither POIs or polylines are renderd on the map
+ * - they are just fetched.
+ * - Instead [PolylineOptions] are created which,
+ *    can be passed to the MapMatching/SticktoGrid algo
+ *   (something like a binary search, for finding closest point in the grid)
  *
- * Instead [PolylineOptions] are created which
- * can be passed to the MapMatching/SticktoGrid algo
- * (something like a binary search, for finding closest point in the grid)
- *
+ * - there is some implementation below that puts polylines on map, but it's buggy.
+ *   - they do not get removed when the floor changes
  */
 class MapLines(private val app: AnyplaceApp,
                private val scope: CoroutineScope,
@@ -76,7 +74,6 @@ class MapLines(private val app: AnyplaceApp,
       }
 
       val space = app.space!!
-
       // add in two map data structures
       val pois=cache.readSpacePOIs(space)
       if (pois == null) {
@@ -87,7 +84,6 @@ class MapLines(private val app: AnyplaceApp,
       pois.objs.forEach { poi->
 
         poiCoords[poi.puid]=LatLng(poi.coordinatesLat.toDouble(), poi.coordinatesLon.toDouble())
-
         val level = poi.levelNumber.toInt()
         if (floorPOIs[level]==null) floorPOIs[level]= mutableListOf()
         floorPOIs[level]?.add(poi)

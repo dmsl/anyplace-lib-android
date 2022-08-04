@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 enum class SnackType {
   NORMAL,
   INFO,
@@ -30,6 +29,7 @@ enum class SnackType {
  * - info notifications
  * - warning
  * - long, short, infinity notifications, requiring using user ACK
+ * - tutorial notifications
  *
  * Convention:
  * - when capital: it's [Snackbar.LENGTH_INDEFINITE]
@@ -65,11 +65,6 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
   fun showDEV(scope: CoroutineScope,
               msg: String,
               duration: Int = Snackbar.LENGTH_SHORT) {
-    if (!DBG.DVO) {
-      app.showToast(scope, msg, Toast.LENGTH_SHORT)
-      return
-    }
-
     scope.launch(Dispatchers.IO) {
       if(app.hasDevMode()) {
         show(scope, msg, duration, SnackType.DEV)
@@ -79,12 +74,6 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
 
   fun show(scope: CoroutineScope, msg: String,
            duration: Int, type: SnackType = SnackType.NORMAL) {
-
-    if (!DBG.DVO) {
-      app.showToast(scope, msg, Toast.LENGTH_SHORT)
-      return
-    }
-
     scope.launch(Dispatchers.Main) {
       val sb = Snackbar.make(rootView, msg, duration)
       sb.setActionTextColor(app.utlColor.White())

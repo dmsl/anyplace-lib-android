@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentManager
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.AnyplaceBlue
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.White
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_ALL
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MDELIVERY_BBOX

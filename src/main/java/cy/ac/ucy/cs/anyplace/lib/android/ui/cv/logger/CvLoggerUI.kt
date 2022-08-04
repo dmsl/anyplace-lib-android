@@ -13,7 +13,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.dialogs.ConfirmActionDialog
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.MainSettingsDialog
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.LoggingMode
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
@@ -23,6 +22,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Controlling various UI components that relate to the logger
+ */
 open class CvLoggerUI(private val act: CvLoggerActivity,
                       private val scope: CoroutineScope,
                       private val VM: CvLoggerViewModel,
@@ -31,16 +33,17 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
   private val app = act.app
   private val notify = app.notify
 
+
+  companion object {
+    const val OPACITY_MAP_LOGGING = 0f
+    const val ANIMATION_DELAY : Long = 100
+  }
+
   fun onInferenceRan() {
     val MT = ::onInferenceRan.name
     LOG.V2(TG, MT)
     bottom.timer.render()
     ui.onInferenceRan()
-  }
-
-  companion object {
-    const val OPACITY_MAP_LOGGING = 0f
-    const val ANIMATION_DELAY : Long = 100
   }
 
   private val utlUi by lazy { UtilUI(act, scope) }
@@ -75,7 +78,6 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
               LOG.V3(TG, "clicked at: $location")
               handleStoreDetections(location)
             } else {
-
               val msg = "Scan some objects first!"
               if (app.dsMisc.showTutorialLoggerMapLongPress()) {
                 val msgTut= "LOGGER LONG-PRESS:\nused only to assign objects on the map.\nResult: $msg"
@@ -107,10 +109,8 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     }
   }
 
-  // CHECK: PMX: UPL: in future: shouldn't be invisible?
   fun canPerformLocalization() =
           VM.statusLogging.value == LoggingMode.stopped
-          // groupUpload.isVisible || VM.statusLogging.value == LoggingStatus.stopped
 
   fun setupButtonSettings() {
     val MT = ::setupButtonSettings.name
@@ -129,13 +129,12 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    * - it merges detections with the local cache
    * - it updates the weighted heatmap
    */
-  fun handleStoreDetections(location: LatLng) {
+  suspend fun handleStoreDetections(location: LatLng) {
     val MT = ::handleStoreDetections.name
-    LOG.E(TG, "$MT")
+    LOG.E(TG, MT)
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
-
-    if (app.wLevel==null) {
+    if (app.wLevel == null) {
       app.showToast(scope, "Cannot store detections. (null floor)", Toast.LENGTH_LONG)
       resetLogging()
       return
@@ -157,7 +156,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     // add marker
     val curPoint = VM.objOnMAP.size.toString()
     val msg = "Scan: $curPoint"
-    val snippet="Objects: $windowDetections\n${LW.prettyFloorCapitalize}: ${LW.obj.number}"
+    val snippet = "Objects: $windowDetections\n${LW.prettyFloorCapitalize}: ${LW.obj.number}"
     val coord = Coord(userCoord.lat, userCoord.lon, userCoord.level)
     ui.map.markers.addScanMarker(coord, msg, snippet)
     ui.map.moveIfOutOufBounds(location)
@@ -198,7 +197,6 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
         // only when required (as markers are lazily initialized)
         if(clearMarkers) ui.map.markers.hideScanMarkers()
 
-        LOG.E(TG, "call: showLocalizationButton checkForUploadCache..")
         showLocalizationButton()  // show again localization button
       }
     }
@@ -212,7 +210,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     LOG.D(TG, "$MT: setup upload button")
     btnUpload.setOnClickListener {
       LOG.W(TG, "$MT: clicked upload")
-      scope.launch(Dispatchers.IO) { // TODO:PMX UPL OK?
+      scope.launch(Dispatchers.IO) {
         utlUi.disable(groupUpload)
         utlUi.disable(btnUpload)
         utlUi.disable(btnUploadDiscard)

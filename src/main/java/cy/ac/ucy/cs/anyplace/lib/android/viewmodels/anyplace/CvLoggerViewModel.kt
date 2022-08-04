@@ -37,7 +37,7 @@ enum class LoggingMode {
 enum class TimerAnimation { running,  reset  }
 
 /**
- * Extends [CvViewModel]:
+ * Extends [CvViewModel] and specializes for the logger
  */
 @HiltViewModel
 class CvLoggerViewModel @Inject constructor(
@@ -162,18 +162,16 @@ class CvLoggerViewModel @Inject constructor(
   }
 
 
-  private fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
+  private suspend fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
     val MT = ::cacheUniqueDetections.name
     LOG.E(TG,"$MT: CvModel: detections: ${recognitions.size}")
 
-    viewModelScope.launch(Dispatchers.IO) {
-      app.cvUtils.initConversionTables(model.idSmas)
-      val detectionsReq = app.cvUtils.toCvDetections(this, recognitions, model)
+    app.cvUtils.initConversionTables(model.idSmas)
+    val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)
 
-      cache.storeFingerprints(userCoords, detectionsReq, model)
-      // INFO: this used to upload fingerprints on the spot
-      // nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
-    }
+    cache.storeFingerprints(userCoords, detectionsReq, model)
+    // INFO: this used to upload fingerprints on the spot
+    // nwCvFingerprintSend.safeCall(userCoords, detectionsReq, model)
   }
 
   fun prefWindowLoggingMs(): Int { return prefsCvMap.windowLoggingMs.toInt() }
@@ -198,9 +196,8 @@ class CvLoggerViewModel @Inject constructor(
    * a Hash Map of locations and object fingerprints
    */
 
-  fun cacheDetectionsLocally(userCoord: UserCoordinates, latLong: LatLng) {
+  suspend fun cacheDetectionsLocally(userCoord: UserCoordinates, latLong: LatLng) {
     statObjTotal+=statObjWindowUNQ
-    // TODO:PM do them in batch later on..
     val detections = objWindowLOG.value.orEmpty()
     objOnMAP[latLong] = detections
 
@@ -209,7 +206,6 @@ class CvLoggerViewModel @Inject constructor(
 
   override fun onLocalizationStarted() {
     super.onLocalizationStarted()
-    if (!DBG.LCLG) return
     val MT = ::onLocalizationStarted.name
 
     LOG.W(TG, "$MT: RUNNING")
@@ -223,7 +219,6 @@ class CvLoggerViewModel @Inject constructor(
 
   override fun onLocalizationEnded() {
     super.onLocalizationEnded()
-    if (!DBG.LCLG) return // PMX: LCLG
 
     if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.groupUpload)
     ui.levelSelector.show()

@@ -13,7 +13,7 @@ import java.lang.Exception
 import java.net.ConnectException
 
 /**
- * Manages Location fetching of [Levels]
+ * Manages fetching of [Levels]
  */
 class FloorsGetNW(
         private val app: AnyplaceApp,

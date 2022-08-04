@@ -29,7 +29,6 @@ val DialogFragment.notify: UtilSnackBarNotifier get() = app.notify
 val AndroidViewModel.app: AnyplaceApp get() = getApplication<AnyplaceApp>()
 val PreferenceFragmentCompat.app: AnyplaceApp get() = this.requireActivity().app
 
-// EXTENSIONS
 // NAVIGATOR APP: can be [NavigatorApp] or [SmasApp]
 val PreferenceFragmentCompat.appSmas: NavigatorAppBase get() = this.requireActivity().appSmas
 val Activity.appSmas: NavigatorAppBase get() = this.application as NavigatorAppBase
@@ -50,7 +49,9 @@ val AndroidViewModel.notify: UtilSnackBarNotifier get() = app.notify
 
 const val TAG_ANYPLACE = "anyplace"
 
-/** Extending Any (Java Object): name convention for loggin: ap_<className>
+/** NOT DO NOT USE IT. See [TG] variables in several places instead
+ *
+ * Extending Any (Java Object): name convention for loggin: ap_<className>
  * This does not always work (especially when wrapped in lambdas).
  * It goes through the stack frame and finds the name of the class that it is being used
  *

@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
@@ -18,8 +19,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * Button Utils (some provide backwards compatibility)
- * utlButton
+ * UI Helper Utils:
+ * - some provide backwards compatibility in some cases
+ * - e.g. changing text of [TextView] or making things [View.VISIBLE], etc..
+ *
+ * They execute operations the [Dispatchers.Main]:
+ * - whetever touches the UI must be on the main thread
  */
 class UtilUI(
         val ctx: Context,
@@ -97,6 +102,10 @@ class UtilUI(
       delay(500)
       animateAlpha(v, 1f,250)
     }
+  }
+
+  fun progress(progressBar: ProgressBar, i: Int) {
+    scope.launch(Dispatchers.Main) { progressBar.progress=i }
   }
 
 }

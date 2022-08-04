@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
+ * UI Component:
  * Circular timer used in the logger
  * - circular prorgess bar
  * - button that shows remaining seconds
@@ -33,8 +34,8 @@ class UiLoggerTimer(
         private val uiLog: CvLoggerUI,
         private val id_btn_timer: Int,
         private val id_progressBar: Int,
-        private val id_btn_clearObjects: Int,
-) {
+        private val id_btn_clearObjects: Int) {
+  val TG = "ui-logger-timer"
 
   private val utlUi by lazy { UtilUI(act, scope) }
 
@@ -62,8 +63,8 @@ class UiLoggerTimer(
       val delayMs = (windowSecs*1000/100).toLong()
       scope.launch(Dispatchers.Main) {
         var progress = 0
-        progressBar.progress=progress
-        progressBar.visibility = View.VISIBLE
+        utlUi.progress(progressBar, progress)
+        utlUi.visible(progressBar)
         while(progress < 100) {
           when (VM.circleTimerAnimation) {
             TimerAnimation.reset -> { reset(); break }
@@ -118,27 +119,22 @@ class UiLoggerTimer(
   }
 
   fun resetProgressBar() {
-    progressBar.visibility = View.INVISIBLE
-    progressBar.progress=0
+    utlUi.invisible(progressBar)
+    utlUi.progress(progressBar, 0)
   }
 
 
   fun resetBtnClearObjects() {
     utlUi.fadeOut(btnClearObj)
-    // TODO: BUG
-    // utlUi.fadeIn(btnClearObj)
-    // scope.launch(Dispatchers.IO) {
-    //   delay(100)
-    //   utlUi.fadeIn(btnClearObj)
-    // }
   }
 
   fun setToStoreMode() {
-    progressBar.progress = 100
-    btnTimer.text = ""
-    progressBar.visibility = View.INVISIBLE
+    val MT = ::setToStoreMode.name
+    utlUi.progress(progressBar, 100)
+    utlUi.text(btnTimer, "")
+    utlUi.invisible(progressBar)
 
-    LOG.V3(TAG, "$METHOD: objects: ${VM.objWindowLOG.value?.size}")
+    LOG.V(TG, "$MT: objects: ${VM.objWindowLOG.value?.size}")
     if (!VM.objWindowLOG.value.isNullOrEmpty()) {
       utlUi.fadeIn(btnTimer)
       utlUi.changeMaterialIcon(btnTimer, R.drawable.ic_delete)
@@ -160,7 +156,7 @@ class UiLoggerTimer(
     if (remaining>0) {
       val windowSecs: Int = VM.prefWindowLoggingSeconds()
       startAnimation(windowSecs)
-      btnTimer.text = utlTime.getSecondsRounded(remaining, windowSecs)
+      utlUi.text(btnTimer, utlTime.getSecondsRounded(remaining, windowSecs))
     } else {
       setToStoreMode()
     }

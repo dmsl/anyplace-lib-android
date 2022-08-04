@@ -20,33 +20,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 
-enum class UserInfoType {
-  OwnUser,  /** Location of current user */
-  OtherUser, /** Location of another user */
-  SharedLocation, /** A chat location share */
-  LoggerScan,  /** A scanned fingerprint, that was generated using the Logger */
-}
-data class UserInfoMetadata(
-        val type: UserInfoType,
-        /** method used to derive the location for current user [UserInfoType.OwnUser].
-         * not applicable for otherusers */
-        val ownLocationMethod: LocalizationMethod,
-        /** SMAS user id */
-        val uid: String,
-        val coord: Coord,
-        val secondsElapsed: Long,
-        val alerting: Boolean
-)
-
 /**
  * Custom Map Markers
- *
- * Can create buttons, etc here..
+ * - fully customizable
+ * - can create buttons, show more data, etc..
  */
 class UserInfoWindowAdapter(
         private val ctx: Context) : GoogleMap.InfoWindowAdapter {
 
   companion object {
+    /** the [type] concersn a user location ma rker */
     fun isUserLocation(type : UserInfoType): Boolean {
       return type == UserInfoType.OwnUser || type == UserInfoType.OtherUser
     }
@@ -67,9 +50,9 @@ class UserInfoWindowAdapter(
     specialize(marker, clayout, tvTitle, tvSubtitle)
   }
 
-  // TODO:PM how to set custom info?
-  // 1. pass custom info
-  // 2. make button to change floor
+  /**
+   * Specialize the [marker] according to its metadata ([marker.tag])
+   */
   @SuppressLint("SetTextI18n")
   fun specialize(marker: Marker, clayout: ConstraintLayout, tvTitle: TextView, tvSubtitle: TextView) {
     val metadata = marker.tag as UserInfoMetadata?
@@ -207,3 +190,31 @@ class UserInfoWindowAdapter(
     return view
   }
 }
+
+/**
+ * Type of the [UserInfoWindowAdapter] card that we will shown:
+ * - it my concern the currrent user, another user
+ * - or might be a chat-shared location, or some logger scan
+ */
+enum class UserInfoType {
+  OwnUser,  /** Location of current user */
+  OtherUser, /** Location of another user */
+  SharedLocation, /** A chat location share */
+  LoggerScan,  /** A scanned fingerprint, that was generated using the Logger */
+}
+
+/**
+ * The metadata that are attached in the [tag] of the Gmap MapMarker
+ * - they pass along information to the [UserInfoWindowAdapter]
+ */
+data class UserInfoMetadata(
+        val type: UserInfoType,
+        /** method used to derive the location for current user [UserInfoType.OwnUser].
+         * not applicable for otherusers */
+        val ownLocationMethod: LocalizationMethod,
+        /** SMAS user id */
+        val uid: String,
+        val coord: Coord,
+        val secondsElapsed: Long,
+        val alerting: Boolean
+)

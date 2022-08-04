@@ -75,13 +75,13 @@
     <!-- SETTINGS ACTIVITIES (3)-->
     <!-- SMAS SERVER SETTINGS -->
     <activity
-        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity"
+        android:name="cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsSmasServerActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat"
         android:label="SMAS Settings" />
     <activity
-        android:name=".android.ui.settings.SettingsServerActivity"
+        android:name=".android.ui.settings.SettingsAnyplaceServerActivity"
         android:exported="true"
         android:screenOrientation="portrait"
         android:theme="@style/AppTheme.Compat"

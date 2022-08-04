@@ -5,7 +5,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.isNumber
 class NetUtils {
 
   companion object {
-    const val MAX_PORT_NUMBER = 65534
+    private const val MAX_PORT_NUMBER = 65534
 
     fun isValidPort(value: String?): Boolean {
       if (String.isNumber(value)) {

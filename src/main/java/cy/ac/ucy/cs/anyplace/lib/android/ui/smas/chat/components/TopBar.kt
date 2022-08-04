@@ -11,12 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
-import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsChatActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.AnyplaceBlue
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.White
+import cy.ac.ucy.cs.anyplace.lib.android.ui.settings.smas.SettingsSmasServerActivity
 
 /**
- *
  * The top bar of the chat activity that includes:
  * - [IconButton]: a back button
  * - [IconButton]: a settings button
@@ -39,7 +38,7 @@ fun TopMessagesBar(onBackClick: () -> Unit) {
           actions = {
             IconButton(
                     onClick = {
-                      val intent = Intent(ctx, SettingsChatActivity::class.java)
+                      val intent = Intent(ctx, SettingsSmasServerActivity::class.java)
                       ctx.startActivity(intent)
                     })
             {

@@ -28,17 +28,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.RepoSmas
 import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
-import cy.ac.ucy.cs.anyplace.lib.android.data.smas.helpers.ChatMsgHelper
+import cy.ac.ucy.cs.anyplace.lib.android.data.smas.wrappers.ChatMsgWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.AnyplaceBlue
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.Black
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.White
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.WineRed
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.AnyplaceBlue
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.Black
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.White
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.WineRed
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 
 /**
- *
  * The main conversation which includes a(n):
  * - [LazyColumn]: for showing the incoming/ already sent messages (scrollable)
  * - [MessageCard]: for each message separately
@@ -103,7 +102,7 @@ fun MessageCard(
 ) {
   val senderIsLoggedUser = (VMchat.getLoggedInUser() == message.uid)
   val ctx = LocalContext.current
-  val msg = ChatMsgHelper(ctx,repo, message)
+  val msg = ChatMsgWrapper(ctx,repo, message)
 
   Column(
           modifier = Modifier.fillMaxSize(),

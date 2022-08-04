@@ -17,14 +17,14 @@ import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.appSmas
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.components.Conversation
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.components.TopMessagesBar
-import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.theme.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.chat.theme.*
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasChatViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasMainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 /**
- * This activity is using []Jetpack Compose](https://developer.android.com/jetpack/compose)
+ * This activity is using [Jetpack Compose](https://developer.android.com/jetpack/compose)
  *
  * IMPORTANT REGARDING Data Access ([ViewModel]):
  *

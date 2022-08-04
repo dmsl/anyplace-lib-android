@@ -19,7 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- *
+ * The activity of the CvLogger.
+ * It extends CvMapActivity (which is also extended by Smas/Navigator)
+ * - and CvMapActivity keeps extending other activities that incorporate the
+ *   ComputerVision/YOLO/TFLite functionality
  */
 @AndroidEntryPoint
 class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
@@ -43,12 +46,10 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   override val id_btn_localization: Int get() = R.id.btn_localization
   override val id_btn_whereami: Int get() = R.id.btn_whereami
 
-
   val id_btn_logging: Int get() = R.id.button_logging
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    app.dsCvMap.setMainActivity(CONST.START_ACT_LOGGER)
   }
 
   @Suppress("UNCHECKED_CAST")
@@ -64,17 +65,15 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     VM = _vm as CvLoggerViewModel
     app.setMainView(findViewById(R.id.layout_root), false)
 
-    lifecycleScope.launch(Dispatchers.IO) {
-      // CHECK: if this crashes (latinit not inited),
-      // do something similar with the [readPrefsAndContinue] methods
-      // or alternatively it could be put in [setupUi]
-      // VM.prefsCvMap = dsCvMap.read.first()
-    }
-
     setupCollectors()
   }
 
-  override fun onResume() { super.onResume() }
+  override fun onResume() {
+    super.onResume()
+
+    // remember logger app (so we can reopen it next time)
+    dsCvMap.setMainActivity(CONST.START_ACT_LOGGER)
+  }
 
 
   /**
@@ -102,7 +101,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
    */
   override fun setupUiAfterGmap() {
     val MT = ::setupUiAfterGmap.name
-
     LOG.D(TG, "$MT: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
@@ -123,9 +121,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     setupUiReactions()
   }
 
-  // TODO:PM put this method in bottom (CvLoggerBottom)
-  // and init it on creation.
-  // and remove all code from [uiLog]
   private fun setupLoggerBottomSheet() {
     VM.uiLog.bottom.timer.setup()
     VM.uiLog.setupButtonSettings()
@@ -142,8 +137,6 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
   }
 
-  /**
-   */
   var collectorsSet=false
   private fun setupCollectors() {
     val MT = ::setupCollectors.name
@@ -185,16 +178,9 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     VM.uiLog.setupOnMapLongClick()
   }
 
-
-  /* Runs when the first of any of the floors is loaded */
-  // override fun onFirstFloorLoaded() { super.onFirstFloorLoaded() }
-
-  /* Runs when any of the floors is loaded */
-  // override fun onFloorLoaded() { super.onFloorLoaded()  }
-
   override fun onInferenceRan(detections: MutableList<Classifier.Recognition>) {
     val MT = ::onInferenceRan.name
-    LOG.V2(TG, "$MT: CvLoggerActivity")
+    LOG.V2(TG, MT)
     VM.uiLog.onInferenceRan()
 
     if (detections.isNotEmpty()) {
@@ -202,5 +188,12 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     }
     VM.processDetections(detections, this@CvLoggerActivity)
   }
+
+
+  /* Runs when the first of any of the floors is loaded */
+  // override fun onFirstFloorLoaded() { super.onFirstFloorLoaded() }
+
+  /* Runs when any of the floors is loaded */
+  // override fun onFloorLoaded() { super.onFloorLoaded()  }
 
 }

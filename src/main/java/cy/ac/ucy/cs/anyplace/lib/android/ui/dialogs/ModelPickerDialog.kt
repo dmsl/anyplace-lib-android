@@ -20,6 +20,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
+/**
+ * Dialog for the model picker
+ * - allows changing the CV Model
+ */
 class ModelPickerDialog(private val dsCv: CvDataStore):
         DialogFragment() {
   val TG = "dialog-model-picker"

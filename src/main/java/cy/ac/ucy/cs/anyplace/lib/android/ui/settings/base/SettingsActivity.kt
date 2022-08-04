@@ -13,6 +13,11 @@ import javax.inject.Inject
 /**
  * Setup the UI using [BaseSettingsActivity],
  * and adding [AnyplaceViewModel], and Anyplace [RepoAP]
+ *
+ * - sets up back button
+ * - initializes the [VMap]
+ * - it is extended... see its usages
+ *
  */
 @AndroidEntryPoint
 abstract class SettingsActivity: BaseSettingsActivity() {

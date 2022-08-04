@@ -22,10 +22,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
-TODO: PM SEPARATE CORE APP (MainViewModel) with something specific
-(e.g. SpaceViewModel, Login)
- This is for Anyplace?
-*/
+ * ViewModel that handles the Anyplace remote API functiolnality:
+ * - e.g. getting anyplace version
+ * - geting a space, or spaces, or floors
+ * - query of spaces
+ *
+ * See all the objects that start with nw, or dbg below for examples..
+ */
 @HiltViewModel
 class AnyplaceViewModel @Inject constructor(
         application: Application,

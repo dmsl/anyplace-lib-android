@@ -2,8 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.utils
 
 import com.google.gson.stream.MalformedJsonException
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +9,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.net.ConnectException
 
-class UtilErr() {
+/**
+ * Encapsulating some [Exception] handling functionality
+ */
+class UtilErr {
   private val TG = "utl-exception"
   companion object {
     private const val MAX_CONSECUTIVE_SAME_ERRORS: Int = 5

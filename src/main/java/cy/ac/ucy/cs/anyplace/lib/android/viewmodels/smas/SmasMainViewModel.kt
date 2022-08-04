@@ -32,8 +32,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Extends [CvViewModel]:
- * - TODO here merge chat / messages
+ * Extends [CvViewModel]. The ViewModel of SMAS
  */
 @HiltViewModel
 class SmasMainViewModel @Inject constructor(
