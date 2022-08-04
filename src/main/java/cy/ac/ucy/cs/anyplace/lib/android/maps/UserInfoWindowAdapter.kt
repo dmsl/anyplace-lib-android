@@ -132,16 +132,20 @@ class UserInfoWindowAdapter(
       btnLocation.backgroundTintList= AppCompatResources.getColorStateList(ctx, colorId)
 
       val prettyLatLng = "   X: ${metadata.coord.lat}\n   Y: ${metadata.coord.lon}"
-      if (metadata.type == UserInfoType.SharedLocation) {
-        val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_close, null)
-        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
-      } else if (metadata.type == UserInfoType.LoggerScan) { // computer vision scan
-        val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_aperture, null)
-        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
-        tvSubtitle.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-      } else {
-        val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_clipboard, null)
-        btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null,null,null)
+      when (metadata.type) {
+        UserInfoType.SharedLocation -> {
+          val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_close, null)
+          btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+        }
+        UserInfoType.LoggerScan -> { // computer vision scan
+          val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_aperture, null)
+          btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+          tvSubtitle.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+        }
+        else -> {
+          val btnDrawable = ResourcesCompat.getDrawable(ctx.resources, R.drawable.ic_clipboard, null)
+          btnLocation.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null,null,null)
+        }
       }
       btnLocation.text = prettyLatLng
 

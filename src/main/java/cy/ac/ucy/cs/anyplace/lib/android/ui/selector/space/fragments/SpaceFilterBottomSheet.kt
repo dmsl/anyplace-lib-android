@@ -60,7 +60,7 @@ class SpaceFilterBottomSheet :  BottomSheetDialogFragment() {
 
     val activity = requireActivity()
     VM = ViewModelProvider(activity)[AnyplaceViewModel::class.java]
-    C=CONST(activity)
+    C=CONST(app)
     ownershipStr = C.DEFAULT_QUERY_SPACE_OWNERSHIP
     spaceTypeStr = C.DEFAULT_QUERY_SPACE_TYPE
 

@@ -25,7 +25,7 @@ class SpaceGetNW(
   /** Network Responses from API calls */
   // private val resp: MutableStateFlow<NetworkResult<UserLocations>> = MutableStateFlow(NetworkResult.Unset())
 
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
   // private lateinit var smasUser : SmasUser
 
   /** Get [Space] */

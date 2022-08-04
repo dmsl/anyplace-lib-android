@@ -2,6 +2,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.consts
 
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
@@ -28,6 +29,7 @@ open class CONST(val ctx: Context) {
     const val ACT_NAME_NAV = "navigator"
   }
 
+  private val app = ctx as AnyplaceApp
   val PREF_CV_START_ACT=  ctx.getString(R.string.pref_cv_start_act)
 
   val DB_NAME = "anyplace_db"
@@ -64,7 +66,7 @@ open class CONST(val ctx: Context) {
   val PREF_RELOAD_CVMAPS = "pref_cv_reload_cvmaps"
   val PREF_RELOAD_LEVELPLAN = "pref_cv_reload_levelplans"  // TODO
 
-  val DEFAULT_PREF_MODEL_NAME = DetectionModel.LASHCO.modelName
+  val DEFAULT_PREF_MODEL_NAME = app.getDefaultDetectionModel()
 
   // Settings used in both contexts (Logger, Navigator)
   val PREF_CV_WINDOW_LOCALIZATION_MS = ctx.getString(R.string.pref_cv_localization_ms)
@@ -86,9 +88,8 @@ open class CONST(val ctx: Context) {
   val PREF_SELECTED_SPACE=ctx.getString(R.string.pref_selected_space)
 
   // COMMON DEFAULTS
-  // TODO:PMX LMIN (LAST MIN): change to false
   val DEFAULT_PREF_CV_DEV_MODE = true
-  val DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION= true
+  val DEFAULT_PREF_CV_AUTOSET_INITIAL_LOCATION= app.getDefaultAutoRestoreOwnLocation()
   val DEFAULT_PREF_CV_FOLLOW_SELECTED_USER= true
   val DEFAULT_PREF_CV_AUTO_UPDATE_FINGERPRINTS = true
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"

@@ -13,6 +13,7 @@
   <string name="smas">SMAS</string>
   <string name="anyplace_settings">Anyplace Settings</string>
   <string name="smas_settings">SMAS Settings</string>
+  <string name="cv_backend_settings">CV Backend Settings</string>
   <string name="messages">Messages</string>
   <string name="msg_delivery">Message Delivery</string>
   <string name="lash_fire">LASH FIRE</string>

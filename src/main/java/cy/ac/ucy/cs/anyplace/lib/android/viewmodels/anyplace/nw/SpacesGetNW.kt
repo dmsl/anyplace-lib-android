@@ -36,11 +36,10 @@ class SpacesGetNW(
         private val repo: RepoAP) {
   private val TG = "nw-spaces-get"
 
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
 
   val resp: MutableStateFlow<NetworkResult<Spaces>> = MutableStateFlow(NetworkResult.Unset())
 
-  // CHECK CHANGE TO THIS: for spacesResponse
   fun safeCall() = VM.viewModelScope.launch(Dispatchers.IO) { getSpaces() }
 
   /**

@@ -20,28 +20,28 @@ class FloorsGetNW(
         private val VMap: AnyplaceViewModel,
         private val RH: RetrofitHolderAP,
         private val repo: RepoAP) {
+  val TG = "nw-floors-get"
 
-  val tag = "nw-floors-get"
-
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
 
   /** Get [Levels]*/
   suspend fun blockingCall(buid: String) : Boolean {
-    LOG.E(TAG, "$tag: blockingCall")
+    val MT = ::blockingCall.name
+    LOG.E(TG, MT)
 
     if (app.hasInternet()) {
-      try {
+      return try {
         val response = repo.remote.getFloors(buid)
-        LOG.D4(TAG, "$tag: ${response.message()}" )
-         return handleResponse(response)
+        LOG.D4(TG, "$TG: ${response.message()}" )
+        handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-        LOG.E(TAG, "$tag: $msg")
-        return false
+        LOG.E(TG, "$TG: $msg")
+        false
       } catch(e: Exception) {
-        LOG.E(TAG, "$tag: ${e.message}")
+        LOG.E(TG, "$TG: ${e.message}")
         e.printStackTrace()
-        return false
+        false
       }
     } else {
       return false
@@ -49,28 +49,29 @@ class FloorsGetNW(
   }
 
   private fun handleResponse(resp: Response<Levels>): Boolean {
-    LOG.D3(TAG)
+    val MT = ::handleResponse.name
+    LOG.D3(TG, MT)
     if(resp.isSuccessful) {
       return when {
         resp.message().toString().contains("timeout") ->  {
-            LOG.E(TAG, "$tag: Timeout")
+            LOG.E(TG, "$TG: Timeout")
             false
         }
         resp.isSuccessful -> {
           if (resp.body() == null) {
-            LOG.E(TAG, "$tag: null floors")
+            LOG.E(TG, "$TG: null floors")
             return false
           }
           VMap.cache.storeJsonFloors(resp.body()!!)
           true
         } // can be nullable
         else ->  {
-          LOG.E(TAG, "$tag: ${resp.message()}")
+          LOG.E(TG, "$TG: ${resp.message()}")
           false
         }
       }
     }
-    LOG.E(TAG, "$tag: ${resp.message()}")
+    LOG.E(TG, "$TG: ${resp.message()}")
     return false
   }
 

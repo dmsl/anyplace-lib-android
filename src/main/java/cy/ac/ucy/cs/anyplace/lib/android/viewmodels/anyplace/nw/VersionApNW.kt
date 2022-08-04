@@ -35,7 +35,7 @@ class VersionApNW(
   val tag = "nw-ap-version-get"
   private val scope = VM.viewModelScope
 
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
   val resp: MutableLiveData<NetworkResult<Version>> = MutableLiveData()
 
   fun displayVersion(versionPreferences: Preference?) =

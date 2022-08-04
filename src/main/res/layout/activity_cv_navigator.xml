@@ -28,10 +28,19 @@
 
     </FrameLayout>
 
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:alpha="0.9"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".android.ui.cv.CvMapActivity"
+        app:layout_anchor="@+id/relativeLayout"
+        app:layout_anchorGravity="center" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_localization"
         style="@style/MaterialButtonIcon"
-        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="100dp"
         android:backgroundTint="@color/darkGray"
         android:text=""
         app:cornerRadius="50dp"
@@ -42,9 +51,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="@id/button_selectedLevel"
         app:layout_constraintRight_toRightOf="@id/button_selectedLevel"
-        app:layout_constraintTop_toBottomOf="@id/button_levelDown"
-        app:layout_constraintVertical_bias="0.22"
-        />
+        app:layout_constraintTop_toTopOf="@id/textView_titleLevel"
+        app:layout_constraintVertical_bias="0.85" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_imu"
@@ -62,7 +70,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/btn_localization"
         app:layout_constraintBottom_toBottomOf="@id/btn_localization"
-    />
+        />
+
+
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -74,27 +84,27 @@
         app:layout_anchor="@+id/relativeLayout"
         app:layout_anchorGravity="top|center">
 
-    <!-- SETTINGS -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_settings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:iconSize="40dp"
-        android:backgroundTint="@color/darkBlue"
-        android:layout_alignParentEnd="true"
-        android:layout_gravity="end"
-        android:layout_margin="8dp"
-        android:elevation="50dp"
-        android:insetLeft="0dp"
-        android:insetTop="0dp"
-        android:insetRight="0dp"
-        android:insetBottom="0dp"
-        app:cornerRadius="50dp"
-        app:icon="@drawable/ic_settings_dark"
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+      <!-- SETTINGS -->
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/button_settings"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          app:iconSize="40dp"
+          android:backgroundTint="@color/colorPrimary"
+          android:layout_alignParentEnd="true"
+          android:layout_gravity="end"
+          android:layout_margin="8dp"
+          android:elevation="50dp"
+          android:insetLeft="0dp"
+          android:insetTop="0dp"
+          android:insetRight="0dp"
+          android:insetBottom="0dp"
+          app:cornerRadius="50dp"
+          app:icon="@drawable/ic_settings_dark"
+          app:iconGravity="textStart"
+          app:iconPadding="0dp"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.appcompat.widget.Toolbar>
 
@@ -243,6 +253,7 @@
 
     <!--    FLOOR SELECTOR: END-->
 
+
   </androidx.constraintlayout.widget.ConstraintLayout>
 
   <include
@@ -252,14 +263,5 @@
       app:behavior_peekHeight="2dp"
       tools:visibility="gone"
       />
-
-  <com.google.android.gms.maps.MapView
-      android:id="@+id/mapView"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:alpha="0.9"
-      app:layout_anchor="@+id/relativeLayout"
-      app:layout_anchorGravity="center"
-      tools:context=".android.ui.cv.CvMapActivity" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

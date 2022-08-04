@@ -31,7 +31,7 @@ class AnyplaceLoginViewModel @Inject constructor(
         private val repoAP: RepoAP) : AndroidViewModel(application) {
   private val TG = "vm-login"
 
-  private val C by lazy { CONST(application.applicationContext) }
+  private val C by lazy { CONST(application) }
   private val _loginForm = MutableLiveData<LoginFormState>()
   val loginFormState: LiveData<LoginFormState> = _loginForm
 

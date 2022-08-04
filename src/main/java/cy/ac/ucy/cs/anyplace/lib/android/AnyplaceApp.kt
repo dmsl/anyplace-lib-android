@@ -12,6 +12,7 @@ import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_LOGGER
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.DaggerAppComponent
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers.LevelWrapper
@@ -69,6 +70,9 @@ abstract class AnyplaceApp : Application() {
   fun isNavigator() = navigatorBaseApp == NavigationAppSelection.Navigator
   fun isSMAS() = navigatorBaseApp == NavigationAppSelection.SMAS
   fun getNavigatorActivityName() = if (isNavigator()) CONST.ACT_NAME_NAV else CONST.ACT_NAME_SMAS
+  fun getDefaultDetectionModel() =
+          if (isNavigator()) DetectionModel.COCO.modelName else DetectionModel.LASHCO.modelName
+  fun getDefaultAutoRestoreOwnLocation() = if (isNavigator()) false else true
 
   fun getNavigatorClass() = if (isNavigator())
       CvNavigatorActivity::class.java as Class<Activity>

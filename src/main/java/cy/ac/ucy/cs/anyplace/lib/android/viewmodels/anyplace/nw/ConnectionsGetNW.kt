@@ -24,7 +24,7 @@ class ConnectionsGetNW(
         private val RH: RetrofitHolderAP,
         private val repo: RepoAP) {
 
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
   private val cache by lazy { Cache(app.applicationContext) }
   private val TG = "nw-ap-conn"
   private val utlErr by lazy { UtilErr() }

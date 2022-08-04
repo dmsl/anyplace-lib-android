@@ -37,7 +37,7 @@ class AnyplaceViewModel @Inject constructor(
   ): AndroidViewModel(application) {
 
   private val app = application as AnyplaceApp
-  private val C by lazy { CONST(app.applicationContext) }
+  private val C by lazy { CONST(app) }
   val cache by lazy { Cache(app.applicationContext) }
 
   val nwVersion by lazy { VersionApNW(app, this, RH, repo) }

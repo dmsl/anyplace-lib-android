@@ -181,7 +181,6 @@ class MainSettingsDialog(
     }
   }
 
-
   private fun setupChatUser() {
     CoroutineScope(Dispatchers.Main).launch {
       val chatUser = requireActivity().app.dsUserSmas.read.first()
@@ -203,14 +202,27 @@ class MainSettingsDialog(
   // private fun setupServerSettings() TODO
 
   private fun setupChatSettings() {
-    binding.btnSettingsChat.setOnClickListener {
+    val btn = binding.btnSettingsSmas
+    if (app.isNavigator()) {
+     btn.text=getString(R.string.cv_backend_settings)
+      val btnDrawable = ResourcesCompat.getDrawable(resources, R.drawable.ic_anyplace, null)
+      btn.setCompoundDrawablesWithIntrinsicBounds(btnDrawable, null, null, null)
+    }
+    btn.setOnClickListener {
       startActivity(Intent(requireActivity(), SettingsChatActivity::class.java))
     }
   }
 
   private fun setupLashfireLink() {
-    binding.btnAboutLashfire.setOnClickListener {
-      startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://lashfire.eu/")))
+    val btn = binding.btnAboutApp
+    val url = if (app.isNavigator()) {
+      btn.text = "About Anyplace"
+      "https://anyplace.cs.ucy.ac.cy"
+    } else {
+      "https://lashfire.eu/"
+    }
+    btn.setOnClickListener {
+      startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
   }
 
