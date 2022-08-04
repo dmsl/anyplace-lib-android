@@ -1,10 +1,7 @@
 package cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.helpers
 
 import com.google.gson.Gson
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
@@ -13,6 +10,7 @@ import java.lang.Exception
 
 /**
  * Extra functionality on top of the [Levels] data class.
+ * [Levels] is at: clients/core/lib/src/main/java/cy/ac/ucy/cs/anyplace/lib/anyplace/models/Level.kt
  */
 class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   private val TG = "wr-levels"

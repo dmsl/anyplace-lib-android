@@ -3,6 +3,20 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.DB_TBL_SPACES
 
+/**
+ * Who owns a space.
+ * The backend does not provide directly this information.
+ * But by fetching the spaces in this order, this information is derived
+ * - user owned spaces
+ * - user accessible spaces (owned & coOwned)
+ * - public spaces
+ *
+ * All these can be put to ROOM/SQLite, along with [SpaceOwnership] information
+ * - no duplicates will be inserted
+ *
+ * See [SpacesGetNW.storeSpaces] for a DEMO example.
+ *
+ */
 enum class SpaceOwnership {
   ALL,         // Ignore ownwership, show all buildings
   PUBLIC,      // can be accessed by anyone

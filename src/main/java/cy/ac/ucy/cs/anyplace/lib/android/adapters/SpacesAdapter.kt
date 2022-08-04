@@ -20,13 +20,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Recycler View for rendering [Spaces] the dynamic list
- * - list of many [Space] objects
- * - each adapter is responsible for one entry (one [Space]) in that list
+ * Recycler View for rendering a dynamic list of [Spaces]  (part of SpaceSelector):
+ * - the list of many [Space] objects
+ * - the adapter is responsible for one entry (one [Space]) in that list
  *
  * Before opening a [Space] we download several resources using [downloadSpaceResources].
- *
- *
+ * Then it opens the Space either in SMAS or Navigator app
+ * - depending which app si built
  */
 class SpacesAdapter(private val app: AnyplaceApp,
                     private val act: SelectSpaceActivity,
@@ -95,7 +95,6 @@ class SpacesAdapter(private val app: AnyplaceApp,
     }
   }
 
-
   class MyViewHolder(
           private val binding: RowSpaceBinding,
           private val app: AnyplaceApp,
@@ -163,7 +162,6 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
             // if (!downloadOK) {
             //   app.showToast(scope, "Failed to download some resources")
-            //   act.finish()
             // }
 
             val userAP = app.dsUserAP.read.first()

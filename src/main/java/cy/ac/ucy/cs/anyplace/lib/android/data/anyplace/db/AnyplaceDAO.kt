@@ -3,9 +3,13 @@ import androidx.room.*
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Data Access Object for the Anyplace SQLite DB
+ * - if unfamiliar: watch tutorials on ROOM
+ */
 @Dao
 interface AnyplaceDAO {
-  // TODO on conflict? update all except ownership... (unless that was public..)
+  // TODO: on conflict: maybe it's better to update all except ownership
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertSpace(space: SpaceEntity)
 

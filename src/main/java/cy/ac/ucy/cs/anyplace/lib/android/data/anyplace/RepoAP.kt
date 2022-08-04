@@ -9,7 +9,7 @@ import javax.inject.Singleton
  * Anyplace Repository:
  * Has
  * - [ApRemoteSRC]: Anyplace Remote Server connection
- * - [ApLocalSRC]: Anyplace Local Storage TODO Room/SQLite
+ * - [ApLocalSRC]: Anyplace Local Storage
  */
 @Singleton
 class RepoAP @Inject constructor(

@@ -13,6 +13,7 @@ import java.io.FileOutputStream
 
 /**
  * File Cache for SMAS (extending anyplace-lib [Cache])
+ * - it provides some additional functionality for the chat images
  */
 class ChatCache(ctx: Context): Cache(ctx) {
   companion object {

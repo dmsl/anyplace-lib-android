@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -26,7 +25,6 @@ import cy.ac.ucy.cs.anyplace.lib.databinding.ActivitySelectSpaceBinding
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.AnyplaceViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.update
 
 /**
  * Sample activity for fetching [Spaces] and selecting one ([Space]) from the Anyplace backend.
@@ -35,7 +33,8 @@ import kotlinx.coroutines.flow.update
  * It's written in a complicated way.
  * Probably should be written from scratch, or scrapped altogether.
  * This also applies to:
- * - SpaceFilterBottomSheet, SpaceListFragment, SpaceAdapter
+ * - SpaceFilterBottomSheet, SpaceListFragment, SpaceAdapter, ..
+ * - this was made initially as a part of a tutorial for learning MVVM/Kotlin/Android components..
  *
  */
 @AndroidEntryPoint

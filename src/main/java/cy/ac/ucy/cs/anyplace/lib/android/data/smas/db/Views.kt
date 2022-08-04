@@ -4,9 +4,11 @@ import androidx.room.DatabaseView
 import androidx.room.Entity
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
-/**
- * OBJECT: it's CHAT.DB_SMAS_CVMODELS
+/*
+ * This file contains the VIEWS of the SMAS backend
  */
+
+
 @DatabaseView("SELECT O.*, COUNT(*) AS object_count\n" +
         "FROM (\n" +
         "SELECT F.*, O.*\n" +

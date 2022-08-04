@@ -5,7 +5,10 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
 import kotlinx.coroutines.flow.Flow
-
+/**
+ * Data Access Object for the SMAS SQLite DB
+ * - if unfamiliar: watch tutorials on ROOM
+ */
 @Dao
 interface SmasDAO {
   @Insert(onConflict = OnConflictStrategy.REPLACE)

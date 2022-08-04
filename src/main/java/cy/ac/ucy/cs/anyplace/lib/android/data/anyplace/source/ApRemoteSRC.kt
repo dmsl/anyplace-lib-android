@@ -7,7 +7,8 @@ import javax.inject.Inject
 import okhttp3.ResponseBody
 
 /**
- * Anyplace Remote DataSource (uses Anyplace API)
+ * Anyplace Remote DataSource, for the Anyplace API
+ * - its a wrapper on top of Retrofit2
  */
 class ApRemoteSRC @Inject constructor(private val RH: RetrofitHolderAP) {
 

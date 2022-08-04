@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
 /**
- * Based on [CvModelClass]
+ * DB Entity Based on [CvModelClass]
  */
 @Entity(tableName = SMAS.DB_OBJECT)
 data class OBJECT(

@@ -11,13 +11,11 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.RepoAP
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.ConnectionsResp
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.LastValSpaces
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.POIsResp
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.*
 
 /**
  * Extra functionality on top of the [Space] data class.
+ * [Space] is at: clients/core/lib/src/main/java/cy/ac/ucy/cs/anyplace/lib/anyplace/models/Space.kt
  */
 class SpaceWrapper(val ctx: Context,
                    val repo: RepoAP,

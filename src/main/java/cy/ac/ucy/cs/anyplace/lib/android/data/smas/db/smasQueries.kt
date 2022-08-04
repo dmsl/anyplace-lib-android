@@ -4,8 +4,8 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 
 /**
  * SMAS QUERIES:
- *
- * These are not supported (yet) through Room, but are supported through Raw SQLite.
+ * - there as the localization algorithms
+ * - these are not supported (yet) through Room, but are supported through Raw SQLite.
  */
 object smasQueries {
 

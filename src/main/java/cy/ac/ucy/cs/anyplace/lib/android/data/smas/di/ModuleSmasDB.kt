@@ -11,6 +11,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * Module for the Database (DI / Dependency Injection)
+ * - if unfamiliar: see tutorials on Hilt/Dagger for Android
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object ModuleSmasDB {

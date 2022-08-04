@@ -4,6 +4,11 @@ import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 
+/**
+ * Constants for SMAS. These are used by both:
+ * - NavigatorApp and SmasApp
+ * - SMAS is essentially the Computer Vision backend
+ */
 open class SMAS(ctx: Context) : CONST(ctx) {
 
   companion object {

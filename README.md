@@ -26,3 +26,9 @@ In debug mode execute:
 gradle signingReport
 
 then copy SHA-1 hash and paste into the developer console.
+
+---
+
+# SMAS Queries
+- Queries located at: cy/ac/ucy/cs/anyplace/lib/android/data/smas/db/smasQueries.kt
+- Views located at: cy/ac/ucy/cs/anyplace/lib/android/data/smas/db/Views.kt

@@ -12,7 +12,8 @@ import retrofit2.Response
 import javax.inject.Inject
 
 /**
- * SMAS Remote DataSource (uses SMAS API)
+ * SMAS Remote DataSource, for the Anyplace API
+ * - its a wrapper on top of Retrofit2
  */
 class SmasRemoteSRC @Inject constructor(
         private val RH: RetrofitHolderSmas) {

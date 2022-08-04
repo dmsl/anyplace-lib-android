@@ -8,9 +8,11 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
 import com.google.gson.Gson
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Levels
 
 /**
  * Extra functionality on top of the [Level] data class.
+ * [Levels] is at: clients/core/lib/src/main/java/cy/ac/ucy/cs/anyplace/lib/anyplace/models/Level.kt
  */
 class LevelWrapper(val obj: Level,
                    val wSpace: SpaceWrapper) {

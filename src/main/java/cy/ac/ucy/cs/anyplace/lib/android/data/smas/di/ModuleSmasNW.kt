@@ -23,7 +23,8 @@ import javax.net.ssl.X509TrustManager
 data class OkHttpClientBearer(val client: OkHttpClient)
 
 /**
- * Dependency Injection for the Chat backend
+ * Module for the SMAS API backend (DI / Dependency Injection)
+ * - if unfamiliar: see tutorials on Hilt/Dagger for Android
  */
 @Module
 @InstallIn(SingletonComponent::class)

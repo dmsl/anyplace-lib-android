@@ -3,12 +3,11 @@ package cy.ac.ucy.cs.anyplace.lib.android.consts
 import android.content.Context
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
-import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
 
 /**
- * Constant values.
+ * Constant values for all of the apps
  */
 open class CONST(val ctx: Context) {
 
@@ -34,8 +33,8 @@ open class CONST(val ctx: Context) {
 
   val DB_NAME = "anyplace_db"
 
-  val STATUS_OK = 200
   // EXCEPTIONS (messages set by 3rd party libs)
+  // Move these to [MSG] object? ([cy/ac/ucy/cs/anyplace/lib/android/consts/MSG.kt])
   val ERR_MSG_NO_INTERNET= "No Internet."
   val ERR_NO_CV_CLASSES= "Cannot recognize objects.\n(CvModel not initialized)"
 

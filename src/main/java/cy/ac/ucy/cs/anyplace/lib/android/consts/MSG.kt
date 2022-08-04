@@ -1,5 +1,10 @@
 package cy.ac.ucy.cs.anyplace.lib.android.consts
 
+/**
+ * This looks unfinished.
+ * Maybe common msgs could be put here
+ *
+ */
 object MSG {
   val OK_FETCHED_LEVELS = "Successfully fetched levels"
   val OK_FETCHED_POIS = "Successfully fetched POIs"

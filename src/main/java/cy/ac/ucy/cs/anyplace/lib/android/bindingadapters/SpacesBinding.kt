@@ -21,7 +21,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Spaces
 import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 
 /**
- *
  * Provides a binding between the XML of [row_space] and it's values.
  * These methods are essentially called in the XML.
  *

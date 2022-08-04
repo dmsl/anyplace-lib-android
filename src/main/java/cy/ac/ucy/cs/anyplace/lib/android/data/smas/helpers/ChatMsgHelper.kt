@@ -17,7 +17,6 @@ import cy.ac.ucy.cs.anyplace.lib.smas.models.ChatMsg
 
 /**
  * Extra functionality on top of the [ChatMsg] data class.
- * TODO: rename to data the encapsualting class of all helpers
  */
 class ChatMsgHelper(val ctx: Context,
                     val repo: RepoSmas,

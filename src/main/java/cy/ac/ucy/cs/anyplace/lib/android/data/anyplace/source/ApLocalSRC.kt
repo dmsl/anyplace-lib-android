@@ -7,14 +7,13 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.SpaceTypeConverter.Com
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceEntity
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceType
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.db.entities.SpaceOwnership
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * Anyplace Local DataStore (uses SQLite)
+ * Anyplace Local Data Store. (local = database on device)
+ * It's a wrapper on top of ROOM (which manages SQLite)
  */
 class ApLocalSRC @Inject constructor(
   private val DAO: AnyplaceDAO) {

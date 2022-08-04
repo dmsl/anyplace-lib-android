@@ -12,10 +12,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
- * Retrofit Holder For Chat:
+ * Retrofit Holder For Anyplace.
  * It's purpose:
  * - enable dynamical changes of backend URLs
- * - DI (DepInjection) alone would have stale data)
+ * - DI (Dependency Injection) alone would have stale data:
+ *   - the data are injected once (automatically, as DI decides to) and they stay that way
+ *   - with this wrapper, we can manually inject a new object whenever there's a change to it
  */
 data class RetrofitHolderSmas(
         val ctx: Context,

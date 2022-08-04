@@ -5,6 +5,10 @@ import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
+/**
+ * Application Component (DI / Dependency Injection)
+ * - if unfamiliar: see tutorials on Hilt/Dagger for Android
+ */
 @Component
 @Singleton
 interface AppComponent {

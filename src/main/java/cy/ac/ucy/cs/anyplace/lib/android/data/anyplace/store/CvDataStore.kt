@@ -16,9 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
+ * Computer Vision DataStore
  * NOTE: this could be merged with [CvMapDataStore]
  *
- * Computer Vision DataStore
  * Stores:
  * - deep-learning model
  * - whether to reload it

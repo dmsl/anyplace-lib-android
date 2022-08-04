@@ -5,6 +5,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
 
+/**
+ * Data Access Object for the SMAS SQLite DB
+ * - if unfamiliar: watch tutorials on ROOM
+ */
 @Database(
         entities = [
           ChatMsgEntity::class,

@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.DetectionModel
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlImg
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
@@ -19,7 +18,8 @@ import java.nio.file.Paths
 
 /**
  * File cache using [ctx.filesDir]/spaces as a base directory.
- *
+ * Android stores this at: /data/data/<package-name/
+ * Inspect the device files using `Device File explorer` (of Android Studio)
  */
 open class Cache(val ctx: Context) {
   companion object {
@@ -28,7 +28,6 @@ open class Cache(val ctx: Context) {
     //// Space
     const val JS_SPACE="space.json"
     const val JS_FLOORS = "floors.json"
-    // const val JS_FLOORS="floors.json"
     const val JS_SPACE_LASTVAL="s.lastval.json" // Cached settings, like last floor
     const val JS_SPACE_CONNECTIONS="s.connections.json"
     const val JS_SPACE_POIS="s.pois.json"
@@ -58,28 +57,30 @@ open class Cache(val ctx: Context) {
   fun deleteJsonSpace(space: Space) : Boolean {  return File(jsonSpace(space)).delete() }
 
   fun readJsonSpace(buid: String): Space? {
+    val MT = ::readJsonSpace.name
     val filename = jsonSpace(buid)
-    LOG.V4(TG, "$METHOD: file: $filename")
+    LOG.V4(TG, "$MT: file: $filename")
     try {
       val json = File(filename).readText()
       return Gson().fromJson(json, Space::class.java)
     } catch (e: Exception) {
-      LOG.E(TG, "$METHOD: $filename: ${e.message}")
+      LOG.E(TG, "$MT: $filename: ${e.message}")
     }
     return null
   }
 
   fun storeJsonSpace(space: Space): Boolean {
+    val MT = ::storeJsonSpace.name
     val filename = jsonSpace(space)
     return try {
       File(dirSpace(space)).mkdirs()
       val fw = FileWriter(File(filename))
       Gson().toJson(space, fw)
       fw.close()
-      LOG.V3(TG, "$METHOD: $filename")
+      LOG.V3(TG, "$MT: $filename")
       true
     } catch (e: Exception) {
-      LOG.E(TG, "$METHOD: $filename: ${e.message}")
+      LOG.E(TG, "$MT: $filename: ${e.message}")
       false
     }
   }
@@ -91,7 +92,7 @@ open class Cache(val ctx: Context) {
   fun deleteSpaceLastValues(space: Space) {  File(jsonSpaceLastValues(space)).delete()  }
 
   fun saveSpaceLastValues(space: Space, lastVal: LastValSpaces): Boolean {
-    val method = ::saveSpaceLastValues.name
+    val MT = ::saveSpaceLastValues.name
 
     val filename = jsonSpaceLastValues(space)
     return try {
@@ -99,14 +100,11 @@ open class Cache(val ctx: Context) {
       val fw= FileWriter(File(filename))
       Gson().toJson(lastVal, fw)
       fw.close()
-      LOG.V3(TG, "$method: $lastVal")
-      LOG.V3(TG, "$method: $filename")
-
-      LOG.D2(TG, "$method: cached: lastval: ${lastVal.lastFloor} ($filename(") // CLR:PM
+      LOG.V2(TG, "$MT: cached: lastval: ${lastVal.lastFloor} ($filename(")
 
       true
     } catch (e: Exception) {
-      LOG.E(TG, "$method: $filename: ${e.message}")
+      LOG.E(TG, "$MT: $filename: ${e.message}")
       false
     }
   }
@@ -119,7 +117,7 @@ open class Cache(val ctx: Context) {
     try {
       val json = File(filename).readText()
 
-      LOG.W(TG, "$method: CLOAD: lastval from: ($filename(") // CLR:PM
+      LOG.W(TG, "$method: lastval from: ($filename(") // CLR:PM
       return Gson().fromJson(json, LastValSpaces::class.java)
     } catch (e: Exception) {
       LOG.E(TG, "$method: $filename: ${e.message}")
@@ -131,7 +129,6 @@ open class Cache(val ctx: Context) {
   fun jsonSpaceConnections(space: Space) : String {  return "${dirSpace(space)}/$JS_SPACE_CONNECTIONS" }
   fun hasSpaceConnections(space: Space): Boolean { return File(jsonSpaceConnections(space)).exists() }
   fun deleteSpaceConnections(space: Space) {  File(jsonSpaceConnections(space)).delete()  }
-
 
   fun saveSpaceConnections(space: Space, connections: ConnectionsResp): Boolean {
     return saveBuidConnections(space.buid, connections)
@@ -245,11 +242,7 @@ open class Cache(val ctx: Context) {
 
   fun hasFloorplan(level: Level): Boolean { return File(floorplan(level)).exists() }
   fun deleteFloorplan(level: Level) {  File(floorplan(level)).delete()  }
-  // VERIFY:PM
-  // 1. update the json and restore it later
-  // 2. cache the image and check that it is cached.
-  // 3. if cache exists: load from cache.
-  // 4. delete cache option.
+
   fun saveFloorplan(level: Level, bitmap: Bitmap?): Boolean {
     val method = ::saveFloorplan.name
     if (bitmap == null) return false
@@ -269,7 +262,7 @@ open class Cache(val ctx: Context) {
   }
 
   /**
-   *
+   * Read the image of the floorplan or deckplan
    */
   fun readLevelplan(level: Level): Bitmap? {
     val method = ::readLevelplan.name

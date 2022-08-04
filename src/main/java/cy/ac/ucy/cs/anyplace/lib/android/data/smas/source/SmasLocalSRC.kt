@@ -21,7 +21,8 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
- * Smas Local DataStore (uses SQLite)
+ * SMAS Local Data Store. (local = database on device)
+ * It's a wrapper on top of ROOM (which manages SQLite)
  */
 class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
   private val TG = "ds-local-smas"

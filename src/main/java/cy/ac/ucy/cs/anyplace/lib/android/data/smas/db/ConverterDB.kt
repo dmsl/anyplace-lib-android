@@ -9,6 +9,10 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import cy.ac.ucy.cs.anyplace.lib.smas.models.CONSTchatMsg.MTYPE_IMG
 
+/**
+ * Type converters for models/entities
+ * - used in Smas
+ */
 class ConverterDB {
 
   companion object {

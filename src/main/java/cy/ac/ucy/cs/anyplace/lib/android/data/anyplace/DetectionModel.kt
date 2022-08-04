@@ -7,6 +7,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 
 /**
  * Enum which describes tflite models used by Detector.
+ * In future you may change this completely with some api call that gets all this info
+ * - it is kinda hard-coded now..
  */
 enum class DetectionModel(
         /** model's name */

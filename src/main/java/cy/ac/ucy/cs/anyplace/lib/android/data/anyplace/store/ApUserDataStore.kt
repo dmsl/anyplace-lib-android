@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Anyplace User  DataStore
+ * Anyplace User DataStore (for logging into Anyplace)
  */
 @Singleton
 class ApUserDataStore @Inject constructor(@ApplicationContext private val ctx: Context) {

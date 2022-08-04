@@ -11,6 +11,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Module for the Anyplace API backend (DI / Dependency Injection)
+ * - if unfamiliar: see tutorials on Hilt/Dagger for Android
+ */
 @Module
 @InstallIn(SingletonComponent::class) // Formerly ApplicationComponent
 class ModuleAnyplaceNW {

@@ -4,7 +4,7 @@ import androidx.room.Entity
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
 /**
- * Matching SMAS Backend SQLite Database
+ * DB Entity, matching SMAS Backend SQLite Database
  */
 @Entity(
         tableName = SMAS.DB_LOCALIZE_TEMP,

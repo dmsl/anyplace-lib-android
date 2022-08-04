@@ -17,23 +17,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+/**
+ * Querying the [Space]s from SQLITE
+ * This code (along with SpaceSelector) follows a more complicated logic..
+ * (this is mentioned in [SelectSpaceActivity])
+ */
 class SpacesQueryDB(
   VM: AnyplaceViewModel,
   private val repo: RepoAP,
-  private val dsMisc: MiscDS,
-        ) {
+  private val dsMisc: MiscDS) {
   val TG = "dbq-spaces"
 
   val scope = VM.viewModelScope
 
-  @Deprecated("outdated structure? use something else..")
+  @Deprecated("outdated structure? use something else?")
   val searchViewData: MutableLiveData<String> = MutableLiveData()
 
   /** workaround to force re-running the query when changing a space
    * This is because the app stays open and some state is invalid.
    * (terrible workaround, on terrible code)
    */
-  var loaded = false // TODO move in SpaceVM
+  var loaded = false
   private var querySelectSpace = SpaceFilter()
 
   /**
@@ -50,7 +54,7 @@ class SpacesQueryDB(
    */
   fun saveQueryTypeTemp(spaceOwnership: SpaceOwnership, ownershipId: Int,
                         spaceType: SpaceType, spaceTypeId: Int) {
-    LOG.D(TAG, "Saving query type: $spaceOwnership $spaceType")
+    LOG.D(TG,  "Saving query type: $spaceOwnership $spaceType")
     querySelectSpace= SpaceFilter(spaceOwnership, ownershipId, spaceType, spaceTypeId)
   }
 

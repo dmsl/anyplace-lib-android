@@ -19,6 +19,7 @@ import javax.inject.Singleton
 /**
  * Miscellaneous settings for the app that need persistency
  * - Filtering preferences for the [SelectSpaceActivity]
+ * - storing tutorial flags
  */
 @Singleton
 class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {

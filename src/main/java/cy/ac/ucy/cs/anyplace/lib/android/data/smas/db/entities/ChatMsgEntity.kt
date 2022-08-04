@@ -4,7 +4,7 @@ import androidx.room.PrimaryKey
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 
 /**
- * Based on [ChatMsg]
+ * DB Entity based on [ChatMsg]
  */
 @Entity(tableName = SMAS.DB_MSGS)
 data class ChatMsgEntity(
