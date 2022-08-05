@@ -155,25 +155,29 @@ class SpacesAdapter(private val app: AnyplaceApp,
           act.VM.dbqSpaces.runnedInitialQuery=false
           app.backToSpaceSelectorFromOtherActivities=true
 
-          val downloadOK = downloadSpaceResources(space, prefsCv, showNotification)
+          var tries=0
+          while (tries<3) {
+            if (downloadSpaceResources(space, prefsCv, showNotification)) break
 
-          scope.launch(Dispatchers.Main) {
-            act.utlUi.clearAnimation(btn)
-            act.utlUi.enable(btn)
-            act.utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_forward)
-            act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
-            btn.tag=null
-
-            LOG.D2(TG, "$MT: selected space: '${prefsCv.selectedSpace}' ")
-
-            // if (!downloadOK) {
-            //   app.showToast(scope, "Failed to download some resources")
-            // }
-
-            val userAP = app.dsUserAP.read.first()
-            StartActivity.openActivity(prefsCv, userAP, act)
-            app.spaceSelectionInProgress=false
+            LOG.E(TG, "$MT: something went wrong. trying again..")
+            tries++
           }
+
+          act.utlUi.clearAnimation(btn)
+          act.utlUi.enable(btn)
+          act.utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_forward)
+          act.utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+          btn.tag=null
+
+          LOG.D2(TG, "$MT: selected space: '${prefsCv.selectedSpace}' ")
+
+          // if (downloadOK) {
+          //     app.showToast(scope, "Failed to download some resources")
+          // }
+
+          val userAP = app.dsUserAP.read.first()
+          StartActivity.openActivity(prefsCv, userAP, act)
+          app.spaceSelectionInProgress=false
           act.finish()
         }
       }
@@ -187,16 +191,19 @@ class SpacesAdapter(private val app: AnyplaceApp,
      * - POIs, and Connections
      */
     suspend fun downloadSpaceResources(space: Space, prefsCv: CvMapPrefs, showNotif: Boolean) : Boolean {
+      val MT = ::downloadSpaceResources.name
       if(!downloadCvModelFilesAndCvClasses(prefsCv)) return false
-      downloadCvFingerprints(prefsCv)
+      downloadCvFingerprints(prefsCv) // not critical, so not returning a bool
 
       val shortName = if (space.name.length > 20) space.name.take(15) else space.name
       if (showNotif) {
         notify.INFO(scope, "Downloading ${SpaceWrapper.prettyType(space)} $shortName..")
       }
       if (!downloadSpaceAndLevels(prefsCv)) return false // needed before loading space and levels
-      loadSpaceAndLevels(prefsCv)
-      downloadFloorplans()
+      if(!loadSpaceAndLevels(prefsCv))  {
+       LOG.E(TG, "$MT: failed to download space and levels")
+      }
+      downloadFloorplans() // not critical (smas/nav or logger can download those
       if (!downloadConnectionsAndPois()) return false
 
       return true
@@ -253,8 +260,8 @@ class SpacesAdapter(private val app: AnyplaceApp,
     /**
      * 2. Load the downloaded objects
      */
-    private fun loadSpaceAndLevels(prefsCv: CvMapPrefs) {
-      app.loadSpace(scope,
+    private fun loadSpaceAndLevels(prefsCv: CvMapPrefs) : Boolean {
+      return !app.loadSpace(scope,
               app.cache.readJsonSpace(prefsCv.selectedSpace),
               app.cache.readJsonFloors(prefsCv.selectedSpace))
     }

@@ -22,6 +22,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.Classifier
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.yolo.tflite.DetectorActivityBase
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.di.RetrofitHolderAP
+import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlTime
@@ -417,5 +418,16 @@ open class CvViewModel @Inject constructor(
 
   fun setAttachedActivityId(actName: String) {
     attachedActivityId = actName
+  }
+  /**
+   * Stores in cache the last selected floor in [VMB.lastValSpaces] (for the relevant [Space])
+   */
+  fun cacheLastLevel(level: Level?) {
+    val MT = ::cacheLastLevel.name
+    LOG.W(TG, "$MT: ${level?.number.toString()}")
+    if (level != null) {
+      lastValSpaces.lastFloor=level.number
+      app.wSpace.cacheLastValues(lastValSpaces)
+    }
   }
 }

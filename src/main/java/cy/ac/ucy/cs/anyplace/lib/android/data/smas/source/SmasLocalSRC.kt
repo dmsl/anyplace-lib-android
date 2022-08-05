@@ -14,6 +14,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.ConverterDB.Companion.loca
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.smasQueries
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.wrappers.ChatMsgWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.notify
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.HeatmapWeights
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.smas.models.*
 import kotlinx.coroutines.flow.Flow
@@ -83,14 +84,20 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
   }
 
   fun hasCvFingerprints() : Boolean {
-    val cnt = DAO.countCvMapRows()
+    val cnt = DAO.countCvFingerprintRows()
     return cnt!=null && cnt>0
+  }
+
+  fun getCvFingerprintsHeatmapWeights(modelid: Int, deck: Int) : List<HeatmapWeights> {
+    val MT = ::getCvFingerprintsHeatmapWeights.name
+    LOG.E(TG, "$MT: modelid: $modelid deck: $deck")
+    return DAO.getCvFingerprintsHeatmapWeights(modelid, deck)
   }
 
   fun dropCvFingerprints() {
     val MT = ::dropCvFingerprints.name
     LOG.D2(TG, "$MT: deleting CvMap")
-    DAO.dropCvMap()
+    DAO.dropCvFingerprints()
   }
 
   /** Get last fingerprint timestamp from local DB */

@@ -2,8 +2,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
 
 import android.content.Context
 import androidx.fragment.app.FragmentManager
-import com.google.android.gms.maps.GoogleMap
-import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
@@ -11,14 +9,16 @@ import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Enapsulating UI for common CV/Map operations
  * - floors
  * - floorplans
  * - floorSelector
+ *
+ * NOTE: this method seems just a wrapper of ui common elements.
+ * - by itself it doesn't have much functionality..
+ * - maybe some more restructuring/cleanup is needed..
  */
 open class CvUI(
         protected val app: AnyplaceApp,
@@ -58,25 +58,5 @@ open class CvUI(
   fun setupOnFloorSelectionClick(){
     levelSelector.onLevelDown { app.wLevels.tryGoDown(VM) }
     levelSelector.onLevelUp { app.wLevels.tryGoUp(VM) }
-  }
-
-  fun removeHeatmap() {
-    scope.launch(Dispatchers.Main) {
-      map.overlays.uiRemoveHeatmap()
-    }
-  }
-
-  @Deprecated("update to work with fingerprint")
-  fun renderHeatmap(map: GoogleMap, cvMapH: Any?) { // was: cvMapH: CvMapHelperRM?
-    if (cvMapH == null) {
-      LOG.W(TG, "renderHeatmap: floorHelper or cvMap are null.")
-      return
-    }
-
-    // TODO ASYNC...
-    if (app.repoSmas.local.hasCvFingerprints()) {
-      val points= emptyList<WeightedLatLng>()  // cvMapH.getWeightedLocationList() see below sample coce
-      this.map.overlays.createHeatmap(map, points)
-    }
   }
 }

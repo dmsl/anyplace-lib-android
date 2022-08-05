@@ -54,8 +54,7 @@ class GmapWrapper(
 
   private val assetReader by lazy { AssetReader(ctx) }
   /** Overlays on top of the map, like Heatmaps */
-  val overlays by lazy { MapOverlays(ctx, scope) }
-  val wrOverlays by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI, overlays) }
+  val wOverlays by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI) }
 
   lateinit var mapView : MapView
 
@@ -240,7 +239,7 @@ class GmapWrapper(
       }
 
       VM.selectInitialLevel()
-      wrOverlays.observeLevelplanImage(obj)
+      wOverlays.observeLevelplanImage(obj)
       return true
     } catch (e: Exception) {
       return false

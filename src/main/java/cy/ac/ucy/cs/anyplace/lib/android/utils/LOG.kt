@@ -7,7 +7,7 @@ class DBG {
   companion object {
 
     const val LEVEL = 2
-    const val notificationsDisabled = false
+    const val notificationsDisabled = true
     /** load models from assets or from remote */
     const val USE_ASSETS = false
 

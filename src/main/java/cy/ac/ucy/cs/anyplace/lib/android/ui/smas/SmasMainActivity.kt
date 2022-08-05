@@ -149,9 +149,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     val MT = ::setupMapLongClick.name
 
     // BUG:F34LC: for some reason some normal clicks are registered as long-clicks
-    // VM.ui.map.obj: CHECK: not using the [VM.ui.map.obj].
     googleMap.setOnMapLongClickListener {
-
       LOG.W(TG, "$MT: long-click received")
 
       lifecycleScope.launch(Dispatchers.IO) {
@@ -162,7 +160,8 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
           return@launch
         }
 
-        notify.confirmAction("Manually set location?") {
+        // WORKAROUND FOR BUG:F34L
+        notify.confirmAction("Manually set location?", Snackbar.LENGTH_LONG) {
          LOG.E(TG, "$MT: forcing loc...")
           forceUserLocation(it)
         }

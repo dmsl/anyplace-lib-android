@@ -45,7 +45,7 @@ class CvFingerprintsGet(
   /**
    * Get fingerprints for ALL the models (a bit hardcoded..
    */
-  suspend fun blockingCall(buid: String, showNotif: Boolean=true) {
+  suspend fun blockingCall(buid: String, showNotif: Boolean=true) : Boolean {
     val MT = ::blockingCall.name
     LOG.E(TG, MT)
 
@@ -75,9 +75,11 @@ class CvFingerprintsGet(
           }
         }
       }
+      return true
     } catch (e: Exception) {
       LOG.E(TG, "$MT: error: ${e.message}")
     }
+    return false
   }
 
   /**

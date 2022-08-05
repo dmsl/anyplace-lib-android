@@ -19,6 +19,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.R
+import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 
 /**
  * Supporting Jetpack Compose and normal XML-based UIs
@@ -127,6 +128,7 @@ fun Snackbar.addAction(@LayoutRes aLayoutId: Int, aLabel: String, aListener: Vie
     (it.parent as? ViewGroup)?.addView(button)
   }
   button.text = aLabel
+  button.setTextColor(UtilColor(view.context).White())
   /** Ideally we should use [Snackbar.dispatchDismiss] instead of [Snackbar.dismiss] though that should do for now */
   //extraView.setOnClickListener {this.dispatchDismiss(BaseCallback.DISMISS_EVENT_ACTION); aListener?.onClick(it)}
   button.setOnClickListener {this.dismiss(); aListener?.onClick(it)}

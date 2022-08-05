@@ -71,9 +71,10 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
     }
   }
 
-  fun confirmAction(msg: String,
-                    callback: () -> Unit) {
-    val duration = Snackbar.LENGTH_INDEFINITE
+  /**
+   * If [R.layout.snackbar_extra_button] is accepted, then the [callback] runs.
+   */
+  fun confirmAction(msg: String, duration: Int, callback: () -> Unit) {
     val sb = Snackbar.make(rootView, msg, duration).setAction("No") {
       // Do your thing after regular button press
     }.addAction(R.layout.snackbar_extra_button, "Yes"){

@@ -4,6 +4,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import cy.ac.ucy.cs.anyplace.lib.android.consts.smas.SMAS
 import cy.ac.ucy.cs.anyplace.lib.android.data.smas.db.entities.*
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.HeatmapWeights
 import kotlinx.coroutines.flow.Flow
 /**
  * Data Access Object for the SMAS SQLite DB
@@ -44,12 +45,30 @@ interface SmasDAO {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insertCvMapRow(tuple: FINGERPRINT)
 
-  // TODO:PMX
+
+  /**
+   * Getting from FINGEPRINTS:
+   * - weight (count of objects in a particular location; groupped by flid)
+   * - x
+   * - y
+   *
+   * Using deck and modelid as parameters
+   *
+   * @return a [Flow] of a [List] of [HeatmapWeights], which contains weight, x, y
+   */
+  @Query("""
+  SELECT COUNT(*) as weight, x, y
+  FROM ${SMAS.DB_FINGERPRINT}
+  WHERE modelid=:modelid AND deck=:deck
+  GROUP BY flid
+  """)
+  fun getCvFingerprintsHeatmapWeights(modelid: Int, deck: Int): List<HeatmapWeights>
+
   @Query("SELECT COUNT(foid) FROM ${SMAS.DB_FINGERPRINT}")
-  fun countCvMapRows(): Int?
+  fun countCvFingerprintRows(): Int?
 
   @Query("DELETE FROM ${SMAS.DB_FINGERPRINT}")
-  fun dropCvMap()
+  fun dropCvFingerprints()
 
   /** Used to fetch only the newest fingerprints */
   @Query("SELECT time FROM ${SMAS.DB_FINGERPRINT} ORDER BY time DESC LIMIT 1")

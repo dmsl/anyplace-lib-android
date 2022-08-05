@@ -31,6 +31,8 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
+import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -251,7 +253,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun before() {
         LOG.D4(TG, "remove user locations")
         // clear any overlays
-        VM.ui.removeHeatmap()
+        VM.ui.map.wOverlays.removeHeatmap()
         VM.ui.map.removeUserLocations()
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
@@ -397,7 +399,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
         LOG.V2(TG, "$MT: -> level: ${level.number}")
         LOG.V2(TG, "$MT: -> updating cache: level: ${app.level.value?.number}")
-        VM.ui.map.wrOverlays.cacheLastLevel(app.level.value)
+        VM.cacheLastLevel(app.level.value)
         LOG.V2(TG, "$MT: -> loadFloor: ${level.number}")
         VM.ui.levelSelector.lazilyChangeLevel(VM, lifecycleScope)
 
