@@ -18,7 +18,7 @@
       tools:context=".android.ui.user.AnyplaceLoginActivity">
 
     <!-- SETTINGS -->
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button_loginLocal"
         android:layout_width="0dp"
         android:layout_height="50dp"
@@ -28,7 +28,12 @@
         android:enabled="false"
         android:text="@string/action_sign_in"
         android:textColor="@color/white"
+        android:textStyle="bold"
         android:textSize="22sp"
+        android:drawableLeft="@drawable/ic_anyplace"
+        android:drawableTint="@color/white"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:background="@drawable/button_login_local"
         app:layout_constraintBottom_toTopOf="@id/button_loginGoogle"
         app:layout_constraintEnd_toEndOf="parent"

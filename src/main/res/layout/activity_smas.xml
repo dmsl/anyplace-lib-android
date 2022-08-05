@@ -264,7 +264,7 @@
         tools:visibility="visible"
         android:textSize="18sp"
         android:layout_marginTop="5dp"
-        android:textColor="@color/yellow"
+        android:textColor="@color/red"
         android:background="@drawable/bg_round_black_70"
         android:textStyle="bold"
         android:textAlignment="center"

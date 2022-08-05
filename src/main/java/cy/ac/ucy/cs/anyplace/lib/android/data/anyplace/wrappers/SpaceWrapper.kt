@@ -31,21 +31,25 @@ class SpaceWrapper(val ctx: Context,
 
     const val BUID_UCY_CS_BUILDING = "username_1373876832005"
     const val BUID_UCY_FST02 = "building_3ae47293-69d1-45ec-96a3-f59f95a70705_1423000957534"
-
-    const val BUID_STENA_FLAVIA= "vessel_2a2cf77c-91e0-41e2-971b-e80f5570d616_1635154314048"
+    const val BUID_STENA_FLAVIA = "vessel_2a2cf77c-91e0-41e2-971b-e80f5570d616_1635154314048"
 
     const val BUID_HARDCODED = BUID_STENA_FLAVIA
 
-    fun parse(str: String): Space  = Gson().fromJson(str, Space::class.java)
+    fun parse(str: String): Space = Gson().fromJson(str, Space::class.java)
+    fun prettyType(obj: Space) = obj.type
+
+    fun prettyTypeCapitalize(obj: Space) = prettyType(obj).replaceFirstChar(Char::uppercase)
+    fun prettyTypeAllCaps(obj: Space) = prettyType(obj).uppercase()
+
   }
 
   private val cache by lazy { Cache(ctx) }
 
   val prettyType: String
-    get() = obj.type
+    get() = prettyType(obj)
 
   val prettyTypeCapitalize: String
-    get() = prettyType.replaceFirstChar(Char::uppercase)
+    get() = prettyTypeCapitalize(obj)
 
   val prettyTypeAllCaps: String
     get() = prettyType.uppercase()

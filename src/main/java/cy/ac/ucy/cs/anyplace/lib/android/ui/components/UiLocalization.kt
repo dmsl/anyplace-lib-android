@@ -39,7 +39,7 @@ class UiLocalization(
         private val app: AnyplaceApp,
         private val VM: CvViewModel,
         val scope: CoroutineScope,
-        private val wMap: GmapWrapper,
+        private val map: GmapWrapper,
         private val button_id_localization: Int,
         private val button_id_whereami: Int) {
   private val TG = "ui-cv-localization"
@@ -152,6 +152,7 @@ class UiLocalization(
     val MT = ::endTrackingLoop.name
     utlUi.clearAnimation(btn)
     utlUi.clearAnimation(tv)
+    utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
     utlUi.invisible(tv)
     VM.trackingMode.update { TrackingMode.off }
     VM.localizationMode.update { LocalizationMode.stopped }
@@ -166,6 +167,7 @@ class UiLocalization(
       utlUi.flashingLoop(btn)
       utlUi.visible(tv)
       utlUi.flashingLoop(tv)
+      utlUi.changeBackgroundMaterial(btn, R.color.red) // TRK5x
 
       if (app.dsMisc.showTutorialNavTracking()) {
         val msg ="TRACKING:\nRepeatedly performing localization.\n" +
@@ -239,7 +241,7 @@ class UiLocalization(
     val MT = ::collectStatus.name
     if (collecting) return; collecting =true
 
-    scope.launch{
+    scope.launch(Dispatchers.IO) {
       VM.localizationMode.collect { status ->
         LOG.W(TG, "$MT: status: $status")
         when(status) {
@@ -263,12 +265,51 @@ class UiLocalization(
     }
   }
 
-  fun endLocalization() {
+  var whereAmIWasVisible=false
+  suspend fun startLocalization() {
+    val MT = ::startLocalization.name
+
+    LOG.D2(TG, MT)
+    VM.enableCvDetection()
+
+    val tracking = VM.isTracking()
+    VM.currentTime = System.currentTimeMillis()
+    VM.windowStart = VM.currentTime
+    VM.localizationMode.update {
+      if (tracking) LocalizationMode.runningForTracking else LocalizationMode.running
+    }
+    utlUi.visible(btn)
+    if (!tracking) { // TRK5x
+      utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
+    }
+
+    if (!tracking) {
+      val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
+      utlUi.alpha(map.mapView, mapAlpha)
+    }
+
+    if (btnWhereAmI.isVisible) {
+      whereAmIWasVisible=true
+      utlUi.fadeOut(btnWhereAmI)
+    }
+    utlUi.disable(act.btnSettings)
+    utlUi.changeMaterialIcon(act.btnSettings, R.drawable.ic_aperture)
+    utlUi.recordingCameraLoop(act.btnSettings)
+    utlUi.changeBackgroundMaterial(act.btnSettings, R.color.redDark)
+    act.uiBottom.hideBottomSheet()
+  }
+
+  suspend fun endLocalization() {
     val MT = ::endLocalization.name
     VM.disableCvDetection()
     LOG.D2(TG, MT)
-    utlUi.changeBackgroundMaterial(btn, R.color.gray)
-    wMap.mapView.alpha = 1f
+
+    val tracking = VM.isTracking()
+    if (!tracking)  {
+      utlUi.changeBackgroundMaterial(btn, R.color.gray)
+    }
+
+    utlUi.alpha(map.mapView, 1f)
     VM.localizationMode.tryEmit(LocalizationMode.stopped)
 
     if (whereAmIWasVisible) {
@@ -279,38 +320,11 @@ class UiLocalization(
     if (VM.uiLoaded() && act.uiBottom.bottomSheetEnabled) {
       act.uiBottom.showBottomSheet()
     }
+    utlUi.changeMaterialIcon(act.btnSettings, R.drawable.ic_settings)
+    utlUi.changeBackgroundMaterial(act.btnSettings, R.color.colorPrimary)
+    utlUi.clearAnimation(act.btnSettings)
+    utlUi.alpha(act.btnSettings, 1f) // restore alpha after the recording loop
     utlUi.enable(act.btnSettings)
-  }
-
-  var whereAmIWasVisible=false
-  fun startLocalization() {
-    val MT = ::startLocalization.name
-
-    LOG.D2(TG, MT)
-    scope.launch(Dispatchers.IO) {
-      VM.enableCvDetection()
-
-      val tracking = VM.isTracking()
-      VM.currentTime = System.currentTimeMillis()
-      VM.windowStart = VM.currentTime
-      VM.localizationMode.update {
-        if (tracking) LocalizationMode.runningForTracking else LocalizationMode.running
-      }
-      utlUi.visible(btn)
-      utlUi.changeBackgroundMaterial(btn, R.color.colorPrimary)
-
-      if (!tracking) {
-        val mapAlpha = VM.prefsCvMap.mapAlpha.toFloat()/100
-        utlUi.alpha(wMap.mapView, mapAlpha)
-      }
-
-      if (btnWhereAmI.isVisible) {
-        whereAmIWasVisible=true
-        utlUi.fadeOut(btnWhereAmI)
-      }
-      utlUi.disable(act.btnSettings)
-      act.uiBottom.hideBottomSheet()
-    }
   }
 
   fun hide() = utlUi.fadeOut(btn)

@@ -104,6 +104,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     LOG.D(TG, "$MT: init logging click")
 
     VM.uiLog = CvLoggerUI(this@CvLoggerActivity, lifecycleScope, VM, VM.ui)
+    VM.initedUiLog=true
     // bsheet is always visible as we show the tutorial
     VM.uiLog.bottom = BottomSheetCvLoggerUI(this@CvLoggerActivity,
             VM, id_bottomsheet, id_btn_logging, true)

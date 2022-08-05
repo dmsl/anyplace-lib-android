@@ -109,9 +109,13 @@ class LevelsWrapper(val unsortedObj: Levels, val spaceH: SpaceWrapper) {
   fun moveToFloor(VM: CvViewModel, floorNum: Int) {
     val MT = ::moveToFloor.name
     LOG.D2(TG, "$MT: to: $floorNum")
-    val app = VM.app
-    val floor = app.wLevels.getLevel(floorNum)!!
-    moveToFloorLvl(VM, floor)
+    try {
+      val app = VM.app
+      val floor = app.wLevels.getLevel(floorNum)!!
+      moveToFloorLvl(VM, floor)
+    } catch (e: Exception) {
+      LOG.E(TG, "$MT: floor was null..")
+    }
   }
 
   /**

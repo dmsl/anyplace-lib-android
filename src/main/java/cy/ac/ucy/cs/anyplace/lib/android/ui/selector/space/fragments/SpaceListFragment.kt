@@ -112,9 +112,13 @@ class SpaceListFragment : Fragment() {
   private fun setupRecyclerView() {
     val MT = ::setupRecyclerView.name
     LOG.D3(TG, MT)
+    try {
     binding.recyclerView.adapter = mAdapter
     binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     binding.recyclerView.itemAnimator = null  // BUGFIX: https://stackoverflow.com/a/58540280/776345
+    } catch(e: Exception) {
+
+    }
 
     showShimmerEffect()
   }
@@ -167,10 +171,10 @@ class SpaceListFragment : Fragment() {
         VM.dbqSpaces.tryInitialQuery()
         val emptyDB = !app.repoAP.local.hasSpaces()
 
-        LOG.E("$MT: must load spaces: ${!VM.dbqSpaces.loaded}. Back from bsheet: ${args.backFromBottomSheet}")
+        LOG.I("$MT: must load spaces: ${!VM.dbqSpaces.loaded}. Back from bsheet: ${args.backFromBottomSheet}")
 
         if (emptyDB) { // workaround: emptydb
-          LOG.E(TG, "$MT: db was empty. reloading from remote..")
+          LOG.I(TG, "$MT: db was empty. reloading from remote..")
           reloadSpacesFromRemote()
           collectSpaces()
           VM.dbqSpaces.runnedInitialQuery=false
@@ -184,8 +188,8 @@ class SpaceListFragment : Fragment() {
           // if we are back from bottom sheet we must reload
         } else if (!VM.dbqSpaces.loaded || args.backFromBottomSheet) {
           if (args.backFromBottomSheet) {
-            LOG.E("$MT: Back from bottom sheet\n")
-            LOG.E(TG, "$MT:  -> loadSpacesQuery")
+            LOG.I("$MT: Back from bottom sheet\n")
+            LOG.I(TG, "$MT:  -> loadSpacesQuery")
             loadSpacesQuery()
           } else {
             VM.dbqSpaces.spacesQuery.collect { spaces ->
@@ -236,7 +240,6 @@ class SpaceListFragment : Fragment() {
     val MT = ::loadDatabaseResults.name
     LOG.D2(TG, MT)
 
-    hideShimmerEffect()
     spaces.let { mAdapter.setData(toSpaces(spaces)) }
     if (spaces.isNotEmpty()) {
       LOG.V3(TG, "MT: Found ${spaces.size} spaces.")
@@ -245,6 +248,7 @@ class SpaceListFragment : Fragment() {
       showErrorMsg("No results.")
       VM.dbqSpaces.resetQuery()
     }
+    hideShimmerEffect()
     VM.dbqSpaces.loaded = true
   }
 
@@ -275,18 +279,18 @@ class SpaceListFragment : Fragment() {
 
         when (response) {
           is NetworkResult.Success -> {
-            hideShimmerEffect()
             response.data?.let { mAdapter.setData(it) }
             VM.dbqSpaces.loaded = true
+            hideShimmerEffect()
           }
           is NetworkResult.Error -> {
-            if (VM.dbqSpaces.loaded) LOG.E("Error response: after showed success.")
+            if (VM.dbqSpaces.loaded) LOG.E("$MT: Error response: after showed success.")
             mAdapter.clearData()
-            hideShimmerEffect()
             val errMsg = response.message.toString()
             if (activity != null) {
               app.showToast(lifecycleScope, errMsg)
             }
+            hideShimmerEffect()
             LOG.E(TG, errMsg)
           }
           is NetworkResult.Loading -> {

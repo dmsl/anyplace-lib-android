@@ -72,14 +72,14 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
   suspend fun showTutorialNavLocalize() = tutInternal(KEY.tutNavLocalize)
   suspend fun showTutorialNavTracking() = tutInternal(KEY.tutNavTracking)
   suspend fun showTutorialNavWhereAmI() = tutInternal(KEY.tutNavWhereAmI)
-  suspend fun showTutorialNavImu() = tutInternal(KEY.tutNavImu)
+  suspend fun showTutorialNavImu(forcedTutorial: Boolean = false) = tutInternal(KEY.tutNavImu, forcedTutorial)
 
   /**
    * Figures out if a tutorial must be shown, and returns that value.
    * In those cases, it disables it so the next time it won't run
    */
-  private suspend fun tutInternal(key: Preferences.Key<Boolean>) : Boolean {
-    if (!DBG.TUTORIALS) return false  // centrally controlling tutorials
+  private suspend fun tutInternal(key: Preferences.Key<Boolean>, forcedTutorial: Boolean=false) : Boolean {
+    if (!DBG.TUTORIALS && !forcedTutorial) return false  // centrally controlling tutorials
 
     val result = readBoolean(key, true).first()
     if (result) { tutorialWatched(key) } // unset tutorial
@@ -141,19 +141,3 @@ data class SpaceFilter(
         val spaceTypeId: Int=0,
         var spaceName: String=""
   )
-
-
-// CLR:PM
-// val backOnline : Flow<Boolean> = ctx.dsMisc.data
-//     .catch {  exception ->
-//       if (exception is IOException) {
-//         emit(emptyPreferences())
-//       } else { throw exception }
-//     }.map { prefs -> prefs[KEY.backOnline] ?: false }
-
-// val backFromSettings : Flow<Boolean> = ctx.dsMisc.data
-//     .catch {  exception ->
-//       if (exception is IOException) {
-//         emit(emptyPreferences())
-//       } else { throw exception }
-//     }.map { prefs -> prefs[KEY.backFromSettings] ?: false }

@@ -100,6 +100,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
       if (app.spaceSelectionInProgress) {
         val utlUi = UtilUI(applicationContext, lifecycleScope)
         utlUi.attentionInvalidOption(binding.fabFilterSpaces)
+        notify.WARN(lifecycleScope, "Please wait. Download in progress..")
         return@setOnClickListener
       }
 
@@ -133,6 +134,7 @@ class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {
       if (app.spaceSelectionInProgress)  {
         val view = findViewById<View>(R.id.item_settings)
         utlUi.attentionInvalidOption(view)
+        notify.WARN(lifecycleScope, "Please wait. Download in progress..")
       } else {
         startActivity(Intent(this, SettingsCvActivity::class.java))
       }

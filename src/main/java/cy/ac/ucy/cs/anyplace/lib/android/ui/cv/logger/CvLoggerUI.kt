@@ -186,7 +186,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     scope.launch(Dispatchers.IO) {
       if (VM.cache.hasFingerprints()) {
         // wait for the bottom sheet to be initialized
-        while(!uiBottomLazilyInited) delay(100)
+        VM.waitForUiLogger()
 
         bottom.logging.showUploadBtn()
         // val msg = "Please upload local fingerprints to the cloud."

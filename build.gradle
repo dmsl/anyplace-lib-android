@@ -17,14 +17,13 @@ repositories {
 def VERSION_NAME="$VERSION_CODE"
 
 android {
-  compileSdkVersion 32
-
+  compileSdkVersion 31
   namespace 'cy.ac.ucy.cs.anyplace.lib'
 
   defaultConfig {
 
-    minSdkVersion 30
-    targetSdkVersion 32
+    minSdkVersion 29    // AndroidX (android 9)
+    targetSdkVersion 31
 
     // testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     consumerProguardFiles 'consumer-rules.pro'

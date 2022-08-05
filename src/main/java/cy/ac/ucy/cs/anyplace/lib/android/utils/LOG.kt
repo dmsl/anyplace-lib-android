@@ -7,7 +7,7 @@ class DBG {
   companion object {
 
     const val LEVEL = 2
-    const val notificationsDisabled = true // TODO:PMX
+    const val notificationsDisabled = false
     /** load models from assets or from remote */
     const val USE_ASSETS = false
 
@@ -17,14 +17,16 @@ class DBG {
     const val D4 = LEVEL >= 4
     const val D5 = LEVEL >= 5
 
-    /** disabling this may hardcode the space.
-     * at least initially it was like that. more changes might be required though
+    /**
+     * disabling this may hardcode the space.
+     * - 'may', because it might require more changes..
+     *    - at least initially, it was like that.
      */
     const val USE_SPACE_SELECTOR = true
 
     const val TRK = false  // track
-    const val IMU= false   // experimental
     const val WAI = false  //
+    const val IMU= false   // experimental
 
     const val TUTORIALS=false // might be spamming a bit the users
   }

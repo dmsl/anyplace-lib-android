@@ -384,13 +384,14 @@ open class Cache(val ctx: Context) {
   fun storeModelFileLabels(modelid: Int, classes: String): Boolean {
     val MT = ::storeModelFileLabels.name
 
-    LOG.W(TG, MT)
     val mid = modelid.toString()
     return try {
       val dir = dirModel(mid)
       if (!File(dir).exists()) File(dir).mkdirs()
 
-      File(fileModelLabels(mid)).writeText(classes)
+      val filename = fileModelLabels(mid)
+      LOG.W(TG, "$MT: $filename")
+      File(filename).writeText(classes)
       true
     } catch (e: Exception) {
       LOG.E(TG, "$MT: ${e.message}/${e.javaClass}")

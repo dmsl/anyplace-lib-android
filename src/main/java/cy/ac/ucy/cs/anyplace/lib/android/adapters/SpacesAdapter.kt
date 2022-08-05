@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.store.CvMapPrefs
+import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.SpaceWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.StartActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -17,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.lang.IndexOutOfBoundsException
 
 /*
  * Recycler View for rendering a dynamic list of [Spaces]  (part of SpaceSelector):
@@ -52,10 +54,14 @@ class SpacesAdapter(private val app: AnyplaceApp,
 
   override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
     val MT = "onBindViewHolder" // overload resolution ambiguity
-    LOG.V3(TG, "$MT: position: $position (sz: ${spaces.size})")
+    LOG.V2(TG, "$MT: position: $position (sz: ${spaces.size})")
+    try {
     if (spaces.isNotEmpty()) {
       val currentSpace = spaces[position]
       holder.bind(currentSpace, holder.act)
+    }
+    } catch(e: Exception) {
+      LOG.E(TG, "$MT: ${e.message}")
     }
   }
 
@@ -72,23 +78,24 @@ class SpacesAdapter(private val app: AnyplaceApp,
    */
   fun setData(newSpaces: Spaces) {
     val MT = ::setData.name
-    LOG.V5(TG, "$MT: ${newSpaces.spaces.size}")
+    LOG.V(TG, "$MT: ${newSpaces.spaces.size}")
 
     try {
       val utlDiff = UtilSpacesDiff(spaces, newSpaces.spaces)
       val diffUtilResult = DiffUtil.calculateDiff(utlDiff)
       spaces = newSpaces.spaces.toList()
-      scope.launch (Dispatchers.Main){
+      scope.launch(Dispatchers.Main) {
         diffUtilResult.dispatchUpdatesTo(this@SpacesAdapter)
       }
-    } catch (e: Exception) {
+    } catch (e: IndexOutOfBoundsException) {
       LOG.E(TG, "$MT: error: ${e.message}")
     }
   }
 
   fun clearData() {
+    val MT = ::clearData.name
     val size = spaces.size
-    scope.launch(Dispatchers.IO) {
+    scope.launch(Dispatchers.Main) {
       spaces = emptyList()
       notifyItemRangeRemoved(0, size)
     }
@@ -125,7 +132,7 @@ class SpacesAdapter(private val app: AnyplaceApp,
         }
         app.spaceSelectionInProgress=true
 
-        LOG.D2(TG, "$MT: selecting Space: ${space.name} ${space.buid}")
+        LOG.E(TG, "$MT: selecting Space: ${space.name} ${space.buid}")
 
         scope.launch(Dispatchers.IO) {
           app.dsCvMap.setSelectedSpace(space.buid) // store the sapce
@@ -183,9 +190,9 @@ class SpacesAdapter(private val app: AnyplaceApp,
       if(!downloadCvModelFilesAndCvClasses(prefsCv)) return false
       downloadCvFingerprints(prefsCv)
 
-      val shortName = if (space.name.length > 20) "${space.name.take(20)}.." else space.name
+      val shortName = if (space.name.length > 20) space.name.take(15) else space.name
       if (showNotif) {
-        notify.INFO(scope, "Downloading resources of $shortName")
+        notify.INFO(scope, "Downloading ${SpaceWrapper.prettyType(space)} $shortName..")
       }
       if (!downloadSpaceAndLevels(prefsCv)) return false // needed before loading space and levels
       loadSpaceAndLevels(prefsCv)
@@ -202,7 +209,9 @@ class SpacesAdapter(private val app: AnyplaceApp,
       val MT = ::downloadCvModelFilesAndCvClasses.name
       LOG.D(TG, MT)
       if  (act.VMcv.nwCvModelFilesGet.mustDownloadCvModels()) {
-        notify.INFO(scope, "Downloading CvModels..")
+        val msg = "Downloading CvModels. Please wait.."
+        LOG.W(TG, "$MT: $msg")
+        notify.INFO(scope, msg)
         if(!act.VMcv.nwCvModelFilesGet.downloadMissingModels()) { // tflite/weights, and labels
           return false
         }

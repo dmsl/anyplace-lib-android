@@ -3,6 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.sensors.imu
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.compose.ui.input.key.Key.Companion.S
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
@@ -101,7 +102,6 @@ class IMU(
                       Manifest.permission.HIGH_SAMPLING_RATE_SENSORS) != PackageManager.PERMISSION_GRANTED)
         permissions.add(Manifest.permission.HIGH_SAMPLING_RATE_SENSORS)
     }
-
 
     val ALL_PERMISSIONS = 101
     if (permissions.isNotEmpty())

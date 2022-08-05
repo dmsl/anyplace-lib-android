@@ -27,7 +27,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.UtilColor
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.SmasLoginViewModel
-import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityCvbackendLoginBinding
+import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityLoginCvbackendBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -46,7 +46,7 @@ class CvBackendLoginActivity: BaseActivity() {
 
   private lateinit var VM: SmasLoginViewModel
   private lateinit var VMcv: CvViewModel
-  private var _binding: ActivityCvbackendLoginBinding?= null
+  private var _binding: ActivityLoginCvbackendBinding?= null
   private val binding get() = _binding!!
 
   private val utlButton by lazy { UtilUI(applicationContext, lifecycleScope) }
@@ -55,7 +55,7 @@ class CvBackendLoginActivity: BaseActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    _binding = ActivityCvbackendLoginBinding.inflate(layoutInflater)
+    _binding = ActivityLoginCvbackendBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
     app.setMainView(binding.root)

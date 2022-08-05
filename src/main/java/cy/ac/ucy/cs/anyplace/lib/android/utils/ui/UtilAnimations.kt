@@ -39,6 +39,9 @@ open class UtilAnimations(
   fun flashingLoop(v: View)
           = scope.launch(Dispatchers.Main) { v.flashingLoop() }
 
+  fun recordingCameraLoop(v: View)
+          = scope.launch(Dispatchers.Main) { v.recordingCameraLoop() }
+
   fun flashView(v: View, delay: Long = 200)
           = scope.launch(Dispatchers.Main) { v.flashView(delay) }
 
@@ -116,6 +119,11 @@ private fun View.flashOut(alphaStart: Float, delay: Long = 1000) {
 
 private fun View.flashingLoop() {
   val anim= AnimationUtils.loadAnimation(context, R.anim.flash_fade40)
+  startAnimation(anim)
+}
+
+private fun View.recordingCameraLoop() {
+  val anim= AnimationUtils.loadAnimation(context, R.anim.flash_recording)
   startAnimation(anim)
 }
 

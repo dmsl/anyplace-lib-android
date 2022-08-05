@@ -33,7 +33,7 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserAP
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginGoogleData
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLoginLocalForm
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
-import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityAnyplaceLoginBinding
+import cy.ac.ucy.cs.anyplace.lib.databinding.ActivityLoginAnyplaceBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -51,13 +51,13 @@ class AnyplaceLoginActivity : BaseActivity() {
 
   private lateinit var VMlogin: AnyplaceLoginViewModel
   private lateinit var mGoogleSignInClient: GoogleSignInClient
-  private var _binding: ActivityAnyplaceLoginBinding ?= null
+  private var _binding: ActivityLoginAnyplaceBinding?= null
   private val binding get() = _binding!!
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    _binding = ActivityAnyplaceLoginBinding.inflate(layoutInflater)
+    _binding = ActivityLoginAnyplaceBinding.inflate(layoutInflater)
     setContentView(binding.root)
 
     app.setMainView(binding.root)

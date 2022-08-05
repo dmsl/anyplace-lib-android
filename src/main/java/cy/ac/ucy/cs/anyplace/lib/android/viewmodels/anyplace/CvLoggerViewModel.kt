@@ -71,6 +71,8 @@ class CvLoggerViewModel @Inject constructor(
   var statObjWindowUNQ = 0
   var statObjTotal = 0
 
+  var initedUiLog: Boolean = false
+
   override fun prefWindowLocalizationMs(): Int {
     return C.DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS.toInt()
   }
@@ -220,8 +222,19 @@ class CvLoggerViewModel @Inject constructor(
   override fun onLocalizationEnded() {
     super.onLocalizationEnded()
 
-    if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.groupUpload)
-    ui.levelSelector.show()
-    uiLog.bottom.logging.show()
+    viewModelScope.launch(Dispatchers.IO) {
+      waitForUiLogger()
+      if (uiLog.bottom.logging.uploadWasVisible) utlUi.fadeIn(uiLog.groupUpload)
+      ui.levelSelector.show()
+      uiLog.bottom.logging.show()
+    }
+  }
+
+  suspend fun waitForUiLogger() {
+    val MT = ::waitForUiLogger.name
+    while (!initedUiLog || !uiLog.uiBottomLazilyInited) {
+     delay(100)
+      LOG.V(TG, "$MT ..")
+    }
   }
 }

@@ -43,11 +43,14 @@ class SpacesGetNW(
   fun safeCall() = VM.viewModelScope.launch(Dispatchers.IO) { getSpaces() }
 
   /**
-   * Hardcoded version:
+   * Download Spaces
+   * DEMO MODE (For SMAS/LASH):
    * - gets accessible spaces (owned or co-owned by user)
    * - and fetches also some UCY public buildings
+   * - see [storeSpaces]
    */
   private suspend fun getSpaces() {
+    val MT = ::getSpaces.name
     resp.value = NetworkResult.Loading()
     if (app.hasInternet()) {
       try {
@@ -75,6 +78,8 @@ class SpacesGetNW(
         val listAccessible= nwAccessible.data
         val listPublic= nwPublic.data
 
+        LOG.W(TG, "$MT: spaces: ${listOwned?.spaces?.size} owned, ${listAccessible?.spaces?.size} accessible ${listPublic?.spaces?.size}")
+
         storeSpaces(listOwned, listAccessible, listPublic)
         resp.update { NetworkResult.Success(Spaces(emptyList())) }
 
@@ -82,7 +87,12 @@ class SpacesGetNW(
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
         handleSafecallError(msg, ce)
       } catch(e: Exception) {
-        val msg = "Space not found."
+        val msg = "Spaces not found.."
+        LOG.E(TG, "$MT: ${e.message}")
+        LOG.E(TG, "$MT: ${e.cause}")
+        LOG.E(TG, "$MT: ${e.localizedMessage}")
+        LOG.E(TG, "$MT: ${e.stackTrace}")
+        e.stackTrace.toString()
         handleSafecallError(msg, e)
       }
     } else {
@@ -121,22 +131,31 @@ class SpacesGetNW(
       storeToDB(listAccessible, SpaceOwnership.ACCESSIBLE)
     }
 
-    // 3. ADD A SMALL SAMPLE OF PUBLIC SPACES
-    // - For demo purposes:
-    //   - UCY CS building
-    //   - 2 more spaces
+    // 3. ADD PUBLIC SPACES
+    // - for navigator: add all public
+    // - for SMAS: add some select spaces (DEMO MODE)
     if (listPublic != null) {
-      val ucyPublicSpaces = listPublic.spaces.filter {
-        it.name.contains("ucy", true) }.take(5)
-      // 2 demo spaces..
-      val ucyCsBuilding = listPublic.spaces.filter { it.buid==BUID_UCY_CS_BUILDING}
-      val ucyFst02Building = listPublic.spaces.filter { it.buid== BUID_UCY_FST02}
+      LOG.E(TG, "$MT: storing public spaces")
 
-      val ucySelectSpaces = mutableListOf<Space>()
-      ucySelectSpaces.addAll(ucyCsBuilding)
-      ucySelectSpaces.addAll(ucyFst02Building)
-      ucySelectSpaces.addAll(ucyPublicSpaces)
-      storeToDB(Spaces(ucySelectSpaces), SpaceOwnership.PUBLIC)
+      val publicSpaces= if (app.isSMAS()) { // DEMO MODE FOR LASH
+        // show only 2 selected public spaces
+        val ucyCsBuilding = listPublic.spaces.filter { it.buid==BUID_UCY_CS_BUILDING}
+        val ucyFst02Building = listPublic.spaces.filter { it.buid== BUID_UCY_FST02}
+
+        // and put all those together
+        val demoSpaceSelection = mutableListOf<Space>()
+        demoSpaceSelection.addAll(ucyCsBuilding)
+        demoSpaceSelection.addAll(ucyFst02Building)
+
+        LOG.W(TG, "$MT: using select ${demoSpaceSelection.size} spaces (DEMO)")
+
+        demoSpaceSelection
+      } else {  // show all public spaces
+        LOG.W(TG, "$MT: using all ${listPublic.spaces.size} spaces")
+        listPublic.spaces
+      }
+
+      storeToDB(Spaces(publicSpaces.toList()), SpaceOwnership.PUBLIC)
     }
 
     // no need to store anything, as we will read spaces from DB

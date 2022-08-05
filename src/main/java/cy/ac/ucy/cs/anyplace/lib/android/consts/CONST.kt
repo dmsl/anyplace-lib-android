@@ -157,6 +157,6 @@ open class CONST(val ctx: Context) {
   val PREF_MISC_QUERY_SPACE_TYPE_ID = "pref_misc_queryType_space_typeId"
 
   ///// QUERY TYPES
-  val DEFAULT_QUERY_SPACE_OWNERSHIP = SpaceOwnership.ALL.toString().uppercase()
+  val DEFAULT_QUERY_SPACE_OWNERSHIP = SpaceOwnership.ACCESSIBLE.toString().uppercase()
   val DEFAULT_QUERY_SPACE_TYPE = SpaceType.ALL.toString().uppercase()
 }
