@@ -42,7 +42,7 @@ class IMU(
   fun start(){
     val MT = ::start.name
 
-    if (started || !DBG.IMU) return
+    if (started) return
     started=true
 
     checkPermission()
@@ -60,7 +60,7 @@ class IMU(
       // MODE 1
       LOG.W(TG, "$MT: observing..: cnt: $stepCount")
 
-      if (VM.imuEnabled && DBG.IMU) { // TODO:PMX: option in VM?
+      if (VM.imuEnabled) {
         val lastCoord= app.locationSmas.value.coord
         if (lastCoord == null) {
           LOG.W(TG, "$MT: OBSERVE: ret: no last coord")

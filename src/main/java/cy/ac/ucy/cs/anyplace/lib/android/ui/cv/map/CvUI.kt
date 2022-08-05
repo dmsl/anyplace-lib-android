@@ -6,7 +6,6 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.maps.android.heatmaps.WeightedLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
-import cy.ac.ucy.cs.anyplace.lib.android.extensions.METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.LevelSelector
 import cy.ac.ucy.cs.anyplace.lib.android.ui.components.UiLocalization
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
@@ -74,7 +73,10 @@ open class CvUI(
       return
     }
 
-    val points= emptyList<WeightedLatLng>()  // cvMapH.getWeightedLocationList() see below sample coce
-    this.map.overlays.createHeatmap(map, points)
+    // TODO ASYNC...
+    if (app.repoSmas.local.hasCvFingerprints()) {
+      val points= emptyList<WeightedLatLng>()  // cvMapH.getWeightedLocationList() see below sample coce
+      this.map.overlays.createHeatmap(map, points)
+    }
   }
 }

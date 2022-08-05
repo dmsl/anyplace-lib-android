@@ -9,6 +9,7 @@ import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
@@ -86,9 +87,12 @@ class UiLocalization(
    */
   private fun setupTrackingMode() {
     val MT = ::setupTrackingMode.name
-    if (!DBG.TRK) return
 
     when (act) {
+      is CvLoggerActivity -> {
+        notify.warn(scope, "For Tracking switch to ${app.getNavigatorActivityName()}")
+
+      }
       is CvNavigatorActivity,
       is SmasMainActivity -> {
         val tvSubtitle: TextView = act.findViewById(R.id.tvSubtitle)
@@ -148,18 +152,10 @@ class UiLocalization(
     }
   }
 
-  private fun endTrackingLoop(tv: TextView) {
-    val MT = ::endTrackingLoop.name
-    utlUi.clearAnimation(btn)
-    utlUi.clearAnimation(tv)
-    utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
-    utlUi.invisible(tv)
-    VM.trackingMode.update { TrackingMode.off }
-    VM.localizationMode.update { LocalizationMode.stopped }
-  }
-
   fun startTrackingLoop(tv: TextView) {
     val MT = ::startTrackingLoop.name
+    LOG.D2(TG, MT)
+
     VM.trackingEmptyWindowsConsecutive=0
     VM.trackingMode.update { TrackingMode.on }
 
@@ -167,7 +163,9 @@ class UiLocalization(
       utlUi.flashingLoop(btn)
       utlUi.visible(tv)
       utlUi.flashingLoop(tv)
-      utlUi.changeBackgroundMaterial(btn, R.color.red) // TRK5x
+      utlUi.changeBackgroundMaterial(btn, R.color.redDark)
+      utlUi.disable(act.btnSettings)
+      utlUi.invisible(btnWhereAmI)
 
       if (app.dsMisc.showTutorialNavTracking()) {
         val msg ="TRACKING:\nRepeatedly performing localization.\n" +
@@ -189,14 +187,29 @@ class UiLocalization(
     }
   }
 
+  private fun endTrackingLoop(tv: TextView) {
+    val MT = ::endTrackingLoop.name
+    LOG.D2(TG, MT)
+
+    utlUi.clearAnimation(btn)
+    utlUi.clearAnimation(tv)
+    utlUi.changeBackgroundMaterial(btn, R.color.darkGray)
+    utlUi.invisible(tv)
+    utlUi.enable(act.btnSettings)
+
+    VM.ui.levelSelector.enable()
+    utlUi.visible(btnWhereAmI)
+
+    VM.trackingMode.update { TrackingMode.off }
+    VM.localizationMode.update { LocalizationMode.stopped }
+  }
+
   var initedWhereAmI = false
   private fun setupButtonWhereAmI() {
     val MT = ::setupButtonWhereAmI.name
     LOG.D(TG, MT)
     btnWhereAmI.setOnClickListener {
       scope.launch {
-        if (!DBG.WAI) return@launch
-
         val showTutorial = app.dsMisc.showTutorialNavWhereAmI()
         val lr = app.locationSmas.value
         var msg = ""
@@ -275,6 +288,8 @@ class UiLocalization(
     val tracking = VM.isTracking()
     VM.currentTime = System.currentTimeMillis()
     VM.windowStart = VM.currentTime
+
+    VM.ui.levelSelector.disable()
     VM.localizationMode.update {
       if (tracking) LocalizationMode.runningForTracking else LocalizationMode.running
     }
@@ -324,7 +339,10 @@ class UiLocalization(
     utlUi.changeBackgroundMaterial(act.btnSettings, R.color.colorPrimary)
     utlUi.clearAnimation(act.btnSettings)
     utlUi.alpha(act.btnSettings, 1f) // restore alpha after the recording loop
-    utlUi.enable(act.btnSettings)
+    if (!tracking) {
+      utlUi.enable(act.btnSettings)
+      VM.ui.levelSelector.enable()
+    }
   }
 
   fun hide() = utlUi.fadeOut(btn)
@@ -337,8 +355,6 @@ class UiLocalization(
   fun setupButtonImu(btnImu: MaterialButton) {
     val MT = ::setupButtonImu.name
     if (imuButtonInited) return
-    if (!DBG.IMU) return
-
     this.btnImu=btnImu
     scope.launch(Dispatchers.IO) {
 
@@ -351,7 +367,7 @@ class UiLocalization(
         scope.launch(Dispatchers.IO) {
           if (app.dsMisc.showTutorialNavImu()) {
             notify.TUTORIAL(scope, "IMU Mode (experimental):\n"+
-                    "It uses the accelerometer and compass to navigate.\nToggled with a long-click")
+                    "Toggled with a long-lick.\nUses the accelerometer and compass to navigate.")
             return@launch
           }
         }

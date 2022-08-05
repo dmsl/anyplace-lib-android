@@ -67,7 +67,7 @@ open class LevelOverlaysWrapper(
               notify.short(scope, msg)
             } else {
               LOG.D2(TG, "$MT: success: rendering img")
-              VM.nwLevelPlan.render(response.data, app.wLevel!!)
+              VM.nwLevelPlan.render(response.data, app.wLevel!!) // TODO: move this method in this file?
               loadHeatmap(gmap)
             }
           }
@@ -103,7 +103,7 @@ open class LevelOverlaysWrapper(
    */
   suspend fun loadHeatmap(gmap: GoogleMap) {
     val MT = ::loadHeatmap.name
-    LOG.D2(TG, MT)
+    LOG.E(TG, MT)
 
     VM.waitForDetector()  // workaround
 

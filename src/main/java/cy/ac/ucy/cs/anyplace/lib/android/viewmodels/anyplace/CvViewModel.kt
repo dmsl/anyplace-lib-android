@@ -136,7 +136,6 @@ open class CvViewModel @Inject constructor(
   val detectionsTracking = MutableStateFlow(DetTrack(1, 0))
   /** Auto-stopping tracking mode if many empty windows found */
   var trackingEmptyWindowsConsecutive = 0
-  // val TRACKING_MAX_EMPTY_WINDOWS=20
 
   /** Detections for the localization scan-window */
   val detectionsLOC: MutableStateFlow<List<Classifier.Recognition>> = MutableStateFlow(emptyList())
@@ -153,7 +152,7 @@ open class CvViewModel @Inject constructor(
     while(!uiLoaded()) {
       delay(100)
       val details = "ui-comp:$initedUi gmap:${ui.map.initedGmap} " +
-       "BottomSheet:$initedBsheet WAI:${(!DBG.WAI || ui.localization.initedWhereAmI)}"
+       "BottomSheet:$initedBsheet WAI:${(ui.localization.initedWhereAmI)}"
       LOG.V(TG, "$MT: $details")
     }
 
@@ -163,7 +162,7 @@ open class CvViewModel @Inject constructor(
     return initedUi &&
             ui.map.initedGmap &&
             initedBsheet &&
-            (!DBG.WAI || ui.localization.initedWhereAmI)
+            ui.localization.initedWhereAmI
   }
 
   /**
@@ -376,8 +375,6 @@ open class CvViewModel @Inject constructor(
       waitForUi()  // wait for UI components to become ready
 
       app.userOutOfBounds.collectLatest { state ->
-        if (!DBG.WAI) return@collectLatest
-
         when (state) {
           MapBounds.inBounds -> {
             utlUi.fadeIn(ui.localization.btnWhereAmI)

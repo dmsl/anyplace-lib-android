@@ -152,18 +152,9 @@ class SettingsCvActivity: SettingsActivity() {
         setNumericInput(R.string.pref_smas_location_refresh,
                 R.string.summary_refresh_locations, prefs.locationRefreshMs, 500)
 
-
-        if (!DBG.TRK) {
-          val preference = findPreference(getString(R.string.pref_cv_tracking_delay)) as EditTextPreference?
-          preference?.isVisible=false
-        }
         setNumericInput(R.string.pref_cv_tracking_delay,
                 R.string.summary_tracking_delay, prefs.cvTrackingDelay, 1000)
 
-        if (!DBG.TRK) {
-          val preference = findPreference(getString(R.string.pref_cv_tracking_auto_disable)) as EditTextPreference?
-          preference?.isVisible=false
-        }
         setNumericInput(R.string.pref_cv_tracking_auto_disable,
                 R.string.summary_tracking_auto_disable, prefs.cvTrackingAutoDisable, 5)
 

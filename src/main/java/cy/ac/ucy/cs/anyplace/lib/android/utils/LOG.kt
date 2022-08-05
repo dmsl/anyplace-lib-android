@@ -23,11 +23,6 @@ class DBG {
      *    - at least initially, it was like that.
      */
     const val USE_SPACE_SELECTOR = true
-
-    const val TRK = false  // track
-    const val WAI = false  //
-    const val IMU= false   // experimental
-
     const val TUTORIALS=false // might be spamming a bit the users
   }
 }

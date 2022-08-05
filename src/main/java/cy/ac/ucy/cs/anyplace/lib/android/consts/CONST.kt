@@ -23,9 +23,9 @@ open class CONST(val ctx: Context) {
     const val START_ACT_SMAS= "act.start.smas"
     const val START_ACT_NAV = "act.start.nav"
     const val START_ACT_LOGGER = "act.start.logger"
-    const val ACT_NAME_LOGGER = "logger"
+    const val ACT_NAME_LOGGER = "Logger"
     const val ACT_NAME_SMAS = "SMAS"
-    const val ACT_NAME_NAV = "navigator"
+    const val ACT_NAME_NAV = "Navigator"
   }
 
   private val app = ctx as AnyplaceApp
@@ -98,7 +98,7 @@ open class CONST(val ctx: Context) {
   val DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS = "3000"
 
   val DEFAULT_PREF_CV_TRACKING_DELAY = "3000"
-  val DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE = "10" // 10 empty windows
+  val DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE = "30" // 20 empty windows
 
   val CV_ALGO_CHOICE_AUTO =ctx.getString(R.string.cv_algo_choice_auto)
   val CV_ALGO_CHOICE_LOCAL=ctx.getString(R.string.cv_algo_choice_local)

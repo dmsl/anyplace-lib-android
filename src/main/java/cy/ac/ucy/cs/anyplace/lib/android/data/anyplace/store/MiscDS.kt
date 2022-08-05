@@ -72,7 +72,7 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
   suspend fun showTutorialNavLocalize() = tutInternal(KEY.tutNavLocalize)
   suspend fun showTutorialNavTracking() = tutInternal(KEY.tutNavTracking)
   suspend fun showTutorialNavWhereAmI() = tutInternal(KEY.tutNavWhereAmI)
-  suspend fun showTutorialNavImu(forcedTutorial: Boolean = false) = tutInternal(KEY.tutNavImu, forcedTutorial)
+  suspend fun showTutorialNavImu() = tutInternal(KEY.tutNavImu, true)
 
   /**
    * Figures out if a tutorial must be shown, and returns that value.

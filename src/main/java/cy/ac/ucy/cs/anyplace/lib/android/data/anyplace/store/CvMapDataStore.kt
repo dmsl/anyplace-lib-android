@@ -126,7 +126,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_LOC_ALGO_EXECUTION-> it[KEY.cvAlgoExec] = value ?: C.DEFAULT_PREF_CV_LOC_ALGO_EXECUTION
 
           C.PREF_CV_TRACKING_DELAY-> it[KEY.cvTrackingDelay] = value ?: C.DEFAULT_PREF_CV_TRACKING_DELAY
-          C.PREF_CV_TRACKING_AUTO_DISABLE-> it[KEY.cvTrackingDelay] = value ?: C.DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE
+          C.PREF_CV_TRACKING_AUTO_DISABLE-> it[KEY.cvTrackingAutoDisable] = value ?: C.DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE
         }
       }
     }

@@ -292,7 +292,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     LOG.W(TG, MT)
     isActive = true
-    if (DBG.IMU) VMsensor.registerListeners()
+    VMsensor.registerListeners()
   }
 
   override fun setupUiAfterGmap() {
@@ -306,7 +306,7 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TG, "$TG: $MT")
     isActive = false
 
-    if (DBG.IMU) VMsensor.unregisterListener()
+    VMsensor.unregisterListener()
   }
 
   /**

@@ -267,7 +267,7 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
     dsCvMap.setMainActivity(CONST.START_ACT_NAV)
 
     isActive = true
-    if (DBG.IMU) VMsensor.registerListeners()
+    VMsensor.registerListeners()
   }
 
   override fun setupUiAfterGmap() {
@@ -281,7 +281,7 @@ class CvNavigatorActivity : CvMapActivity(), OnMapReadyCallback {
     LOG.W(TG, "$TG: $MT")
     isActive = false
 
-    if (DBG.IMU) VMsensor.unregisterListener()
+    VMsensor.unregisterListener()
   }
 
   /**

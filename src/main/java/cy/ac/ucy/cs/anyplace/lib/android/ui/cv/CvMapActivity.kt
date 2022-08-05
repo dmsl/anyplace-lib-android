@@ -357,8 +357,6 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
   suspend fun loadPOIsAndConnections() {
     val MT = ::loadPOIsAndConnections.name
-      if (!DBG.IMU) return
-
       if (app.space!=null && !VM.cache.hasSpaceConnectionsAndPois(app.space!!)) {
         VM.downloadingPoisAndConnections=true
         LOG.D2(TG, "$MT: Fetching POIs and Connections..")
