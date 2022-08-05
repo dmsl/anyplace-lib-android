@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/snackbar_extra_action"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="0dp"
+    android:layout_marginStart="0dp"
+    android:layout_gravity="center_vertical|right|end"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:textColor="?attr/colorAccent"
+    style="?attr/borderlessButtonStyle"/>

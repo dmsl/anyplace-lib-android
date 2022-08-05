@@ -17,6 +17,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
@@ -152,28 +153,33 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
     googleMap.setOnMapLongClickListener {
 
       LOG.W(TG, "$MT: long-click received")
+
       lifecycleScope.launch(Dispatchers.IO) {
+
         if (VM.trackingMode.first() != TrackingMode.off
                 && VM.localizationMode.first() != LocalizationMode.stopped) {
           LOG.W(TG, "$MT: ignoring long-click (localization / tracking)")
           return@launch
         }
 
-        forceUserLocation(it)
+        notify.confirmAction("Manually set location?") {
+         LOG.E(TG, "$MT: forcing loc...")
+          forceUserLocation(it)
+        }
       }
     }
   }
 
-  private suspend fun forceUserLocation(forcedLocation: LatLng) {
+  private fun forceUserLocation(forcedLocation: LatLng) {
     val MT = ::forceUserLocation.name
     LOG.W(TG, "$MT: $forcedLocation")
-    val msg = "Location set manually (long-clicked)"
 
-    if (app.dsMisc.showTutorialNavMapLongPress()) {
-      notify.TUTORIAL(lifecycleScope, "$actName LONG-PRESS:\nsets manually the user's location.\nResult: $msg")
-    } else {
-      notify.short(lifecycleScope, msg)
-    }
+    // val msg = "Location set manually (long-clicked)"
+    // if (app.dsMisc.showTutorialNavMapLongPress()) {
+    //   notify.TUTORIAL(lifecycleScope, "$actName LONG-PRESS:\nsets manually the user's location.\nResult: $msg")
+    // } else {
+    //   notify.short(lifecycleScope, msg)
+    // }
 
     if (app.wLevel==null) {
       notify.warn(lifecycleScope, "Cannot load space.")

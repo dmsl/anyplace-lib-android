@@ -4,7 +4,6 @@ import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
@@ -72,9 +71,79 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
     }
   }
 
+  fun confirmAction(msg: String,
+                    callback: () -> Unit) {
+    val duration = Snackbar.LENGTH_INDEFINITE
+    val sb = Snackbar.make(rootView, msg, duration).setAction("No") {
+      // Do your thing after regular button press
+    }.addAction(R.layout.snackbar_extra_button, "Yes"){
+      //Do your thing after extra button push
+      LOG.E()
+      callback()
+    }
+    setStyle(sb, SnackType.INFO, duration)
+    sb.show()
+  }
+
+  private fun setStyle(sb: Snackbar, type: SnackType, duration: Int) {
+    val tv = sb.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
+    tv.gravity = Gravity.CENTER
+    tv.setTypeface(tv.typeface, Typeface.BOLD)
+    if (snackbarForChat) {
+      sb.setMarginChat()
+    } else {
+      sb.setMarginCvMap()
+    }
+
+    tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
+    tv.maxLines=3
+
+    when (type) {
+      SnackType.DEV -> {
+        sb.setDrawableLeft(R.drawable.ic_dev_mode)
+        sb.setBackground(R.drawable.bg_snackbar_devmode)
+        sb.setActionTextColor(app.utlColor.GrayLighter())
+      }
+      SnackType.WARNING -> {
+        sb.setBackground(R.drawable.bg_snackbar_warning)
+        sb.setActionTextColor(app.utlColor.White())
+        if (duration == Snackbar.LENGTH_INDEFINITE) {
+          sb.setDrawableLeft(R.drawable.ic_warning)
+        } else {
+          sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+        }
+      }
+      SnackType.INFO -> {
+        sb.setActionTextColor(app.utlColor.White())
+        sb.setBackground(R.drawable.bg_snackbar_info)
+        sb.setDrawableLeft(R.drawable.ic_info)
+      }
+      SnackType.TUTORIAL -> {
+        sb.setActionTextColor(app.utlColor.White())
+        sb.setBackground(R.drawable.bg_snackbar_info)
+        sb.setDrawableLeft(R.drawable.ic_tutorial)
+        tv.maxLines=6
+      }
+      SnackType.NORMAL -> {
+        sb.setBackground(R.drawable.bg_snackbar_normal)
+        sb.setActionTextColor(app.utlColor.Info())
+
+        if (duration == Snackbar.LENGTH_INDEFINITE) {
+          sb.setDrawableLeft(R.drawable.ic_info)
+        } else {
+          sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
+        }
+      }
+    }
+    sb.setIconTint(app.utlColor.White())
+  }
+
+
+
   fun show(scope: CoroutineScope, msg: String,
            duration: Int, type: SnackType = SnackType.NORMAL) {
     scope.launch(Dispatchers.Main) {
+
       val sb = Snackbar.make(rootView, msg, duration)
       sb.setActionTextColor(app.utlColor.White())
 
@@ -83,58 +152,7 @@ class UtilSnackBarNotifier(val app: AnyplaceApp) {
       }
 
       // center text
-      val tv = sb.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
-      tv.gravity = Gravity.CENTER
-      tv.setTypeface(tv.typeface, Typeface.BOLD)
-      if (snackbarForChat) {
-        sb.setMarginChat()
-      } else {
-        sb.setMarginCvMap()
-      }
-
-      tv.textAlignment = View.TEXT_ALIGNMENT_GRAVITY
-      tv.maxLines=3
-
-      when (type) {
-        SnackType.DEV -> {
-          sb.setDrawableLeft(R.drawable.ic_dev_mode)
-          sb.setBackground(R.drawable.bg_snackbar_devmode)
-          sb.setActionTextColor(app.utlColor.GrayLighter())
-        }
-        SnackType.WARNING -> {
-          sb.setBackground(R.drawable.bg_snackbar_warning)
-          sb.setActionTextColor(app.utlColor.White())
-          if (duration == Snackbar.LENGTH_INDEFINITE) {
-            sb.setDrawableLeft(R.drawable.ic_warning)
-          } else {
-            sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
-          }
-        }
-        SnackType.INFO -> {
-          sb.setActionTextColor(app.utlColor.White())
-          sb.setBackground(R.drawable.bg_snackbar_info)
-          sb.setDrawableLeft(R.drawable.ic_info)
-        }
-        SnackType.TUTORIAL -> {
-          sb.setActionTextColor(app.utlColor.White())
-          sb.setBackground(R.drawable.bg_snackbar_info)
-          sb.setDrawableLeft(R.drawable.ic_tutorial)
-          tv.maxLines=6
-        }
-        SnackType.NORMAL -> {
-          sb.setBackground(R.drawable.bg_snackbar_normal)
-          sb.setActionTextColor(app.utlColor.Info())
-
-          if (duration == Snackbar.LENGTH_INDEFINITE) {
-            sb.setDrawableLeft(R.drawable.ic_info)
-          } else {
-            sb.setDrawableLeft(R.drawable.ic_empty) // workaround for horizontal alignment
-          }
-        }
-      }
-
-
-      sb.setIconTint(app.utlColor.White())
+      setStyle(sb, type, duration)
       sb.show()
     }
   }
