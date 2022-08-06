@@ -68,7 +68,6 @@ class BottomSheetCvLoggerUI(
   }
 
   override fun hideBottomSheet() {
-    // super.hideBottomSheet() CLR ?
     utlUi.gone(ivArrowImg)
     utlUi.invisible(layoutInternal)
     act.sheetBehavior.isDraggable=false

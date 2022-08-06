@@ -125,7 +125,6 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_restrictions" />
 
-        <!-- TODO:PMX: TUT -->
         <TextView
             android:layout_marginTop="20dp"
             android:id="@+id/textView_tutorialFinish"

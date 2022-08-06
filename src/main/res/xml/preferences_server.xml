@@ -12,7 +12,6 @@
 
   </PreferenceCategory>
 
-  <!--TODO:PM remove this..-->
   <PreferenceCategory app:title="@string/server_header">
 
     <EditTextPreference

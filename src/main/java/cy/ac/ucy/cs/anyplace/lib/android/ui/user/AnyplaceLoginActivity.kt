@@ -21,7 +21,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.TAG_METHOD
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.app
@@ -132,23 +131,31 @@ class AnyplaceLoginActivity : BaseActivity() {
           }
 
   private fun setupGoogleLogin() {
+    val MT = ::setupGoogleLogin.name
+    // NOT WORKING..
+    // if (app.isNavigator()) {
+    //   binding.buttonLoginGoogle.visibility=View.VISIBLE
+    // }
+
     binding.buttonLoginGoogle.setOnClickListener {
-      // server_google_oauth_client_id is set by from local.properties (project root)
-      // see lib-android's build.gradle
-      val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-              .requestIdToken(BuildConfig.SMAS_GOOGLE_OAUTH_CLIENT_ID)
-              // .requestProfile()
-              // .requestEmail()
-              .build()
+      lifecycleScope.launch {
+        // server_google_oauth_client_id is set by from local.properties (project root)
+        // see lib-android's build.gradle
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(app.getGoogleOAuthClientID())
+                // .requestProfile()
+                // .requestEmail()
+                .build()
 
-      mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        mGoogleSignInClient = GoogleSignIn.getClient(this@AnyplaceLoginActivity, gso)
 
-      val acct = GoogleSignIn.getLastSignedInAccount(this)
-      if (acct != null) {
-        LOG.D("User was already logged in")
+        val acct = GoogleSignIn.getLastSignedInAccount(this@AnyplaceLoginActivity)
+        if (acct != null) {
+          LOG.D(TG, "$MT: user was already logged in")
+        }
+        val signInIntent: Intent = mGoogleSignInClient.signInIntent
+        googleRegisterResult.launch(signInIntent)
       }
-      val signInIntent: Intent = mGoogleSignInClient.signInIntent
-      googleRegisterResult.launch(signInIntent)
     }
   }
 

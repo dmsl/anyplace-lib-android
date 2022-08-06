@@ -206,23 +206,9 @@ class SmasMainActivity : CvMapActivity(), OnMapReadyCallback {
 
     VM.readBackendVersion()
     setupCollectors()
-    checkForFingerprintUpdates()
   }
 
-  private fun checkForFingerprintUpdates() {
-    val MT = ::checkForFingerprintUpdates.name
-    LOG.W(TG, MT)
-    lifecycleScope.launch(Dispatchers.IO) {
-      if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
-        VM.waitForDetector()
-        app.waitForSpace()
-        if (app.hasInternet()) {
-          LOG.D2(TG, "$MT: checking..")
-          VM.nwCvFingerprintsGet.safeCall(false)
-        }
-      }
-    }
-  }
+
 
   /**
    * Runs only once, when any of the floors is loaded for the first time.

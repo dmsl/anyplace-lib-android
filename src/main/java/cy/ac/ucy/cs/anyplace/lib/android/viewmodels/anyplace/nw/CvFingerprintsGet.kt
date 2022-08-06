@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw.SmasErrors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -32,7 +33,7 @@ class CvFingerprintsGet(
         private val VM: CvViewModel,
         private val RH: RetrofitHolderSmas,
         private val repo: RepoSmas) {
-  private val TG = "nw-cv-map"
+  private val TG = "nw-cv-fingerprints"
   private val scope = VM.viewModelScope
   private val utlErr by lazy { UtilErr() }
   private val err by lazy { SmasErrors(app, scope) }
@@ -56,7 +57,7 @@ class CvFingerprintsGet(
         val modelid = model.idSmas
         val request = CvFingerprintReq(smasUser, modelid, buid, from)
 
-        LOG.E(TG, "$MT: downloading: ${model.modelName}: $buid $from")
+        LOG.W(TG, "$MT: downloading: ${model.modelName}: $buid $from")
         val response = repo.remote.cvMapGet(request)
         LOG.D2(TG, "$MT: ${response.message()}" )
         val resp = handleResponse(response)
@@ -203,11 +204,12 @@ class CvFingerprintsGet(
    */
   private fun persistToDB(obj: List<CvFingerprintRow>) {
     val MT = ::persistToDB.name
-    LOG.W(TG, "$MT: storing: ${obj.size} CvModel classes")
+    LOG.W(TG, "$MT: storing: ${obj.size} fingerprints")
     scope.launch(Dispatchers.IO) {
       obj.forEach {
         repo.local.insertCvFingerprintRow(it)
       }
+      VM.reloadHeatmap.update { true } // after db load
     }
   }
 }

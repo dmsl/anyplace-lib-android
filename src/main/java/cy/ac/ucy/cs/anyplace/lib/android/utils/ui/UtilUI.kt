@@ -108,4 +108,8 @@ class UtilUI(
     scope.launch(Dispatchers.Main) { progressBar.progress=i }
   }
 
+  fun clickable(btn: Button, value: Boolean) {
+    scope.launch(Dispatchers.Main) { btn.isClickable=value }
+  }
+
 }

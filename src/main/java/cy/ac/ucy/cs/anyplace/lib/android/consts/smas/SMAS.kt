@@ -13,7 +13,7 @@ open class SMAS(ctx: Context) : CONST(ctx) {
 
   companion object {
     const val DB_MSGS= "messages"
-    const val DB_OBJECT= "OBJECT" // WAS FINGERPRINT_OBJECT.. CLR:PM
+    const val DB_OBJECT= "OBJECT"
     const val DB_FINGERPRINT= "FINGERPRINT"
     const val DB_LOCALIZE_TEMP= "FINGERPRINT_LOCALIZE_TEMP"
     const val DB_OBJECT_FREQUENCY= "OBJECT_FREQUENCY"

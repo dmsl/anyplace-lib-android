@@ -55,6 +55,10 @@ open class DetectorViewModel @Inject constructor(
   fun setDetectorLoaded() { initedDetector = true }
   fun unsetDetectorLoaded() { initedDetector = false }
 
+  /**
+   * Apart from the first initialization,
+   * it helps when reloading the detector (e.g. changing CV Model)
+   */
   @Deprecated("Is there a better way for this?")
   suspend fun waitForDetector() {
     val MT = ::waitForDetector.name

@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.lang.Exception
@@ -101,9 +102,8 @@ class CvFingerprintSendNW(
     var reportMsg = "Uploaded $totalObjects objects, in $totalLocations $prettyLocations."
     if (nullEntries > 0) reportMsg+="\n(ignored $nullEntries without objects)"
 
-    LOG.E(TG, "$MT: auto update?")
     if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
-      LOG.E(TG, "$MT: auto update? yes")
+      LOG.D2(TG, "$MT: auto updating fingerprints")
       val fetched = VM.nwCvFingerprintsGet.safeCall(false)
       if (fetched>0) {
         reportMsg+="\nFetched $fetched fingerprints."
@@ -118,7 +118,7 @@ class CvFingerprintSendNW(
    */
   private suspend fun uploadEntry(smasUser: SmasUser, entry: FingerprintScan): Boolean {
     val MT = ::uploadEntry.name
-    LOG.W(TG, "$TG: $MT: $entry\n")
+    LOG.V2(TG, "$TG: $MT: $entry\n")
 
     try {
       val req= FingerprintSendReq(smasUser, entry)

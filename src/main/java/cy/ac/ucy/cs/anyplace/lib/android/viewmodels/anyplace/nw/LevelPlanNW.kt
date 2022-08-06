@@ -169,6 +169,6 @@ class LevelPlanNW(
     val method = ::render.name
     LOG.V5(TG, "$method: ${LW.wSpace.obj.name}: ${LW.wSpace.obj.buid}")
 
-    VM.ui.map.wOverlays.drawFloorplan(bitmap, VM.ui.map.obj, LW.bounds())
+    VM.ui.map.overlays.drawFloorplan(bitmap, VM.ui.map.obj, LW.bounds())
   }
 }

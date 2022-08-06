@@ -30,19 +30,20 @@ class SpaceGetNW(
 
   /** Get [Space] */
   suspend fun blockingCall(buid: String) : Boolean {
-    LOG.E(TG, "$TG: blockingCall")
+    val MT = ::blockingCall.name
+    LOG.D(TG, "$MT: blockingCall")
 
     if (app.hasInternet()) {
       return try {
         val response = repo.remote.getSpace(buid)
-        LOG.D4(TG, "$TG: ${response.message()}" )
+        LOG.D4(TG, "$MT: ${response.message()}" )
         handleResponse(response)
       } catch(ce: ConnectException) {
         val msg = "Connection failed:\n${RH.retrofit.baseUrl()}"
-        LOG.E(TG, "$TG: $msg")
+        LOG.E(TG, "$MT: $msg")
         false
       } catch(e: Exception) {
-        LOG.E(TG, "$TG: ${e.message}")
+        LOG.E(TG, "$MT: ${e.message}")
         e.printStackTrace()
         false
       }

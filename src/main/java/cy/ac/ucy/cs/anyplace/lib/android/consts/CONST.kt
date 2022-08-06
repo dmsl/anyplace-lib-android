@@ -80,6 +80,7 @@ open class CONST(val ctx: Context) {
 
   //// Settings for Cv Logger
   val PREF_CV_WINDOW_LOGGING_MS = ctx.getString(R.string.pref_cv_logging_ms)
+  val PREF_CV_LOGGER_HEATMAPS= ctx.getString(R.string.pref_cvlogger_heatmaps)
 
   val PREF_CV_TRACKING_DELAY = ctx.getString(R.string.pref_cv_tracking_delay)
   val PREF_CV_TRACKING_AUTO_DISABLE = ctx.getString(R.string.pref_cv_tracking_auto_disable)
@@ -94,6 +95,7 @@ open class CONST(val ctx: Context) {
   val DEFAULT_PREF_CV_SCAN_DELAY= "150"
   //// LOGGING
   val DEFAULT_PREF_CVLOG_WINDOW_LOGGING_MS = "5000"
+  val DEFAULT_PREF_CV_LOGGER_HEATMAPS= true
   //// LOCALIZATION
   val DEFAULT_PREF_CV_WINDOW_LOCALIZATION_MS = "3000"
 

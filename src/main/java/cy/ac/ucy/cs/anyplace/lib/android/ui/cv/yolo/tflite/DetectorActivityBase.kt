@@ -161,7 +161,7 @@ abstract class DetectorActivityBase : CameraActivity(),
 
   suspend fun setupDetector(): Boolean {
     val MT = ::setupDetector.name
-    LOG.W(TG, "$MT: setting up detector..")
+    LOG.V2(TG, "$MT: setting up detector..")
     try {
       // Read DS Preferences:
       val prefsCv = VMD.dsCv.read.first()
@@ -173,8 +173,8 @@ abstract class DetectorActivityBase : CameraActivity(),
       val filenameWeights=DetectionModel.filenameWeights(VMD.model, cache)
       val filenameLabels=DetectionModel.filenameLabels(VMD.model, cache)
 
-      LOG.W(TG, "$MT: weights: $filenameWeights")
-      LOG.W(TG, "$MT:  labels: $filenameLabels")
+      LOG.V(TG, "$MT: weights: $filenameWeights")
+      LOG.V(TG, "$MT:  labels: $filenameLabels")
 
       VMD.detector = YoloV4Classifier.create(
               applicationContext,

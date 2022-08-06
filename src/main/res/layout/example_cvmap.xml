@@ -111,7 +111,6 @@
         app:layout_constraintBottom_toTopOf="@id/button_levelDown"
         />
 
-    <!-- TODO:PM IMPLEMENT-->
     <!-- FLOOR SELECTOR: START-->
     <cy.ac.ucy.cs.anyplace.lib.android.utils.ui.OutlineTextView
         android:id="@+id/textView_titleLevel"

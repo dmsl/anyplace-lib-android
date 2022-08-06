@@ -50,9 +50,9 @@ object utlTime {
   const val TIMEZONE_CY = "Asia/Nicosia"
 
   /**
-   * [epoch]: not in ms
+   * [epoch]: in seconds (not in ms)
    *
-   *  TODO:PM [timezone] read from /smas/version endpoint (preserve it in misc?)
+   *  TODO [timezone] read from /smas/version endpoint (preserve it in misc?)
    */
   @SuppressLint("SimpleDateFormat")
   fun getPrettyEpoch(epoch: Long, timezone: String): String {

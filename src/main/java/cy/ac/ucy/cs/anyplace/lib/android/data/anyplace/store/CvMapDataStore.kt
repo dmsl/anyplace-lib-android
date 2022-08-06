@@ -46,6 +46,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_LOC_ALGO_EXECUTION,
           C.PREF_CV_TRACKING_DELAY,
           C.PREF_CV_TRACKING_AUTO_DISABLE,
+          C.PREF_CV_LOGGER_HEATMAPS,
   )
 
   private class Keys(c: CONST) {
@@ -66,6 +67,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
 
     val cvTrackingDelay=stringPreferencesKey(c.PREF_CV_TRACKING_DELAY)
     val cvTrackingAutoDisable=stringPreferencesKey(c.PREF_CV_TRACKING_AUTO_DISABLE)
+
+    val cvLoggerHeatmaps= booleanPreferencesKey(c.PREF_CV_LOGGER_HEATMAPS)
   }
   private val KEY = Keys(C)
 
@@ -87,6 +90,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
           C.PREF_CV_AUTOSET_INITIAL_LOCATION-> it[KEY.autoSetInitialLocation] = value
           C.PREF_CV_FOLLOW_SELECTED_USER-> it[KEY.followSelectedUser] = value
           C.PREF_CV_AUTO_UPDATE_FINGERPRINTS-> it[KEY.autoUpdateCvFingerprints] = value
+          C.PREF_CV_LOGGER_HEATMAPS-> it[KEY.cvLoggerHeatmaps] = value
         }
       }
     }
@@ -143,6 +147,7 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
         C.PREF_CV_AUTOSET_INITIAL_LOCATION-> prefs.autoSetInitialLocation
         C.PREF_CV_FOLLOW_SELECTED_USER-> prefs.followSelectedUser
         C.PREF_CV_AUTO_UPDATE_FINGERPRINTS-> prefs.autoUpdateCvFingerprints
+        C.PREF_CV_LOGGER_HEATMAPS-> prefs.cvLoggerHeatmaps
         else -> false
       }
     }
@@ -201,6 +206,8 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
             val cvTrackingDelay= preferences[KEY.cvTrackingDelay] ?: C.DEFAULT_PREF_CV_TRACKING_DELAY
             val cvTrackingAutoDisable= preferences[KEY.cvTrackingAutoDisable] ?: C.DEFAULT_PREF_CV_TRACKING_AUTO_DISABLE
 
+            val cvLoggerHeatmaps= preferences[KEY.cvLoggerHeatmaps] ?: C.DEFAULT_PREF_CV_LOGGER_HEATMAPS
+
             val prefs = CvMapPrefs(startAct,
                     windowLocalizationMs,
                     windowLoggingMs,
@@ -215,7 +222,9 @@ class CvMapDataStore @Inject constructor(@ApplicationContext private val ctx: Co
                     cvAlgoChoice,
                     cvAlgoExec,
                     cvTrackingDelay,
-                    cvTrackingAutoDisable)
+                    cvTrackingAutoDisable,
+                    cvLoggerHeatmaps
+            )
             prefs
           }
 
@@ -245,4 +254,6 @@ data class CvMapPrefs(
 
         val cvTrackingDelay: String,
         val cvTrackingAutoDisable: String,
+
+        val cvLoggerHeatmaps: Boolean,
 )

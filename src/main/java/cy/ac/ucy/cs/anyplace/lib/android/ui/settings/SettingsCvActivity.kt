@@ -162,6 +162,7 @@ class SettingsCvActivity: SettingsActivity() {
         setBooleanInput(R.string.pref_cv_autoset_initial_location, prefs.autoSetInitialLocation)
         setBooleanInput(R.string.pref_cv_follow_selected_user, prefs.followSelectedUser)
         setBooleanInput(R.string.pref_cv_fingerprints_auto_update, prefs.autoUpdateCvFingerprints)
+        setBooleanInput(R.string.pref_cvlogger_heatmaps, prefs.cvLoggerHeatmaps)
 
         setListPreferenceInput(R.string.pref_cv_loc_algo_choice, prefs.cvAlgoChoice)
         setListPreferenceInput(R.string.pref_cv_loc_algo_execution, prefs.cvAlgoExec)

@@ -117,7 +117,7 @@ open class Cache(val ctx: Context) {
     try {
       val json = File(filename).readText()
 
-      LOG.W(TG, "$method: lastval from: ($filename(") // CLR:PM
+      LOG.D2(TG, "$method: lastval from: ($filename(") // CLR:PM
       return Gson().fromJson(json, LastValSpaces::class.java)
     } catch (e: Exception) {
       LOG.E(TG, "$method: $filename: ${e.message}")

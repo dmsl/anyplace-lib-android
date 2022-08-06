@@ -103,12 +103,11 @@ class LevelSelector(
   }
 
   private fun updateSelectionButton(btn: MaterialButton, ctx: Context, enable: Boolean) {
-    // TODO:PMX use utlUi?
     if (enable) {
-      btn.isClickable=true
+      utlUi.clickable(btn, true)
       utlUi.changeMaterialIcon(btn, R.drawable.arrow_up)
     } else {
-      btn.isClickable= false
+      utlUi.clickable(btn, false)
       utlUi.changeMaterialIcon(btn, R.drawable.ic_arrow_up_disabled)
     }
   }

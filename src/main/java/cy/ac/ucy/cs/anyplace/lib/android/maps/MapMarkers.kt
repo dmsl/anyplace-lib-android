@@ -5,7 +5,6 @@ import com.google.android.gms.maps.model.*
 import cy.ac.ucy.cs.anyplace.lib.R
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.userIcon
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.utlLoc.toLatLng
@@ -15,7 +14,6 @@ import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationMethod
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Coord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 

@@ -24,6 +24,7 @@ Application preferences using AndroidX/Jetpack `DataStore`.
 In debug mode execute:
 ```bash
 gradle signingReport
+```
 
 then copy SHA-1 hash and paste into the developer console.
 

@@ -3,7 +3,6 @@ package cy.ac.ucy.cs.anyplace.lib.android.sensors.imu
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.compose.ui.input.key.Key.Companion.S
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.google.android.gms.maps.model.LatLng
@@ -11,8 +10,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.toCoord
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
+import cy.ac.ucy.cs.anyplace.lib.android.maps.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
@@ -27,7 +25,8 @@ import kotlin.math.sin
 class IMU(
         private val act: CvMapActivity,
         private val VM: CvViewModel,
-        private val map: GmapWrapper) {
+        private val map: GmapWrapper
+) {
   val TG = "utl-imu"
 
   private val app : AnyplaceApp = act.application as AnyplaceApp

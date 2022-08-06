@@ -65,7 +65,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    */
   fun setupOnMapLongClick() {
     val MT = ::setupOnMapLongClick.name
-    LOG.E(TG, "$MT: setup: (long-click)")
+    LOG.D(TG, "$MT: setup: (long-click)")
 
     scope.launch(Dispatchers.IO) {
       delay(200) // why is this? workaround for getting last objects filled in?
@@ -104,7 +104,6 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val MT = ::showLocalizationButton.name
     LOG.D2(TG,"$MT:")
     if (!hasFingerprints && canPerformLocalization()) {
-      LOG.W(TG,"$MT: showing!")
      ui.localization.show()
     }
   }
@@ -131,7 +130,7 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
    */
   suspend fun handleStoreDetections(location: LatLng) {
     val MT = ::handleStoreDetections.name
-    LOG.E(TG, MT)
+    LOG.D2(TG, MT)
 
     val windowDetections = VM.objWindowLOG.value.orEmpty().size
     if (app.wLevel == null) {
@@ -207,9 +206,9 @@ open class CvLoggerUI(private val act: CvLoggerActivity,
     val MT = ::setupUploadBtn.name
     uploadButtonInit = true
 
-    LOG.D(TG, "$MT: setup upload button")
+    LOG.D2(TG, "$MT: setup upload button")
     btnUpload.setOnClickListener {
-      LOG.W(TG, "$MT: clicked upload")
+      LOG.D(TG, "$MT: clicked upload")
       scope.launch(Dispatchers.IO) {
         utlUi.disable(groupUpload)
         utlUi.disable(btnUpload)

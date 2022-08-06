@@ -279,5 +279,6 @@
   <string name="pref_misc_tutNavTracking">pref_misc_tutNavTracking</string>
   <string name="pref_misc_tutNavImu">pref_misc_tutNavImu</string>
   <string name="pref_cv_fingerprints_auto_update">pref_cv_fingerprints_auto_update</string>
+  <string name="pref_cvlogger_heatmaps">pref_cvlogger_heatmaps</string>
 
 </resources>

@@ -3,7 +3,7 @@ package cy.ac.ucy.cs.anyplace.lib.android.viewmodels.smas.nw
 import androidx.lifecycle.viewModelScope
 import cy.ac.ucy.cs.anyplace.lib.android.NavigatorAppBase
 import cy.ac.ucy.cs.anyplace.lib.android.data.anyplace.wrappers.LevelWrapper
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.maps.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.anyplace.models.UserLocation
 import cy.ac.ucy.cs.anyplace.lib.network.NetworkResult
 import cy.ac.ucy.cs.anyplace.lib.smas.ChatUserAuth
@@ -147,7 +147,8 @@ class LocationGetNW(
    * - propagates this information so the user locations can be rendered on the map
    */
   private fun processUserLocations(
-          VMchat: SmasChatViewModel, locations: UserLocations?, gmap: GmapWrapper) {
+          VMchat: SmasChatViewModel, locations: UserLocations?, gmap: GmapWrapper
+  ) {
     val MT = ::processUserLocations.name
 
     LOG.D3(TG, MT)

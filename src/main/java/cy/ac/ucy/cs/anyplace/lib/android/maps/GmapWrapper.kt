@@ -1,4 +1,4 @@
-package cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map
+package cy.ac.ucy.cs.anyplace.lib.android.maps
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -15,6 +15,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.MapBounds
 import cy.ac.ucy.cs.anyplace.lib.android.extensions.*
 import cy.ac.ucy.cs.anyplace.lib.android.maps.*
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
+import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.MapOverlays
 import cy.ac.ucy.cs.anyplace.lib.android.ui.selector.space.SelectSpaceActivity
 import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
@@ -39,8 +40,7 @@ import kotlinx.coroutines.launch
  */
 class GmapWrapper(
         private val app: AnyplaceApp,
-        private val scope: CoroutineScope,
-        private val UI: CvUI) {
+        private val scope: CoroutineScope) {
 
   companion object {
     private val TG = "wr-map"
@@ -54,7 +54,7 @@ class GmapWrapper(
 
   private val assetReader by lazy { AssetReader(ctx) }
   /** Overlays on top of the map, like Heatmaps */
-  val wOverlays by lazy { LevelOverlaysWrapper(VM, scope, ctx, UI) }
+  val overlays by lazy { MapOverlays(VM, scope, ctx) }
 
   lateinit var mapView : MapView
 
@@ -81,7 +81,7 @@ class GmapWrapper(
   @SuppressLint("PotentialBehaviorOverride")
   fun setup(googleMap: GoogleMap, act: CvMapActivity) {
     val MT = ::setup.name
-    LOG.E(TG, MT)
+    LOG.D(TG, MT)
 
     obj = googleMap
     obj.setInfoWindowAdapter(UserInfoWindowAdapter(ctx))
@@ -116,8 +116,6 @@ class GmapWrapper(
       setupOnMapAndMarkerClick()
       setupInfoWindowClick()
 
-      // async continues by [onFloorLoaded] CLR?
-      // onMapReadySpecialize()
       setupObserverUserBounds()
       initedGmap = true
     }
@@ -229,7 +227,7 @@ class GmapWrapper(
    * - of from assets (used for development/debugging)
    */
   suspend fun loadSpace() : Boolean {
-    LOG.W()
+    LOG.D()
     try {
       if (!DBG.USE_SPACE_SELECTOR) {
         if(!loadSpaceFromAssets()) return false
@@ -239,7 +237,7 @@ class GmapWrapper(
       }
 
       VM.selectInitialLevel()
-      wOverlays.observeLevelplanImage(obj)
+      overlays.observeLevelplanImage(obj)
       return true
     } catch (e: Exception) {
       return false

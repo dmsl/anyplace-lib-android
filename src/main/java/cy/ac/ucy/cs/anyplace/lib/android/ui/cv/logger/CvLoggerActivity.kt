@@ -16,6 +16,7 @@ import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvLoggerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -69,10 +70,16 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
   }
 
   override fun onResume() {
+    val MT = ::onResume.name
     super.onResume()
 
     // remember logger app (so we can reopen it next time)
     dsCvMap.setMainActivity(CONST.START_ACT_LOGGER)
+
+    if (VM.initedUi && VM.ui.map.initedGmap) {
+      LOG.W(TG, "$MT: trigger a heatmap reload")
+      VM.reloadHeatmap.update { true } // on resume
+    }
   }
 
 
@@ -147,6 +154,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     observeLevels()
     collectLoggedInChatUser()
     VM.nwCvFingerprintSend.collect()
+    collectRenderHeatmap()
     collectorsSet=true
   }
 
@@ -160,12 +168,25 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
       app.dsUserSmas.read.collect { user ->
         if (user.sessionkey.isBlank()) {
           finish()
-
           startActivity(Intent(this@CvLoggerActivity, app.getSmasBackendLoginActivity()))
-        } else {
-          // lifecycleScope.launch(Dispatchers.Main) {
-          //   Toast.makeText(applicationContext, "Welcome ${user.uid}!", Toast.LENGTH_LONG).show()
-          // }
+        }
+      }
+    }
+  }
+
+  var collectingRenderHeatmap=false
+  /**
+   * Reacting when we have to render the heatmap
+   */
+  private fun collectRenderHeatmap() {
+    val MT = ::collectRenderHeatmap.name
+    if (collectingRenderHeatmap) return; collectingRenderHeatmap=true
+    lifecycleScope.launch(Dispatchers.IO) {
+      VM.reloadHeatmap.collect { mustRenderHeatmap ->
+        if (mustRenderHeatmap) {
+          LOG.W(TG, "$MT: heatmap rendering triggered..")
+          VM.ui.map.overlays.renderHeatmap()
+          VM.reloadHeatmap.update { false } // update was done
         }
       }
     }
@@ -175,7 +196,7 @@ class CvLoggerActivity: CvMapActivity(), OnMapReadyCallback {
     super.onMapReady(googleMap)
 
     val MT = ::onMapReady.name
-    LOG.E(TG, "$MT: [callback]")
+    LOG.D2(TG, "$MT: [callback]")
     VM.uiLog.setupOnMapLongClick()
   }
 

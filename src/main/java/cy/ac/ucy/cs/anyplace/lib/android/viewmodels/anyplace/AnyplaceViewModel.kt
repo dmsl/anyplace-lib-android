@@ -54,7 +54,7 @@ class AnyplaceViewModel @Inject constructor(
   var networkStatus = false
   /** normal var, filled by the observer (SelectSpaceActivity) */
   var backOnline = false
-  // TODO:PM: bind this when connectivity status changes
+  // TODO: bind this when connectivity status changes. maybe show a UI indicator..
   var readBackOnline = dsMisc.backOnline.asLiveData()
   var readUserLoggedIn = dsUserAP.read.asLiveData()
 

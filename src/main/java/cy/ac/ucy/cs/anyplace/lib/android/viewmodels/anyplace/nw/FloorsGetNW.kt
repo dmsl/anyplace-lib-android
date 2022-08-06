@@ -27,7 +27,7 @@ class FloorsGetNW(
   /** Get [Levels]*/
   suspend fun blockingCall(buid: String) : Boolean {
     val MT = ::blockingCall.name
-    LOG.E(TG, MT)
+    LOG.D(TG, MT)
 
     if (app.hasInternet()) {
       return try {

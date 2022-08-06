@@ -31,8 +31,6 @@ import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.CvViewModel
 import cy.ac.ucy.cs.anyplace.lib.android.viewmodels.anyplace.DetectorViewModel
 import cy.ac.ucy.cs.anyplace.lib.anyplace.core.LocalizationResult
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Level
-import cy.ac.ucy.cs.anyplace.lib.anyplace.models.Space
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -123,6 +121,8 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       // - then compare that one w/ the latest modification (another endpoint maybe)
       // - if local CvMap/Fingerprint outdated: fetch it again..
 
+      checkForFingerprintUpdates()
+
       VM.nwCvModelsGet.safeCall()
       VM.nwCvModelsGet.collect()
     }
@@ -164,7 +164,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
   private fun continueWithPrefs() {
     lifecycleScope.launch(Dispatchers.IO) {
       val MT = ::continueWithPrefs.name
-      LOG.W(TG, MT)
+      LOG.D(TG, MT)
 
       dsCv.read.first { prefs ->
         VM.prefsCv= prefs
@@ -179,7 +179,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
 
       dsCvMap.read.first { prefs ->
         VM.prefsCvMap=prefs
-        LOG.E(TG, "$MT: SELECTED SPACE ID: '${prefs.selectedSpace}'")
+        LOG.D2(TG, "$MT: SELECTED SPACE ID: '${prefs.selectedSpace}'")
         onLoadedPrefsCvMap()
         true
       }
@@ -232,7 +232,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
     }
 
     checkInternet()
-    VM.ui.setupOnFloorSelectionClick()
+    VM.ui.setupLevelSelectorClicks()
   }
 
   var floorSelectorInited = false
@@ -253,7 +253,7 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       override fun before() {
         LOG.D4(TG, "remove user locations")
         // clear any overlays
-        VM.ui.map.wOverlays.removeHeatmap()
+        VM.ui.map.overlays.removeHeatmap()
         VM.ui.map.removeUserLocations()
         // [Overlays.drawFloorplan] removes any previous floorplan
         // before drawing a new one so it doesn't need anything.
@@ -454,6 +454,19 @@ abstract class CvMapActivity : DetectorActivityBase(), OnMapReadyCallback {
       val modelInfo = "$actName | ${VM.model.modelName}"
       LOG.V3(TG, "$MT: $modelInfo")
       utlUi.text(tvTitle, modelInfo)
+    }
+  }
+
+  private suspend fun checkForFingerprintUpdates() {
+    val MT = ::checkForFingerprintUpdates.name
+    LOG.W(TG, MT)
+    if (app.dsCvMap.read.first().autoUpdateCvFingerprints) {
+      VM.waitForDetector()
+      app.waitForSpace()
+      if (app.hasInternet()) {
+        LOG.D2(TG, "$MT: checking..")
+        VM.nwCvFingerprintsGet.safeCall(false)
+      }
     }
   }
 }

@@ -251,11 +251,6 @@ class MsgGetNW(
     }
   }
 
-  // TODO:PM
-  // 1. make refresh for whole chat: messages, locations, etc.
-  // 2. messages should be fetched: in mid delay:
-  //// e.g. after 2 secs: locations: after 1 sec msgs
-  // Separate alerts from others?
   private fun appendMessages(app: NavigatorAppBase, VM: SmasChatViewModel, msgs: List<ChatMsg>) {
     val MT = ::appendMessages.name
     LOG.D2(TG,"$MT: New: ${msgs.size} Old: ${app.msgList.size}")

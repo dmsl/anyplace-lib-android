@@ -58,8 +58,8 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
     ctx.dsMisc.edit { prefs -> prefs[key] = value }
   }
 
-  /** TODO:PM make this app specific?!
-   * see its usages
+  /**
+   * see its usages. TODO make this for the whole app?
    */
   val backOnline = readBoolean(KEY.backOnline, false)
   /** */
@@ -67,6 +67,7 @@ class MiscDS @Inject constructor(@ApplicationContext private val ctx: Context) {
 
   /** whether the long-press tutorial of the logger was shown yet or not */
   suspend fun showTutorialLoggerMapLongPress() = tutInternal(KEY.tutLogMapLongPress)
+
   /** whether the long-press tutorial of the navigator was shown yet or not */
   suspend fun showTutorialNavMapLongPress() = tutInternal(KEY.tutNavMapLongPress)
   suspend fun showTutorialNavLocalize() = tutInternal(KEY.tutNavLocalize)

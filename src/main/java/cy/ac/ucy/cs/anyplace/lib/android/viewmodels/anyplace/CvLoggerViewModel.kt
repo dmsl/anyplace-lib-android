@@ -166,7 +166,7 @@ class CvLoggerViewModel @Inject constructor(
 
   private suspend fun cacheUniqueDetections(userCoords: UserCoordinates, recognitions: List<Classifier.Recognition>) {
     val MT = ::cacheUniqueDetections.name
-    LOG.E(TG,"$MT: CvModel: detections: ${recognitions.size}")
+    LOG.D(TG,"$MT: CvModel: detections: ${recognitions.size}")
 
     app.cvUtils.initConversionTables(model.idSmas)
     val detectionsReq = app.cvUtils.toCvDetections(viewModelScope, recognitions, model)

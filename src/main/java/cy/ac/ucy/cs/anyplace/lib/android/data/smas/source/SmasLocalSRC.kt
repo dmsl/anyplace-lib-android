@@ -90,7 +90,7 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
 
   fun getCvFingerprintsHeatmapWeights(modelid: Int, deck: Int) : List<HeatmapWeights> {
     val MT = ::getCvFingerprintsHeatmapWeights.name
-    LOG.E(TG, "$MT: modelid: $modelid deck: $deck")
+    LOG.W(TG, "$MT: modelid: $modelid deck: $deck")
     return DAO.getCvFingerprintsHeatmapWeights(modelid, deck)
   }
 
@@ -116,7 +116,6 @@ class SmasLocalSRC @Inject constructor(private val DAO: SmasDAO) {
     }
 
     val uid = user.uid
-
     val prevCoord  = app.locationSmas.value.coord
     val algoRequested = app.dsCvMap.read.first().cvAlgoChoice
     var algoChosen = algoRequested

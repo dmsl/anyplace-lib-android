@@ -10,10 +10,9 @@ import cy.ac.ucy.cs.anyplace.lib.android.AnyplaceApp
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.CvMapActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.logger.CvLoggerActivity
-import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.map.GmapWrapper
+import cy.ac.ucy.cs.anyplace.lib.android.maps.GmapWrapper
 import cy.ac.ucy.cs.anyplace.lib.android.ui.cv.navigator.CvNavigatorActivity
 import cy.ac.ucy.cs.anyplace.lib.android.ui.smas.SmasMainActivity
-import cy.ac.ucy.cs.anyplace.lib.android.utils.DBG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.LOG
 import cy.ac.ucy.cs.anyplace.lib.android.utils.toLatLng
 import cy.ac.ucy.cs.anyplace.lib.android.utils.ui.UtilUI
@@ -90,8 +89,10 @@ class UiLocalization(
 
     when (act) {
       is CvLoggerActivity -> {
-        notify.warn(scope, "For Tracking switch to ${app.getNavigatorActivityName()}")
-
+        btn.setOnLongClickListener {
+          notify.info(scope, "Tracking is available only on ${app.getNavigatorActivityName()}")
+          true
+        }
       }
       is CvNavigatorActivity,
       is SmasMainActivity -> {

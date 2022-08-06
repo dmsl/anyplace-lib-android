@@ -33,7 +33,6 @@ val PreferenceFragmentCompat.app: AnyplaceApp get() = this.requireActivity().app
 val PreferenceFragmentCompat.appSmas: NavigatorAppBase get() = this.requireActivity().appSmas
 val Activity.appSmas: NavigatorAppBase get() = this.application as NavigatorAppBase
 val AndroidViewModel.appSmas: NavigatorAppBase get() = getApplication<NavigatorAppBase>()
-// val Activity.smasDS: SmasDataStore get() = this.appSmas.dsSmas // CLR
 
 val Activity.dsAnyplace: AnyplaceDataStore get() = this.app.dsAnyplace
 val Activity.dsCv: CvDataStore get() = this.app.dsCv

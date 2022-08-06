@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.asLiveData
 import com.google.android.material.snackbar.Snackbar
+import cy.ac.ucy.cs.anyplace.lib.BuildConfig
 import cy.ac.ucy.cs.anyplace.lib.android.cache.anyplace.Cache
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST
 import cy.ac.ucy.cs.anyplace.lib.android.consts.CONST.Companion.START_ACT_LOGGER
@@ -108,7 +109,6 @@ abstract class AnyplaceApp : Application() {
 
   /** Miscellaneous settings */
   @Inject lateinit var dsMisc: MiscDS
-  // TODO:PMX merge dsCv and dsCvMap
   @Inject lateinit var dsCv: CvDataStore
   @Inject lateinit var dsCvMap: CvMapDataStore
 
@@ -262,7 +262,7 @@ abstract class AnyplaceApp : Application() {
    */
   fun loadSpace(scope: CoroutineScope, newSpace: Space?, newLevels: Levels?): Boolean {
     val MT = ::loadSpace.name
-    LOG.E(TG, MT)
+    LOG.D(TG, MT)
 
     // Initialize space
     try {
@@ -302,6 +302,22 @@ abstract class AnyplaceApp : Application() {
     while (!initedSpace) {
       LOG.V(TG, "$MT..")
       delay(200)
+    }
+  }
+
+  /**
+   * NOTE: if this is giving you compilation errors, it means you havent defined those keys.
+   * This is for Google Authentication.. you might not need it..
+   *
+   * Generate one using: (follow tutorials/official docs online..)
+   * https://console.cloud.google.com/apis/credentials?authuser=1
+   */
+  suspend fun getGoogleOAuthClientID(): String {
+    return when {
+      isLogger() -> BuildConfig.LOGGER_GOOGLE_OAUTH_CLIENT_ID
+      isNavigator() -> BuildConfig.NAVIGATOR_GOOGLE_OAUTH_CLIENT_ID
+      isSMAS() -> BuildConfig.SMAS_GOOGLE_OAUTH_CLIENT_ID
+      else -> "EMPTY_KEY"
     }
   }
 
