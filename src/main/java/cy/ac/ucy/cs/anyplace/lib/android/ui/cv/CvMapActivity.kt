@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
  * - Google Maps
  *   - cache mechanism + floor changing
  *
- * - it is extended by [CvLoggerActivity], [CvNavigatorActivity], and SmasMainActivity
+ * - it is extended by [CvLoggerActivity], [CvNavigatorActivity], and [SmasMainActivity]
  *   - t allows reusing functionality using Helper UI classes/objects?
  */
 @AndroidEntryPoint

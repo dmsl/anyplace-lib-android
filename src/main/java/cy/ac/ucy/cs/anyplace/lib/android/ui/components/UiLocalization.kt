@@ -166,7 +166,7 @@ class UiLocalization(
       utlUi.flashingLoop(tv)
       utlUi.changeBackgroundMaterial(btn, R.color.redDark)
       utlUi.disable(act.btnSettings)
-      utlUi.invisible(btnWhereAmI)
+      utlUi.disable(btnWhereAmI)
 
       if (app.dsMisc.showTutorialNavTracking()) {
         val msg ="TRACKING:\nRepeatedly performing localization.\n" +
@@ -199,7 +199,7 @@ class UiLocalization(
     utlUi.enable(act.btnSettings)
 
     VM.ui.levelSelector.enable()
-    utlUi.visible(btnWhereAmI)
+    utlUi.enable(btnWhereAmI)
 
     VM.trackingMode.update { TrackingMode.off }
     VM.localizationMode.update { LocalizationMode.stopped }
@@ -328,7 +328,7 @@ class UiLocalization(
     utlUi.alpha(map.mapView, 1f)
     VM.localizationMode.tryEmit(LocalizationMode.stopped)
 
-    if (whereAmIWasVisible) {
+    if (whereAmIWasVisible && !tracking) {
       utlUi.fadeIn(btnWhereAmI)
       whereAmIWasVisible=false
     }

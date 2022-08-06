@@ -35,7 +35,6 @@ import dagger.hilt.android.AndroidEntryPoint
  * This also applies to:
  * - SpaceFilterBottomSheet, SpaceListFragment, SpaceAdapter, ..
  * - this was made initially as a part of a tutorial for learning MVVM/Kotlin/Android components..
- *
  */
 @AndroidEntryPoint
 class SelectSpaceActivity : BaseActivity(), SearchView.OnQueryTextListener {

@@ -22,14 +22,14 @@ import kotlinx.coroutines.launch
  * This code (along with SpaceSelector) follows a more complicated logic..
  * (this is mentioned in [SelectSpaceActivity])
  */
-class SpacesQueryDB(
-  VM: AnyplaceViewModel,
-  private val repo: RepoAP,
-  private val dsMisc: MiscDS) {
-  val TG = "dbq-spaces"
 
-  val scope = VM.viewModelScope
+  class SpacesQueryDB(
+          VM: AnyplaceViewModel,
+          private val repo: RepoAP,
+          private val dsMisc: MiscDS) {
+    val TG = "dbq-spaces"
 
+    val scope = VM.viewModelScope
   @Deprecated("outdated structure? use something else?")
   val searchViewData: MutableLiveData<String> = MutableLiveData()
 
